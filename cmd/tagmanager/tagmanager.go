@@ -6,7 +6,8 @@ import (
 	"os/user"
 	"path/filepath"
 
-	"github.com/JonasMuehlmann/productivity.go/internal/libbookmarks"
+	"github.com/JonasMuehlmann/productivity.go/internal/libtags"
+
 	_ "github.com/mattn/go-sqlite3"
 )
 
@@ -19,5 +20,5 @@ func main() {
 	}
 	defer dbConn.Close()
 
-	libbookmarks.AddFromCSV(dbConn, filepath.Join(user.HomeDir, "scripts/deepstash_ideas.csv"))
+	libtags.ImportYML(dbConn, filepath.Join(user.HomeDir, "Documents/productivity/tags.yml"))
 }
