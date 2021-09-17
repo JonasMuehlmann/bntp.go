@@ -18,6 +18,6 @@ func main() {
 	}
 	defer dbConn.Close()
 
-	//libbookmarks.ImportMinimalCSV(dbConn, filepath.Join(user.HomeDir, "scripts/deepstash_ideas.csv"))
-	//libbookmarks.ExportFullCSV(dbConn, filepath.Join(user.HomeDir, "Documents/productivity/out.csv"))
+	// libbookmarks.ImportMinimalCSV(dbConn, filepath.Join(user.HomeDir, "scripts/deepstash_ideas.csv"))
+	// libbookmarks.ExportFullCSV(dbConn, filepath.Join(user.HomeDir, "Documents/productivity/out.csv"))
 }

@@ -148,7 +148,7 @@ func ExportFullCSV(dbConn *sql.DB, csvPath string) {
 		rowsBuffer[i] = make([]string, len(csvHeader))
 	}
 
-	for i, _ := range rawBuffer {
+	for i := range rawBuffer {
 		destBuffer[i] = &rawBuffer[i]
 	}
 
@@ -250,7 +250,36 @@ func RemoveType(dbConn *sql.DB, transaction *sql.Tx, type_ string) {
 }
 
 func ListTypes(dbConn *sql.DB) []string {
+	stmtRows := `
+        SELECT
+            *
+        FROM
+            Type;
+    `
+	stmtCount := `
+        SELECT
+            Count(*)
+        FROM
+            Type;
+    `
+	countRow := dbConn.QueryRow(stmtCount)
+	var rowCount int
+	countRow.Scan(&rowCount)
 
+	rows, err := dbConn.Query(stmtRows)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	types := make([]string, 0, rowCount)
+
+	i := 0
+	for rows.Next() {
+		rows.Scan(&types[i])
+		i++
+	}
+
+	return types
 }
 
 func AddBookmark(dbConn *sql.DB, transaction *sql.Tx, title string, url string, type_ int, isCollection bool) {
@@ -301,4 +330,24 @@ func AddBookmark(dbConn *sql.DB, transaction *sql.Tx, title string, url string, 
 }
 
 func EditBookmark(dbConn *sql.DB, transaction *sql.Tx, id int, column string, newVal interface{}) {
+}
+
+func MarkAsRead(dbConn *sql.DB, transaction *sql.Tx, id int)                          {}
+func EditTitle(dbConn *sql.DB, transaction *sql.Tx, id int, newTitle string)          {}
+func EditUrl(dbConn *sql.DB, transaction *sql.Tx, id int, newUrl string)              {}
+func EditType(dbConn *sql.DB, transaction *sql.Tx, id int, newType string)            {}
+func EditIsCollection(dbConn *sql.DB, transaction *sql.Tx, id int, isCollection bool) {}
+func AddTag(dbConn *sql.DB, transaction *sql.Tx, id int, newTag string)               {}
+func RemoveTag(dbConn *sql.DB, transaction *sql.Tx, id int, tag_ string)              {}
+func ListBookmarks(dbConn *sql.DB, filters map[string]interface{}) []Bookmark         {}
+
+type Bookmark struct {
+	Id           int
+	IsRead       bool
+	IsCollection bool
+	Title        string
+	Url          string
+	TimeAdded    string
+	Type         string
+	Tags         []string
 }
