@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"log"
 	"os"
+	"strings"
 	"time"
 
 	"encoding/csv"
@@ -332,14 +333,138 @@ func AddBookmark(dbConn *sql.DB, transaction *sql.Tx, title string, url string, 
 func EditBookmark(dbConn *sql.DB, transaction *sql.Tx, id int, column string, newVal interface{}) {
 }
 
-func MarkAsRead(dbConn *sql.DB, transaction *sql.Tx, id int)                          {}
-func EditTitle(dbConn *sql.DB, transaction *sql.Tx, id int, newTitle string)          {}
-func EditUrl(dbConn *sql.DB, transaction *sql.Tx, id int, newUrl string)              {}
-func EditType(dbConn *sql.DB, transaction *sql.Tx, id int, newType string)            {}
-func EditIsCollection(dbConn *sql.DB, transaction *sql.Tx, id int, isCollection bool) {}
-func AddTag(dbConn *sql.DB, transaction *sql.Tx, id int, newTag string)               {}
-func RemoveTag(dbConn *sql.DB, transaction *sql.Tx, id int, tag_ string)              {}
-func ListBookmarks(dbConn *sql.DB, filters map[string]interface{}) []Bookmark         {}
+func MarkAsRead(dbConn *sql.DB, transaction *sql.Tx, id int) {
+	EditBookmark(dbConn, transaction, id, "IsRead", true)
+}
+func EditTitle(dbConn *sql.DB, transaction *sql.Tx, id int, newTitle string) {
+	EditBookmark(dbConn, transaction, id, "Title", newTitle)
+}
+func EditUrl(dbConn *sql.DB, transaction *sql.Tx, id int, newUrl string) {
+	EditBookmark(dbConn, transaction, id, "Url", newUrl)
+}
+func EditType(dbConn *sql.DB, transaction *sql.Tx, id int, newType string) {
+	// TODO: Get id of type newType
+	var typeId string
+	EditBookmark(dbConn, transaction, id, "TypeId", typeId)
+}
+func EditIsCollection(dbConn *sql.DB, transaction *sql.Tx, id int, isCollection bool) {
+	EditBookmark(dbConn, transaction, id, "IsCollection", isCollection)
+}
+func AddTag(dbConn *sql.DB, transaction *sql.Tx, id int, newTag string) {
+
+}
+func RemoveTag(dbConn *sql.DB, transaction *sql.Tx, id int, tag_ string) {
+
+}
+func ListBookmarks(dbConn *sql.DB, filters map[string]interface{}) []Bookmark {
+	joinFragments := make([]string, 0, 10)
+	whereFragments := make([]string, 0, 10)
+
+	for key, value := range filters {
+		switch key {
+		case "IsRead":
+			val, ok := value.(bool)
+
+			if !ok {
+				log.Println("filters[\"IsRead\"] should be type bool.")
+			}
+
+			var valConverted string
+			if val {
+				valConverted = "1"
+			} else {
+				valConverted = "0"
+			}
+
+			whereFragments = append(whereFragments, "WHERE IsRead = "+valConverted)
+		case "IsCollection":
+			val, ok := value.(bool)
+
+			if !ok {
+				log.Println("filters[\"IsCollection\"] should be type bool.")
+			}
+
+			var valConverted string
+			if val {
+				valConverted = "1"
+			} else {
+				valConverted = "0"
+			}
+
+			whereFragments = append(whereFragments, "WHERE IsCollection = "+valConverted)
+		case "Title":
+			value, ok := value.(string)
+
+			if !ok {
+				log.Println("filters[\"Title\"] should be type string.")
+			}
+			whereFragments = append(whereFragments, "WHERE Title = "+value)
+		case "Url":
+			value, ok := value.(string)
+
+			if !ok {
+				log.Println("filters[\"Url\"] should be type string.")
+			}
+			whereFragments = append(whereFragments, "WHERE Url = "+value)
+		case "MaxAge":
+			value, ok := value.(int)
+
+			if !ok {
+				log.Println("filters[\"MayAge\"] should be type string.")
+			}
+
+			// TODO: Compare age in SQL
+		case "TimeAddedExact":
+			_, ok := filters["TimeAddedExact"]
+			if ok {
+				log.Fatal("Filter \"TimeAddedExact\" can't be specified with \"TimeAddedRangeStart\"")
+			}
+			// TODO: Check if date is valid and convert it to db format
+
+			whereFragments = append(whereFragments, "WHERE TimeAdded = "+value)
+
+		case "TimeAddedRangeStart":
+			_, ok := filters["TimeAddedExact"]
+			if ok {
+				log.Fatal("Filter \"TimeAddedExact\" can't be specified with \"TimeAddedRangeStart\"")
+			}
+
+			timeAddedRangeEnd, ok := filters["TimeAddedRangeEnd"]
+			if !ok {
+				log.Fatal("Filter \"TimeAddedStart\" specified without \"TimeAddedRangeEnd\"")
+			}
+		case "Types":
+			types, okArray := value.([]string)
+			if !okArray {
+				type_, okString := value.(string)
+				if !okString {
+					log.Fatal("Filter filters[\"Types\"] should be []string or string.")
+				} else {
+					whereFragments = append(whereFragments, "WHERE Type = "+type_+")")
+				}
+			}
+			whereFragments = append(whereFragments, "WHERE Type IN("+strings.Join(types, ", ")+")")
+
+		case "Tags":
+			joinFragments = append(joinFragments, "INNER JOIN Context ON BookmarkId = Bookmark.Id")
+
+			tags, okArray := value.([]string)
+			if !okArray {
+				log.Fatal("filters[\"Tags\"] should be []string or string.")
+				tag, okString := value.(string)
+				if !okString {
+					log.Fatal("Filter filters[\"Tags\"] should be []string or string.")
+				} else {
+					whereFragments = append(whereFragments, "WHERE Tag = "+tag+")")
+				}
+			}
+			whereFragments = append(whereFragments, "WHERE Tag IN ("+strings.Join(tags, ", ")+")")
+		default:
+			log.Fatal("Encountered unrecognized filter.")
+		}
+	}
+
+}
 
 type Bookmark struct {
 	Id           int
