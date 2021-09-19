@@ -216,9 +216,6 @@ func DeleteTag(dbConn *sql.DB, transaction *sql.Tx, tag string) {
 	}
 }
 
-func ListChildTags(dbConn *sql.DB, tag string) {
-}
-
 func TryShortenTag(dbConn *sql.DB, tag string) string {
 }
 
@@ -226,6 +223,43 @@ func IsLeafAmbiguous(dbConn *sql.DB, tag string) bool {
 }
 
 func ListTags(dbConn *sql.DB) []string {
+	stmt := `
+        SELECT
+            *
+        FROM
+            Tag;
+    `
+
+	tagRows, err := dbConn.Query(stmt)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+	stmtCountTags := "SELECT COUNT(*) FROM  Tag;"
+
+	tagsCountRow := dbConn.QueryRow(stmtCountTags)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	var rowCountTags int
+
+	err = tagsCountRow.Scan(&rowCountTags)
+	if err != nil {
+		log.Fatal(err)
+	}
+	tagsBuffer := make([]string, 0, rowCountTags)
+
+	i := 0
+	for tagRows.Next() {
+		err := tagRows.Scan(&tagsBuffer[i])
+		if err != nil {
+			log.Fatal(err)
+		}
+		i++
+	}
+
+	return tagsBuffer
 }
 
 func ListTagsShortened(dbConn *sql.DB) []string {
