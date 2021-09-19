@@ -181,6 +181,39 @@ func RenameTag(dbConn *sql.DB, transaction *sql.Tx, oldTag string, newTag string
 }
 
 func DeleteTag(dbConn *sql.DB, transaction *sql.Tx, tag string) {
+	stmt := `
+        DELETE FROM
+            Tag
+        WHERE
+            Tag = '?';
+    `
+	var statement *sql.Stmt
+	var err error
+
+	if transaction != nil {
+		statement, err = transaction.Prepare(stmt)
+
+		if err != nil {
+			log.Fatal(err)
+		}
+	} else {
+		statement, err = dbConn.Prepare(stmt)
+
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+
+	_, err = statement.Exec(tag)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	err = statement.Close()
+
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 func ListChildTags(dbConn *sql.DB, tag string) {
