@@ -106,6 +106,8 @@ func ExportYML(dbConn *sql.DB, ymlPath string) {
 			log.Fatal(err)
 		}
 	}()
+
+	// TODO: Implement
 }
 func AddTag(dbConn *sql.DB, transaction *sql.Tx, tag string) {
 	stmt := `
@@ -217,7 +219,12 @@ func DeleteTag(dbConn *sql.DB, transaction *sql.Tx, tag string) {
 }
 
 func TryShortenTag(dbConn *sql.DB, tag string) string {
+	if IsLeafAmbiguous(dbConn, tag) {
+		tagComponents := strings.Split(tag, "::")
+		return tagComponents[len(tagComponents)-1]
+	}
 
+	return tag
 }
 
 func IsLeafAmbiguous(dbConn *sql.DB, tag string) bool {
