@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"log"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -65,85 +66,191 @@ func ImportMinimalCSV(dbConn *sql.DB, csvPath string) {
 	}
 }
 
-func ExportFullCSV(dbConn *sql.DB, csvPath string) {
+func ExportCSV(dbConn *sql.DB, csvPath string, filters map[string]interface{}) {
+	// ####################################
+	// # Filter validation and processing #
+	// ####################################
+	joinFragments := make([]string, 0, 10)
+	whereFragments := make([]string, 0, 10)
+
+	for key, value := range filters {
+		switch key {
+		case "IsRead":
+			val, ok := value.(bool)
+
+			if !ok {
+				log.Println("filters[\"IsRead\"] should be type bool.")
+			}
+
+			var valConverted string
+			if val {
+				valConverted = "1"
+			} else {
+				valConverted = "0"
+			}
+
+			whereFragments = append(whereFragments, "WHERE IsRead = "+valConverted)
+		case "IsCollection":
+			val, ok := value.(bool)
+
+			if !ok {
+				log.Println("filters[\"IsCollection\"] should be type bool.")
+			}
+
+			var valConverted string
+			if val {
+				valConverted = "1"
+			} else {
+				valConverted = "0"
+			}
+
+			whereFragments = append(whereFragments, "WHERE IsCollection = "+valConverted)
+		// case "Title":
+		// 	value, ok := value.(string)
+
+		// 	if !ok {
+		// 		log.Println("filters[\"Title\"] should be type string.")
+		// 	}
+		// 	whereFragments = append(whereFragments, "WHERE Title = "+value)
+		// case "Url":
+		// 	value, ok := value.(string)
+
+		// 	if !ok {
+		// 		log.Println("filters[\"Url\"] should be type string.")
+		// 	}
+		// 	whereFragments = append(whereFragments, "WHERE Url = "+value)
+		case "MaxAge":
+			val, ok := value.(int)
+
+			if !ok {
+				log.Fatal("filters[\"MayAge\"] should be type string.")
+			}
+			whereFragments = append(whereFragments, "WHERE timeAdded BETWEEN DATE('now') AND datetime(DATE('now'),'-'"+strconv.Itoa(val)+" days')")
+		case "Types":
+			types, okArray := value.([]string)
+			if !okArray {
+				type_, okString := value.(string)
+				if !okString {
+					log.Fatal("Filter filters[\"Types\"] should be []string or string.")
+				} else {
+					// TODO: Bookmark.Type is Type.Id but input is Type.Type
+					whereFragments = append(whereFragments, "WHERE Type = '"+type_+"'")
+				}
+			}
+			whereFragments = append(whereFragments, "WHERE Type IN('"+strings.Join(types, "', '")+"')")
+		case "Tags":
+			joinFragments = append(joinFragments, "INNER JOIN Context ON Context.BookmarkId = Bookmark.Id INNER JOIN Tag ON Tag.Id = Context.TagId")
+
+			tags, okArray := value.([]string)
+			if !okArray {
+				tag, okString := value.(string)
+				if !okString {
+					log.Fatal("Filter filters[\"Tags\"] should be []string or string.")
+				} else {
+					whereFragments = append(whereFragments, "WHERE Tag = '"+tag+"'")
+				}
+			} else {
+				whereFragments = append(whereFragments, "WHERE Tag IN ('"+strings.Join(tags, "', '")+"')")
+			}
+		default:
+			log.Fatal("Encountered unrecognized filter.")
+		}
+	}
 	// ###############
 	// # SELECT ROWS #
 	// ###############
-	stmtRows := `
+	stmtBookmarks := `
         SELECT
-            Id,
-            IsRead,
-            Title,
-            Url,
-            TimeAdded,
-            TypeId,
-            IsCollection
+            Bookmark.Id,
+            Bookmark.IsRead,
+            Bookmark.Title,
+            Bookmark.Url,
+            Bookmark.TimeAdded,
+            Bookmark.TypeId,
+            Bookmark.IsCollection
         FROM
-            Bookmark;
+            Bookmark
     `
+	stmtTags := `
+        SELECT
+            Tag.Tag
+        FROM
+            Tag
+        INNER JOIN Context ON
+            Context.TagId = Tag.Id
+        WHERE Context.BookmarkId = ?;`
 
-	statementRows, err := dbConn.Prepare(stmtRows)
+	joinFragment := strings.Join(joinFragments, " AND ")
+	whereFragment := strings.Join(whereFragments, " AND ")
+
+	stmtBookmarks += joinFragment + " " + whereFragment + ";"
+
+	statementTags, err := dbConn.Prepare(stmtTags)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	defer func() {
-		err := statementRows.Close()
-
+	bookmarkRows, err := dbConn.Query(stmtBookmarks)
+	if err != nil {
+		log.Fatal(err)
+	}
+	// #####################################
+	// # Prepare file write or STDOUT print #
+	// #####################################
+	var writer *csv.Writer
+	if csvPath != "" { // 0664 UNIX Permission code
+		file, err := os.OpenFile(csvPath, os.O_CREATE|os.O_WRONLY, 0664)
 		if err != nil {
 			log.Fatal(err)
+
 		}
-	}()
-
-	rows, err := statementRows.Query()
-	if err != nil {
-		log.Fatal(err)
-	}
-	// #################
-	// # SELECT  COUNT #
-	// #################
-	stmtCount := "SELECT COUNT(*) FROM Bookmark;"
-
-	countRow := dbConn.QueryRow(stmtCount)
-
-	var rowCount int
-
-	err = countRow.Scan(&rowCount)
-	if err != nil {
-		log.Fatal(err)
-	}
-	// ##############
-	// # WRITE FILE #
-	// ##############
-	// 0664 UNIX Permission code
-	file, err := os.OpenFile(csvPath, os.O_CREATE|os.O_WRONLY, 0664)
-	if err != nil {
-		log.Fatal(err)
+		defer func() {
+			err := file.Close()
+			if err != nil {
+				log.Fatal(err)
+			}
+		}()
+		writer = csv.NewWriter(file)
+	} else { // 0664 UNIX Permission code
+		writer = csv.NewWriter(os.Stdout)
 	}
 
-	defer func() {
-		err := file.Close()
-		if err != nil {
-			log.Fatal(err)
-		}
-	}()
-
-	writer := csv.NewWriter(file)
 	writer.Comma = ';'
 
-	csvHeader, err := rows.Columns()
+	csvHeader, err := bookmarkRows.Columns()
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	csvHeader = append(csvHeader, "Tags")
+
 	err = writer.Write(csvHeader)
 	if err != nil {
 		log.Fatal(err)
 	}
 
+	// ############
+	// # Get Data #
+	// ############
+	stmtCountBookmarks := "SELECT COUNT(*) FROM Bookmark " + joinFragment + " " + whereFragment + ";"
+	stmtCountTags := "SELECT COUNT(*) FROM  Context WHERE BookmarkId = ?;"
+
+	statementTagsCount, err := dbConn.Prepare(stmtCountTags)
+	if err != nil {
+		log.Fatal(err)
+	}
+	countRowBookmarks := dbConn.QueryRow(stmtCountBookmarks)
+
+	var rowCountBookmarks int
+
+	err = countRowBookmarks.Scan(&rowCountBookmarks)
+	if err != nil {
+		log.Fatal(err)
+	}
 	// row -> destBuffer -> rawBuffer -> rowsBuffer -> CSV
-	rowsBuffer := make([][]string, rowCount)
-	destBuffer := make([]interface{}, len(csvHeader))
-	rawBuffer := make([][]byte, len(csvHeader))
+	rowsBuffer := make([][]string, rowCountBookmarks)
+	destBuffer := make([]interface{}, len(csvHeader)-1)
+	rawBuffer := make([][]byte, len(csvHeader)-1)
 
 	for i := range rowsBuffer {
 		rowsBuffer[i] = make([]string, len(csvHeader))
@@ -153,9 +260,12 @@ func ExportFullCSV(dbConn *sql.DB, csvPath string) {
 		destBuffer[i] = &rawBuffer[i]
 	}
 
+	// TODO: Try to optimize this into a single joined query on the Context and tag table
+	// and then match the result to the bookmarks
+	// https://turriate.com/articles/making-sqlite-faster-in-go
 	i := 0
-	for rows.Next() {
-		err := rows.Scan(destBuffer...)
+	for bookmarkRows.Next() {
+		err := bookmarkRows.Scan(destBuffer...)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -167,6 +277,38 @@ func ExportFullCSV(dbConn *sql.DB, csvPath string) {
 				rowsBuffer[i][j] = string(raw)
 			}
 		}
+		// ############
+		// # Add tags #
+		// ############
+		var rowCountTags int
+
+		bookmarkIdAsInt, err := strconv.Atoi(rowsBuffer[i][0])
+		if err != nil {
+			log.Fatal(err)
+		}
+		countRowTags := statementTagsCount.QueryRow(bookmarkIdAsInt)
+
+		err = countRowTags.Scan(&rowCountTags)
+		if err != nil {
+			log.Fatal(err)
+		}
+		tagsBuffer := make([]string, rowCountTags)
+
+		tagRows, err := statementTags.Query(bookmarkIdAsInt)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		j := 0
+		for tagRows.Next() {
+			err := tagRows.Scan(&tagsBuffer[j])
+			if err != nil {
+				log.Fatal(err)
+			}
+			j++
+		}
+		rowsBuffer[i][len(csvHeader)-1] = strings.Join(tagsBuffer, ",")
+
 		i++
 	}
 
@@ -180,10 +322,10 @@ func AddType(dbConn *sql.DB, transaction *sql.Tx, type_ string) {
 	stmt := `
         INSERT INTO
             Type(
-                Type,
+                Type
             )
         VALUES(
-            ?,
+            ?
         );
     `
 	var statement *sql.Stmt
@@ -214,6 +356,7 @@ func AddType(dbConn *sql.DB, transaction *sql.Tx, type_ string) {
 		log.Fatal(err)
 	}
 }
+
 func RemoveType(dbConn *sql.DB, transaction *sql.Tx, type_ string) {
 	stmt := `
         DELETE FROM
@@ -318,7 +461,7 @@ func AddBookmark(dbConn *sql.DB, transaction *sql.Tx, title string, url string, 
 		}
 	}
 
-	_, err = statement.Exec(title, url, time.Now().Format(time.RFC822), type_, isCollection)
+	_, err = statement.Exec(title, url, time.Now().Format("2006-01-02"), type_, isCollection)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -354,115 +497,6 @@ func AddTag(dbConn *sql.DB, transaction *sql.Tx, id int, newTag string) {
 
 }
 func RemoveTag(dbConn *sql.DB, transaction *sql.Tx, id int, tag_ string) {
-
-}
-func ListBookmarks(dbConn *sql.DB, filters map[string]interface{}) []Bookmark {
-	joinFragments := make([]string, 0, 10)
-	whereFragments := make([]string, 0, 10)
-
-	for key, value := range filters {
-		switch key {
-		case "IsRead":
-			val, ok := value.(bool)
-
-			if !ok {
-				log.Println("filters[\"IsRead\"] should be type bool.")
-			}
-
-			var valConverted string
-			if val {
-				valConverted = "1"
-			} else {
-				valConverted = "0"
-			}
-
-			whereFragments = append(whereFragments, "WHERE IsRead = "+valConverted)
-		case "IsCollection":
-			val, ok := value.(bool)
-
-			if !ok {
-				log.Println("filters[\"IsCollection\"] should be type bool.")
-			}
-
-			var valConverted string
-			if val {
-				valConverted = "1"
-			} else {
-				valConverted = "0"
-			}
-
-			whereFragments = append(whereFragments, "WHERE IsCollection = "+valConverted)
-		case "Title":
-			value, ok := value.(string)
-
-			if !ok {
-				log.Println("filters[\"Title\"] should be type string.")
-			}
-			whereFragments = append(whereFragments, "WHERE Title = "+value)
-		case "Url":
-			value, ok := value.(string)
-
-			if !ok {
-				log.Println("filters[\"Url\"] should be type string.")
-			}
-			whereFragments = append(whereFragments, "WHERE Url = "+value)
-		case "MaxAge":
-			value, ok := value.(int)
-
-			if !ok {
-				log.Println("filters[\"MayAge\"] should be type string.")
-			}
-
-			// TODO: Compare age in SQL
-		case "TimeAddedExact":
-			_, ok := filters["TimeAddedExact"]
-			if ok {
-				log.Fatal("Filter \"TimeAddedExact\" can't be specified with \"TimeAddedRangeStart\"")
-			}
-			// TODO: Check if date is valid and convert it to db format
-
-			whereFragments = append(whereFragments, "WHERE TimeAdded = "+value)
-
-		case "TimeAddedRangeStart":
-			_, ok := filters["TimeAddedExact"]
-			if ok {
-				log.Fatal("Filter \"TimeAddedExact\" can't be specified with \"TimeAddedRangeStart\"")
-			}
-
-			timeAddedRangeEnd, ok := filters["TimeAddedRangeEnd"]
-			if !ok {
-				log.Fatal("Filter \"TimeAddedStart\" specified without \"TimeAddedRangeEnd\"")
-			}
-		case "Types":
-			types, okArray := value.([]string)
-			if !okArray {
-				type_, okString := value.(string)
-				if !okString {
-					log.Fatal("Filter filters[\"Types\"] should be []string or string.")
-				} else {
-					whereFragments = append(whereFragments, "WHERE Type = "+type_+")")
-				}
-			}
-			whereFragments = append(whereFragments, "WHERE Type IN("+strings.Join(types, ", ")+")")
-
-		case "Tags":
-			joinFragments = append(joinFragments, "INNER JOIN Context ON BookmarkId = Bookmark.Id")
-
-			tags, okArray := value.([]string)
-			if !okArray {
-				log.Fatal("filters[\"Tags\"] should be []string or string.")
-				tag, okString := value.(string)
-				if !okString {
-					log.Fatal("Filter filters[\"Tags\"] should be []string or string.")
-				} else {
-					whereFragments = append(whereFragments, "WHERE Tag = "+tag+")")
-				}
-			}
-			whereFragments = append(whereFragments, "WHERE Tag IN ("+strings.Join(tags, ", ")+")")
-		default:
-			log.Fatal("Encountered unrecognized filter.")
-		}
-	}
 
 }
 

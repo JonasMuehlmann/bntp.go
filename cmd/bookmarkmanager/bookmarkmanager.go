@@ -6,6 +6,7 @@ import (
 	"os/user"
 	"path/filepath"
 
+	"github.com/JonasMuehlmann/productivity.go/internal/libbookmarks"
 	_ "github.com/mattn/go-sqlite3"
 )
 
@@ -18,6 +19,7 @@ func main() {
 	}
 	defer dbConn.Close()
 
-	// libbookmarks.ImportMinimalCSV(dbConn, filepath.Join(user.HomeDir, "scripts/deepstash_ideas.csv"))
-	// libbookmarks.ExportFullCSV(dbConn, filepath.Join(user.HomeDir, "Documents/productivity/out.csv"))
+	// libbookmarks.ImportMinimalCSV(dbConn, filepath.Join(user.HomeDir, "scripts/deepstash_ideas.csv.uniq"))
+	// libbookmarks.ExportCSV(dbConn, filepath.Join(user.HomeDir, "Documents/productivity/out.csv"), nil)
+	libbookmarks.ExportCSV(dbConn, "", map[string]interface{}{"Tags": []string{"software_development::hardware", "compiler_dev"}})
 }
