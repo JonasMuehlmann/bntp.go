@@ -530,6 +530,7 @@ func EditUrl(dbConn *sql.DB, transaction *sql.Tx, id int, newUrl string) {
 	EditBookmark(dbConn, transaction, id, "Url", newUrl)
 }
 func EditType(dbConn *sql.DB, transaction *sql.Tx, id int, newType string) {
+	// TODO: Refactor getting Type.Id from Type.Type
 	var typeId int
 
 	stmt := `
@@ -575,10 +576,84 @@ func EditType(dbConn *sql.DB, transaction *sql.Tx, id int, newType string) {
 func EditIsCollection(dbConn *sql.DB, transaction *sql.Tx, id int, isCollection bool) {
 	EditBookmark(dbConn, transaction, id, "IsCollection", isCollection)
 }
-func AddTag(dbConn *sql.DB, transaction *sql.Tx, id int, newTag string) {
+func AddTag(dbConn *sql.DB, transaction *sql.Tx, bookmarkId int, newTag string) {
+	// TODO: Refactor getting Tag.Id from Tag.Tag
+	var tagId int
 
+	stmtTag := `
+        SELECT
+            Id
+        FROM
+            Tag
+        WHERE
+            Tag = '?';
+    `
+	var statementTag *sql.Stmt
+	var err error
+
+	if transaction != nil {
+		statementTag, err = transaction.Prepare(stmtTag)
+
+		if err != nil {
+			log.Fatal(err)
+		}
+	} else {
+		statementTag, err = dbConn.Prepare(stmtTag)
+
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+
+	tagRow := statementTag.QueryRow(newTag)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	tagRow.Scan(&tagId)
+
+	err = statementTag.Close()
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	stmt := `
+        INSERT INTO
+            Context(BookmarkId, TagId)
+        VALUES(
+            ?,
+            ?
+    );
+    `
+	var statementContext *sql.Stmt
+
+	if transaction != nil {
+		statementContext, err = transaction.Prepare(stmt)
+
+		if err != nil {
+			log.Fatal(err)
+		}
+	} else {
+		statementContext, err = dbConn.Prepare(stmt)
+
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+
+	_, err = statementContext.Exec(bookmarkId, tagId)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	err = statementContext.Close()
+
+	if err != nil {
+		log.Fatal(err)
+	}
 }
-func RemoveTag(dbConn *sql.DB, transaction *sql.Tx, id int, tag_ string) {
+func RemoveTag(dbConn *sql.DB, transaction *sql.Tx, bookmarkId int, tag_ string) {
 
 }
 
