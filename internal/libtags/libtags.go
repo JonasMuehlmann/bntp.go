@@ -221,7 +221,22 @@ func TryShortenTag(dbConn *sql.DB, tag string) string {
 }
 
 func IsLeafAmbiguous(dbConn *sql.DB, tag string) bool {
+	tags := ListTags(dbConn)
 
+	tagComponents := strings.Split(tag, "::")
+
+	leaf := tagComponents[len(tagComponents)-1]
+
+	for _, tag := range tags {
+		curTagComponents := strings.Split(tag, "::")
+		curLeaf := curTagComponents[len(curTagComponents)-1]
+
+		if curLeaf == leaf {
+			return true
+		}
+	}
+
+	return false
 }
 
 func ListTags(dbConn *sql.DB) []string {
