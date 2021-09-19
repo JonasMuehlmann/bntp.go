@@ -105,20 +105,6 @@ func ExportCSV(dbConn *sql.DB, csvPath string, filters map[string]interface{}) {
 			}
 
 			whereFragments = append(whereFragments, "WHERE IsCollection = "+valConverted)
-		// case "Title":
-		// 	value, ok := value.(string)
-
-		// 	if !ok {
-		// 		log.Println("filters[\"Title\"] should be type string.")
-		// 	}
-		// 	whereFragments = append(whereFragments, "WHERE Title = "+value)
-		// case "Url":
-		// 	value, ok := value.(string)
-
-		// 	if !ok {
-		// 		log.Println("filters[\"Url\"] should be type string.")
-		// 	}
-		// 	whereFragments = append(whereFragments, "WHERE Url = "+value)
 		case "MaxAge":
 			val, ok := value.(int)
 
@@ -133,11 +119,11 @@ func ExportCSV(dbConn *sql.DB, csvPath string, filters map[string]interface{}) {
 				if !okString {
 					log.Fatal("Filter filters[\"Types\"] should be []string or string.")
 				} else {
-					// TODO: Bookmark.Type is Type.Id but input is Type.Type
 					whereFragments = append(whereFragments, "WHERE Type = '"+type_+"'")
 				}
+			} else {
+				whereFragments = append(whereFragments, "WHERE Type IN('"+strings.Join(types, "', '")+"')")
 			}
-			whereFragments = append(whereFragments, "WHERE Type IN('"+strings.Join(types, "', '")+"')")
 		case "Tags":
 			joinFragments = append(joinFragments, "INNER JOIN Context ON Context.BookmarkId = Bookmark.Id INNER JOIN Tag ON Tag.Id = Context.TagId")
 
@@ -166,10 +152,12 @@ func ExportCSV(dbConn *sql.DB, csvPath string, filters map[string]interface{}) {
             Bookmark.Title,
             Bookmark.Url,
             Bookmark.TimeAdded,
-            Bookmark.TypeId,
+            Type.Type,
             Bookmark.IsCollection
         FROM
             Bookmark
+        INNER JOIN Type ON
+            Type.Id = Bookmark.TypeId
     `
 	stmtTags := `
         SELECT
@@ -232,7 +220,7 @@ func ExportCSV(dbConn *sql.DB, csvPath string, filters map[string]interface{}) {
 	// ############
 	// # Get Data #
 	// ############
-	stmtCountBookmarks := "SELECT COUNT(*) FROM Bookmark " + joinFragment + " " + whereFragment + ";"
+	stmtCountBookmarks := "SELECT COUNT(*) FROM Bookmark INNER JOIN Type ON Bookmark.TypeId = Type.Id" + joinFragment + " " + whereFragment + ";"
 	stmtCountTags := "SELECT COUNT(*) FROM  Context WHERE BookmarkId = ?;"
 
 	statementTagsCount, err := dbConn.Prepare(stmtCountTags)

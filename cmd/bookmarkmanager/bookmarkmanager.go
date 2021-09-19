@@ -21,5 +21,5 @@ func main() {
 
 	// libbookmarks.ImportMinimalCSV(dbConn, filepath.Join(user.HomeDir, "scripts/deepstash_ideas.csv.uniq"))
 	// libbookmarks.ExportCSV(dbConn, filepath.Join(user.HomeDir, "Documents/productivity/out.csv"), nil)
-	libbookmarks.ExportCSV(dbConn, "", map[string]interface{}{"Tags": []string{"software_development::hardware", "compiler_dev"}})
+	libbookmarks.ExportCSV(dbConn, "", map[string]interface{}{"Types": "Text"})
 }
