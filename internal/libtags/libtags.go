@@ -217,9 +217,11 @@ func DeleteTag(dbConn *sql.DB, transaction *sql.Tx, tag string) {
 }
 
 func TryShortenTag(dbConn *sql.DB, tag string) string {
+
 }
 
 func IsLeafAmbiguous(dbConn *sql.DB, tag string) bool {
+
 }
 
 func ListTags(dbConn *sql.DB) []string {
@@ -263,4 +265,14 @@ func ListTags(dbConn *sql.DB) []string {
 }
 
 func ListTagsShortened(dbConn *sql.DB) []string {
+	tags := ListTags(dbConn)
+
+	for i, tag := range tags {
+		if IsLeafAmbiguous(dbConn, tag) {
+			tagComponents := strings.Split(tag, "::")
+			tags[i] = tagComponents[len(tagComponents)-1]
+		}
+	}
+
+	return tags
 }
