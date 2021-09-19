@@ -177,7 +177,13 @@ func ExportCSV(dbConn *sql.DB, csvPath string, filters map[string]interface{}) {
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer func() {
+		err = statementTags.Close()
 
+		if err != nil {
+			log.Fatal(err)
+		}
+	}()
 	bookmarkRows, err := dbConn.Query(stmtBookmarks)
 	if err != nil {
 		log.Fatal(err)
@@ -227,6 +233,13 @@ func ExportCSV(dbConn *sql.DB, csvPath string, filters map[string]interface{}) {
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer func() {
+		err = statementTagsCount.Close()
+
+		if err != nil {
+			log.Fatal(err)
+		}
+	}()
 	countRowBookmarks := dbConn.QueryRow(stmtCountBookmarks)
 
 	var rowCountBookmarks int
@@ -462,6 +475,40 @@ func AddBookmark(dbConn *sql.DB, transaction *sql.Tx, title string, url string, 
 }
 
 func EditBookmark(dbConn *sql.DB, transaction *sql.Tx, id int, column string, newVal interface{}) {
+	stmt := `
+        UPDATE
+            Bookmark
+        SET
+            ? = ?
+        WHERE Id = ?;
+    `
+	var statement *sql.Stmt
+	var err error
+
+	if transaction != nil {
+		statement, err = transaction.Prepare(stmt)
+
+		if err != nil {
+			log.Fatal(err)
+		}
+	} else {
+		statement, err = dbConn.Prepare(stmt)
+
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+
+	_, err = statement.Exec(column, newVal, id)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	err = statement.Close()
+
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 func MarkAsRead(dbConn *sql.DB, transaction *sql.Tx, id int) {
@@ -474,8 +521,46 @@ func EditUrl(dbConn *sql.DB, transaction *sql.Tx, id int, newUrl string) {
 	EditBookmark(dbConn, transaction, id, "Url", newUrl)
 }
 func EditType(dbConn *sql.DB, transaction *sql.Tx, id int, newType string) {
-	// TODO: Get id of type newType
-	var typeId string
+	var typeId int
+
+	stmt := `
+        SELECT
+            Id
+        FROM
+            Type
+        WHERE
+            Type = ?;
+    `
+	var statement *sql.Stmt
+	var err error
+
+	if transaction != nil {
+		statement, err = transaction.Prepare(stmt)
+
+		if err != nil {
+			log.Fatal(err)
+		}
+	} else {
+		statement, err = dbConn.Prepare(stmt)
+
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+
+	typeRow := statement.QueryRow(newType)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	typeRow.Scan(&typeId)
+
+	err = statement.Close()
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	EditBookmark(dbConn, transaction, id, "TypeId", typeId)
 }
 func EditIsCollection(dbConn *sql.DB, transaction *sql.Tx, id int, isCollection bool) {
