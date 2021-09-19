@@ -480,8 +480,17 @@ func EditBookmark(dbConn *sql.DB, transaction *sql.Tx, id int, column string, ne
             Bookmark
         SET
             ? = ?
-        WHERE Id = ?;
+        WHERE Id =
     `
+
+	_, ok := newVal.(string)
+
+	if ok {
+		stmt += "'?';"
+	} else {
+		stmt += "?;"
+	}
+
 	var statement *sql.Stmt
 	var err error
 
@@ -529,7 +538,7 @@ func EditType(dbConn *sql.DB, transaction *sql.Tx, id int, newType string) {
         FROM
             Type
         WHERE
-            Type = ?;
+            Type = '?';
     `
 	var statement *sql.Stmt
 	var err error
