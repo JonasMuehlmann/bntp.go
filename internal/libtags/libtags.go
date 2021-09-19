@@ -143,6 +143,41 @@ func AddTag(dbConn *sql.DB, transaction *sql.Tx, tag string) {
 }
 
 func RenameTag(dbConn *sql.DB, transaction *sql.Tx, oldTag string, newTag string) {
+	stmt := `
+        UPDATE
+            Tag
+        SET
+            Tag = '?'
+        WHERE
+            Tag = '?';
+    `
+	var statement *sql.Stmt
+	var err error
+
+	if transaction != nil {
+		statement, err = transaction.Prepare(stmt)
+
+		if err != nil {
+			log.Fatal(err)
+		}
+	} else {
+		statement, err = dbConn.Prepare(stmt)
+
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+
+	_, err = statement.Exec(newTag, oldTag)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	err = statement.Close()
+
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 func DeleteTag(dbConn *sql.DB, transaction *sql.Tx, tag string) {
@@ -157,8 +192,8 @@ func TryShortenTag(dbConn *sql.DB, tag string) string {
 func IsLeafAmbiguous(dbConn *sql.DB, tag string) bool {
 }
 
-func ListTags(dbConn *sql.DB) [][]string {
+func ListTags(dbConn *sql.DB) []string {
 }
 
-func ListTagsShortened(dbConn *sql.DB) [][]string {
+func ListTagsShortened(dbConn *sql.DB) []string {
 }
