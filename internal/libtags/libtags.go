@@ -134,6 +134,7 @@ func ExportYML(dbConn *sql.DB, ymlPath string) {
 	}
 
 	fileString := string(yamlFile)
+	// TODO: Refactor using bufio and non regex string functions
 	// NOTE: This is awful, but I can't seem to get it to work properly any other way
 	regexEmptyMap := regexp.MustCompile(`: \{\}`)
 	fileString = regexEmptyMap.ReplaceAllString(fileString, "")

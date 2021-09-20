@@ -1,3 +1,11 @@
+package libdocuments
+
+import (
+	"bufio"
+	"log"
+	"os"
+)
+
 func AddTag(documentPath string, tag string) {
 
 }
@@ -14,8 +22,23 @@ func GetTags(documentPath string) []string {
 
 }
 
-func FindTagsLine(documentPath string) int {
+func FindTagsLine(documentPath string) (int, string) {
+	file, err := os.OpenFile(documentPath, os.O_RDONLY, 0644)
+	if err != nil {
+		log.Fatal(err)
+	}
 
+	scanner := bufio.NewScanner(file)
+
+	i := 0
+	for scanner.Scan() {
+		if scanner.Text() == "# Tags" {
+			return i, scanner.Text()
+		}
+		i++
+	}
+
+	return -1, ""
 }
 
 func FindDocumentsWithTags(tags []string) []string {
