@@ -93,7 +93,29 @@ func bFSTagPaths(node interface{}, paths chan []string, curPath []string) {
 	}
 }
 
+type TagNode map[string]TagNode
+
 func ExportYML(dbConn *sql.DB, ymlPath string) {
+	tags := ListTags(dbConn)
+
+	tagHierarchy := TagNode{"Tags": TagNode{}}
+
+	for _, tag := range tags {
+		tagComponents := strings.Split(tag, "::")
+
+		curNode := tagHierarchy["Tags"]
+
+		for _, component := range tagComponents {
+			child, ok := curNode[component]
+
+			if !ok {
+				// FIX: Error here
+				curNode[component] = TagNode{}
+			}
+			curNode = child
+		}
+	}
+
 	// 0664 UNIX Permission code
 	file, err := os.OpenFile(ymlPath, os.O_CREATE|os.O_WRONLY, 0664)
 	if err != nil {
@@ -107,7 +129,15 @@ func ExportYML(dbConn *sql.DB, ymlPath string) {
 		}
 	}()
 
-	// TODO: Implement
+	yamlFile, err := yaml.Marshal(tagHierarchy)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	_, err = file.Write(yamlFile)
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 func AddTag(dbConn *sql.DB, transaction *sql.Tx, tag string) {
 	stmt := `
@@ -249,7 +279,7 @@ func IsLeafAmbiguous(dbConn *sql.DB, tag string) bool {
 func ListTags(dbConn *sql.DB) []string {
 	stmt := `
         SELECT
-            *
+            Tag
         FROM
             Tag;
     `
@@ -262,9 +292,6 @@ func ListTags(dbConn *sql.DB) []string {
 	stmtCountTags := "SELECT COUNT(*) FROM  Tag;"
 
 	tagsCountRow := dbConn.QueryRow(stmtCountTags)
-	if err != nil {
-		log.Fatal(err)
-	}
 
 	var rowCountTags int
 
@@ -272,7 +299,7 @@ func ListTags(dbConn *sql.DB) []string {
 	if err != nil {
 		log.Fatal(err)
 	}
-	tagsBuffer := make([]string, 0, rowCountTags)
+	tagsBuffer := make([]string, rowCountTags)
 
 	i := 0
 	for tagRows.Next() {

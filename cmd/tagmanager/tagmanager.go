@@ -20,5 +20,5 @@ func main() {
 	}
 	defer dbConn.Close()
 
-	libtags.ImportYML(dbConn, filepath.Join(user.HomeDir, "Documents/productivity/tags.yml"))
+	libtags.ExportYML(dbConn, filepath.Join(user.HomeDir, "Documents/productivity/tags.out.yml"))
 }
