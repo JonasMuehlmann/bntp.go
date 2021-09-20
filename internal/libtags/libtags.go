@@ -2,11 +2,11 @@ package libtags
 
 import (
 	"database/sql"
+	"gopkg.in/yaml.v3"
 	"log"
 	"os"
+	"regexp"
 	"strings"
-
-	"gopkg.in/yaml.v3"
 )
 
 func ImportYML(dbConn *sql.DB, ymlPath string) {
@@ -97,21 +97,20 @@ type TagNode map[string]TagNode
 func ExportYML(dbConn *sql.DB, ymlPath string) {
 	tags := ListTags(dbConn)
 
-	tagHierarchy := TagNode{"Tags": TagNode{}}
+	tagHierarchy := TagNode{"tags": TagNode{}}
 
 	for _, tag := range tags {
 		tagComponents := strings.Split(tag, "::")
 
-		curNode := tagHierarchy["Tags"]
+		curNode := tagHierarchy["tags"]
 
 		for _, component := range tagComponents {
-			child, ok := curNode[component]
+			_, ok := curNode[component]
 
 			if !ok {
-				// FIX: Error here
 				curNode[component] = TagNode{}
 			}
-			curNode = child
+			curNode = curNode[component]
 		}
 	}
 
@@ -133,7 +132,21 @@ func ExportYML(dbConn *sql.DB, ymlPath string) {
 		log.Fatal(err)
 	}
 
-	_, err = file.Write(yamlFile)
+	fileString := string(yamlFile)
+	// NOTE: This is awful, but I can't seem to get it to work properly any other way
+	regexEmptyMap := regexp.MustCompile(`: \{\}`)	
+	fileString  = regexEmptyMap.ReplaceAllString(fileString, "")
+	
+	regexListItems := regexp.MustCompile(`(  )(\w)`)
+	fileString = regexListItems.ReplaceAllString(fileString, "- $2")
+	
+	regexIndentation := regexp.MustCompile(`  `)
+	fileString = regexIndentation.ReplaceAllString(fileString, " ")
+
+	regexIndentation2 := regexp.MustCompile(`( )(-)`)
+	fileString = regexIndentation2.ReplaceAllString(fileString, "$2")
+	
+	_, err = file.Write([]byte(fileString))
 	if err != nil {
 		log.Fatal(err)
 	}
