@@ -2,13 +2,12 @@ package libbookmarks
 
 import (
 	"database/sql"
+	"encoding/csv"
 	"log"
 	"os"
 	"strconv"
 	"strings"
 	"time"
-
-	"encoding/csv"
 
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -193,10 +192,9 @@ func ExportCSV(dbConn *sql.DB, csvPath string, filters map[string]interface{}) {
 	// #####################################
 	var writer *csv.Writer
 	if csvPath != "" { // 0664 UNIX Permission code
-		file, err := os.OpenFile(csvPath, os.O_CREATE|os.O_WRONLY, 0664)
+		file, err := os.OpenFile(csvPath, os.O_CREATE|os.O_WRONLY, 0o664)
 		if err != nil {
 			log.Fatal(err)
-
 		}
 		defer func() {
 			err := file.Close()
@@ -523,12 +521,15 @@ func EditBookmark(dbConn *sql.DB, transaction *sql.Tx, id int, column string, ne
 func MarkAsRead(dbConn *sql.DB, transaction *sql.Tx, id int) {
 	EditBookmark(dbConn, transaction, id, "IsRead", true)
 }
+
 func EditTitle(dbConn *sql.DB, transaction *sql.Tx, id int, newTitle string) {
 	EditBookmark(dbConn, transaction, id, "Title", newTitle)
 }
+
 func EditUrl(dbConn *sql.DB, transaction *sql.Tx, id int, newUrl string) {
 	EditBookmark(dbConn, transaction, id, "Url", newUrl)
 }
+
 func EditType(dbConn *sql.DB, transaction *sql.Tx, id int, newType string) {
 	// TODO: Refactor getting Type.Id from Type.Type
 	var typeId int
@@ -573,9 +574,11 @@ func EditType(dbConn *sql.DB, transaction *sql.Tx, id int, newType string) {
 
 	EditBookmark(dbConn, transaction, id, "TypeId", typeId)
 }
+
 func EditIsCollection(dbConn *sql.DB, transaction *sql.Tx, id int, isCollection bool) {
 	EditBookmark(dbConn, transaction, id, "IsCollection", isCollection)
 }
+
 func AddTag(dbConn *sql.DB, transaction *sql.Tx, bookmarkId int, newTag string) {
 	// TODO: Refactor getting Tag.Id from Tag.Tag
 	var tagId int
@@ -653,6 +656,7 @@ func AddTag(dbConn *sql.DB, transaction *sql.Tx, bookmarkId int, newTag string) 
 		log.Fatal(err)
 	}
 }
+
 func RemoveTag(dbConn *sql.DB, transaction *sql.Tx, bookmarkId int, tag_ string) {
 	// TODO: Refactor getting Tag.Id from Tag.Tag
 	var tagId int
@@ -730,7 +734,6 @@ func RemoveTag(dbConn *sql.DB, transaction *sql.Tx, bookmarkId int, tag_ string)
 	if err != nil {
 		log.Fatal(err)
 	}
-
 }
 
 type Bookmark struct {

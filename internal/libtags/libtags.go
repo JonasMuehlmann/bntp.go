@@ -63,9 +63,8 @@ func bFSTagPaths(node interface{}, paths chan []string, curPath []string) {
 	// Iterate over child nodes and BFS them in parallel
 	case []interface{}:
 		for _, curNode := range node.([]interface{}) {
-
 			func(node interface{}) {
-				//func(node interface{}) {
+				// func(node interface{}) {
 				// Starting path
 				if curPath == nil {
 					bFSTagPaths(node, paths, make([]string, 0, 10))
@@ -117,7 +116,7 @@ func ExportYML(dbConn *sql.DB, ymlPath string) {
 	}
 
 	// 0664 UNIX Permission code
-	file, err := os.OpenFile(ymlPath, os.O_CREATE|os.O_WRONLY, 0664)
+	file, err := os.OpenFile(ymlPath, os.O_CREATE|os.O_WRONLY, 0o664)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -139,6 +138,7 @@ func ExportYML(dbConn *sql.DB, ymlPath string) {
 		log.Fatal(err)
 	}
 }
+
 func AddTag(dbConn *sql.DB, transaction *sql.Tx, tag string) {
 	stmt := `
         INSERT INTO
@@ -285,7 +285,6 @@ func ListTags(dbConn *sql.DB) []string {
     `
 
 	tagRows, err := dbConn.Query(stmt)
-
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -13,7 +13,6 @@ import (
 func main() {
 	user, err := user.Current()
 	dbConn, err := sql.Open("sqlite3", filepath.Join(user.HomeDir, "Documents/productivity/bookmarks.db"))
-
 	if err != nil {
 		log.Fatal(err)
 	}
