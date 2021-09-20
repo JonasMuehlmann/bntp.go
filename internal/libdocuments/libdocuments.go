@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"log"
 	"os"
+	"strings"
 )
 
 func AddTag(documentPath string, tag string) {
@@ -19,7 +20,13 @@ func RenameTag(documentPath string, oldTag string, newTag string) {
 }
 
 func GetTags(documentPath string) []string {
+	lineNumber, tags := FindTagsLine(documentPath)
 
+	if lineNumber == -1 {
+		log.Fatal("Could not read Tag line of file")
+	}
+
+	return strings.Split(tags, ",")
 }
 
 func FindTagsLine(documentPath string) (int, string) {
@@ -27,13 +34,20 @@ func FindTagsLine(documentPath string) (int, string) {
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer func() {
+		err := file.Close()
+		if err != nil {
+			log.Fatal(err)
+		}
+	}()
 
 	scanner := bufio.NewScanner(file)
 
 	i := 0
 	for scanner.Scan() {
 		if scanner.Text() == "# Tags" {
-			return i, scanner.Text()
+			scanner.Scan()
+			return i + 1, scanner.Text()
 		}
 		i++
 	}
