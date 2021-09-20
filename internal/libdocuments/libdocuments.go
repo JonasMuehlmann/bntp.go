@@ -9,7 +9,36 @@ import (
 )
 
 func AddTag(documentPath string, tag string) {
+	lineNumber, tags := FindTagsLine(documentPath)
 
+	if lineNumber == -1 {
+		log.Fatal("Could not read Tag line of file")
+	}
+
+	tags += tag
+
+	file, err := os.OpenFile(documentPath, os.O_RDWR, 0644)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer func() {
+		err := file.Close()
+		if err != nil {
+			log.Fatal(err)
+		}
+	}()
+
+	offset, err := file.Seek(int64(lineNumber), io.SeekStart)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	_, err = file.WriteAt([]byte(tags), offset)
+
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 func RemoveTag(documentPath string, tag string) {
@@ -25,7 +54,7 @@ func RenameTag(documentPath string, oldTag string, newTag string) {
 
 	tags = strings.Replace(tags, oldTag, newTag, -1)
 
-	file, err := os.OpenFile(documentPath, os.O_RDONLY, 0644)
+	file, err := os.OpenFile(documentPath, os.O_RDWR, 0644)
 	if err != nil {
 		log.Fatal(err)
 	}
