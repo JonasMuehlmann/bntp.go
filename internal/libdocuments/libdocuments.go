@@ -143,8 +143,18 @@ func FindTagsLine(documentPath string) (int, string) {
 
 	return -1, ""
 }
+func HasTag(documentPath string, tag string) bool {
+	tags := GetTags(documentPath)
+	for _, tag_ := range tags {
 
-func FindDocumentsWithTags(tags []string) []string {
+		if tag_ == tag {
+			return true
+		}
+	}
+	return false
+
+}
+func FindDocumentsWithTags(rootDir string, tags []string) []string {
 
 }
 
