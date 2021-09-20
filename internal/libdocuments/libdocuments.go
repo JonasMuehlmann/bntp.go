@@ -5,6 +5,7 @@ import (
 	"io"
 	"log"
 	"os"
+	"path/filepath"
 	"strings"
 )
 
@@ -143,6 +144,8 @@ func FindTagsLine(documentPath string) (int, string) {
 
 	return -1, ""
 }
+
+// TODO: Refactor to take array of tags
 func HasTag(documentPath string, tag string) bool {
 	tags := GetTags(documentPath)
 	for _, tag_ := range tags {
@@ -155,7 +158,31 @@ func HasTag(documentPath string, tag string) bool {
 
 }
 func FindDocumentsWithTags(rootDir string, tags []string) []string {
+	filesWithTags := make([]string, 0, 100)
 
+	err := filepath.Walk(rootDir, func(path string, info os.FileInfo, err error) error {
+
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		if !info.IsDir() {
+			for _, tag := range tags {
+				if !HasTag(path, tag) {
+					return nil
+				}
+			}
+			filesWithTags = append(filesWithTags, path)
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return filesWithTags
 }
 
 func AddLink(documentPathSource string, documentPathDestination string) {
