@@ -199,9 +199,11 @@ func FindLinksLines(documentPath string) (int, int, []string) {
 	links := make([]string, 0, 10)
 
 	i := 0
+
 	for scanner.Scan() {
 		if scanner.Text() == "# Links" {
 			lineNumberFirstLink = i + 1
+
 			break
 		}
 		i++
@@ -211,6 +213,7 @@ func FindLinksLines(documentPath string) (int, int, []string) {
 		links[i-lineNumberFirstLink] = scanner.Text()
 		i++
 	}
+
 	lineNumberLastLink = i
 
 	return lineNumberFirstLink, lineNumberLastLink, links
@@ -235,9 +238,11 @@ func FindBacklLinksLines(documentPath string) (int, int, []string) {
 	links := make([]string, 0, 10)
 
 	i := 0
+
 	for scanner.Scan() {
 		if scanner.Text() == "# Backlinks" {
 			lineNumberFirstLink = i + 1
+
 			break
 		}
 		i++
@@ -247,12 +252,42 @@ func FindBacklLinksLines(documentPath string) (int, int, []string) {
 		links[i-lineNumberFirstLink] = scanner.Text()
 		i++
 	}
+
 	lineNumberLastLink = i
 
 	return lineNumberFirstLink, lineNumberLastLink, links
 }
 
 func AddLink(documentPathSource string, documentPathDestination string) {
+	lineNumberFirstLink, lineNumberLastLink, links := FindLinksLines(documentPathSource)
+
+	if lineNumberFirstLink == -1 || lineNumberLastLink == -1 {
+		log.Fatal("Could not read Tag line of file")
+	}
+
+	links = append(links, documentPathDestination)
+
+	file, err := os.OpenFile(documentPathSource, os.O_RDWR, 0o644)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer func() {
+		err := file.Close()
+		if err != nil {
+			log.Fatal(err)
+		}
+	}()
+
+	offset, err := file.Seek(int64(lineNumberFirstLink), io.SeekStart)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	_, err = file.WriteAt([]byte(strings.Join(links, "\n")), offset)
+
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 func RemoveLink(documentPathSource string, documentPathDestination string) {
