@@ -291,4 +291,44 @@ func AddLink(documentPathSource string, documentPathDestination string) {
 }
 
 func RemoveLink(documentPathSource string, documentPathDestination string) {
+	lineNumberFirstLink, lineNumberLastLink, linksOrig := FindLinksLines(documentPathSource)
+
+	if lineNumberFirstLink == -1 || lineNumberLastLink == -1 {
+		log.Fatal("Could not read Tag line of file")
+	}
+
+	iLinkToDelete := -1
+
+	for i, link := range linksOrig {
+		if link == documentPathDestination {
+			iLinkToDelete = i
+		}
+	}
+
+	links := make([]string, 0, 10)
+
+	links = append(links, linksOrig[:iLinkToDelete]...)
+	links = append(links, linksOrig[iLinkToDelete+1:]...)
+
+	file, err := os.OpenFile(documentPathSource, os.O_RDWR, 0o644)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer func() {
+		err := file.Close()
+		if err != nil {
+			log.Fatal(err)
+		}
+	}()
+
+	offset, err := file.Seek(int64(lineNumberFirstLink), io.SeekStart)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	_, err = file.WriteAt([]byte(strings.Join(links, "\n")), offset)
+
+	if err != nil {
+		log.Fatal(err)
+	}
 }
