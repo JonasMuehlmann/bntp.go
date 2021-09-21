@@ -219,7 +219,7 @@ func FindLinksLines(documentPath string) (int, int, []string) {
 	return lineNumberFirstLink, lineNumberLastLink, links
 }
 
-func FindBacklLinksLines(documentPath string) (int, int, []string) {
+func FindBacklinksLines(documentPath string) (int, int, []string) {
 	file, err := os.OpenFile(documentPath, os.O_RDONLY, 0o644)
 	if err != nil {
 		log.Fatal(err)
@@ -290,8 +290,40 @@ func AddLink(documentPathSource string, documentPathDestination string) {
 	}
 }
 
-func RemoveLink(documentPathSource string, documentPathDestination string) {
-	lineNumberFirstLink, lineNumberLastLink, linksOrig := FindLinksLines(documentPathSource)
+func AddBacklink(documentPathDestination string, documentPathSource string) {
+	lineNumberFirstLink, lineNumberLastLink, links := FindBacklinksLines(documentPathSource)
+
+	if lineNumberFirstLink == -1 || lineNumberLastLink == -1 {
+		log.Fatal("Could not read Tag line of file")
+	}
+
+	links = append(links, documentPathSource)
+
+	file, err := os.OpenFile(documentPathDestination, os.O_RDWR, 0o644)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer func() {
+		err := file.Close()
+		if err != nil {
+			log.Fatal(err)
+		}
+	}()
+
+	offset, err := file.Seek(int64(lineNumberFirstLink), io.SeekStart)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	_, err = file.WriteAt([]byte(strings.Join(links, "\n")), offset)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func RemoveBacklink(documentPathDestination string, documentPathSource string) {
+	lineNumberFirstLink, lineNumberLastLink, linksOrig := FindBacklinksLines(documentPathSource)
 
 	if lineNumberFirstLink == -1 || lineNumberLastLink == -1 {
 		log.Fatal("Could not read Tag line of file")
@@ -300,7 +332,7 @@ func RemoveLink(documentPathSource string, documentPathDestination string) {
 	iLinkToDelete := -1
 
 	for i, link := range linksOrig {
-		if link == documentPathDestination {
+		if link == documentPathSource {
 			iLinkToDelete = i
 		}
 	}
@@ -310,7 +342,7 @@ func RemoveLink(documentPathSource string, documentPathDestination string) {
 	links = append(links, linksOrig[:iLinkToDelete]...)
 	links = append(links, linksOrig[iLinkToDelete+1:]...)
 
-	file, err := os.OpenFile(documentPathSource, os.O_RDWR, 0o644)
+	file, err := os.OpenFile(documentPathDestination, os.O_RDWR, 0o644)
 	if err != nil {
 		log.Fatal(err)
 	}
