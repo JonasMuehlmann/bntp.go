@@ -17,6 +17,7 @@ func ImportMinimalCSV(dbConn *sql.DB, csvPath string) {
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	defer func() {
 		err := file.Close()
 		if err != nil {
@@ -56,10 +57,13 @@ func ImportMinimalCSV(dbConn *sql.DB, csvPath string) {
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	for _, bookmark := range bookmarks {
 		AddBookmark(dbConn, transaction, bookmark[titleColumn], bookmark[linkColumn], 1, false)
 	}
+
 	err = transaction.Commit()
+
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -176,6 +180,7 @@ func ExportCSV(dbConn *sql.DB, csvPath string, filters map[string]interface{}) {
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	defer func() {
 		err = statementTags.Close()
 
@@ -191,17 +196,20 @@ func ExportCSV(dbConn *sql.DB, csvPath string, filters map[string]interface{}) {
 	// # Prepare file write or STDOUT print #
 	// #####################################
 	var writer *csv.Writer
+
 	if csvPath != "" { // 0664 UNIX Permission code
 		file, err := os.OpenFile(csvPath, os.O_CREATE|os.O_WRONLY, 0o664)
 		if err != nil {
 			log.Fatal(err)
 		}
+
 		defer func() {
 			err := file.Close()
 			if err != nil {
 				log.Fatal(err)
 			}
 		}()
+
 		writer = csv.NewWriter(file)
 	} else { // 0664 UNIX Permission code
 		writer = csv.NewWriter(os.Stdout)
@@ -231,6 +239,7 @@ func ExportCSV(dbConn *sql.DB, csvPath string, filters map[string]interface{}) {
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	defer func() {
 		err = statementTagsCount.Close()
 
@@ -238,6 +247,7 @@ func ExportCSV(dbConn *sql.DB, csvPath string, filters map[string]interface{}) {
 			log.Fatal(err)
 		}
 	}()
+
 	countRowBookmarks := dbConn.QueryRow(stmtCountBookmarks)
 
 	var rowCountBookmarks int
@@ -263,6 +273,7 @@ func ExportCSV(dbConn *sql.DB, csvPath string, filters map[string]interface{}) {
 	// and then match the result to the bookmarks
 	// https://turriate.com/articles/making-sqlite-faster-in-go
 	i := 0
+
 	for bookmarkRows.Next() {
 		err := bookmarkRows.Scan(destBuffer...)
 		if err != nil {
@@ -285,12 +296,14 @@ func ExportCSV(dbConn *sql.DB, csvPath string, filters map[string]interface{}) {
 		if err != nil {
 			log.Fatal(err)
 		}
+
 		countRowTags := statementTagsCount.QueryRow(bookmarkIdAsInt)
 
 		err = countRowTags.Scan(&rowCountTags)
 		if err != nil {
 			log.Fatal(err)
 		}
+
 		tagsBuffer := make([]string, rowCountTags)
 
 		tagRows, err := statementTags.Query(bookmarkIdAsInt)
@@ -306,6 +319,7 @@ func ExportCSV(dbConn *sql.DB, csvPath string, filters map[string]interface{}) {
 			}
 			j++
 		}
+
 		rowsBuffer[i][len(csvHeader)-1] = strings.Join(tagsBuffer, ",")
 
 		i++
@@ -328,6 +342,7 @@ func AddType(dbConn *sql.DB, transaction *sql.Tx, type_ string) {
         );
     `
 	var statement *sql.Stmt
+
 	var err error
 
 	if transaction != nil {
@@ -364,6 +379,7 @@ func RemoveType(dbConn *sql.DB, transaction *sql.Tx, type_ string) {
             Type = ?;
     `
 	var statement *sql.Stmt
+
 	var err error
 
 	if transaction != nil {
@@ -406,8 +422,13 @@ func ListTypes(dbConn *sql.DB) []string {
             Type;
     `
 	countRow := dbConn.QueryRow(stmtCount)
+
 	var rowCount int
-	countRow.Scan(&rowCount)
+
+	err := countRow.Scan(&rowCount)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	rows, err := dbConn.Query(stmtRows)
 	if err != nil {
@@ -418,7 +439,10 @@ func ListTypes(dbConn *sql.DB) []string {
 
 	i := 0
 	for rows.Next() {
-		rows.Scan(&types[i])
+		err := rows.Scan(&types[i])
+		if err != nil {
+			log.Fatal(err)
+		}
 		i++
 	}
 
@@ -444,6 +468,7 @@ func AddBookmark(dbConn *sql.DB, transaction *sql.Tx, title string, url string, 
         );
     `
 	var statement *sql.Stmt
+
 	var err error
 
 	if transaction != nil {
@@ -490,6 +515,7 @@ func EditBookmark(dbConn *sql.DB, transaction *sql.Tx, id int, column string, ne
 	}
 
 	var statement *sql.Stmt
+
 	var err error
 
 	if transaction != nil {
@@ -542,7 +568,9 @@ func EditType(dbConn *sql.DB, transaction *sql.Tx, id int, newType string) {
         WHERE
             Type = '?';
     `
+
 	var statement *sql.Stmt
+
 	var err error
 
 	if transaction != nil {
@@ -560,11 +588,16 @@ func EditType(dbConn *sql.DB, transaction *sql.Tx, id int, newType string) {
 	}
 
 	typeRow := statement.QueryRow(newType)
+
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	typeRow.Scan(&typeId)
+	err = typeRow.Scan(&typeId)
+
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	err = statement.Close()
 
@@ -591,7 +624,9 @@ func AddTag(dbConn *sql.DB, transaction *sql.Tx, bookmarkId int, newTag string) 
         WHERE
             Tag = '?';
     `
+
 	var statementTag *sql.Stmt
+
 	var err error
 
 	if transaction != nil {
@@ -609,11 +644,16 @@ func AddTag(dbConn *sql.DB, transaction *sql.Tx, bookmarkId int, newTag string) 
 	}
 
 	tagRow := statementTag.QueryRow(newTag)
+
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	tagRow.Scan(&tagId)
+	err = tagRow.Scan(&tagId)
+
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	err = statementTag.Close()
 
@@ -629,6 +669,7 @@ func AddTag(dbConn *sql.DB, transaction *sql.Tx, bookmarkId int, newTag string) 
             ?
     );
     `
+
 	var statementContext *sql.Stmt
 
 	if transaction != nil {
@@ -669,7 +710,9 @@ func RemoveTag(dbConn *sql.DB, transaction *sql.Tx, bookmarkId int, tag_ string)
         WHERE
             Tag = '?';
     `
+
 	var statementTag *sql.Stmt
+
 	var err error
 
 	if transaction != nil {
@@ -687,11 +730,16 @@ func RemoveTag(dbConn *sql.DB, transaction *sql.Tx, bookmarkId int, tag_ string)
 	}
 
 	tagRow := statementTag.QueryRow(tag_)
+
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	tagRow.Scan(&tagId)
+	err = tagRow.Scan(&tagId)
+
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	err = statementTag.Close()
 
@@ -708,6 +756,7 @@ func RemoveTag(dbConn *sql.DB, transaction *sql.Tx, bookmarkId int, tag_ string)
             TagId = ?;
     );
     `
+
 	var statementContext *sql.Stmt
 
 	if transaction != nil {

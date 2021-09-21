@@ -160,7 +160,9 @@ func AddTag(dbConn *sql.DB, transaction *sql.Tx, tag string) {
             Tag(Tag)
         VALUES(?);
     `
+
 	var statement *sql.Stmt
+
 	var err error
 
 	if transaction != nil {
@@ -198,7 +200,9 @@ func RenameTag(dbConn *sql.DB, transaction *sql.Tx, oldTag string, newTag string
         WHERE
             Tag = '?';
     `
+
 	var statement *sql.Stmt
+
 	var err error
 
 	if transaction != nil {
@@ -234,7 +238,9 @@ func DeleteTag(dbConn *sql.DB, transaction *sql.Tx, tag string) {
         WHERE
             Tag = '?';
     `
+
 	var statement *sql.Stmt
+
 	var err error
 
 	if transaction != nil {
@@ -266,6 +272,7 @@ func DeleteTag(dbConn *sql.DB, transaction *sql.Tx, tag string) {
 func TryShortenTag(dbConn *sql.DB, tag string) string {
 	if IsLeafAmbiguous(dbConn, tag) {
 		tagComponents := strings.Split(tag, "::")
+
 		return tagComponents[len(tagComponents)-1]
 	}
 
@@ -303,6 +310,7 @@ func ListTags(dbConn *sql.DB) []string {
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	stmtCountTags := "SELECT COUNT(*) FROM  Tag;"
 
 	tagsCountRow := dbConn.QueryRow(stmtCountTags)
@@ -313,6 +321,7 @@ func ListTags(dbConn *sql.DB) []string {
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	tagsBuffer := make([]string, rowCountTags)
 
 	i := 0

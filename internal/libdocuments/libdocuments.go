@@ -22,6 +22,7 @@ func AddTag(documentPath string, tag string) {
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	defer func() {
 		err := file.Close()
 		if err != nil {
@@ -55,6 +56,7 @@ func RemoveTag(documentPath string, tag string) {
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	defer func() {
 		err := file.Close()
 		if err != nil {
@@ -87,6 +89,7 @@ func RenameTag(documentPath string, oldTag string, newTag string) {
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	defer func() {
 		err := file.Close()
 		if err != nil {
@@ -121,6 +124,7 @@ func FindTagsLine(documentPath string) (int, string) {
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	defer func() {
 		err := file.Close()
 		if err != nil {
@@ -131,9 +135,11 @@ func FindTagsLine(documentPath string) (int, string) {
 	scanner := bufio.NewScanner(file)
 
 	i := 0
+
 	for scanner.Scan() {
 		if scanner.Text() == "# Tags" {
 			scanner.Scan()
+
 			return i + 1, scanner.Text()
 		}
 		i++
@@ -150,9 +156,11 @@ func HasTags(documentPath string, tags []string) bool {
 			if tag == documentTag {
 				continue
 			}
+
 			return false
 		}
 	}
+
 	return true
 }
 
@@ -185,6 +193,7 @@ func FindLinksLines(documentPath string) (int, int, []string) {
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	defer func() {
 		err := file.Close()
 		if err != nil {
@@ -224,6 +233,7 @@ func FindBacklinksLines(documentPath string) (int, int, []string) {
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	defer func() {
 		err := file.Close()
 		if err != nil {
@@ -271,6 +281,7 @@ func AddLink(documentPathSource string, documentPathDestination string) {
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	defer func() {
 		err := file.Close()
 		if err != nil {
@@ -303,6 +314,7 @@ func AddBacklink(documentPathDestination string, documentPathSource string) {
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	defer func() {
 		err := file.Close()
 		if err != nil {

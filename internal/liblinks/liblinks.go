@@ -17,7 +17,9 @@ func AddLink(dbConn *sql.DB, transaction *sql.Tx, source string, destination str
             '?'
         );
     `
+
 	var statement *sql.Stmt
+
 	var err error
 
 	if transaction != nil {
@@ -33,6 +35,7 @@ func AddLink(dbConn *sql.DB, transaction *sql.Tx, source string, destination str
 			log.Fatal(err)
 		}
 	}
+
 	defer func() {
 		err := statement.Close()
 		if err != nil {
@@ -61,7 +64,9 @@ func RemoveLink(dbConn *sql.DB, transaction *sql.Tx, source string, destination 
             AND
             Destination = '?';
     `
+
 	var statement *sql.Stmt
+
 	var err error
 
 	if transaction != nil {
@@ -77,6 +82,7 @@ func RemoveLink(dbConn *sql.DB, transaction *sql.Tx, source string, destination 
 			log.Fatal(err)
 		}
 	}
+
 	defer func() {
 		err := statement.Close()
 		if err != nil {
@@ -111,6 +117,13 @@ func ListLinks(dbConn *sql.DB, source string) []string {
 		log.Fatal(err)
 	}
 
+	defer func() {
+		err := statementLinks.Close()
+		if err != nil {
+			log.Fatal(err)
+		}
+	}()
+
 	linkRows, err := statementLinks.Query(source)
 	if err != nil {
 		log.Fatal(err)
@@ -122,6 +135,14 @@ func ListLinks(dbConn *sql.DB, source string) []string {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	defer func() {
+		err := statementLinksCount.Close()
+		if err != nil {
+			log.Fatal(err)
+		}
+	}()
+
 	linksCountRow := statementLinksCount.QueryRow(source)
 
 	var rowCountLinks int
@@ -130,6 +151,7 @@ func ListLinks(dbConn *sql.DB, source string) []string {
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	linksBuffer := make([]string, rowCountLinks)
 
 	i := 0
@@ -159,16 +181,32 @@ func ListBacklinks(dbConn *sql.DB, destination string) []string {
 		log.Fatal(err)
 	}
 
+	defer func() {
+		err := statementBacklinks.Close()
+		if err != nil {
+			log.Fatal(err)
+		}
+	}()
+
 	backlinkRows, err := statementBacklinks.Query(destination)
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	stmtCountBacklinks := "SELECT COUNT(*) FROM Link  WHERE Destination = '?';"
 
 	statementBacklinksCount, err := dbConn.Prepare(stmtCountBacklinks)
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	defer func() {
+		err := statementBacklinksCount.Close()
+		if err != nil {
+			log.Fatal(err)
+		}
+	}()
+
 	backLinksCountRow := statementBacklinksCount.QueryRow(destination)
 
 	var rowCountLinks int
