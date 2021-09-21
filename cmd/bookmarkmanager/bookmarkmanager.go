@@ -1,24 +1,20 @@
 package main
 
 import (
-	"database/sql"
-	"log"
-	"os/user"
-	"path/filepath"
-
-	"github.com/JonasMuehlmann/productivity.go/internal/libbookmarks"
+	"github.com/docopt/docopt-go"
 	_ "github.com/mattn/go-sqlite3"
 )
 
 func main() {
-	user, err := user.Current()
-	dbConn, err := sql.Open("sqlite3", filepath.Join(user.HomeDir, "Documents/productivity/bookmarks.db"))
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer dbConn.Close()
+	usage := `Bookmarkmanager.
 
-	// libbookmarks.ImportMinimalCSV(dbConn, filepath.Join(user.HomeDir, "scripts/deepstash_ideas.csv.uniq"))
-	// libbookmarks.ExportCSV(dbConn, filepath.Join(user.HomeDir, "Documents/productivity/out.csv"), nil)
-	libbookmarks.ExportCSV(dbConn, "", map[string]interface{}{"Types": "Text"})
+Usage:
+  bookmarkmanager -h | --help
+  bookmarkmanager --version
+
+Options:
+  -h --help     Show this screen.
+  --version     Show version.`
+
+	arguments, _ := docopt.ParseDoc(usage)
 }
