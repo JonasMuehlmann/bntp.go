@@ -145,16 +145,18 @@ func FindTagsLine(documentPath string) (int, string) {
 	return -1, ""
 }
 
-// TODO: Refactor to take array of tags
-func HasTag(documentPath string, tag string) bool {
-	tags := GetTags(documentPath)
-	for _, tag_ := range tags {
+func HasTags(documentPath string, tags []string) bool {
+	documentTags := GetTags(documentPath)
 
-		if tag_ == tag {
-			return true
+	for _, tag := range tags {
+		for _, documentTag := range documentTags {
+			if tag == documentTag {
+				continue
+			}
+			return false
 		}
 	}
-	return false
+	return true
 
 }
 func FindDocumentsWithTags(rootDir string, tags []string) []string {
@@ -167,10 +169,8 @@ func FindDocumentsWithTags(rootDir string, tags []string) []string {
 		}
 
 		if !info.IsDir() {
-			for _, tag := range tags {
-				if !HasTag(path, tag) {
-					return nil
-				}
+			if !HasTags(path, tags) {
+				return nil
 			}
 			filesWithTags = append(filesWithTags, path)
 		}
