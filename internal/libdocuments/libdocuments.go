@@ -217,7 +217,41 @@ func FindLinksLines(documentPath string) (int, int, []string) {
 }
 
 func FindBacklLinksLines(documentPath string) (int, int, []string) {
+	file, err := os.OpenFile(documentPath, os.O_RDONLY, 0o644)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer func() {
+		err := file.Close()
+		if err != nil {
+			log.Fatal(err)
+		}
+	}()
+
+	scanner := bufio.NewScanner(file)
+
+	lineNumberFirstLink := -1
+	lineNumberLastLink := -1
+	links := make([]string, 0, 10)
+
+	i := 0
+	for scanner.Scan() {
+		if scanner.Text() == "# Backlinks" {
+			lineNumberFirstLink = i + 1
+			break
+		}
+		i++
+	}
+
+	for scanner.Scan() && strings.HasPrefix(scanner.Text(), "- ") {
+		links[i-lineNumberFirstLink] = scanner.Text()
+		i++
+	}
+	lineNumberLastLink = i
+
+	return lineNumberFirstLink, lineNumberLastLink, links
 }
+
 func AddLink(documentPathSource string, documentPathDestination string) {
 }
 
