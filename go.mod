@@ -1,4 +1,4 @@
-module github.com/JonasMuehlmann/productivity.go
+module github.com/JonasMuehlmann/bntp.go
 
 go 1.16
 
