@@ -24,7 +24,7 @@ Tools and systems, which have or, after research and considerations, might influ
 - **Synergy** by using a single tool serving as a **complete** productivity system
 - **No reliance on external services** (local data synced through my own means)
 - Integrate with and built upon my **neovim/terminal based workflows and tools** (no bloated and unergonomic graphical or web based interfaces)
-- **Scriptable**
+- **Scriptable** (e.g. periodic bookmark imports)
 - **Modular** (Interfaces built **on top of** CLIs built **on top of different** libraries)
 - **Portable** through import/export to/from and use of common file formats (`YML`,`CSV`,`Markdown`) using a local `SQLite` database only where it makes sense
 - **Discoverable** through context given by a hierarchical tag structure fuzzy searching and using filters
