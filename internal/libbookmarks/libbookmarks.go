@@ -3,44 +3,43 @@ package libbookmarks
 import (
 	"database/sql"
 	"encoding/csv"
-	"log"
+	"errors"
 	"os"
+	"reflect"
 	"strconv"
 	"strings"
 	"time"
 
+	"github.com/jmoiron/sqlx"
 	_ "github.com/mattn/go-sqlite3"
 )
 
-func ImportMinimalCSV(dbConn *sql.DB, csvPath string) {
+func ImportMinimalCSV(dbConn *sqlx.DB, csvPath string) error {
 	file, err := os.Open(csvPath)
+
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
-	defer func() {
-		err := file.Close()
-		if err != nil {
-			log.Fatal(err)
-		}
-	}()
+	defer file.Close()
 
 	reader := csv.NewReader(file)
 	reader.Comma = ';'
 
 	bookmarks, err := reader.ReadAll()
 	if err != nil {
-		log.Fatal(err)
+
+		return err
 	}
 
 	header := bookmarks[0]
 
 	if len(header) != 2 {
-		log.Fatal("CSV Header does not have correct number of fields. It should have 2.")
+		return errors.New("CSV Header does not have correct number of fields. It should have 2.")
 	}
 
 	if !(header[0] == "Title" || header[1] == "Title") || !(header[0] == "Url" || header[1] == "Url") || header[0] == header[1] {
-		log.Fatal("CSV Header does not have necessary fields 'Title' and 'Url.'")
+		return errors.New("CSV Header does not have necessary fields 'Title' and 'Url.'")
 	}
 
 	var titleColumn, linkColumn int
@@ -54,8 +53,9 @@ func ImportMinimalCSV(dbConn *sql.DB, csvPath string) {
 	}
 
 	transaction, err := dbConn.Begin()
+
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	for _, bookmark := range bookmarks {
@@ -65,8 +65,10 @@ func ImportMinimalCSV(dbConn *sql.DB, csvPath string) {
 	err = transaction.Commit()
 
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
+
+	return nil
 }
 
 func ExportCSV(bookmarks []Bookmark, csvPath string) error {
@@ -168,33 +170,7 @@ func GetBookmarks(dbConn *sqlx.DB, filter BookmarkFilter) ([]Bookmark, error) {
 		return nil, errors.New("Could not count number of bookmarks")
 	}
 
-	csvHeader = append(csvHeader, "Tags")
-
-	err = writer.Write(csvHeader)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	// ############
-	// # Get Data #
-	// ############
-	stmtCountBookmarks := "SELECT COUNT(*) FROM Bookmark INNER JOIN Type ON Bookmark.TypeId = Type.Id" + joinFragment + " " + whereFragment + ";"
-	stmtCountTags := "SELECT COUNT(*) FROM  Context WHERE BookmarkId = ?;"
-
-	statementTagsCount, err := dbConn.Prepare(stmtCountTags)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	defer func() {
-		err = statementTagsCount.Close()
-
-		if err != nil {
-			log.Fatal(err)
-		}
-	}()
-
-	countRowBookmarks := dbConn.QueryRow(stmtCountBookmarks)
+	bookmarksBuffer := make([]Bookmark, 0, numberOfBookmarks)
 
 	err = dbConn.Select(bookmarksBuffer, stmtBookmarks)
 
@@ -220,13 +196,10 @@ func GetBookmarks(dbConn *sqlx.DB, filter BookmarkFilter) ([]Bookmark, error) {
 		}
 	}
 
-	err = writer.WriteAll(rowsBuffer)
-	if err != nil {
-		log.Fatal(err)
-	}
+	return bookmarksBuffer, nil
 }
 
-func AddType(dbConn *sql.DB, transaction *sql.Tx, type_ string) {
+func AddType(dbConn *sqlx.DB, transaction *sql.Tx, type_ string) error {
 	stmt := `
         INSERT INTO
             Type(
@@ -244,29 +217,31 @@ func AddType(dbConn *sql.DB, transaction *sql.Tx, type_ string) {
 		statement, err = transaction.Prepare(stmt)
 
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 	} else {
 		statement, err = dbConn.Prepare(stmt)
 
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 	}
 
 	_, err = statement.Exec(type_)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	err = statement.Close()
 
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
+
+	return nil
 }
 
-func RemoveType(dbConn *sql.DB, transaction *sql.Tx, type_ string) {
+func RemoveType(dbConn *sqlx.DB, transaction *sql.Tx, type_ string) error {
 	stmt := `
         DELETE FROM
             Type
@@ -281,29 +256,31 @@ func RemoveType(dbConn *sql.DB, transaction *sql.Tx, type_ string) {
 		statement, err = transaction.Prepare(stmt)
 
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 	} else {
 		statement, err = dbConn.Prepare(stmt)
 
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 	}
 
 	_, err = statement.Exec(type_)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	err = statement.Close()
 
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
+
+	return nil
 }
 
-func ListTypes(dbConn *sql.DB) []string {
+func ListTypes(dbConn *sqlx.DB) ([]string, error) {
 	stmtRows := `
         SELECT
             *
@@ -322,12 +299,12 @@ func ListTypes(dbConn *sql.DB) []string {
 
 	err := countRow.Scan(&rowCount)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
 	rows, err := dbConn.Query(stmtRows)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
 	types := make([]string, 0, rowCount)
@@ -336,15 +313,15 @@ func ListTypes(dbConn *sql.DB) []string {
 	for rows.Next() {
 		err := rows.Scan(&types[i])
 		if err != nil {
-			log.Fatal(err)
+			return nil, err
 		}
 		i++
 	}
 
-	return types
+	return types, nil
 }
 
-func AddBookmark(dbConn *sql.DB, transaction *sql.Tx, title string, url string, type_ int, isCollection bool) {
+func AddBookmark(dbConn *sqlx.DB, transaction *sql.Tx, title string, url string, type_ int, isCollection bool) error {
 	stmt := `
         INSERT INTO
             Bookmark(
@@ -370,29 +347,31 @@ func AddBookmark(dbConn *sql.DB, transaction *sql.Tx, title string, url string, 
 		statement, err = transaction.Prepare(stmt)
 
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 	} else {
 		statement, err = dbConn.Prepare(stmt)
 
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 	}
 
 	_, err = statement.Exec(title, url, time.Now().Format("2006-01-02"), type_, isCollection)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	err = statement.Close()
 
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
+
+	return nil
 }
 
-func EditBookmark(dbConn *sql.DB, transaction *sql.Tx, id int, column string, newVal interface{}) {
+func EditBookmark(dbConn *sqlx.DB, transaction *sql.Tx, id int, column string, newVal interface{}) error {
 	stmt := `
         UPDATE
             Bookmark
@@ -417,41 +396,43 @@ func EditBookmark(dbConn *sql.DB, transaction *sql.Tx, id int, column string, ne
 		statement, err = transaction.Prepare(stmt)
 
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 	} else {
 		statement, err = dbConn.Prepare(stmt)
 
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 	}
 
 	_, err = statement.Exec(column, newVal, id)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	err = statement.Close()
 
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
+
+	return nil
 }
 
-func MarkAsRead(dbConn *sql.DB, transaction *sql.Tx, id int) {
-	EditBookmark(dbConn, transaction, id, "IsRead", true)
+func MarkAsRead(dbConn *sqlx.DB, transaction *sql.Tx, id int) error {
+	return EditBookmark(dbConn, transaction, id, "IsRead", true)
 }
 
-func EditTitle(dbConn *sql.DB, transaction *sql.Tx, id int, newTitle string) {
-	EditBookmark(dbConn, transaction, id, "Title", newTitle)
+func EditTitle(dbConn *sqlx.DB, transaction *sql.Tx, id int, newTitle string) error {
+	return EditBookmark(dbConn, transaction, id, "Title", newTitle)
 }
 
-func EditUrl(dbConn *sql.DB, transaction *sql.Tx, id int, newUrl string) {
-	EditBookmark(dbConn, transaction, id, "Url", newUrl)
+func EditUrl(dbConn *sqlx.DB, transaction *sql.Tx, id int, newUrl string) error {
+	return EditBookmark(dbConn, transaction, id, "Url", newUrl)
 }
 
-func EditType(dbConn *sql.DB, transaction *sql.Tx, id int, newType string) {
+func EditType(dbConn *sqlx.DB, transaction *sql.Tx, id int, newType string) error {
 	// TODO: Refactor getting Type.Id from Type.Type
 	var typeId int
 
@@ -472,42 +453,42 @@ func EditType(dbConn *sql.DB, transaction *sql.Tx, id int, newType string) {
 		statement, err = transaction.Prepare(stmt)
 
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 	} else {
 		statement, err = dbConn.Prepare(stmt)
 
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 	}
 
 	typeRow := statement.QueryRow(newType)
 
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	err = typeRow.Scan(&typeId)
 
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	err = statement.Close()
 
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
-	EditBookmark(dbConn, transaction, id, "TypeId", typeId)
+	return EditBookmark(dbConn, transaction, id, "TypeId", typeId)
 }
 
-func EditIsCollection(dbConn *sql.DB, transaction *sql.Tx, id int, isCollection bool) {
-	EditBookmark(dbConn, transaction, id, "IsCollection", isCollection)
+func EditIsCollection(dbConn *sqlx.DB, transaction *sql.Tx, id int, isCollection bool) error {
+	return EditBookmark(dbConn, transaction, id, "IsCollection", isCollection)
 }
 
-func AddTag(dbConn *sql.DB, transaction *sql.Tx, bookmarkId int, newTag string) {
+func AddTag(dbConn *sqlx.DB, transaction *sql.Tx, bookmarkId int, newTag string) error {
 	// TODO: Refactor getting Tag.Id from Tag.Tag
 	var tagId int
 
@@ -528,32 +509,32 @@ func AddTag(dbConn *sql.DB, transaction *sql.Tx, bookmarkId int, newTag string) 
 		statementTag, err = transaction.Prepare(stmtTag)
 
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 	} else {
 		statementTag, err = dbConn.Prepare(stmtTag)
 
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 	}
 
 	tagRow := statementTag.QueryRow(newTag)
 
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	err = tagRow.Scan(&tagId)
 
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	err = statementTag.Close()
 
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	stmt := `
@@ -571,29 +552,31 @@ func AddTag(dbConn *sql.DB, transaction *sql.Tx, bookmarkId int, newTag string) 
 		statementContext, err = transaction.Prepare(stmt)
 
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 	} else {
 		statementContext, err = dbConn.Prepare(stmt)
 
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 	}
 
 	_, err = statementContext.Exec(bookmarkId, tagId)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	err = statementContext.Close()
 
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
+
+	return nil
 }
 
-func RemoveTag(dbConn *sql.DB, transaction *sql.Tx, bookmarkId int, tag_ string) {
+func RemoveTag(dbConn *sqlx.DB, transaction *sql.Tx, bookmarkId int, tag_ string) error {
 	// TODO: Refactor getting Tag.Id from Tag.Tag
 	var tagId int
 
@@ -614,32 +597,32 @@ func RemoveTag(dbConn *sql.DB, transaction *sql.Tx, bookmarkId int, tag_ string)
 		statementTag, err = transaction.Prepare(stmtTag)
 
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 	} else {
 		statementTag, err = dbConn.Prepare(stmtTag)
 
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 	}
 
 	tagRow := statementTag.QueryRow(tag_)
 
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	err = tagRow.Scan(&tagId)
 
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	err = statementTag.Close()
 
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	stmt := `
@@ -658,35 +641,26 @@ func RemoveTag(dbConn *sql.DB, transaction *sql.Tx, bookmarkId int, tag_ string)
 		statementContext, err = transaction.Prepare(stmt)
 
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 	} else {
 		statementContext, err = dbConn.Prepare(stmt)
 
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 	}
 
 	_, err = statementContext.Exec(bookmarkId, tagId)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	err = statementContext.Close()
 
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
-}
 
-type Bookmark struct {
-	Id           int
-	IsRead       bool
-	IsCollection bool
-	Title        string
-	Url          string
-	TimeAdded    string
-	Type         string
-	Tags         []string
+	return nil
 }

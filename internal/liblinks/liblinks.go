@@ -2,10 +2,9 @@ package liblinks
 
 import (
 	"database/sql"
-	"log"
 )
 
-func AddLink(dbConn *sql.DB, transaction *sql.Tx, source string, destination string) {
+func AddLink(dbConn *sql.DB, transaction *sql.Tx, source string, destination string) error {
 	stmt := `
         INSERT INTO
             Link(
@@ -26,36 +25,33 @@ func AddLink(dbConn *sql.DB, transaction *sql.Tx, source string, destination str
 		statement, err = transaction.Prepare(stmt)
 
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 	} else {
 		statement, err = dbConn.Prepare(stmt)
 
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 	}
 
-	defer func() {
-		err := statement.Close()
-		if err != nil {
-			log.Fatal(err)
-		}
-	}()
+	defer statement.Close()
 
 	_, err = statement.Exec(source, destination)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	err = statement.Close()
 
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
+
+	return nil
 }
 
-func RemoveLink(dbConn *sql.DB, transaction *sql.Tx, source string, destination string) {
+func RemoveLink(dbConn *sql.DB, transaction *sql.Tx, source string, destination string) error {
 	stmt := `
         DELETE FROM
             Link
@@ -73,36 +69,32 @@ func RemoveLink(dbConn *sql.DB, transaction *sql.Tx, source string, destination 
 		statement, err = transaction.Prepare(stmt)
 
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 	} else {
 		statement, err = dbConn.Prepare(stmt)
 
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 	}
 
-	defer func() {
-		err := statement.Close()
-		if err != nil {
-			log.Fatal(err)
-		}
-	}()
+	defer statement.Close()
 
 	_, err = statement.Exec(source, destination)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	err = statement.Close()
 
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
+	return nil
 }
 
-func ListLinks(dbConn *sql.DB, source string) []string {
+func ListLinks(dbConn *sql.DB, source string) ([]string, error) {
 	stmtLinks := `
         SELECT
             Destination
@@ -114,34 +106,24 @@ func ListLinks(dbConn *sql.DB, source string) []string {
 
 	statementLinks, err := dbConn.Prepare(stmtLinks)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
-	defer func() {
-		err := statementLinks.Close()
-		if err != nil {
-			log.Fatal(err)
-		}
-	}()
+	defer statementLinks.Close()
 
 	linkRows, err := statementLinks.Query(source)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
 	stmtCountLinks := "SELECT COUNT(*) FROM Link WHERE Source = '?';"
 
 	statementLinksCount, err := dbConn.Prepare(stmtCountLinks)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
-	defer func() {
-		err := statementLinksCount.Close()
-		if err != nil {
-			log.Fatal(err)
-		}
-	}()
+	defer statementLinksCount.Close()
 
 	linksCountRow := statementLinksCount.QueryRow(source)
 
@@ -149,7 +131,7 @@ func ListLinks(dbConn *sql.DB, source string) []string {
 
 	err = linksCountRow.Scan(&rowCountLinks)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
 	linksBuffer := make([]string, rowCountLinks)
@@ -158,15 +140,15 @@ func ListLinks(dbConn *sql.DB, source string) []string {
 	for linkRows.Next() {
 		err := linkRows.Scan(&linksBuffer[i])
 		if err != nil {
-			log.Fatal(err)
+			return nil, err
 		}
 		i++
 	}
 
-	return linksBuffer
+	return linksBuffer, nil
 }
 
-func ListBacklinks(dbConn *sql.DB, destination string) []string {
+func ListBacklinks(dbConn *sql.DB, destination string) ([]string, error) {
 	stmtBacklinks := `
         SELECT
             Source
@@ -178,34 +160,24 @@ func ListBacklinks(dbConn *sql.DB, destination string) []string {
 
 	statementBacklinks, err := dbConn.Prepare(stmtBacklinks)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
-	defer func() {
-		err := statementBacklinks.Close()
-		if err != nil {
-			log.Fatal(err)
-		}
-	}()
+	defer statementBacklinks.Close()
 
 	backlinkRows, err := statementBacklinks.Query(destination)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
 	stmtCountBacklinks := "SELECT COUNT(*) FROM Link  WHERE Destination = '?';"
 
 	statementBacklinksCount, err := dbConn.Prepare(stmtCountBacklinks)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
-	defer func() {
-		err := statementBacklinksCount.Close()
-		if err != nil {
-			log.Fatal(err)
-		}
-	}()
+	defer statementBacklinksCount.Close()
 
 	backLinksCountRow := statementBacklinksCount.QueryRow(destination)
 
@@ -213,18 +185,19 @@ func ListBacklinks(dbConn *sql.DB, destination string) []string {
 
 	err = backLinksCountRow.Scan(&rowCountLinks)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
+
 	backlinksBuffer := make([]string, rowCountLinks)
 
 	i := 0
 	for backlinkRows.Next() {
 		err := backlinkRows.Scan(&backlinksBuffer[i])
 		if err != nil {
-			log.Fatal(err)
+			return nil, err
 		}
 		i++
 	}
 
-	return backlinksBuffer
+	return backlinksBuffer, nil
 }

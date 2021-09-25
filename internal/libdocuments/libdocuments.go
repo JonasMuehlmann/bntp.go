@@ -2,51 +2,46 @@ package libdocuments
 
 import (
 	"bufio"
+	"errors"
 	"io"
-	"log"
 	"os"
 	"path/filepath"
 	"strings"
 )
 
-func AddTag(documentPath string, tag string) {
-	lineNumber, tags := FindTagsLine(documentPath)
-
-	if lineNumber == -1 {
-		log.Fatal("Could not read Tag line of file")
+func AddTag(documentPath string, tag string) error {
+	lineNumber, tags, err := FindTagsLine(documentPath)
+	if err != nil {
+		return err
 	}
 
 	tags += tag
 
 	file, err := os.OpenFile(documentPath, os.O_RDWR, 0o644)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
-	defer func() {
-		err := file.Close()
-		if err != nil {
-			log.Fatal(err)
-		}
-	}()
+	defer file.Close()
 
 	offset, err := file.Seek(int64(lineNumber), io.SeekStart)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	_, err = file.WriteAt([]byte(tags), offset)
 
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
+
+	return nil
 }
 
-func RemoveTag(documentPath string, tag string) {
-	lineNumber, tags := FindTagsLine(documentPath)
-
-	if lineNumber == -1 {
-		log.Fatal("Could not read Tag line of file")
+func RemoveTag(documentPath string, tag string) error {
+	lineNumber, tags, err := FindTagsLine(documentPath)
+	if err != nil {
+		return err
 	}
 
 	tags = strings.Replace(tags, tag, "", -1)
@@ -54,83 +49,74 @@ func RemoveTag(documentPath string, tag string) {
 
 	file, err := os.OpenFile(documentPath, os.O_RDWR, 0o644)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
-	defer func() {
-		err := file.Close()
-		if err != nil {
-			log.Fatal(err)
-		}
-	}()
+	defer file.Close()
 
 	offset, err := file.Seek(int64(lineNumber), io.SeekStart)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	_, err = file.WriteAt([]byte(tags), offset)
-
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
+
+	return nil
 }
 
-func RenameTag(documentPath string, oldTag string, newTag string) {
-	lineNumber, tags := FindTagsLine(documentPath)
+func RenameTag(documentPath string, oldTag string, newTag string) error {
+	lineNumber, tags, err := FindTagsLine(documentPath)
 
-	if lineNumber == -1 {
-		log.Fatal("Could not read Tag line of file")
+	if err != nil {
+		return err
 	}
 
 	tags = strings.Replace(tags, oldTag, newTag, -1)
 
 	file, err := os.OpenFile(documentPath, os.O_RDWR, 0o644)
+
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
-	defer func() {
-		err := file.Close()
-		if err != nil {
-			log.Fatal(err)
-		}
-	}()
+	defer file.Close()
 
 	offset, err := file.Seek(int64(lineNumber), io.SeekStart)
+
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	_, err = file.WriteAt([]byte(tags), offset)
 
 	if err != nil {
-		log.Fatal(err)
-	}
-}
-
-func GetTags(documentPath string) []string {
-	lineNumber, tags := FindTagsLine(documentPath)
-
-	if lineNumber == -1 {
-		log.Fatal("Could not read Tag line of file")
+		return err
 	}
 
-	return strings.Split(tags, ",")
+	return nil
 }
 
-func FindTagsLine(documentPath string) (int, string) {
-	file, err := os.OpenFile(documentPath, os.O_RDONLY, 0o644)
+func GetTags(documentPath string) ([]string, error) {
+	_, tags, err := FindTagsLine(documentPath)
+
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
-	defer func() {
-		err := file.Close()
-		if err != nil {
-			log.Fatal(err)
-		}
-	}()
+	return strings.Split(tags, ","), nil
+}
+
+func FindTagsLine(documentPath string) (int, string, error) {
+	file, err := os.OpenFile(documentPath, os.O_RDONLY, 0o644)
+
+	if err != nil {
+		return 0, "", err
+	}
+
+	defer file.Close()
 
 	scanner := bufio.NewScanner(file)
 
@@ -140,16 +126,20 @@ func FindTagsLine(documentPath string) (int, string) {
 		if scanner.Text() == "# Tags" {
 			scanner.Scan()
 
-			return i + 1, scanner.Text()
+			return i + 1, scanner.Text(), nil
 		}
 		i++
 	}
 
-	return -1, ""
+	return 0, "", errors.New("Could not find tags line")
 }
 
-func HasTags(documentPath string, tags []string) bool {
-	documentTags := GetTags(documentPath)
+func HasTags(documentPath string, tags []string) (bool, error) {
+	documentTags, err := GetTags(documentPath)
+
+	if err != nil {
+		return false, err
+	}
 
 	for _, tag := range tags {
 		for _, documentTag := range documentTags {
@@ -157,23 +147,28 @@ func HasTags(documentPath string, tags []string) bool {
 				continue
 			}
 
-			return false
+			return false, nil
 		}
 	}
 
-	return true
+	return true, nil
 }
 
-func FindDocumentsWithTags(rootDir string, tags []string) []string {
+func FindDocumentsWithTags(rootDir string, tags []string) ([]string, error) {
 	filesWithTags := make([]string, 0, 100)
 
 	err := filepath.Walk(rootDir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 
 		if !info.IsDir() {
-			if !HasTags(path, tags) {
+			hasTags, err := HasTags(path, tags)
+
+			if err != nil {
+				return err
+			}
+			if !hasTags {
 				return nil
 			}
 			filesWithTags = append(filesWithTags, path)
@@ -182,24 +177,19 @@ func FindDocumentsWithTags(rootDir string, tags []string) []string {
 		return nil
 	})
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
-	return filesWithTags
+	return filesWithTags, nil
 }
 
-func FindLinksLines(documentPath string) (int, int, []string) {
+func FindLinksLines(documentPath string) (int, int, []string, error) {
 	file, err := os.OpenFile(documentPath, os.O_RDONLY, 0o644)
 	if err != nil {
-		log.Fatal(err)
+		return 0, 0, nil, err
 	}
 
-	defer func() {
-		err := file.Close()
-		if err != nil {
-			log.Fatal(err)
-		}
-	}()
+	defer file.Close()
 
 	scanner := bufio.NewScanner(file)
 
@@ -225,21 +215,16 @@ func FindLinksLines(documentPath string) (int, int, []string) {
 
 	lineNumberLastLink = i
 
-	return lineNumberFirstLink, lineNumberLastLink, links
+	return lineNumberFirstLink, lineNumberLastLink, links, nil
 }
 
-func FindBacklinksLines(documentPath string) (int, int, []string) {
+func FindBacklinksLines(documentPath string) (int, int, []string, error) {
 	file, err := os.OpenFile(documentPath, os.O_RDONLY, 0o644)
 	if err != nil {
-		log.Fatal(err)
+		return 0, 0, nil, err
 	}
 
-	defer func() {
-		err := file.Close()
-		if err != nil {
-			log.Fatal(err)
-		}
-	}()
+	defer file.Close()
 
 	scanner := bufio.NewScanner(file)
 
@@ -265,80 +250,77 @@ func FindBacklinksLines(documentPath string) (int, int, []string) {
 
 	lineNumberLastLink = i
 
-	return lineNumberFirstLink, lineNumberLastLink, links
+	return lineNumberFirstLink, lineNumberLastLink, links, nil
 }
 
-func AddLink(documentPathSource string, documentPathDestination string) {
-	lineNumberFirstLink, lineNumberLastLink, links := FindLinksLines(documentPathSource)
+func AddLink(documentPathSource string, documentPathDestination string) error {
+	lineNumberFirstLink, lineNumberLastLink, links, err := FindLinksLines(documentPathSource)
 
-	if lineNumberFirstLink == -1 || lineNumberLastLink == -1 {
-		log.Fatal("Could not read Tag line of file")
+	if err != nil {
+		return err
 	}
 
 	links = append(links, documentPathDestination)
 
 	file, err := os.OpenFile(documentPathSource, os.O_RDWR, 0o644)
+
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
-	defer func() {
-		err := file.Close()
-		if err != nil {
-			log.Fatal(err)
-		}
-	}()
+	defer file.Close()
 
 	offset, err := file.Seek(int64(lineNumberFirstLink), io.SeekStart)
+
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	_, err = file.WriteAt([]byte(strings.Join(links, "\n")), offset)
 
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
+
+	return nil
 }
 
-func AddBacklink(documentPathDestination string, documentPathSource string) {
-	lineNumberFirstLink, lineNumberLastLink, links := FindBacklinksLines(documentPathSource)
+func AddBacklink(documentPathDestination string, documentPathSource string) error {
+	lineNumberFirstLink, lineNumberLastLink, links, err := FindBacklinksLines(documentPathSource)
 
-	if lineNumberFirstLink == -1 || lineNumberLastLink == -1 {
-		log.Fatal("Could not read Tag line of file")
+	if err != nil {
+		return err
 	}
 
 	links = append(links, documentPathSource)
 
 	file, err := os.OpenFile(documentPathDestination, os.O_RDWR, 0o644)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
-	defer func() {
-		err := file.Close()
-		if err != nil {
-			log.Fatal(err)
-		}
-	}()
+	defer file.Close()
 
 	offset, err := file.Seek(int64(lineNumberFirstLink), io.SeekStart)
+
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	_, err = file.WriteAt([]byte(strings.Join(links, "\n")), offset)
 
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
+
+	return nil
 }
 
-func RemoveBacklink(documentPathDestination string, documentPathSource string) {
-	lineNumberFirstLink, lineNumberLastLink, linksOrig := FindBacklinksLines(documentPathSource)
+func RemoveBacklink(documentPathDestination string, documentPathSource string) error {
+	lineNumberFirstLink, lineNumberLastLink, linksOrig, err := FindBacklinksLines(documentPathSource)
 
-	if lineNumberFirstLink == -1 || lineNumberLastLink == -1 {
-		log.Fatal("Could not read Tag line of file")
+	if err != nil {
+		return err
 	}
 
 	iLinkToDelete := -1
@@ -356,23 +338,20 @@ func RemoveBacklink(documentPathDestination string, documentPathSource string) {
 
 	file, err := os.OpenFile(documentPathDestination, os.O_RDWR, 0o644)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
-	defer func() {
-		err := file.Close()
-		if err != nil {
-			log.Fatal(err)
-		}
-	}()
+	defer file.Close()
 
 	offset, err := file.Seek(int64(lineNumberFirstLink), io.SeekStart)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	_, err = file.WriteAt([]byte(strings.Join(links, "\n")), offset)
 
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
+
+	return err
 }
