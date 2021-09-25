@@ -69,85 +69,65 @@ func ImportMinimalCSV(dbConn *sql.DB, csvPath string) {
 	}
 }
 
-func ExportCSV(dbConn *sql.DB, csvPath string, filters map[string]interface{}) {
-	// ####################################
-	// # Filter validation and processing #
-	// ####################################
-	joinFragments := make([]string, 0, 10)
-	whereFragments := make([]string, 0, 10)
+func ExportCSV(bookmarks []Bookmark, csvPath string) error {
+	var writer *csv.Writer
 
-	for key, value := range filters {
-		switch key {
-		case "IsRead":
-			val, ok := value.(bool)
+	if csvPath != "" { // 0664 UNIX Permission code
+		file, err := os.OpenFile(csvPath, os.O_CREATE|os.O_WRONLY, 0o664)
+		if err != nil {
+			return err
+		}
 
-			if !ok {
-				log.Println("filters[\"IsRead\"] should be type bool.")
-			}
+		defer file.Close()
 
-			var valConverted string
-			if val {
-				valConverted = "1"
-			} else {
-				valConverted = "0"
-			}
+		writer = csv.NewWriter(file)
+	} else { // 0664 UNIX Permission code
+		writer = csv.NewWriter(os.Stdout)
+	}
 
-			whereFragments = append(whereFragments, "WHERE IsRead = "+valConverted)
-		case "IsCollection":
-			val, ok := value.(bool)
+	writer.Comma = ';'
 
-			if !ok {
-				log.Println("filters[\"IsCollection\"] should be type bool.")
-			}
+	csvHeader := make([]string, 0, 10)
 
-			var valConverted string
-			if val {
-				valConverted = "1"
-			} else {
-				valConverted = "0"
-			}
+	tempBookmark := &Bookmark{}
+	bookmarkReflected := reflect.ValueOf(tempBookmark).Elem()
 
-			whereFragments = append(whereFragments, "WHERE IsCollection = "+valConverted)
-		case "MaxAge":
-			val, ok := value.(int)
+	for i := 0; i < bookmarkReflected.NumField(); i++ {
+		csvHeader = append(csvHeader, bookmarkReflected.Type().Field(i).Name)
+	}
 
-			if !ok {
-				log.Fatal("filters[\"MayAge\"] should be type string.")
-			}
-			whereFragments = append(whereFragments, "WHERE timeAdded BETWEEN DATE('now') AND datetime(DATE('now'),'-'"+strconv.Itoa(val)+" days')")
-		case "Types":
-			types, okArray := value.([]string)
-			if !okArray {
-				type_, okString := value.(string)
-				if !okString {
-					log.Fatal("Filter filters[\"Types\"] should be []string or string.")
-				} else {
-					whereFragments = append(whereFragments, "WHERE Type = '"+type_+"'")
-				}
-			} else {
-				whereFragments = append(whereFragments, "WHERE Type IN('"+strings.Join(types, "', '")+"')")
-			}
-		case "Tags":
-			joinFragments = append(joinFragments, "INNER JOIN Context ON Context.BookmarkId = Bookmark.Id INNER JOIN Tag ON Tag.Id = Context.TagId")
+	err := writer.Write(csvHeader)
+	if err != nil {
+		return err
+	}
 
-			tags, okArray := value.([]string)
-			if !okArray {
-				tag, okString := value.(string)
-				if !okString {
-					log.Fatal("Filter filters[\"Tags\"] should be []string or string.")
-				} else {
-					whereFragments = append(whereFragments, "WHERE Tag = '"+tag+"'")
-				}
-			} else {
-				whereFragments = append(whereFragments, "WHERE Tag IN ('"+strings.Join(tags, "', '")+"')")
-			}
-		default:
-			log.Fatal("Encountered unrecognized filter.")
+	rowsBuffer := make([][]string, 0, len(bookmarks))
+	for i := range rowsBuffer {
+		rowsBuffer[i] = make([]string, 0, 10)
+	}
+
+	for i, bookmark := range bookmarks {
+		rowsBuffer[i] = []string{
+			strconv.Itoa(bookmark.Id),
+			bookmark.Title,
+			bookmark.Url,
+			strconv.FormatBool(bookmark.IsCollection),
+			bookmark.Type,
+			strings.Join(bookmark.Tags, ","),
+			bookmark.TimeAdded,
+			strconv.FormatBool(bookmark.IsRead),
 		}
 	}
-	// ###############
-	// # SELECT ROWS #
-	// ###############
+
+	err = writer.WriteAll(rowsBuffer)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func GetBookmarks(dbConn *sqlx.DB, filter BookmarkFilter) ([]Bookmark, error) {
 	stmtBookmarks := `
         SELECT
             Bookmark.Id,
@@ -162,6 +142,13 @@ func ExportCSV(dbConn *sql.DB, csvPath string, filters map[string]interface{}) {
         INNER JOIN Type ON
             Type.Id = Bookmark.TypeId
     `
+
+	stmtBookmarks = ApplyBookmarkFilters(stmtBookmarks, filter)
+
+	stmtNumberOfBookmarks := "SELECT COUNT(*) FROM Bookmark INNER JOIN Type ON Bookmark.TypeId = Type.Id"
+
+	stmtNumberOfBookmarks = ApplyBookmarkFilters(stmtNumberOfBookmarks, filter)
+
 	stmtTags := `
         SELECT
             Tag.Tag
@@ -171,55 +158,14 @@ func ExportCSV(dbConn *sql.DB, csvPath string, filters map[string]interface{}) {
             Context.TagId = Tag.Id
         WHERE Context.BookmarkId = ?;`
 
-	joinFragment := strings.Join(joinFragments, " AND ")
-	whereFragment := strings.Join(whereFragments, " AND ")
+	stmtNumberOfTags := "SELECT COUNT(*) FROM  Context WHERE BookmarkId = ?;"
 
-	stmtBookmarks += joinFragment + " " + whereFragment + ";"
+	var numberOfBookmarks int
 
-	statementTags, err := dbConn.Prepare(stmtTags)
+	err := dbConn.Get(numberOfBookmarks, stmtNumberOfBookmarks, nil)
+
 	if err != nil {
-		log.Fatal(err)
-	}
-
-	defer func() {
-		err = statementTags.Close()
-
-		if err != nil {
-			log.Fatal(err)
-		}
-	}()
-	bookmarkRows, err := dbConn.Query(stmtBookmarks)
-	if err != nil {
-		log.Fatal(err)
-	}
-	// #####################################
-	// # Prepare file write or STDOUT print #
-	// #####################################
-	var writer *csv.Writer
-
-	if csvPath != "" { // 0664 UNIX Permission code
-		file, err := os.OpenFile(csvPath, os.O_CREATE|os.O_WRONLY, 0o664)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		defer func() {
-			err := file.Close()
-			if err != nil {
-				log.Fatal(err)
-			}
-		}()
-
-		writer = csv.NewWriter(file)
-	} else { // 0664 UNIX Permission code
-		writer = csv.NewWriter(os.Stdout)
-	}
-
-	writer.Comma = ';'
-
-	csvHeader, err := bookmarkRows.Columns()
-	if err != nil {
-		log.Fatal(err)
+		return nil, errors.New("Could not count number of bookmarks")
 	}
 
 	csvHeader = append(csvHeader, "Tags")
@@ -250,79 +196,28 @@ func ExportCSV(dbConn *sql.DB, csvPath string, filters map[string]interface{}) {
 
 	countRowBookmarks := dbConn.QueryRow(stmtCountBookmarks)
 
-	var rowCountBookmarks int
+	err = dbConn.Select(bookmarksBuffer, stmtBookmarks)
 
-	err = countRowBookmarks.Scan(&rowCountBookmarks)
 	if err != nil {
-		log.Fatal(err)
-	}
-	// row -> destBuffer -> rawBuffer -> rowsBuffer -> CSV
-	rowsBuffer := make([][]string, rowCountBookmarks)
-	destBuffer := make([]interface{}, len(csvHeader)-1)
-	rawBuffer := make([][]byte, len(csvHeader)-1)
-
-	for i := range rowsBuffer {
-		rowsBuffer[i] = make([]string, len(csvHeader))
+		return nil, errors.New("Could not select bookmarks")
 	}
 
-	for i := range rawBuffer {
-		destBuffer[i] = &rawBuffer[i]
-	}
+	var numberOfTags int
 
-	// TODO: Try to optimize this into a single joined query on the Context and tag table
-	// and then match the result to the bookmarks
-	// https://turriate.com/articles/making-sqlite-faster-in-go
-	i := 0
+	for _, bookmark := range bookmarksBuffer {
+		err := dbConn.Get(numberOfTags, stmtNumberOfTags, bookmark.Id)
 
-	for bookmarkRows.Next() {
-		err := bookmarkRows.Scan(destBuffer...)
 		if err != nil {
-			log.Fatal(err)
+			return nil, errors.New("Could not read bookmark")
 		}
 
-		for j, raw := range rawBuffer {
-			if raw == nil {
-				rowsBuffer[i][j] = "\n"
-			} else {
-				rowsBuffer[i][j] = string(raw)
-			}
-		}
-		// ############
-		// # Add tags #
-		// ############
-		var rowCountTags int
+		bookmark.Tags = make([]string, 0, 10)
 
-		bookmarkIdAsInt, err := strconv.Atoi(rowsBuffer[i][0])
+		err = dbConn.Select(bookmark.Tags, stmtTags, bookmark.Id)
+
 		if err != nil {
-			log.Fatal(err)
+			return nil, errors.New("Could not read bookmark's tags")
 		}
-
-		countRowTags := statementTagsCount.QueryRow(bookmarkIdAsInt)
-
-		err = countRowTags.Scan(&rowCountTags)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		tagsBuffer := make([]string, rowCountTags)
-
-		tagRows, err := statementTags.Query(bookmarkIdAsInt)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		j := 0
-		for tagRows.Next() {
-			err := tagRows.Scan(&tagsBuffer[j])
-			if err != nil {
-				log.Fatal(err)
-			}
-			j++
-		}
-
-		rowsBuffer[i][len(csvHeader)-1] = strings.Join(tagsBuffer, ",")
-
-		i++
 	}
 
 	err = writer.WriteAll(rowsBuffer)
