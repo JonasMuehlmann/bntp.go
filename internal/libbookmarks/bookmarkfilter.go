@@ -1,8 +1,8 @@
 package libbookmarks
 
 type BookmarkFilter struct {
-	Title        string
-	Url          string
+	Title        *string
+	Url          *string
 	IsRead       *bool
 	IsCollection *bool
 	MaxAge       *int
@@ -10,4 +10,4 @@ type BookmarkFilter struct {
 	Tags         []string
 }
 
-var BookmarkFilterInboxed BookmarkFilter = BookmarkFilter{Title: "", Types: []string{}, Tags: []string{}}
+var BookmarkFilterInboxed BookmarkFilter = BookmarkFilter{Types: []string{}, Tags: []string{}}

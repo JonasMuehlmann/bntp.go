@@ -9,6 +9,14 @@ func ApplyBookmarkFilters(query string, filter BookmarkFilter) string {
 	joinFragments := make([]string, 0, 10)
 	whereFragments := make([]string, 0, 10)
 
+	if filter.Title != nil {
+		whereFragments = append(whereFragments, "WHERE Title LIKE = "+*filter.Title)
+	}
+
+	if filter.Url != nil {
+		whereFragments = append(whereFragments, "WHERE Url LIKE = "+*filter.Url)
+	}
+
 	if filter.IsCollection != nil {
 		var valConverted string
 
