@@ -2,6 +2,7 @@
 package liblinks
 
 import (
+	"github.com/JonasMuehlmann/bntp.go/internal/sqlhelpers"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -20,38 +21,7 @@ func AddLink(dbConn *sqlx.DB, transaction *sqlx.Tx, source string, destination s
         );
     `
 
-	var statement *sqlx.Stmt
-
-	var err error
-
-	if transaction != nil {
-		statement, err = transaction.Preparex(stmt)
-
-		if err != nil {
-			return err
-		}
-	} else {
-		statement, err = dbConn.Preparex(stmt)
-
-		if err != nil {
-			return err
-		}
-	}
-
-	defer statement.Close()
-
-	_, err = statement.Exec(source, destination)
-	if err != nil {
-		return err
-	}
-
-	err = statement.Close()
-
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return sqlhelpers.Execute(dbConn, transaction, stmt, source, destination)
 }
 
 // RemoveLink removes the link from source to destination from the db.
@@ -66,42 +36,12 @@ func RemoveLink(dbConn *sqlx.DB, transaction *sqlx.Tx, source string, destinatio
             Destination = '?';
     `
 
-	var statement *sqlx.Stmt
-
-	var err error
-
-	if transaction != nil {
-		statement, err = transaction.Preparex(stmt)
-
-		if err != nil {
-			return err
-		}
-	} else {
-		statement, err = dbConn.Preparex(stmt)
-
-		if err != nil {
-			return err
-		}
-	}
-
-	defer statement.Close()
-
-	_, err = statement.Exec(source, destination)
-	if err != nil {
-		return err
-	}
-
-	err = statement.Close()
-
-	if err != nil {
-		return err
-	}
-	return nil
+	return sqlhelpers.Execute(dbConn, transaction, stmt, source, destination)
 }
 
 // List all link destionations from the DB.
 func ListLinks(dbConn *sqlx.DB, source string) ([]string, error) {
-	stmtLinks := `
+	stmt := `
         SELECT
             Destination
         FROM
@@ -110,45 +50,18 @@ func ListLinks(dbConn *sqlx.DB, source string) ([]string, error) {
             Source = '?';
     `
 
-	statementLinks, err := dbConn.Preparex(stmtLinks)
+	linksBuffer := []string{}
+
+	statementLinks, err := dbConn.Preparex(stmt)
 	if err != nil {
 		return nil, err
 	}
 
 	defer statementLinks.Close()
 
-	linkRows, err := statementLinks.Query(source)
+	err = dbConn.Select(linksBuffer, stmt)
 	if err != nil {
 		return nil, err
-	}
-
-	stmtCountLinks := "SELECT COUNT(*) FROM Link WHERE Source = '?';"
-
-	statementLinksCount, err := dbConn.Preparex(stmtCountLinks)
-	if err != nil {
-		return nil, err
-	}
-
-	defer statementLinksCount.Close()
-
-	linksCountRow := statementLinksCount.QueryRow(source)
-
-	var rowCountLinks int
-
-	err = linksCountRow.Scan(&rowCountLinks)
-	if err != nil {
-		return nil, err
-	}
-
-	linksBuffer := make([]string, rowCountLinks)
-
-	i := 0
-	for linkRows.Next() {
-		err := linkRows.Scan(&linksBuffer[i])
-		if err != nil {
-			return nil, err
-		}
-		i++
 	}
 
 	return linksBuffer, nil
@@ -156,7 +69,7 @@ func ListLinks(dbConn *sqlx.DB, source string) ([]string, error) {
 
 // List all link sources from the DB.
 func ListBacklinks(dbConn *sqlx.DB, destination string) ([]string, error) {
-	stmtBacklinks := `
+	stmt := `
         SELECT
             Source
         FROM
@@ -164,46 +77,18 @@ func ListBacklinks(dbConn *sqlx.DB, destination string) ([]string, error) {
         WHERE
             Destination = '?';
     `
+	backlinksBuffer := []string{}
 
-	statementBacklinks, err := dbConn.Preparex(stmtBacklinks)
+	statementLinks, err := dbConn.Preparex(stmt)
 	if err != nil {
 		return nil, err
 	}
 
-	defer statementBacklinks.Close()
+	defer statementLinks.Close()
 
-	backlinkRows, err := statementBacklinks.Query(destination)
+	err = dbConn.Select(backlinksBuffer, stmt)
 	if err != nil {
 		return nil, err
-	}
-
-	stmtCountBacklinks := "SELECT COUNT(*) FROM Link  WHERE Destination = '?';"
-
-	statementBacklinksCount, err := dbConn.Preparex(stmtCountBacklinks)
-	if err != nil {
-		return nil, err
-	}
-
-	defer statementBacklinksCount.Close()
-
-	backLinksCountRow := statementBacklinksCount.QueryRow(destination)
-
-	var rowCountLinks int
-
-	err = backLinksCountRow.Scan(&rowCountLinks)
-	if err != nil {
-		return nil, err
-	}
-
-	backlinksBuffer := make([]string, rowCountLinks)
-
-	i := 0
-	for backlinkRows.Next() {
-		err := backlinkRows.Scan(&backlinksBuffer[i])
-		if err != nil {
-			return nil, err
-		}
-		i++
 	}
 
 	return backlinksBuffer, nil

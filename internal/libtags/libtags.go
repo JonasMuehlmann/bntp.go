@@ -48,7 +48,7 @@ func ImportYML(dbConn *sqlx.DB, ymlPath string) error {
 
 	close(paths)
 
-	transaction, err := dbConn.Begin()
+	transaction, err := dbConn.Beginx()
 	if err != nil {
 		return err
 	}
@@ -254,31 +254,11 @@ func ListTags(dbConn *sqlx.DB) ([]string, error) {
             Tag;
     `
 
-	tagRows, err := dbConn.Query(stmt)
+	tagsBuffer := []string{}
+
+	err := dbConn.Select(tagsBuffer, stmt)
 	if err != nil {
 		return nil, err
-	}
-
-	stmtCountTags := "SELECT COUNT(*) FROM  Tag;"
-
-	tagsCountRow := dbConn.QueryRow(stmtCountTags)
-
-	var rowCountTags int
-
-	err = tagsCountRow.Scan(&rowCountTags)
-	if err != nil {
-		return nil, err
-	}
-
-	tagsBuffer := make([]string, rowCountTags)
-
-	i := 0
-	for tagRows.Next() {
-		err := tagRows.Scan(&tagsBuffer[i])
-		if err != nil {
-			return nil, err
-		}
-		i++
 	}
 
 	return tagsBuffer, nil
