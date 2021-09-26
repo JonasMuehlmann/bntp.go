@@ -1,4 +1,4 @@
-// libtags implements functionality to work with tags in a database context.
+// Package libtags implements functionality to work with tags in a database context.
 package libtags
 
 import (
