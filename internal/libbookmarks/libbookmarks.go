@@ -14,9 +14,10 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
+// ImportMinimalCSV reads a csv file at csvPath and imports it into the bookmark DB.
+// The csv file is expected to have the columns "Text" and "Url" ONLY.
 func ImportMinimalCSV(dbConn *sqlx.DB, csvPath string) error {
 	file, err := os.Open(csvPath)
-
 	if err != nil {
 		return err
 	}
@@ -28,7 +29,6 @@ func ImportMinimalCSV(dbConn *sqlx.DB, csvPath string) error {
 
 	bookmarks, err := reader.ReadAll()
 	if err != nil {
-
 		return err
 	}
 
@@ -53,7 +53,6 @@ func ImportMinimalCSV(dbConn *sqlx.DB, csvPath string) error {
 	}
 
 	transaction, err := dbConn.Begin()
-
 	if err != nil {
 		return err
 	}
@@ -71,6 +70,7 @@ func ImportMinimalCSV(dbConn *sqlx.DB, csvPath string) error {
 	return nil
 }
 
+// ExportCSV exports an array of bookmarks to a CSV file at csvPath.
 func ExportCSV(bookmarks []Bookmark, csvPath string) error {
 	var writer *csv.Writer
 
@@ -129,6 +129,7 @@ func ExportCSV(bookmarks []Bookmark, csvPath string) error {
 	return nil
 }
 
+// GetBookmarks returns all bookmarks stored in the DB which satisfy the given filter.
 func GetBookmarks(dbConn *sqlx.DB, filter BookmarkFilter) ([]Bookmark, error) {
 	stmtBookmarks := `
         SELECT
@@ -165,7 +166,6 @@ func GetBookmarks(dbConn *sqlx.DB, filter BookmarkFilter) ([]Bookmark, error) {
 	var numberOfBookmarks int
 
 	err := dbConn.Get(numberOfBookmarks, stmtNumberOfBookmarks, nil)
-
 	if err != nil {
 		return nil, errors.New("Could not count number of bookmarks")
 	}
@@ -182,7 +182,6 @@ func GetBookmarks(dbConn *sqlx.DB, filter BookmarkFilter) ([]Bookmark, error) {
 
 	for _, bookmark := range bookmarksBuffer {
 		err := dbConn.Get(numberOfTags, stmtNumberOfTags, bookmark.Id)
-
 		if err != nil {
 			return nil, errors.New("Could not read bookmark")
 		}
@@ -199,6 +198,8 @@ func GetBookmarks(dbConn *sqlx.DB, filter BookmarkFilter) ([]Bookmark, error) {
 	return bookmarksBuffer, nil
 }
 
+// AddType makes a new BookmarkType available for use in the DB.
+// Passing a transaction is optional.
 func AddType(dbConn *sqlx.DB, transaction *sql.Tx, type_ string) error {
 	stmt := `
         INSERT INTO
@@ -241,6 +242,8 @@ func AddType(dbConn *sqlx.DB, transaction *sql.Tx, type_ string) error {
 	return nil
 }
 
+// RemoveType removes an available BookmarkType from the DB.
+// Passing a transaction is optional.
 func RemoveType(dbConn *sqlx.DB, transaction *sql.Tx, type_ string) error {
 	stmt := `
         DELETE FROM
@@ -280,6 +283,7 @@ func RemoveType(dbConn *sqlx.DB, transaction *sql.Tx, type_ string) error {
 	return nil
 }
 
+// ListTypes lists all BookmarkTypes available in the DB.
 func ListTypes(dbConn *sqlx.DB) ([]string, error) {
 	stmtRows := `
         SELECT
@@ -321,6 +325,9 @@ func ListTypes(dbConn *sqlx.DB) ([]string, error) {
 	return types, nil
 }
 
+// TODO: Allow passing string for type_
+// AddBookmark adds a new bookmark to the DB.
+// Passing a transaction is optional.
 func AddBookmark(dbConn *sqlx.DB, transaction *sql.Tx, title string, url string, type_ int, isCollection bool) error {
 	stmt := `
         INSERT INTO
@@ -371,6 +378,8 @@ func AddBookmark(dbConn *sqlx.DB, transaction *sql.Tx, title string, url string,
 	return nil
 }
 
+// EditBookmark sets column to newVal for the bookmark with the specified id.
+// Passing a transaction is optional.
 func EditBookmark(dbConn *sqlx.DB, transaction *sql.Tx, id int, column string, newVal interface{}) error {
 	stmt := `
         UPDATE
@@ -420,18 +429,26 @@ func EditBookmark(dbConn *sqlx.DB, transaction *sql.Tx, id int, column string, n
 	return nil
 }
 
+// MarkAsRead sets IsRead to true for the bookmark with the specified id.
+// Passing a transaction is optional.
 func MarkAsRead(dbConn *sqlx.DB, transaction *sql.Tx, id int) error {
 	return EditBookmark(dbConn, transaction, id, "IsRead", true)
 }
 
+// EditTitle sets Title to newTile for the bookmark with the specified id.
+// Passing a transaction is optional.
 func EditTitle(dbConn *sqlx.DB, transaction *sql.Tx, id int, newTitle string) error {
 	return EditBookmark(dbConn, transaction, id, "Title", newTitle)
 }
 
+// EditUrl sets Url to newUrl for the bookmark with the specified id.
+// Passing a transaction is optional.
 func EditUrl(dbConn *sqlx.DB, transaction *sql.Tx, id int, newUrl string) error {
 	return EditBookmark(dbConn, transaction, id, "Url", newUrl)
 }
 
+// EditType sets Type to newType for the bookmark with the specified id.
+// Passing a transaction is optional.
 func EditType(dbConn *sqlx.DB, transaction *sql.Tx, id int, newType string) error {
 	// TODO: Refactor getting Type.Id from Type.Type
 	var typeId int
@@ -484,10 +501,14 @@ func EditType(dbConn *sqlx.DB, transaction *sql.Tx, id int, newType string) erro
 	return EditBookmark(dbConn, transaction, id, "TypeId", typeId)
 }
 
+// EditIsCollection sets isCollection to isCollection for the bookmark with the specified id.
+// Passing a transaction is optional.
 func EditIsCollection(dbConn *sqlx.DB, transaction *sql.Tx, id int, isCollection bool) error {
 	return EditBookmark(dbConn, transaction, id, "IsCollection", isCollection)
 }
 
+// AddTag adds a tag newTag to the bookmark with bookmarkId.
+// Passing a transaction is optional.
 func AddTag(dbConn *sqlx.DB, transaction *sql.Tx, bookmarkId int, newTag string) error {
 	// TODO: Refactor getting Tag.Id from Tag.Tag
 	var tagId int
@@ -576,6 +597,8 @@ func AddTag(dbConn *sqlx.DB, transaction *sql.Tx, bookmarkId int, newTag string)
 	return nil
 }
 
+// RemoveTag removes a tag tag_ from the bookmark with bookmarkId.
+// Passing a transaction is optional.
 func RemoveTag(dbConn *sqlx.DB, transaction *sql.Tx, bookmarkId int, tag_ string) error {
 	// TODO: Refactor getting Tag.Id from Tag.Tag
 	var tagId int
