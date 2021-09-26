@@ -7,6 +7,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/JonasMuehlmann/bntp.go/internal/sqlhelpers"
 	"github.com/jmoiron/sqlx"
 	"gopkg.in/yaml.v3"
 )
@@ -172,36 +173,7 @@ func AddTag(dbConn *sqlx.DB, transaction *sqlx.Tx, tag string) error {
         VALUES(?);
     `
 
-	var statement *sqlx.Stmt
-
-	var err error
-
-	if transaction != nil {
-		statement, err = transaction.Preparex(stmt)
-
-		if err != nil {
-			return err
-		}
-	} else {
-		statement, err = dbConn.Preparex(stmt)
-
-		if err != nil {
-			return err
-		}
-	}
-
-	_, err = statement.Exec(tag)
-	if err != nil {
-		return err
-	}
-
-	err = statement.Close()
-
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return sqlhelpers.Execute(dbConn, transaction, stmt, tag)
 }
 
 // RenameTag renames the tag oldTag to newTag in the DB.
@@ -216,35 +188,7 @@ func RenameTag(dbConn *sqlx.DB, transaction *sqlx.Tx, oldTag string, newTag stri
             Tag = '?';
     `
 
-	var statement *sqlx.Stmt
-
-	var err error
-
-	if transaction != nil {
-		statement, err = transaction.Preparex(stmt)
-
-		if err != nil {
-			return err
-		}
-	} else {
-		statement, err = dbConn.Preparex(stmt)
-
-		if err != nil {
-			return err
-		}
-	}
-
-	_, err = statement.Exec(newTag, oldTag)
-	if err != nil {
-		return err
-	}
-
-	err = statement.Close()
-
-	if err != nil {
-		return err
-	}
-	return nil
+	return sqlhelpers.Execute(dbConn, transaction, stmt, oldTag, newTag)
 }
 
 // DeleteTag removes the tag tag from the DB.
@@ -257,35 +201,7 @@ func DeleteTag(dbConn *sqlx.DB, transaction *sqlx.Tx, tag string) error {
             Tag = '?';
     `
 
-	var statement *sqlx.Stmt
-
-	var err error
-
-	if transaction != nil {
-		statement, err = transaction.Preparex(stmt)
-
-		if err != nil {
-			return err
-		}
-	} else {
-		statement, err = dbConn.Preparex(stmt)
-
-		if err != nil {
-			return err
-		}
-	}
-
-	_, err = statement.Exec(tag)
-	if err != nil {
-		return err
-	}
-
-	err = statement.Close()
-
-	if err != nil {
-		return err
-	}
-	return nil
+	return sqlhelpers.Execute(dbConn, transaction, stmt, tag)
 }
 
 // TryShortenTag shortens tag as much as possible, while keeping it unambiguous.

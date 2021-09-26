@@ -25,13 +25,13 @@ func AddLink(dbConn *sqlx.DB, transaction *sqlx.Tx, source string, destination s
 	var err error
 
 	if transaction != nil {
-		statement, err = transaction.Prepare(stmt)
+		statement, err = transaction.Preparex(stmt)
 
 		if err != nil {
 			return err
 		}
 	} else {
-		statement, err = dbConn.Prepare(stmt)
+		statement, err = dbConn.Preparex(stmt)
 
 		if err != nil {
 			return err
@@ -71,13 +71,13 @@ func RemoveLink(dbConn *sqlx.DB, transaction *sqlx.Tx, source string, destinatio
 	var err error
 
 	if transaction != nil {
-		statement, err = transaction.Prepare(stmt)
+		statement, err = transaction.Preparex(stmt)
 
 		if err != nil {
 			return err
 		}
 	} else {
-		statement, err = dbConn.Prepare(stmt)
+		statement, err = dbConn.Preparex(stmt)
 
 		if err != nil {
 			return err
@@ -110,7 +110,7 @@ func ListLinks(dbConn *sqlx.DB, source string) ([]string, error) {
             Source = '?';
     `
 
-	statementLinks, err := dbConn.Prepare(stmtLinks)
+	statementLinks, err := dbConn.Preparex(stmtLinks)
 	if err != nil {
 		return nil, err
 	}
@@ -124,7 +124,7 @@ func ListLinks(dbConn *sqlx.DB, source string) ([]string, error) {
 
 	stmtCountLinks := "SELECT COUNT(*) FROM Link WHERE Source = '?';"
 
-	statementLinksCount, err := dbConn.Prepare(stmtCountLinks)
+	statementLinksCount, err := dbConn.Preparex(stmtCountLinks)
 	if err != nil {
 		return nil, err
 	}
@@ -165,7 +165,7 @@ func ListBacklinks(dbConn *sqlx.DB, destination string) ([]string, error) {
             Destination = '?';
     `
 
-	statementBacklinks, err := dbConn.Prepare(stmtBacklinks)
+	statementBacklinks, err := dbConn.Preparex(stmtBacklinks)
 	if err != nil {
 		return nil, err
 	}
@@ -179,7 +179,7 @@ func ListBacklinks(dbConn *sqlx.DB, destination string) ([]string, error) {
 
 	stmtCountBacklinks := "SELECT COUNT(*) FROM Link  WHERE Destination = '?';"
 
-	statementBacklinksCount, err := dbConn.Prepare(stmtCountBacklinks)
+	statementBacklinksCount, err := dbConn.Preparex(stmtCountBacklinks)
 	if err != nil {
 		return nil, err
 	}
