@@ -2,7 +2,6 @@
 package libtags
 
 import (
-	"database/sql"
 	"log"
 	"os"
 	"regexp"
@@ -166,25 +165,25 @@ func ExportYML(dbConn *sqlx.DB, ymlPath string) error {
 
 // AddTag adds a new tag to the DB.
 // Passing a transaction is optional.
-func AddTag(dbConn *sqlx.DB, transaction *sql.Tx, tag string) error {
+func AddTag(dbConn *sqlx.DB, transaction *sqlx.Tx, tag string) error {
 	stmt := `
         INSERT INTO
             Tag(Tag)
         VALUES(?);
     `
 
-	var statement *sql.Stmt
+	var statement *sqlx.Stmt
 
 	var err error
 
 	if transaction != nil {
-		statement, err = transaction.Prepare(stmt)
+		statement, err = transaction.Preparex(stmt)
 
 		if err != nil {
 			return err
 		}
 	} else {
-		statement, err = dbConn.Prepare(stmt)
+		statement, err = dbConn.Preparex(stmt)
 
 		if err != nil {
 			return err
@@ -207,7 +206,7 @@ func AddTag(dbConn *sqlx.DB, transaction *sql.Tx, tag string) error {
 
 // RenameTag renames the tag oldTag to newTag in the DB.
 // Passing a transaction is optional.
-func RenameTag(dbConn *sqlx.DB, transaction *sql.Tx, oldTag string, newTag string) error {
+func RenameTag(dbConn *sqlx.DB, transaction *sqlx.Tx, oldTag string, newTag string) error {
 	stmt := `
         UPDATE
             Tag
@@ -217,18 +216,18 @@ func RenameTag(dbConn *sqlx.DB, transaction *sql.Tx, oldTag string, newTag strin
             Tag = '?';
     `
 
-	var statement *sql.Stmt
+	var statement *sqlx.Stmt
 
 	var err error
 
 	if transaction != nil {
-		statement, err = transaction.Prepare(stmt)
+		statement, err = transaction.Preparex(stmt)
 
 		if err != nil {
 			return err
 		}
 	} else {
-		statement, err = dbConn.Prepare(stmt)
+		statement, err = dbConn.Preparex(stmt)
 
 		if err != nil {
 			return err
@@ -250,7 +249,7 @@ func RenameTag(dbConn *sqlx.DB, transaction *sql.Tx, oldTag string, newTag strin
 
 // DeleteTag removes the tag tag from the DB.
 // Passing a transaction is optional.
-func DeleteTag(dbConn *sqlx.DB, transaction *sql.Tx, tag string) error {
+func DeleteTag(dbConn *sqlx.DB, transaction *sqlx.Tx, tag string) error {
 	stmt := `
         DELETE FROM
             Tag
@@ -258,18 +257,18 @@ func DeleteTag(dbConn *sqlx.DB, transaction *sql.Tx, tag string) error {
             Tag = '?';
     `
 
-	var statement *sql.Stmt
+	var statement *sqlx.Stmt
 
 	var err error
 
 	if transaction != nil {
-		statement, err = transaction.Prepare(stmt)
+		statement, err = transaction.Preparex(stmt)
 
 		if err != nil {
 			return err
 		}
 	} else {
-		statement, err = dbConn.Prepare(stmt)
+		statement, err = dbConn.Preparex(stmt)
 
 		if err != nil {
 			return err
