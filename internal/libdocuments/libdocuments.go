@@ -1,3 +1,4 @@
+// libdocuments implements functionality to work with documents in a database and file system context.
 package libdocuments
 
 import (
