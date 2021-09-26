@@ -8,12 +8,13 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/jmoiron/sqlx"
 	"gopkg.in/yaml.v3"
 )
 
 // ImportYML reads a YML file at ymlPath  and imports it's tag structure into the db.
 // The top level tag of the file is expected to be "tags".
-func ImportYML(dbConn *sql.DB, ymlPath string) {
+func ImportYML(dbConn *sqlx.DB, ymlPath string) {
 	file, err := os.ReadFile(ymlPath)
 	if err != nil {
 		log.Fatal(err)
@@ -98,8 +99,8 @@ func bFSTagPaths(node interface{}, paths chan []string, curPath []string) {
 
 type tagNode map[string]tagNode
 
-// ExportYML exports the DB's available into a YML encoded hierarchy at ymlPath.
-func ExportYML(dbConn *sql.DB, ymlPath string) {
+// ExportYML exports the DB's available tags into a YML encoded hierarchy at ymlPath.
+func ExportYML(dbConn *sqlx.DB, ymlPath string) {
 	tags := ListTags(dbConn)
 
 	tagHierarchy := tagNode{"tags": tagNode{}}
@@ -160,7 +161,7 @@ func ExportYML(dbConn *sql.DB, ymlPath string) {
 
 // AddTag adds a new tag to the DB.
 // Passing a transaction is optional.
-func AddTag(dbConn *sql.DB, transaction *sql.Tx, tag string) {
+func AddTag(dbConn *sqlx.DB, transaction *sql.Tx, tag string) {
 	stmt := `
         INSERT INTO
             Tag(Tag)
@@ -199,7 +200,7 @@ func AddTag(dbConn *sql.DB, transaction *sql.Tx, tag string) {
 
 // RenameTag renames the tag oldTag to newTag in the DB.
 // Passing a transaction is optional.
-func RenameTag(dbConn *sql.DB, transaction *sql.Tx, oldTag string, newTag string) {
+func RenameTag(dbConn *sqlx.DB, transaction *sql.Tx, oldTag string, newTag string) {
 	stmt := `
         UPDATE
             Tag
@@ -241,7 +242,7 @@ func RenameTag(dbConn *sql.DB, transaction *sql.Tx, oldTag string, newTag string
 
 // DeleteTag removes the tag tag from the DB.
 // Passing a transaction is optional.
-func DeleteTag(dbConn *sql.DB, transaction *sql.Tx, tag string) {
+func DeleteTag(dbConn *sqlx.DB, transaction *sql.Tx, tag string) {
 	stmt := `
         DELETE FROM
             Tag
@@ -282,7 +283,7 @@ func DeleteTag(dbConn *sql.DB, transaction *sql.Tx, tag string) {
 // TryShortenTag shortens tag as much as possible, while keeping it unambiguous.
 // Components are removed from root to leaf.
 // A::B::C can be shortened to C if C does not appear in any other tag(e.g. X::C::Y).
-func TryShortenTag(dbConn *sql.DB, tag string) string {
+func TryShortenTag(dbConn *sqlx.DB, tag string) string {
 	if IsLeafAmbiguous(dbConn, tag) {
 		tagComponents := strings.Split(tag, "::")
 
@@ -293,7 +294,7 @@ func TryShortenTag(dbConn *sql.DB, tag string) string {
 }
 
 // IsLeafAmbiguous checks if the leaf of the specified tag appears in any other tag.
-func IsLeafAmbiguous(dbConn *sql.DB, tag string) bool {
+func IsLeafAmbiguous(dbConn *sqlx.DB, tag string) bool {
 	tags := ListTags(dbConn)
 
 	tagComponents := strings.Split(tag, "::")
@@ -314,7 +315,7 @@ func IsLeafAmbiguous(dbConn *sql.DB, tag string) bool {
 
 // ListTags lists all available from the DB.
 // Tags are listed fully qualified, no components are removed.
-func ListTags(dbConn *sql.DB) []string {
+func ListTags(dbConn *sqlx.DB) []string {
 	stmt := `
         SELECT
             Tag
@@ -354,7 +355,7 @@ func ListTags(dbConn *sql.DB) []string {
 
 // ListTagsShortened lists all available from the DB.
 // Tags are shortened as much as possible while being kept unambiguous.
-func ListTagsShortened(dbConn *sql.DB) []string {
+func ListTagsShortened(dbConn *sqlx.DB) []string {
 	tags := ListTags(dbConn)
 
 	for i, tag := range tags {

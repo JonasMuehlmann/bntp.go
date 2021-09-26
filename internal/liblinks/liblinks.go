@@ -3,11 +3,13 @@ package liblinks
 
 import (
 	"database/sql"
+
+	"github.com/jmoiron/sqlx"
 )
 
 // AddLink adds a link from source to destination to the DB.
 // Passing a transaction is optional.
-func AddLink(dbConn *sql.DB, transaction *sql.Tx, source string, destination string) error {
+func AddLink(dbConn *sqlx.DB, transaction *sql.Tx, source string, destination string) error {
 	stmt := `
         INSERT INTO
             Link(
@@ -56,7 +58,7 @@ func AddLink(dbConn *sql.DB, transaction *sql.Tx, source string, destination str
 
 // RemoveLink removes the link from source to destination from the db.
 // Passing a transaction is optional.
-func RemoveLink(dbConn *sql.DB, transaction *sql.Tx, source string, destination string) error {
+func RemoveLink(dbConn *sqlx.DB, transaction *sql.Tx, source string, destination string) error {
 	stmt := `
         DELETE FROM
             Link
@@ -100,7 +102,7 @@ func RemoveLink(dbConn *sql.DB, transaction *sql.Tx, source string, destination 
 }
 
 // List all link destionations from the DB.
-func ListLinks(dbConn *sql.DB, source string) ([]string, error) {
+func ListLinks(dbConn *sqlx.DB, source string) ([]string, error) {
 	stmtLinks := `
         SELECT
             Destination
@@ -155,7 +157,7 @@ func ListLinks(dbConn *sql.DB, source string) ([]string, error) {
 }
 
 // List all link sources from the DB.
-func ListBacklinks(dbConn *sql.DB, destination string) ([]string, error) {
+func ListBacklinks(dbConn *sqlx.DB, destination string) ([]string, error) {
 	stmtBacklinks := `
         SELECT
             Source
