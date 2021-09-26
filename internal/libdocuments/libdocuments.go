@@ -301,7 +301,47 @@ func AddLink(documentPathSource string, documentPathDestination string) error {
 	return nil
 }
 
-// TODO: Implement RemoveLink()
+// RemoveLink removes the link to documentPathDestination from the document at documentPathSource.
+func RemoveLink(documentPathSource string, documentPathDestination string) error {
+	lineNumberFirstLink, lineNumberLastLink, linksOrig, err := FindLinksLines(documentPathSource)
+
+	if err != nil {
+		return err
+	}
+
+	iLinkToDelete := -1
+
+	for i, link := range linksOrig {
+		if link == documentPathSource {
+			iLinkToDelete = i
+		}
+	}
+
+	links := make([]string, 0, 10)
+
+	links = append(links, linksOrig[:iLinkToDelete]...)
+	links = append(links, linksOrig[iLinkToDelete+1:]...)
+
+	file, err := os.OpenFile(documentPathDestination, os.O_RDWR, 0o644)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	offset, err := file.Seek(int64(lineNumberFirstLink), io.SeekStart)
+	if err != nil {
+		return err
+	}
+
+	_, err = file.WriteAt([]byte(strings.Join(links, "\n")), offset)
+
+	if err != nil {
+		return err
+	}
+
+	return err
+}
+
 // AddBacklink adds a Backlink to documentPathSource into the document at documentPathDestination.
 func AddBacklink(documentPathDestination string, documentPathSource string) error {
 	lineNumberFirstLink, lineNumberLastLink, links, err := FindBacklinksLines(documentPathSource)
@@ -334,7 +374,7 @@ func AddBacklink(documentPathDestination string, documentPathSource string) erro
 	return nil
 }
 
-// RemoveBacklink removes the blacklink to documentPathSource from the document at documentPathDestination.
+// RemoveBacklink removes the backlink to documentPathSource from the document at documentPathDestination.
 func RemoveBacklink(documentPathDestination string, documentPathSource string) error {
 	lineNumberFirstLink, lineNumberLastLink, linksOrig, err := FindBacklinksLines(documentPathSource)
 
