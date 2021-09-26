@@ -1,4 +1,4 @@
-// libtlinks implements functionality to work with links and backlinks in a database context.
+// Package libtlinks implements functionality to work with links and backlinks in a database context.
 package liblinks
 
 import (

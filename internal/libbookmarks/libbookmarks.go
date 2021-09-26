@@ -1,3 +1,4 @@
+// Package libbookmarks implements functionality to work with bookmarks in a database context.
 package libbookmarks
 
 import (
