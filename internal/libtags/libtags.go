@@ -13,17 +13,17 @@ import (
 
 // ImportYML reads a YML file at ymlPath  and imports it's tag structure into the db.
 // The top level tag of the file is expected to be "tags".
-func ImportYML(dbConn *sql.DB, ymlPath string) {
+func ImportYML(dbConn *sql.DB, ymlPath string) error {
 	file, err := os.ReadFile(ymlPath)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	var data interface{}
 
 	err = yaml.Unmarshal(file, &data)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	var topLevelTags []interface{}
@@ -49,7 +49,7 @@ func ImportYML(dbConn *sql.DB, ymlPath string) {
 
 	transaction, err := dbConn.Begin()
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	for path := range paths {
@@ -58,11 +58,13 @@ func ImportYML(dbConn *sql.DB, ymlPath string) {
 
 	err = transaction.Commit()
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
+
+	return nil
 }
 
-func bFSTagPaths(node interface{}, paths chan []string, curPath []string) {
+func bFSTagPaths(node interface{}, paths chan []string, curPath []string) error {
 	switch node.(type) {
 	// Iterate over child nodes and BFS them in parallel
 	case []interface{}:
@@ -94,13 +96,18 @@ func bFSTagPaths(node interface{}, paths chan []string, curPath []string) {
 		curPath = append(curPath, node.(string))
 		paths <- curPath
 	}
+
+	return nil
 }
 
 type tagNode map[string]tagNode
 
 // ExportYML exports the DB's available into a YML encoded hierarchy at ymlPath.
-func ExportYML(dbConn *sql.DB, ymlPath string) {
-	tags := ListTags(dbConn)
+func ExportYML(dbConn *sql.DB, ymlPath string) error {
+	tags, err := ListTags(dbConn)
+	if err != nil {
+		return err
+	}
 
 	tagHierarchy := tagNode{"tags": tagNode{}}
 
@@ -115,6 +122,7 @@ func ExportYML(dbConn *sql.DB, ymlPath string) {
 			if !ok {
 				curNode[component] = tagNode{}
 			}
+
 			curNode = curNode[component]
 		}
 	}
@@ -122,19 +130,14 @@ func ExportYML(dbConn *sql.DB, ymlPath string) {
 	// 0664 UNIX Permission code
 	file, err := os.OpenFile(ymlPath, os.O_CREATE|os.O_WRONLY, 0o664)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
-	defer func() {
-		err := file.Close()
-		if err != nil {
-			log.Fatal(err)
-		}
-	}()
+	defer file.Close()
 
 	yamlFile, err := yaml.Marshal(tagHierarchy)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	fileString := string(yamlFile)
@@ -154,13 +157,15 @@ func ExportYML(dbConn *sql.DB, ymlPath string) {
 
 	_, err = file.Write([]byte(fileString))
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
+
+	return nil
 }
 
 // AddTag adds a new tag to the DB.
 // Passing a transaction is optional.
-func AddTag(dbConn *sql.DB, transaction *sql.Tx, tag string) {
+func AddTag(dbConn *sql.DB, transaction *sql.Tx, tag string) error {
 	stmt := `
         INSERT INTO
             Tag(Tag)
@@ -175,31 +180,33 @@ func AddTag(dbConn *sql.DB, transaction *sql.Tx, tag string) {
 		statement, err = transaction.Prepare(stmt)
 
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 	} else {
 		statement, err = dbConn.Prepare(stmt)
 
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 	}
 
 	_, err = statement.Exec(tag)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	err = statement.Close()
 
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
+
+	return nil
 }
 
 // RenameTag renames the tag oldTag to newTag in the DB.
 // Passing a transaction is optional.
-func RenameTag(dbConn *sql.DB, transaction *sql.Tx, oldTag string, newTag string) {
+func RenameTag(dbConn *sql.DB, transaction *sql.Tx, oldTag string, newTag string) error {
 	stmt := `
         UPDATE
             Tag
@@ -217,31 +224,32 @@ func RenameTag(dbConn *sql.DB, transaction *sql.Tx, oldTag string, newTag string
 		statement, err = transaction.Prepare(stmt)
 
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 	} else {
 		statement, err = dbConn.Prepare(stmt)
 
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 	}
 
 	_, err = statement.Exec(newTag, oldTag)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	err = statement.Close()
 
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
+	return nil
 }
 
 // DeleteTag removes the tag tag from the DB.
 // Passing a transaction is optional.
-func DeleteTag(dbConn *sql.DB, transaction *sql.Tx, tag string) {
+func DeleteTag(dbConn *sql.DB, transaction *sql.Tx, tag string) error {
 	stmt := `
         DELETE FROM
             Tag
@@ -257,45 +265,53 @@ func DeleteTag(dbConn *sql.DB, transaction *sql.Tx, tag string) {
 		statement, err = transaction.Prepare(stmt)
 
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 	} else {
 		statement, err = dbConn.Prepare(stmt)
 
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 	}
 
 	_, err = statement.Exec(tag)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	err = statement.Close()
 
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
+	return nil
 }
 
 // TryShortenTag shortens tag as much as possible, while keeping it unambiguous.
 // Components are removed from root to leaf.
 // A::B::C can be shortened to C if C does not appear in any other tag(e.g. X::C::Y).
-func TryShortenTag(dbConn *sql.DB, tag string) string {
-	if IsLeafAmbiguous(dbConn, tag) {
-		tagComponents := strings.Split(tag, "::")
-
-		return tagComponents[len(tagComponents)-1]
+func TryShortenTag(dbConn *sql.DB, tag string) (string, error) {
+	isAmbiguous, err := IsLeafAmbiguous(dbConn, tag)
+	if err != nil {
+		return "", err
 	}
 
-	return tag
+	if isAmbiguous {
+		tagComponents := strings.Split(tag, "::")
+
+		return tagComponents[len(tagComponents)-1], nil
+	}
+
+	return tag, nil
 }
 
 // IsLeafAmbiguous checks if the leaf of the specified tag appears in any other tag.
-func IsLeafAmbiguous(dbConn *sql.DB, tag string) bool {
-	tags := ListTags(dbConn)
-
+func IsLeafAmbiguous(dbConn *sql.DB, tag string) (bool, error) {
+	tags, err := ListTags(dbConn)
+	if err != nil {
+		return false, err
+	}
 	tagComponents := strings.Split(tag, "::")
 
 	leaf := tagComponents[len(tagComponents)-1]
@@ -305,16 +321,16 @@ func IsLeafAmbiguous(dbConn *sql.DB, tag string) bool {
 		curLeaf := curTagComponents[len(curTagComponents)-1]
 
 		if curLeaf == leaf {
-			return true
+			return true, nil
 		}
 	}
 
-	return false
+	return false, nil
 }
 
 // ListTags lists all available from the DB.
 // Tags are listed fully qualified, no components are removed.
-func ListTags(dbConn *sql.DB) []string {
+func ListTags(dbConn *sql.DB) ([]string, error) {
 	stmt := `
         SELECT
             Tag
@@ -324,7 +340,7 @@ func ListTags(dbConn *sql.DB) []string {
 
 	tagRows, err := dbConn.Query(stmt)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
 	stmtCountTags := "SELECT COUNT(*) FROM  Tag;"
@@ -335,7 +351,7 @@ func ListTags(dbConn *sql.DB) []string {
 
 	err = tagsCountRow.Scan(&rowCountTags)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
 	tagsBuffer := make([]string, rowCountTags)
@@ -344,25 +360,33 @@ func ListTags(dbConn *sql.DB) []string {
 	for tagRows.Next() {
 		err := tagRows.Scan(&tagsBuffer[i])
 		if err != nil {
-			log.Fatal(err)
+			return nil, err
 		}
 		i++
 	}
 
-	return tagsBuffer
+	return tagsBuffer, nil
 }
 
 // ListTagsShortened lists all available from the DB.
 // Tags are shortened as much as possible while being kept unambiguous.
-func ListTagsShortened(dbConn *sql.DB) []string {
-	tags := ListTags(dbConn)
+func ListTagsShortened(dbConn *sql.DB) ([]string, error) {
+	tags, err := ListTags(dbConn)
+	if err != nil {
+		return nil, err
+	}
 
 	for i, tag := range tags {
-		if IsLeafAmbiguous(dbConn, tag) {
+		isAmbiguous, err := IsLeafAmbiguous(dbConn, tag)
+		if err != nil {
+			return nil, err
+		}
+
+		if isAmbiguous {
 			tagComponents := strings.Split(tag, "::")
 			tags[i] = tagComponents[len(tagComponents)-1]
 		}
 	}
 
-	return tags
+	return tags, nil
 }
