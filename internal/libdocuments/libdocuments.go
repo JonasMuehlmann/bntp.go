@@ -9,6 +9,7 @@ import (
 	"strings"
 )
 
+// AddTag adds a tag to the tag line of the doucment at documentPath.
 func AddTag(documentPath string, tag string) error {
 	lineNumber, tags, err := FindTagsLine(documentPath)
 	if err != nil {
@@ -38,6 +39,7 @@ func AddTag(documentPath string, tag string) error {
 	return nil
 }
 
+// RemoveTag removes a tag from the tag line of the doucment at documentPath.
 func RemoveTag(documentPath string, tag string) error {
 	lineNumber, tags, err := FindTagsLine(documentPath)
 	if err != nil {
@@ -67,6 +69,8 @@ func RemoveTag(documentPath string, tag string) error {
 	return nil
 }
 
+// Rename renames a tag oldTag to newTag in the tag line of the doucment at documentPath.
+// This method preserves the order of all tags in the doucment.
 func RenameTag(documentPath string, oldTag string, newTag string) error {
 	lineNumber, tags, err := FindTagsLine(documentPath)
 
@@ -99,6 +103,7 @@ func RenameTag(documentPath string, oldTag string, newTag string) error {
 	return nil
 }
 
+// GetTags returns all tags contained in the doucment at documentPath.
 func GetTags(documentPath string) ([]string, error) {
 	_, tags, err := FindTagsLine(documentPath)
 
@@ -109,6 +114,8 @@ func GetTags(documentPath string) ([]string, error) {
 	return strings.Split(tags, ","), nil
 }
 
+// FindTagsLine finds the line in documentPath which contains it's tags.
+// It returns the line lumber of the tags line as well as the line itself.
 func FindTagsLine(documentPath string) (int, string, error) {
 	file, err := os.OpenFile(documentPath, os.O_RDONLY, 0o644)
 
@@ -134,6 +141,7 @@ func FindTagsLine(documentPath string) (int, string, error) {
 	return 0, "", errors.New("Could not find tags line")
 }
 
+// HasTags checks if the doucment at documentPath has all specified tags.
 func HasTags(documentPath string, tags []string) (bool, error) {
 	documentTags, err := GetTags(documentPath)
 
@@ -154,6 +162,8 @@ func HasTags(documentPath string, tags []string) (bool, error) {
 	return true, nil
 }
 
+// TODO: Refactor to search in DB not FS
+// FindDocumentsWithTags returns all paths to doucments which have all specified tags.
 func FindDocumentsWithTags(rootDir string, tags []string) ([]string, error) {
 	filesWithTags := make([]string, 0, 100)
 
@@ -183,6 +193,8 @@ func FindDocumentsWithTags(rootDir string, tags []string) ([]string, error) {
 	return filesWithTags, nil
 }
 
+// FindLinksLines finds the lines in documentPath in which links to other documents are listed.
+// It returns the range of line numbers containing links as well as the lines themselves.
 func FindLinksLines(documentPath string) (int, int, []string, error) {
 	file, err := os.OpenFile(documentPath, os.O_RDONLY, 0o644)
 	if err != nil {
@@ -218,6 +230,8 @@ func FindLinksLines(documentPath string) (int, int, []string, error) {
 	return lineNumberFirstLink, lineNumberLastLink, links, nil
 }
 
+// FindBacklinksLines finds the lines in documentPath in which backlinks to other documents are listed.
+// It returns the range of line numbers containing backlinks as well as the lines themselves.
 func FindBacklinksLines(documentPath string) (int, int, []string, error) {
 	file, err := os.OpenFile(documentPath, os.O_RDONLY, 0o644)
 	if err != nil {
@@ -253,6 +267,7 @@ func FindBacklinksLines(documentPath string) (int, int, []string, error) {
 	return lineNumberFirstLink, lineNumberLastLink, links, nil
 }
 
+// AddLink adds a link to documentPathDestination into the document at documentPathSource.
 func AddLink(documentPathSource string, documentPathDestination string) error {
 	lineNumberFirstLink, lineNumberLastLink, links, err := FindLinksLines(documentPathSource)
 
@@ -285,6 +300,8 @@ func AddLink(documentPathSource string, documentPathDestination string) error {
 	return nil
 }
 
+// TODO: Implement RemoveLink()
+// AddBacklink adds a Backlink to documentPathSource into the document at documentPathDestination.
 func AddBacklink(documentPathDestination string, documentPathSource string) error {
 	lineNumberFirstLink, lineNumberLastLink, links, err := FindBacklinksLines(documentPathSource)
 
@@ -316,6 +333,7 @@ func AddBacklink(documentPathDestination string, documentPathSource string) erro
 	return nil
 }
 
+// RemoveBacklink removes the blacklink to documentPathSource from the document at documentPathDestination.
 func RemoveBacklink(documentPathDestination string, documentPathSource string) error {
 	lineNumberFirstLink, lineNumberLastLink, linksOrig, err := FindBacklinksLines(documentPathSource)
 
