@@ -5,6 +5,7 @@ import (
 	"strings"
 )
 
+// ApplyBookmarkFilters takes an SQL query and adds JOIN and WHERE clauses for filtering.
 func ApplyBookmarkFilters(query string, filter BookmarkFilter) string {
 	joinFragments := make([]string, 0, 10)
 	whereFragments := make([]string, 0, 10)
@@ -28,6 +29,7 @@ func ApplyBookmarkFilters(query string, filter BookmarkFilter) string {
 
 		whereFragments = append(whereFragments, "WHERE IsCollection = "+valConverted)
 	}
+
 	if filter.IsRead != nil {
 		var valConverted string
 
@@ -39,9 +41,11 @@ func ApplyBookmarkFilters(query string, filter BookmarkFilter) string {
 
 		whereFragments = append(whereFragments, "WHERE IsRead = "+valConverted)
 	}
+
 	if filter.MaxAge != nil {
 		whereFragments = append(whereFragments, "WHERE timeAdded BETWEEN DATE('now') AND datetime(DATE('now'),'-'"+strconv.Itoa(*filter.MaxAge)+" days')")
 	}
+
 	if filter.Tags != nil {
 		joinFragments = append(joinFragments, "INNER JOIN Context ON Context.BookmarkId = Bookmark.Id INNER JOIN Tag ON Tag.Id = Context.TagId")
 
@@ -55,6 +59,7 @@ func ApplyBookmarkFilters(query string, filter BookmarkFilter) string {
 
 		whereFragments = append(whereFragments, "WHERE Tag IN ('"+strings.Join(tags, "', '")+"')")
 	}
+
 	if filter.Types != nil {
 		var types []string
 
