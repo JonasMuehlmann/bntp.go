@@ -494,13 +494,7 @@ func GetIdFromTag(dbConn *sqlx.DB, transaction *sqlx.Tx, tag string) (int, error
 
 	return tagId, nil
 }
-
-// EditType sets Type to newType for the bookmark with the specified id.
-// Passing a transaction is optional.
-func EditType(dbConn *sqlx.DB, transaction *sqlx.Tx, id int, newType string) error {
-	// TODO: Refactor getting Type.Id from Type.Type
-	var typeId int
-
+func GetIdFromType(dbConn *sqlx.DB, transaction *sqlx.Tx, type_ string) (int, error) {
 	stmt := `
         SELECT
             Id
@@ -511,41 +505,50 @@ func EditType(dbConn *sqlx.DB, transaction *sqlx.Tx, id int, newType string) err
     `
 
 	var statement *sqlx.Stmt
-
 	var err error
 
 	if transaction != nil {
 		statement, err = transaction.Preparex(stmt)
 
 		if err != nil {
-			return err
+			return 0, err
 		}
 	} else {
 		statement, err = dbConn.Preparex(stmt)
 
 		if err != nil {
-			return err
+			return 0, err
 		}
 	}
 
-	typeRow := statement.QueryRow(newType)
-
 	if err != nil {
-		return err
+		return 0, err
 	}
 
-	err = typeRow.Scan(&typeId)
+	var typeId int
+
+	err = statement.Get(typeId, type_)
 
 	if err != nil {
-		return err
+		return 0, err
 	}
 
 	err = statement.Close()
 
 	if err != nil {
-		return err
+		return 0, err
 	}
 
+	return typeId, nil
+}
+
+// EditType sets Type to newType for the bookmark with the specified id.
+// Passing a transaction is optional.
+func EditType(dbConn *sqlx.DB, transaction *sqlx.Tx, id int, newType string) error {
+	typeId, err := GetIdFromTag(dbConn, transaction, newType)
+	if err != nil {
+		return err
+	}
 	return EditBookmark(dbConn, transaction, id, "TypeId", typeId)
 }
 
