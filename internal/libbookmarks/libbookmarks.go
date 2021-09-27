@@ -447,6 +447,54 @@ func EditUrl(dbConn *sqlx.DB, transaction *sqlx.Tx, id int, newUrl string) error
 	return EditBookmark(dbConn, transaction, id, "Url", newUrl)
 }
 
+func GetIdFromTag(dbConn *sqlx.DB, transaction *sqlx.Tx, tag string) (int, error) {
+	stmt := `
+        SELECT
+            Id
+        FROM
+            Tag
+        WHERE
+            Tag = '?';
+    `
+
+	var statement *sqlx.Stmt
+	var err error
+
+	if transaction != nil {
+		statement, err = transaction.Preparex(stmt)
+
+		if err != nil {
+			return 0, err
+		}
+	} else {
+		statement, err = dbConn.Preparex(stmt)
+
+		if err != nil {
+			return 0, err
+		}
+	}
+
+	if err != nil {
+		return 0, err
+	}
+
+	var tagId int
+
+	err = statement.Get(tagId, tag)
+
+	if err != nil {
+		return 0, err
+	}
+
+	err = statement.Close()
+
+	if err != nil {
+		return 0, err
+	}
+
+	return tagId, nil
+}
+
 // EditType sets Type to newType for the bookmark with the specified id.
 // Passing a transaction is optional.
 func EditType(dbConn *sqlx.DB, transaction *sqlx.Tx, id int, newType string) error {
@@ -510,54 +558,6 @@ func EditIsCollection(dbConn *sqlx.DB, transaction *sqlx.Tx, id int, isCollectio
 // AddTag adds a tag newTag to the bookmark with bookmarkId.
 // Passing a transaction is optional.
 func AddTag(dbConn *sqlx.DB, transaction *sqlx.Tx, bookmarkId int, newTag string) error {
-	// TODO: Refactor getting Tag.Id from Tag.Tag
-	var tagId int
-
-	stmtTag := `
-        SELECT
-            Id
-        FROM
-            Tag
-        WHERE
-            Tag = '?';
-    `
-
-	var statementTag *sqlx.Stmt
-
-	var err error
-
-	if transaction != nil {
-		statementTag, err = transaction.Preparex(stmtTag)
-
-		if err != nil {
-			return err
-		}
-	} else {
-		statementTag, err = dbConn.Preparex(stmtTag)
-
-		if err != nil {
-			return err
-		}
-	}
-
-	tagRow := statementTag.QueryRow(newTag)
-
-	if err != nil {
-		return err
-	}
-
-	err = tagRow.Scan(&tagId)
-
-	if err != nil {
-		return err
-	}
-
-	err = statementTag.Close()
-
-	if err != nil {
-		return err
-	}
-
 	stmt := `
         INSERT INTO
             Context(BookmarkId, TagId)
@@ -568,6 +568,7 @@ func AddTag(dbConn *sqlx.DB, transaction *sqlx.Tx, bookmarkId int, newTag string
     `
 
 	var statementContext *sqlx.Stmt
+	var err error
 
 	if transaction != nil {
 		statementContext, err = transaction.Preparex(stmt)
@@ -581,6 +582,11 @@ func AddTag(dbConn *sqlx.DB, transaction *sqlx.Tx, bookmarkId int, newTag string
 		if err != nil {
 			return err
 		}
+	}
+
+	tagId, err := GetIdFromTag(dbConn, transaction, newTag)
+	if err != nil {
+		return err
 	}
 
 	_, err = statementContext.Exec(bookmarkId, tagId)
@@ -600,54 +606,6 @@ func AddTag(dbConn *sqlx.DB, transaction *sqlx.Tx, bookmarkId int, newTag string
 // RemoveTag removes a tag tag_ from the bookmark with bookmarkId.
 // Passing a transaction is optional.
 func RemoveTag(dbConn *sqlx.DB, transaction *sqlx.Tx, bookmarkId int, tag_ string) error {
-	// TODO: Refactor getting Tag.Id from Tag.Tag
-	var tagId int
-
-	stmtTag := `
-        SELECT
-            Id
-        FROM
-            Tag
-        WHERE
-            Tag = '?';
-    `
-
-	var statementTag *sqlx.Stmt
-
-	var err error
-
-	if transaction != nil {
-		statementTag, err = transaction.Preparex(stmtTag)
-
-		if err != nil {
-			return err
-		}
-	} else {
-		statementTag, err = dbConn.Preparex(stmtTag)
-
-		if err != nil {
-			return err
-		}
-	}
-
-	tagRow := statementTag.QueryRow(tag_)
-
-	if err != nil {
-		return err
-	}
-
-	err = tagRow.Scan(&tagId)
-
-	if err != nil {
-		return err
-	}
-
-	err = statementTag.Close()
-
-	if err != nil {
-		return err
-	}
-
 	stmt := `
         DELETE FROM
             Context
@@ -658,28 +616,34 @@ func RemoveTag(dbConn *sqlx.DB, transaction *sqlx.Tx, bookmarkId int, tag_ strin
     );
     `
 
-	var statementContext *sqlx.Stmt
+	var statement *sqlx.Stmt
+	var err error
 
 	if transaction != nil {
-		statementContext, err = transaction.Preparex(stmt)
+		statement, err = transaction.Preparex(stmt)
 
 		if err != nil {
 			return err
 		}
 	} else {
-		statementContext, err = dbConn.Preparex(stmt)
+		statement, err = dbConn.Preparex(stmt)
 
 		if err != nil {
 			return err
 		}
 	}
 
-	_, err = statementContext.Exec(bookmarkId, tagId)
+	tagId, err := GetIdFromTag(dbConn, transaction, tag_)
 	if err != nil {
 		return err
 	}
 
-	err = statementContext.Close()
+	_, err = statement.Exec(bookmarkId, tagId)
+	if err != nil {
+		return err
+	}
+
+	err = statement.Close()
 
 	if err != nil {
 		return err
