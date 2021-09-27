@@ -545,7 +545,7 @@ func GetIdFromType(dbConn *sqlx.DB, transaction *sqlx.Tx, type_ string) (int, er
 // EditType sets Type to newType for the bookmark with the specified id.
 // Passing a transaction is optional.
 func EditType(dbConn *sqlx.DB, transaction *sqlx.Tx, id int, newType string) error {
-	typeId, err := GetIdFromTag(dbConn, transaction, newType)
+	typeId, err := GetIdFromType(dbConn, transaction, newType)
 	if err != nil {
 		return err
 	}
