@@ -2,12 +2,13 @@
 package liblinks
 
 import (
-	"database/sql"
+	"github.com/JonasMuehlmann/bntp.go/internal/sqlhelpers"
+	"github.com/jmoiron/sqlx"
 )
 
 // AddLink adds a link from source to destination to the DB.
 // Passing a transaction is optional.
-func AddLink(dbConn *sql.DB, transaction *sql.Tx, source string, destination string) error {
+func AddLink(dbConn *sqlx.DB, transaction *sqlx.Tx, source string, destination string) error {
 	stmt := `
         INSERT INTO
             Link(
@@ -20,43 +21,12 @@ func AddLink(dbConn *sql.DB, transaction *sql.Tx, source string, destination str
         );
     `
 
-	var statement *sql.Stmt
-
-	var err error
-
-	if transaction != nil {
-		statement, err = transaction.Prepare(stmt)
-
-		if err != nil {
-			return err
-		}
-	} else {
-		statement, err = dbConn.Prepare(stmt)
-
-		if err != nil {
-			return err
-		}
-	}
-
-	defer statement.Close()
-
-	_, err = statement.Exec(source, destination)
-	if err != nil {
-		return err
-	}
-
-	err = statement.Close()
-
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return sqlhelpers.Execute(dbConn, transaction, stmt, source, destination)
 }
 
 // RemoveLink removes the link from source to destination from the db.
 // Passing a transaction is optional.
-func RemoveLink(dbConn *sql.DB, transaction *sql.Tx, source string, destination string) error {
+func RemoveLink(dbConn *sqlx.DB, transaction *sqlx.Tx, source string, destination string) error {
 	stmt := `
         DELETE FROM
             Link
@@ -66,42 +36,12 @@ func RemoveLink(dbConn *sql.DB, transaction *sql.Tx, source string, destination 
             Destination = '?';
     `
 
-	var statement *sql.Stmt
-
-	var err error
-
-	if transaction != nil {
-		statement, err = transaction.Prepare(stmt)
-
-		if err != nil {
-			return err
-		}
-	} else {
-		statement, err = dbConn.Prepare(stmt)
-
-		if err != nil {
-			return err
-		}
-	}
-
-	defer statement.Close()
-
-	_, err = statement.Exec(source, destination)
-	if err != nil {
-		return err
-	}
-
-	err = statement.Close()
-
-	if err != nil {
-		return err
-	}
-	return nil
+	return sqlhelpers.Execute(dbConn, transaction, stmt, source, destination)
 }
 
 // List all link destionations from the DB.
-func ListLinks(dbConn *sql.DB, source string) ([]string, error) {
-	stmtLinks := `
+func ListLinks(dbConn *sqlx.DB, source string) ([]string, error) {
+	stmt := `
         SELECT
             Destination
         FROM
@@ -110,53 +50,26 @@ func ListLinks(dbConn *sql.DB, source string) ([]string, error) {
             Source = '?';
     `
 
-	statementLinks, err := dbConn.Prepare(stmtLinks)
+	linksBuffer := []string{}
+
+	statementLinks, err := dbConn.Preparex(stmt)
 	if err != nil {
 		return nil, err
 	}
 
 	defer statementLinks.Close()
 
-	linkRows, err := statementLinks.Query(source)
+	err = dbConn.Select(linksBuffer, stmt)
 	if err != nil {
 		return nil, err
-	}
-
-	stmtCountLinks := "SELECT COUNT(*) FROM Link WHERE Source = '?';"
-
-	statementLinksCount, err := dbConn.Prepare(stmtCountLinks)
-	if err != nil {
-		return nil, err
-	}
-
-	defer statementLinksCount.Close()
-
-	linksCountRow := statementLinksCount.QueryRow(source)
-
-	var rowCountLinks int
-
-	err = linksCountRow.Scan(&rowCountLinks)
-	if err != nil {
-		return nil, err
-	}
-
-	linksBuffer := make([]string, rowCountLinks)
-
-	i := 0
-	for linkRows.Next() {
-		err := linkRows.Scan(&linksBuffer[i])
-		if err != nil {
-			return nil, err
-		}
-		i++
 	}
 
 	return linksBuffer, nil
 }
 
 // List all link sources from the DB.
-func ListBacklinks(dbConn *sql.DB, destination string) ([]string, error) {
-	stmtBacklinks := `
+func ListBacklinks(dbConn *sqlx.DB, destination string) ([]string, error) {
+	stmt := `
         SELECT
             Source
         FROM
@@ -164,46 +77,18 @@ func ListBacklinks(dbConn *sql.DB, destination string) ([]string, error) {
         WHERE
             Destination = '?';
     `
+	backlinksBuffer := []string{}
 
-	statementBacklinks, err := dbConn.Prepare(stmtBacklinks)
+	statementLinks, err := dbConn.Preparex(stmt)
 	if err != nil {
 		return nil, err
 	}
 
-	defer statementBacklinks.Close()
+	defer statementLinks.Close()
 
-	backlinkRows, err := statementBacklinks.Query(destination)
+	err = dbConn.Select(backlinksBuffer, stmt)
 	if err != nil {
 		return nil, err
-	}
-
-	stmtCountBacklinks := "SELECT COUNT(*) FROM Link  WHERE Destination = '?';"
-
-	statementBacklinksCount, err := dbConn.Prepare(stmtCountBacklinks)
-	if err != nil {
-		return nil, err
-	}
-
-	defer statementBacklinksCount.Close()
-
-	backLinksCountRow := statementBacklinksCount.QueryRow(destination)
-
-	var rowCountLinks int
-
-	err = backLinksCountRow.Scan(&rowCountLinks)
-	if err != nil {
-		return nil, err
-	}
-
-	backlinksBuffer := make([]string, rowCountLinks)
-
-	i := 0
-	for backlinkRows.Next() {
-		err := backlinkRows.Scan(&backlinksBuffer[i])
-		if err != nil {
-			return nil, err
-		}
-		i++
 	}
 
 	return backlinksBuffer, nil

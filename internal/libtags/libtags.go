@@ -2,18 +2,19 @@
 package libtags
 
 import (
-	"database/sql"
 	"log"
 	"os"
 	"regexp"
 	"strings"
 
+	"github.com/JonasMuehlmann/bntp.go/internal/sqlhelpers"
+	"github.com/jmoiron/sqlx"
 	"gopkg.in/yaml.v3"
 )
 
 // ImportYML reads a YML file at ymlPath  and imports it's tag structure into the db.
 // The top level tag of the file is expected to be "tags".
-func ImportYML(dbConn *sql.DB, ymlPath string) error {
+func ImportYML(dbConn *sqlx.DB, ymlPath string) error {
 	file, err := os.ReadFile(ymlPath)
 	if err != nil {
 		return err
@@ -47,7 +48,7 @@ func ImportYML(dbConn *sql.DB, ymlPath string) error {
 
 	close(paths)
 
-	transaction, err := dbConn.Begin()
+	transaction, err := dbConn.Beginx()
 	if err != nil {
 		return err
 	}
@@ -103,7 +104,7 @@ func bFSTagPaths(node interface{}, paths chan []string, curPath []string) error 
 type tagNode map[string]tagNode
 
 // ExportYML exports the DB's available into a YML encoded hierarchy at ymlPath.
-func ExportYML(dbConn *sql.DB, ymlPath string) error {
+func ExportYML(dbConn *sqlx.DB, ymlPath string) error {
 	tags, err := ListTags(dbConn)
 	if err != nil {
 		return err
@@ -165,48 +166,19 @@ func ExportYML(dbConn *sql.DB, ymlPath string) error {
 
 // AddTag adds a new tag to the DB.
 // Passing a transaction is optional.
-func AddTag(dbConn *sql.DB, transaction *sql.Tx, tag string) error {
+func AddTag(dbConn *sqlx.DB, transaction *sqlx.Tx, tag string) error {
 	stmt := `
         INSERT INTO
             Tag(Tag)
         VALUES(?);
     `
 
-	var statement *sql.Stmt
-
-	var err error
-
-	if transaction != nil {
-		statement, err = transaction.Prepare(stmt)
-
-		if err != nil {
-			return err
-		}
-	} else {
-		statement, err = dbConn.Prepare(stmt)
-
-		if err != nil {
-			return err
-		}
-	}
-
-	_, err = statement.Exec(tag)
-	if err != nil {
-		return err
-	}
-
-	err = statement.Close()
-
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return sqlhelpers.Execute(dbConn, transaction, stmt, tag)
 }
 
 // RenameTag renames the tag oldTag to newTag in the DB.
 // Passing a transaction is optional.
-func RenameTag(dbConn *sql.DB, transaction *sql.Tx, oldTag string, newTag string) error {
+func RenameTag(dbConn *sqlx.DB, transaction *sqlx.Tx, oldTag string, newTag string) error {
 	stmt := `
         UPDATE
             Tag
@@ -216,40 +188,12 @@ func RenameTag(dbConn *sql.DB, transaction *sql.Tx, oldTag string, newTag string
             Tag = '?';
     `
 
-	var statement *sql.Stmt
-
-	var err error
-
-	if transaction != nil {
-		statement, err = transaction.Prepare(stmt)
-
-		if err != nil {
-			return err
-		}
-	} else {
-		statement, err = dbConn.Prepare(stmt)
-
-		if err != nil {
-			return err
-		}
-	}
-
-	_, err = statement.Exec(newTag, oldTag)
-	if err != nil {
-		return err
-	}
-
-	err = statement.Close()
-
-	if err != nil {
-		return err
-	}
-	return nil
+	return sqlhelpers.Execute(dbConn, transaction, stmt, oldTag, newTag)
 }
 
 // DeleteTag removes the tag tag from the DB.
 // Passing a transaction is optional.
-func DeleteTag(dbConn *sql.DB, transaction *sql.Tx, tag string) error {
+func DeleteTag(dbConn *sqlx.DB, transaction *sqlx.Tx, tag string) error {
 	stmt := `
         DELETE FROM
             Tag
@@ -257,41 +201,13 @@ func DeleteTag(dbConn *sql.DB, transaction *sql.Tx, tag string) error {
             Tag = '?';
     `
 
-	var statement *sql.Stmt
-
-	var err error
-
-	if transaction != nil {
-		statement, err = transaction.Prepare(stmt)
-
-		if err != nil {
-			return err
-		}
-	} else {
-		statement, err = dbConn.Prepare(stmt)
-
-		if err != nil {
-			return err
-		}
-	}
-
-	_, err = statement.Exec(tag)
-	if err != nil {
-		return err
-	}
-
-	err = statement.Close()
-
-	if err != nil {
-		return err
-	}
-	return nil
+	return sqlhelpers.Execute(dbConn, transaction, stmt, tag)
 }
 
 // TryShortenTag shortens tag as much as possible, while keeping it unambiguous.
 // Components are removed from root to leaf.
 // A::B::C can be shortened to C if C does not appear in any other tag(e.g. X::C::Y).
-func TryShortenTag(dbConn *sql.DB, tag string) (string, error) {
+func TryShortenTag(dbConn *sqlx.DB, tag string) (string, error) {
 	isAmbiguous, err := IsLeafAmbiguous(dbConn, tag)
 	if err != nil {
 		return "", err
@@ -307,7 +223,7 @@ func TryShortenTag(dbConn *sql.DB, tag string) (string, error) {
 }
 
 // IsLeafAmbiguous checks if the leaf of the specified tag appears in any other tag.
-func IsLeafAmbiguous(dbConn *sql.DB, tag string) (bool, error) {
+func IsLeafAmbiguous(dbConn *sqlx.DB, tag string) (bool, error) {
 	tags, err := ListTags(dbConn)
 	if err != nil {
 		return false, err
@@ -330,7 +246,7 @@ func IsLeafAmbiguous(dbConn *sql.DB, tag string) (bool, error) {
 
 // ListTags lists all available from the DB.
 // Tags are listed fully qualified, no components are removed.
-func ListTags(dbConn *sql.DB) ([]string, error) {
+func ListTags(dbConn *sqlx.DB) ([]string, error) {
 	stmt := `
         SELECT
             Tag
@@ -338,31 +254,11 @@ func ListTags(dbConn *sql.DB) ([]string, error) {
             Tag;
     `
 
-	tagRows, err := dbConn.Query(stmt)
+	tagsBuffer := []string{}
+
+	err := dbConn.Select(tagsBuffer, stmt)
 	if err != nil {
 		return nil, err
-	}
-
-	stmtCountTags := "SELECT COUNT(*) FROM  Tag;"
-
-	tagsCountRow := dbConn.QueryRow(stmtCountTags)
-
-	var rowCountTags int
-
-	err = tagsCountRow.Scan(&rowCountTags)
-	if err != nil {
-		return nil, err
-	}
-
-	tagsBuffer := make([]string, rowCountTags)
-
-	i := 0
-	for tagRows.Next() {
-		err := tagRows.Scan(&tagsBuffer[i])
-		if err != nil {
-			return nil, err
-		}
-		i++
 	}
 
 	return tagsBuffer, nil
@@ -370,7 +266,7 @@ func ListTags(dbConn *sql.DB) ([]string, error) {
 
 // ListTagsShortened lists all available from the DB.
 // Tags are shortened as much as possible while being kept unambiguous.
-func ListTagsShortened(dbConn *sql.DB) ([]string, error) {
+func ListTagsShortened(dbConn *sqlx.DB) ([]string, error) {
 	tags, err := ListTags(dbConn)
 	if err != nil {
 		return nil, err
