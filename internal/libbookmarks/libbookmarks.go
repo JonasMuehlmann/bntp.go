@@ -52,7 +52,7 @@ func ImportMinimalCSV(dbConn *sqlx.DB, csvPath string) error {
 		linkColumn = 0
 	}
 
-	transaction, err := dbConn.Begin()
+	transaction, err := dbConn.Beginx()
 	if err != nil {
 		return err
 	}
