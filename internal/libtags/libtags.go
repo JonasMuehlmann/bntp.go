@@ -204,6 +204,8 @@ func DeleteTag(dbConn *sqlx.DB, transaction *sqlx.Tx, tag string) error {
 	return sqlhelpers.Execute(dbConn, transaction, stmt, tag)
 }
 
+// TODO: implement helper function to find ambiguous tag component
+
 // TryShortenTag shortens tag as much as possible, while keeping it unambiguous.
 // Components are removed from root to leaf.
 // A::B::C can be shortened to C if C does not appear in any other tag(e.g. X::C::Y).
@@ -213,6 +215,8 @@ func TryShortenTag(dbConn *sqlx.DB, tag string) (string, error) {
 		return "", err
 	}
 
+	// FIX: This should find the ambiguous component
+	// and return a tag containing itself and it's children
 	if isAmbiguous {
 		tagComponents := strings.Split(tag, "::")
 
@@ -273,15 +277,12 @@ func ListTagsShortened(dbConn *sqlx.DB) ([]string, error) {
 	}
 
 	for i, tag := range tags {
-		isAmbiguous, err := IsLeafAmbiguous(dbConn, tag)
+		shortenedTag, err := TryShortenTag(dbConn, tag)
 		if err != nil {
 			return nil, err
 		}
 
-		if isAmbiguous {
-			tagComponents := strings.Split(tag, "::")
-			tags[i] = tagComponents[len(tagComponents)-1]
-		}
+		tags[i] = shortenedTag
 	}
 
 	return tags, nil

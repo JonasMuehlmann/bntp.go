@@ -179,3 +179,64 @@ func TestListTagsEmpty(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Len(t, tagsBefore, 0)
 }
+
+// #######################
+// # ListTagsShortened() #
+// #######################
+func TestListTagsShortenedOneTagNoComponents(t *testing.T) {
+	db, err := GetDB(t)
+	assert.NoError(t, err)
+
+	err = libtags.AddTag(db, nil, "Foo")
+	assert.NoError(t, err)
+
+	tags, err := libtags.ListTagsShortened(db)
+	assert.NoError(t, err)
+	assert.Len(t, tags, 1)
+	assert.Equal(t, []string{"Foo"}, tags)
+}
+
+func TestListTagsShortenedOneTagManyComponents(t *testing.T) {
+	db, err := GetDB(t)
+	assert.NoError(t, err)
+
+	err = libtags.AddTag(db, nil, "X::Y::Z")
+	assert.NoError(t, err)
+
+	tags, err := libtags.ListTagsShortened(db)
+	assert.NoError(t, err)
+	assert.Len(t, tags, 1)
+	assert.Equal(t, []string{"Z"}, tags)
+}
+
+func TestListTagsShortenedManyTags(t *testing.T) {
+	db, err := GetDB(t)
+	assert.NoError(t, err)
+
+	err = libtags.AddTag(db, nil, "X::Y::Z")
+	assert.NoError(t, err)
+
+	err = libtags.AddTag(db, nil, "A::B::C")
+	assert.NoError(t, err)
+
+	tags, err := libtags.ListTagsShortened(db)
+	assert.NoError(t, err)
+	assert.Len(t, tags, 2)
+	assert.Equal(t, []string{"Z", "C"}, tags)
+}
+
+func TestListTagsShortenedManyTagsAmbiguousComponent(t *testing.T) {
+	db, err := GetDB(t)
+	assert.NoError(t, err)
+
+	err = libtags.AddTag(db, nil, "X::Y::C")
+	assert.NoError(t, err)
+
+	err = libtags.AddTag(db, nil, "A::B::C")
+	assert.NoError(t, err)
+
+	tags, err := libtags.ListTagsShortened(db)
+	assert.NoError(t, err)
+	assert.Len(t, tags, 2)
+	assert.Equal(t, []string{"Y::C", "B::C"}, tags)
+}
