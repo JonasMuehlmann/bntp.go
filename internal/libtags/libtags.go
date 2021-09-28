@@ -183,9 +183,9 @@ func RenameTag(dbConn *sqlx.DB, transaction *sqlx.Tx, oldTag string, newTag stri
         UPDATE
             Tag
         SET
-            Tag = '?'
+            Tag = ?
         WHERE
-            Tag = '?';
+            Tag = ?;
     `
 
 	return sqlhelpers.Execute(dbConn, transaction, stmt, oldTag, newTag)
@@ -198,7 +198,7 @@ func DeleteTag(dbConn *sqlx.DB, transaction *sqlx.Tx, tag string) error {
         DELETE FROM
             Tag
         WHERE
-            Tag = '?';
+            Tag = ?;
     `
 
 	return sqlhelpers.Execute(dbConn, transaction, stmt, tag)

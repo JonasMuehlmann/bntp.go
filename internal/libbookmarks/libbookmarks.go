@@ -392,7 +392,7 @@ func EditBookmark(dbConn *sqlx.DB, transaction *sqlx.Tx, id int, column string, 
 	_, ok := newVal.(string)
 
 	if ok {
-		stmt += "'?';"
+		stmt += "?;"
 	} else {
 		stmt += "?;"
 	}
@@ -454,7 +454,7 @@ func GetIdFromTag(dbConn *sqlx.DB, transaction *sqlx.Tx, tag string) (int, error
         FROM
             Tag
         WHERE
-            Tag = '?';
+            Tag = ?;
     `
 
 	var statement *sqlx.Stmt
@@ -501,7 +501,7 @@ func GetIdFromType(dbConn *sqlx.DB, transaction *sqlx.Tx, type_ string) (int, er
         FROM
             Type
         WHERE
-            Type = '?';
+            Type = ?;
     `
 
 	var statement *sqlx.Stmt

@@ -16,8 +16,8 @@ func AddLink(dbConn *sqlx.DB, transaction *sqlx.Tx, source string, destination s
                 Destination
             )
         VALUES(
-            '?',
-            '?'
+            ?,
+            ?
         );
     `
 
@@ -31,9 +31,9 @@ func RemoveLink(dbConn *sqlx.DB, transaction *sqlx.Tx, source string, destinatio
         DELETE FROM
             Link
         WHERE
-            Source = '?'
+            Source = ?
             AND
-            Destination = '?';
+            Destination = ?;
     `
 
 	return sqlhelpers.Execute(dbConn, transaction, stmt, source, destination)
@@ -47,7 +47,7 @@ func ListLinks(dbConn *sqlx.DB, source string) ([]string, error) {
         FROM
             Link
         WHERE
-            Source = '?';
+            Source = ?;
     `
 
 	linksBuffer := []string{}
@@ -75,7 +75,7 @@ func ListBacklinks(dbConn *sqlx.DB, destination string) ([]string, error) {
         FROM
             Link
         WHERE
-            Destination = '?';
+            Destination = ?;
     `
 	backlinksBuffer := []string{}
 
