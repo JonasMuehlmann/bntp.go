@@ -7,6 +7,9 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// ############
+// # AddTag() #
+// ############
 func TestAddTag(t *testing.T) {
 	db, err := GetDB(t)
 	assert.NoError(t, err)
@@ -37,6 +40,9 @@ func TestAddTagEmptyTag(t *testing.T) {
 	assert.NoError(t, err)
 }
 
+// ###############
+// # RemoveTag() #
+// ###############
 func TestRemoveTag(t *testing.T) {
 	db, err := GetDB(t)
 	assert.NoError(t, err)
@@ -76,6 +82,9 @@ func TestRemoveTagDoesNotExist(t *testing.T) {
 	assert.NoError(t, err)
 }
 
+// ###############
+// # RenameTag() #
+// ###############
 func TestRenameTag(t *testing.T) {
 	db, err := GetDB(t)
 	assert.NoError(t, err)
@@ -124,4 +133,49 @@ func TestRenameTagNewEmpty(t *testing.T) {
 
 	err = libtags.RenameTag(db, nil, "Foo", "")
 	assert.NoError(t, err)
+}
+
+// ##############
+// # ListTags() #
+// ##############
+func TestListTagsOneTag(t *testing.T) {
+	db, err := GetDB(t)
+	assert.NoError(t, err)
+
+	err = libtags.AddTag(db, nil, "Foo")
+	assert.NoError(t, err)
+
+	tagsAfter, err := libtags.ListTags(db)
+	assert.NoError(t, err)
+	assert.Len(t, tagsAfter, 1)
+}
+
+func TestListTagsManyTags(t *testing.T) {
+	db, err := GetDB(t)
+	assert.NoError(t, err)
+
+	err = libtags.AddTag(db, nil, "Foo1")
+	assert.NoError(t, err)
+
+	err = libtags.AddTag(db, nil, "Foo2")
+	assert.NoError(t, err)
+
+	err = libtags.AddTag(db, nil, "Foo3")
+	assert.NoError(t, err)
+
+	err = libtags.AddTag(db, nil, "Foo4")
+	assert.NoError(t, err)
+
+	tagsAfter, err := libtags.ListTags(db)
+	assert.NoError(t, err)
+	assert.Len(t, tagsAfter, 4)
+}
+
+func TestListTagsEmpty(t *testing.T) {
+	db, err := GetDB(t)
+	assert.NoError(t, err)
+
+	tagsBefore, err := libtags.ListTags(db)
+	assert.NoError(t, err)
+	assert.Len(t, tagsBefore, 0)
 }
