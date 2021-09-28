@@ -23,12 +23,6 @@ CREATE TABLE Bookmark
         references BookmarkType (Id),
     IsCollection INTEGER not null
 );
-CREATE TABLE Link
-(
-    Id           INTEGER PRIMARY KEY,
-    Source       Text,
-    Destination Text
-);
 CREATE TABLE DocumentType
 (
     Id INTEGER PRIMARY KEY,
@@ -39,6 +33,12 @@ CREATE TABLE Document
     Id   INTEGER PRIMARY KEY,
     Path Text,
     DocumentTypeId REFERENCES DocumentType(Id)
+);
+CREATE TABLE Link
+(
+    Id           INTEGER PRIMARY KEY,
+    SourceId REFERENCES Document(Id),
+    DestinationId REFERENCES Document(Id)
 );
 CREATE TABLE BookmarkContext
 (
