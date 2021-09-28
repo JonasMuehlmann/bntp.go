@@ -2,7 +2,6 @@
 package libtags
 
 import (
-	"errors"
 	"log"
 	"os"
 	"regexp"
@@ -213,12 +212,14 @@ func FindAmbiguousTagComponent(dbConn *sqlx.DB, tag string) (int, error) {
         FROM
             Tag
         WHERE
-            INSTR(Tag, ?) > 0;
+            INSTR(Tag, ?) > 0
+            AND
+            Tag != ?;
     `
 	inputTagComponents := strings.Split(tag, "::")
 	leaf := inputTagComponents[len(inputTagComponents)-1]
 
-	var tagWithAmbiguousComponent string
+	var ambiguousTag string
 
 	statement, err := dbConn.Preparex(stmt)
 	if err != nil {
@@ -227,42 +228,51 @@ func FindAmbiguousTagComponent(dbConn *sqlx.DB, tag string) (int, error) {
 
 	defer statement.Close()
 
-	err = statement.Get(&tagWithAmbiguousComponent, leaf)
-	if err != nil {
-		return -1, err
+	_ = statement.Get(&ambiguousTag, leaf, tag)
+
+	ambiguousTagComponents := strings.Split(ambiguousTag, "::")
+
+	i := len(ambiguousTagComponents) - 1
+
+	// Find where input tag's leaf appears in ambiguous tag
+	for ; i > 0; i-- {
+		if ambiguousTagComponents[i] == leaf {
+			break
+		}
 	}
 
-	// FIX: The index must be found in the input tag!
-	i := strings.Index(tagWithAmbiguousComponent, leaf)
-	if i == -1 {
-		return -1, errors.New("Could not find ambiguous component in input tag")
+	// Find index of first differing tag component (traversal from leaf to root)
+	j := len(inputTagComponents) - 1
+
+	for i > 0 && j > 0 && ambiguousTagComponents[i] == inputTagComponents[j] {
+		i--
+		j--
 	}
 
-	return i, nil
+	return j, nil
 }
 
 // TryShortenTag shortens tag as much as possible, while keeping it unambiguous.
 // Components are removed from root to leaf.
 // A::B::C can be shortened to C if C does not appear in any other tag(e.g. X::C::Y).
 func TryShortenTag(dbConn *sqlx.DB, tag string) (string, error) {
+	tagComponents := strings.Split(tag, "::")
+
 	isAmbiguous, err := IsLeafAmbiguous(dbConn, tag)
 	if err != nil {
 		return "", err
 	}
 
-	// FIX: This should find the ambiguous component
-	// and return a tag containing itself and it's children
 	if isAmbiguous {
 		i, err := FindAmbiguousTagComponent(dbConn, tag)
 		if err != nil {
 			return "", err
 		}
-		tagComponents := strings.Split(tag, "::")
 
 		return strings.Join(tagComponents[i:], "::"), nil
 	}
 
-	return tag, nil
+	return tagComponents[len(tagComponents)-1], nil
 }
 
 // IsLeafAmbiguous checks if the leaf of the specified tag appears in any other tag.
