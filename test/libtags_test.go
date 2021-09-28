@@ -1,6 +1,8 @@
 package test
 
 import (
+	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/JonasMuehlmann/bntp.go/internal/libtags"
@@ -239,4 +241,105 @@ func TestListTagsShortenedManyTagsAmbiguousComponent(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Len(t, tags, 2)
 	assert.Equal(t, []string{"Y::C", "B::C"}, tags)
+}
+
+// ###############
+// # ImportYML() #
+// ###############
+func TestImportYMLNoTagsKey(t *testing.T) {
+	db, err := GetDB(t)
+	assert.NoError(t, err)
+
+	file, err := os.Create(filepath.Join(testDataTempDir, t.Name()))
+	assert.NoError(t, err)
+
+	yml := `
+foo:
+- bar
+- baz
+    `
+	_, err = file.WriteString(yml)
+	assert.NoError(t, err)
+
+	err = libtags.ImportYML(db, filepath.Join(testDataTempDir, t.Name()))
+	assert.Error(t, err)
+}
+
+func TestImportYMLNoTags(t *testing.T) {
+	db, err := GetDB(t)
+	assert.NoError(t, err)
+
+	file, err := os.Create(filepath.Join(testDataTempDir, t.Name()))
+	assert.NoError(t, err)
+
+	yml := `
+tags:
+    `
+	_, err = file.WriteString(yml)
+	assert.NoError(t, err)
+
+	err = libtags.ImportYML(db, filepath.Join(testDataTempDir, t.Name()))
+	assert.Error(t, err)
+}
+
+func TestImportYMLOnlyTopLevel(t *testing.T) {
+	db, err := GetDB(t)
+	assert.NoError(t, err)
+
+	file, err := os.Create(filepath.Join(testDataTempDir, t.Name()))
+	assert.NoError(t, err)
+
+	yml := `
+tags:
+- foo
+- bar
+- baz
+    `
+	_, err = file.WriteString(yml)
+	assert.NoError(t, err)
+
+	err = libtags.ImportYML(db, filepath.Join(testDataTempDir, t.Name()))
+	assert.NoError(t, err)
+}
+
+func TestImportYMLOnePath(t *testing.T) {
+	db, err := GetDB(t)
+	assert.NoError(t, err)
+
+	file, err := os.Create(filepath.Join(testDataTempDir, t.Name()))
+	assert.NoError(t, err)
+
+	yml := `
+tags:
+- foo:
+    - bar:
+        - baz
+    `
+	_, err = file.WriteString(yml)
+	assert.NoError(t, err)
+
+	err = libtags.ImportYML(db, filepath.Join(testDataTempDir, t.Name()))
+	assert.NoError(t, err)
+}
+func TestImportYMLTwoPaths(t *testing.T) {
+	db, err := GetDB(t)
+	assert.NoError(t, err)
+
+	file, err := os.Create(filepath.Join(testDataTempDir, t.Name()))
+	assert.NoError(t, err)
+
+	yml := `
+tags:
+- foo:
+    - bar:
+        - baz
+- foo2:
+    - bar2:
+        - baz2
+    `
+	_, err = file.WriteString(yml)
+	assert.NoError(t, err)
+
+	err = libtags.ImportYML(db, filepath.Join(testDataTempDir, t.Name()))
+	assert.NoError(t, err)
 }

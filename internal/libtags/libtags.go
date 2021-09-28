@@ -2,7 +2,7 @@
 package libtags
 
 import (
-	"log"
+	"errors"
 	"os"
 	"regexp"
 	"strings"
@@ -32,14 +32,18 @@ func ImportYML(dbConn *sqlx.DB, ymlPath string) error {
 	switch data.(type) {
 	case map[string]interface{}:
 		if val, ok := data.(map[string]interface{})["tags"]; ok {
-			topLevelTags = val.([]interface{})
+			topLevelTags, ok = val.([]interface{})
+
+			if !ok {
+				return errors.New("Top level tag does not have children")
+			}
 		} else {
-			log.Fatal("Could not recognize top level tag(should be 'tags'")
+			return errors.New("Could not recognize top level tag(should be 'tags'")
 		}
 	case []interface{}:
 		topLevelTags = data.([]interface{})
 	default:
-		log.Fatal("Could not parse YML tag file.")
+		return errors.New("Could not parse YML tag file")
 	}
 
 	paths := make(chan []string, 200)
