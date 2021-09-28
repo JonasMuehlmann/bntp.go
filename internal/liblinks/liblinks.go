@@ -9,6 +9,7 @@ import (
 // AddLink adds a link from source to destination to the DB.
 // Passing a transaction is optional.
 func AddLink(dbConn *sqlx.DB, transaction *sqlx.Tx, source string, destination string) error {
+	// TODO: Fix sql statement after db refactor
 	stmt := `
         INSERT INTO
             Link(
@@ -27,6 +28,7 @@ func AddLink(dbConn *sqlx.DB, transaction *sqlx.Tx, source string, destination s
 // RemoveLink removes the link from source to destination from the db.
 // Passing a transaction is optional.
 func RemoveLink(dbConn *sqlx.DB, transaction *sqlx.Tx, source string, destination string) error {
+	// TODO: Fix sql statement after db refactor
 	stmt := `
         DELETE FROM
             Link
@@ -39,8 +41,9 @@ func RemoveLink(dbConn *sqlx.DB, transaction *sqlx.Tx, source string, destinatio
 	return sqlhelpers.Execute(dbConn, transaction, stmt, source, destination)
 }
 
-// List all link destionations from the DB.
+// ListLinks lists all link destionations from the DB.
 func ListLinks(dbConn *sqlx.DB, source string) ([]string, error) {
+	// TODO: Fix sql statement after db refactor
 	stmt := `
         SELECT
             Destination
@@ -67,8 +70,9 @@ func ListLinks(dbConn *sqlx.DB, source string) ([]string, error) {
 	return linksBuffer, nil
 }
 
-// List all link sources from the DB.
+// ListBacklinks lists all link sources from the DB.
 func ListBacklinks(dbConn *sqlx.DB, destination string) ([]string, error) {
+	// TODO: Fix sql statement after db refactor
 	stmt := `
         SELECT
             Source
