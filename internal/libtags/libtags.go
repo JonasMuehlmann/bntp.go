@@ -204,7 +204,40 @@ func DeleteTag(dbConn *sqlx.DB, transaction *sqlx.Tx, tag string) error {
 	return sqlhelpers.Execute(dbConn, transaction, stmt, tag)
 }
 
-// TODO: implement helper function to find ambiguous tag component
+// FindAmbiguousTagComponent finds the index (root = 0) of an ambiguous component.
+func FindAmbiguousTagComponent(dbConn *sqlx.DB, tag string) (int, error) {
+	stmt := `
+        SELECT
+            Tag
+        FROM
+            Tag
+        WHERE
+            INSTR(Tag, ?) > 0;
+    `
+	inputTagComponents := strings.Split(tag, "::")
+	leaf := inputTagComponents[len(inputTagComponents)-1]
+
+	var tagWithAmbiguousComponent string
+
+	statement, err := dbConn.Preparex(stmt)
+	if err != nil {
+		return -1, err
+	}
+
+	defer statement.Close()
+
+	err = statement.Get(&tagWithAmbiguousComponent, leaf)
+	if err != nil {
+		return -1, err
+	}
+
+	i := strings.Index(leaf, tagWithAmbiguousComponent)
+	if i == -1 {
+		return -1, err
+	}
+
+	return i, nil
+}
 
 // TryShortenTag shortens tag as much as possible, while keeping it unambiguous.
 // Components are removed from root to leaf.
@@ -218,9 +251,13 @@ func TryShortenTag(dbConn *sqlx.DB, tag string) (string, error) {
 	// FIX: This should find the ambiguous component
 	// and return a tag containing itself and it's children
 	if isAmbiguous {
+		i, err := FindAmbiguousTagComponent(dbConn, tag)
+		if err != nil {
+			return "", err
+		}
 		tagComponents := strings.Split(tag, "::")
 
-		return tagComponents[len(tagComponents)-1], nil
+		return strings.Join(tagComponents[i:], "::"), nil
 	}
 
 	return tag, nil
