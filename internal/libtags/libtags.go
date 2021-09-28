@@ -2,6 +2,7 @@
 package libtags
 
 import (
+	"errors"
 	"log"
 	"os"
 	"regexp"
@@ -231,9 +232,10 @@ func FindAmbiguousTagComponent(dbConn *sqlx.DB, tag string) (int, error) {
 		return -1, err
 	}
 
-	i := strings.Index(leaf, tagWithAmbiguousComponent)
+	// FIX: The index must be found in the input tag!
+	i := strings.Index(tagWithAmbiguousComponent, leaf)
 	if i == -1 {
-		return -1, err
+		return -1, errors.New("Could not find ambiguous component in input tag")
 	}
 
 	return i, nil
