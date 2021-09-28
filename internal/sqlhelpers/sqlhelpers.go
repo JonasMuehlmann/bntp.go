@@ -24,7 +24,7 @@ func Execute(dbConn *sqlx.DB, transaction *sqlx.Tx, stmt string, args ...interfa
 		}
 	}
 
-	_, err = statement.Exec(args)
+	_, err = statement.Exec(args...)
 	if err != nil {
 		return err
 	}

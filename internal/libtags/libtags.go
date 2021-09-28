@@ -2,7 +2,7 @@
 package libtags
 
 import (
-	"log"
+	"errors"
 	"os"
 	"regexp"
 	"strings"
@@ -32,14 +32,18 @@ func ImportYML(dbConn *sqlx.DB, ymlPath string) error {
 	switch data.(type) {
 	case map[string]interface{}:
 		if val, ok := data.(map[string]interface{})["tags"]; ok {
-			topLevelTags = val.([]interface{})
+			topLevelTags, ok = val.([]interface{})
+
+			if !ok {
+				return errors.New("Top level tag does not have children")
+			}
 		} else {
-			log.Fatal("Could not recognize top level tag(should be 'tags'")
+			return errors.New("Could not recognize top level tag(should be 'tags'")
 		}
 	case []interface{}:
 		topLevelTags = data.([]interface{})
 	default:
-		log.Fatal("Could not parse YML tag file.")
+		return errors.New("Could not parse YML tag file")
 	}
 
 	paths := make(chan []string, 200)
@@ -183,9 +187,9 @@ func RenameTag(dbConn *sqlx.DB, transaction *sqlx.Tx, oldTag string, newTag stri
         UPDATE
             Tag
         SET
-            Tag = '?'
+            Tag = ?
         WHERE
-            Tag = '?';
+            Tag = ?;
     `
 
 	return sqlhelpers.Execute(dbConn, transaction, stmt, oldTag, newTag)
@@ -198,28 +202,81 @@ func DeleteTag(dbConn *sqlx.DB, transaction *sqlx.Tx, tag string) error {
         DELETE FROM
             Tag
         WHERE
-            Tag = '?';
+            Tag = ?;
     `
 
 	return sqlhelpers.Execute(dbConn, transaction, stmt, tag)
+}
+
+// FindAmbiguousTagComponent finds the index (root = 0) of an ambiguous component.
+func FindAmbiguousTagComponent(dbConn *sqlx.DB, tag string) (int, error) {
+	stmt := `
+        SELECT
+            Tag
+        FROM
+            Tag
+        WHERE
+            INSTR(Tag, ?) > 0
+            AND
+            Tag != ?;
+    `
+	inputTagComponents := strings.Split(tag, "::")
+	leaf := inputTagComponents[len(inputTagComponents)-1]
+
+	var ambiguousTag string
+
+	statement, err := dbConn.Preparex(stmt)
+	if err != nil {
+		return -1, err
+	}
+
+	defer statement.Close()
+
+	_ = statement.Get(&ambiguousTag, leaf, tag)
+
+	ambiguousTagComponents := strings.Split(ambiguousTag, "::")
+
+	i := len(ambiguousTagComponents) - 1
+
+	// Find where input tag's leaf appears in ambiguous tag
+	for ; i > 0; i-- {
+		if ambiguousTagComponents[i] == leaf {
+			break
+		}
+	}
+
+	// Find index of first differing tag component (traversal from leaf to root)
+	j := len(inputTagComponents) - 1
+
+	for i > 0 && j > 0 && ambiguousTagComponents[i] == inputTagComponents[j] {
+		i--
+		j--
+	}
+
+	return j, nil
 }
 
 // TryShortenTag shortens tag as much as possible, while keeping it unambiguous.
 // Components are removed from root to leaf.
 // A::B::C can be shortened to C if C does not appear in any other tag(e.g. X::C::Y).
 func TryShortenTag(dbConn *sqlx.DB, tag string) (string, error) {
+	tagComponents := strings.Split(tag, "::")
+
 	isAmbiguous, err := IsLeafAmbiguous(dbConn, tag)
 	if err != nil {
 		return "", err
 	}
 
 	if isAmbiguous {
-		tagComponents := strings.Split(tag, "::")
+		i, err := FindAmbiguousTagComponent(dbConn, tag)
+		if err != nil {
+			return "", err
+		}
 
-		return tagComponents[len(tagComponents)-1], nil
+		return strings.Join(tagComponents[i:], "::"), nil
 	}
 
-	return tag, nil
+	return tagComponents[len(tagComponents)-1], nil
 }
 
 // IsLeafAmbiguous checks if the leaf of the specified tag appears in any other tag.
@@ -256,7 +313,7 @@ func ListTags(dbConn *sqlx.DB) ([]string, error) {
 
 	tagsBuffer := []string{}
 
-	err := dbConn.Select(tagsBuffer, stmt)
+	err := dbConn.Select(&tagsBuffer, stmt)
 	if err != nil {
 		return nil, err
 	}
@@ -273,15 +330,12 @@ func ListTagsShortened(dbConn *sqlx.DB) ([]string, error) {
 	}
 
 	for i, tag := range tags {
-		isAmbiguous, err := IsLeafAmbiguous(dbConn, tag)
+		shortenedTag, err := TryShortenTag(dbConn, tag)
 		if err != nil {
 			return nil, err
 		}
 
-		if isAmbiguous {
-			tagComponents := strings.Split(tag, "::")
-			tags[i] = tagComponents[len(tagComponents)-1]
-		}
+		tags[i] = shortenedTag
 	}
 
 	return tags, nil
