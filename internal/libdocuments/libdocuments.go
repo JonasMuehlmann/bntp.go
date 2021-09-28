@@ -8,6 +8,8 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/jmoiron/sqlx"
 )
 
 // AddTag adds a tag to the tag line of the doucment at documentPath.
@@ -413,4 +415,24 @@ func RemoveBacklink(documentPathDestination string, documentPathSource string) e
 	}
 
 	return err
+}
+
+// AddDocument adds a new document located at documentPath to the DB.
+func AddDocument(dbConn *sqlx.DB, transaction *sqlx.Tx, documentPath string) error {
+	return errors.New("Not Implemented")
+}
+
+//  RemoveDocument removes  a document located at documentPath from the DB.
+func RemoveDocument(dbConn *sqlx.DB, transaction *sqlx.Tx, documentPath string) error {
+	return errors.New("Not Implemented")
+}
+
+// RenameDocument moves a document located at documentPathOld to documentPathNew.
+func RenameDocument(dbConn *sqlx.DB, transaction *sqlx.Tx, documentPathOld string, documentPathNew string) error {
+	return errors.New("Not Implemented")
+}
+
+// ChangeDocumentType changes the type of the document located documentPath to documentTypeNew.
+func ChangeDocumentType(dbConn *sqlx.DB, transaction *sqlx.Tx, documentPath string, documentTypeNew string) error {
+	return errors.New("Not Implemented")
 }
