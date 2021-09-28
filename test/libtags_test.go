@@ -343,3 +343,70 @@ tags:
 	err = libtags.ImportYML(db, filepath.Join(testDataTempDir, t.Name()))
 	assert.NoError(t, err)
 }
+
+// ###############
+// # ExportYML() #
+// ###############
+func TestExportYMLNoTags(t *testing.T) {
+	db, err := GetDB(t)
+	assert.NoError(t, err)
+
+	err = libtags.ExportYML(db, filepath.Join(testDataTempDir, t.Name()))
+	assert.NoError(t, err)
+}
+
+func TestExportYMLOnlyTopLevel(t *testing.T) {
+	db, err := GetDB(t)
+	assert.NoError(t, err)
+
+	file, err := os.Create(filepath.Join(testDataTempDir, t.Name()+"In"))
+	assert.NoError(t, err)
+
+	yml := `tags:
+- foo
+- bar
+- baz`
+	_, err = file.WriteString(yml)
+	assert.NoError(t, err)
+
+	err = libtags.ImportYML(db, filepath.Join(testDataTempDir, t.Name()+"In"))
+	assert.NoError(t, err)
+}
+
+func TestExportYMLOnePath(t *testing.T) {
+	db, err := GetDB(t)
+	assert.NoError(t, err)
+
+	file, err := os.Create(filepath.Join(testDataTempDir, t.Name()+"In"))
+	assert.NoError(t, err)
+
+	yml := `tags:
+- foo:
+    - bar:
+        - baz`
+	_, err = file.WriteString(yml)
+	assert.NoError(t, err)
+
+	err = libtags.ImportYML(db, filepath.Join(testDataTempDir, t.Name()+"In"))
+	assert.NoError(t, err)
+}
+func TestExportYMLTwoPaths(t *testing.T) {
+	db, err := GetDB(t)
+	assert.NoError(t, err)
+
+	file, err := os.Create(filepath.Join(testDataTempDir, t.Name()+"In"))
+	assert.NoError(t, err)
+
+	yml := `tags:
+- foo:
+    - bar:
+        - baz
+- foo2:
+    - bar2:
+        - baz2`
+	_, err = file.WriteString(yml)
+	assert.NoError(t, err)
+
+	err = libtags.ImportYML(db, filepath.Join(testDataTempDir, t.Name()+"In"))
+	assert.NoError(t, err)
+}
