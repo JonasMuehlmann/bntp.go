@@ -466,6 +466,9 @@ func ChangeDocumentType(dbConn *sqlx.DB, transaction *sqlx.Tx, documentPath stri
 	if err != nil {
 		return err
 	}
+	if documentTypeId == -1 {
+		return errors.New("Could not retrieve DocumentTypeId")
+	}
 
 	return helpers.SqlExecute(dbConn, transaction, stmt, documentTypeId, documentPath)
 }

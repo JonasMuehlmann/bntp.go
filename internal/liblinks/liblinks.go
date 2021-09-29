@@ -2,6 +2,8 @@
 package liblinks
 
 import (
+	"errors"
+
 	"github.com/JonasMuehlmann/bntp.go/internal/helpers"
 	"github.com/jmoiron/sqlx"
 )
@@ -26,9 +28,17 @@ func AddLink(dbConn *sqlx.DB, transaction *sqlx.Tx, source string, destination s
 		return err
 	}
 
+	if sourceId == -1 {
+		return errors.New("Could not retrieve DestinationId")
+	}
+
 	destinationId, err := helpers.GetIdFromDocument(dbConn, transaction, destination)
 	if err != nil {
 		return err
+	}
+
+	if destinationId == -1 {
+		return errors.New("Could not retrieve DestinationId")
 	}
 
 	return helpers.SqlExecute(dbConn, transaction, stmt, sourceId, destinationId)
@@ -50,10 +60,19 @@ func RemoveLink(dbConn *sqlx.DB, transaction *sqlx.Tx, source string, destinatio
 		return err
 	}
 
+	if sourceId == -1 {
+		return errors.New("Could not retrieve DestinationId")
+	}
+
 	destinationId, err := helpers.GetIdFromDocument(dbConn, transaction, destination)
 	if err != nil {
 		return err
 	}
+
+	if destinationId == -1 {
+		return errors.New("Could not retrieve DestinationId")
+	}
+
 	return helpers.SqlExecute(dbConn, transaction, stmt, sourceId, destinationId)
 }
 
@@ -72,6 +91,10 @@ func ListLinks(dbConn *sqlx.DB, source string) ([]string, error) {
 	sourceId, err := helpers.GetIdFromDocument(dbConn, nil, source)
 	if err != nil {
 		return nil, err
+	}
+
+	if sourceId == -1 {
+		return nil, errors.New("Could not retrieve DestinationId")
 	}
 
 	linksBuffer := []string{}
@@ -106,6 +129,11 @@ func ListBacklinks(dbConn *sqlx.DB, destination string) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	if destinationId == -1 {
+		return nil, errors.New("Could not retrieve DestinationId")
+	}
+
 	backlinksBuffer := []string{}
 
 	statementLinks, err := dbConn.Preparex(stmt)

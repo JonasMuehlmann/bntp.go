@@ -19,32 +19,28 @@ func GetIdFromType(dbConn *sqlx.DB, transaction *sqlx.Tx, type_ string) (int, er
 		statement, err = transaction.Preparex(stmt)
 
 		if err != nil {
-			return 0, err
+			return -1, err
 		}
 	} else {
 		statement, err = dbConn.Preparex(stmt)
 
 		if err != nil {
-			return 0, err
+			return -1, err
 		}
 	}
 
 	if err != nil {
-		return 0, err
+		return -1, err
 	}
 
-	var typeId int
+	typeId := -1
 
-	err = statement.Get(&typeId, type_)
-
-	if err != nil {
-		return 0, err
-	}
+	_ = statement.Get(&typeId, type_)
 
 	err = statement.Close()
 
 	if err != nil {
-		return 0, err
+		return -1, err
 	}
 
 	return typeId, nil
@@ -67,32 +63,28 @@ func GetIdFromDocument(dbConn *sqlx.DB, transaction *sqlx.Tx, documentPath strin
 		statement, err = transaction.Preparex(stmt)
 
 		if err != nil {
-			return 0, err
+			return -1, err
 		}
 	} else {
 		statement, err = dbConn.Preparex(stmt)
 
 		if err != nil {
-			return 0, err
+			return -1, err
 		}
 	}
 
 	if err != nil {
-		return 0, err
+		return -1, err
 	}
 
-	var documentId int
+	documentId := -1
 
-	err = statement.Get(&documentId, documentPath)
-
-	if err != nil {
-		return 0, err
-	}
+	_ = statement.Get(&documentId, documentPath)
 
 	err = statement.Close()
 
 	if err != nil {
-		return 0, err
+		return -1, err
 	}
 
 	return documentId, nil
