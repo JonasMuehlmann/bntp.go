@@ -78,12 +78,13 @@ func RemoveLink(dbConn *sqlx.DB, transaction *sqlx.Tx, source string, destinatio
 
 // ListLinks lists all link destionations from the DB.
 func ListLinks(dbConn *sqlx.DB, source string) ([]string, error) {
-	// TODO: Fix sql statement after db refactor
 	stmt := `
         SELECT
-            Destination
+            Path
         FROM
-            Link
+            Document
+        LEFT  JOIN Link ON
+            Link.DestinationId = Document.Id
         WHERE
             SourceId = ?;
     `
@@ -106,7 +107,7 @@ func ListLinks(dbConn *sqlx.DB, source string) ([]string, error) {
 
 	defer statementLinks.Close()
 
-	err = dbConn.Select(linksBuffer, stmt, sourceId)
+	err = dbConn.Select(&linksBuffer, stmt, sourceId)
 	if err != nil {
 		return nil, err
 	}
@@ -118,9 +119,11 @@ func ListLinks(dbConn *sqlx.DB, source string) ([]string, error) {
 func ListBacklinks(dbConn *sqlx.DB, destination string) ([]string, error) {
 	stmt := `
         SELECT
-            Source
+            Path
         FROM
-            Link
+            Document
+        LEFT  JOIN Link ON
+            Link.SourceId = Document.Id
         WHERE
             DestinationId = ?;
     `
@@ -143,7 +146,7 @@ func ListBacklinks(dbConn *sqlx.DB, destination string) ([]string, error) {
 
 	defer statementLinks.Close()
 
-	err = dbConn.Select(backlinksBuffer, stmt, destinationId)
+	err = dbConn.Select(&backlinksBuffer, stmt, destinationId)
 	if err != nil {
 		return nil, err
 	}
