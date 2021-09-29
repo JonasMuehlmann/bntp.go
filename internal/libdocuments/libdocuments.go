@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/JonasMuehlmann/bntp.go/internal/helpers"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -409,20 +410,62 @@ func RemoveBacklink(documentPathDestination string, documentPathSource string) e
 
 // AddDocument adds a new document located at documentPath to the DB.
 func AddDocument(dbConn *sqlx.DB, transaction *sqlx.Tx, documentPath string, documentType string) error {
-	return errors.New("Not Implemented")
+	stmt := `
+        INSERT INTO
+            Documents(
+                Path,
+                DocumentTypeId
+            )
+        VALUES(
+            ?,
+            ?
+        );
+    `
+
+	return helpers.SqlExecute(dbConn, transaction, stmt, documentPath, documentType)
 }
 
 //  RemoveDocument removes  a document located at documentPath from the DB.
 func RemoveDocument(dbConn *sqlx.DB, transaction *sqlx.Tx, documentPath string) error {
-	return errors.New("Not Implemented")
+	stmt := `
+        DELETE FROM
+            Documents
+        WHERE
+            Path = ?;
+    `
+
+	return helpers.SqlExecute(dbConn, transaction, stmt, documentPath)
 }
 
 // RenameDocument moves a document located at documentPathOld to documentPathNew.
 func RenameDocument(dbConn *sqlx.DB, transaction *sqlx.Tx, documentPathOld string, documentPathNew string) error {
-	return errors.New("Not Implemented")
+	stmt := `
+        UPDATE
+            Documents
+        SET
+            Path = ?
+        WHERE
+            Path = ?;
+    `
+
+	return helpers.SqlExecute(dbConn, transaction, stmt, documentPathNew, documentPathOld)
 }
 
 // ChangeDocumentType changes the type of the document located documentPath to documentTypeNew.
 func ChangeDocumentType(dbConn *sqlx.DB, transaction *sqlx.Tx, documentPath string, documentTypeNew string) error {
-	return errors.New("Not Implemented")
+	stmt := `
+        UPDATE
+            Documents
+        SET
+            DocumentTypeId = ?
+        WHERE
+            Path = ?;
+    `
+
+	documentTypeId, err := helpers.GetIdFromType(dbConn, transaction, documentTypeNew)
+	if err != nil {
+		return err
+	}
+
+	return helpers.SqlExecute(dbConn, transaction, stmt, documentTypeId, documentPath)
 }

@@ -2,105 +2,9 @@
 package liblinks
 
 import (
-	"github.com/JonasMuehlmann/bntp.go/internal/sqlhelpers"
+	"github.com/JonasMuehlmann/bntp.go/internal/helpers"
 	"github.com/jmoiron/sqlx"
 )
-
-func GetIdFromType(dbConn *sqlx.DB, transaction *sqlx.Tx, type_ string) (int, error) {
-	stmt := `
-        SELECT
-            Id
-        FROM
-            DocumentType
-        WHERE
-            Type = ?;
-    `
-
-	var statement *sqlx.Stmt
-	var err error
-
-	if transaction != nil {
-		statement, err = transaction.Preparex(stmt)
-
-		if err != nil {
-			return 0, err
-		}
-	} else {
-		statement, err = dbConn.Preparex(stmt)
-
-		if err != nil {
-			return 0, err
-		}
-	}
-
-	if err != nil {
-		return 0, err
-	}
-
-	var typeId int
-
-	err = statement.Get(typeId, type_)
-
-	if err != nil {
-		return 0, err
-	}
-
-	err = statement.Close()
-
-	if err != nil {
-		return 0, err
-	}
-
-	return typeId, nil
-}
-
-func GetIdFromDocument(dbConn *sqlx.DB, transaction *sqlx.Tx, documentPath string) (int, error) {
-	stmt := `
-        SELECT
-            Id
-        FROM
-            Document
-        WHERE
-            Path = ?;
-    `
-
-	var statement *sqlx.Stmt
-	var err error
-
-	if transaction != nil {
-		statement, err = transaction.Preparex(stmt)
-
-		if err != nil {
-			return 0, err
-		}
-	} else {
-		statement, err = dbConn.Preparex(stmt)
-
-		if err != nil {
-			return 0, err
-		}
-	}
-
-	if err != nil {
-		return 0, err
-	}
-
-	var documentId int
-
-	err = statement.Get(documentId, documentPath)
-
-	if err != nil {
-		return 0, err
-	}
-
-	err = statement.Close()
-
-	if err != nil {
-		return 0, err
-	}
-
-	return documentId, nil
-}
 
 // AddLink adds a link from source to destination to the DB.
 // Passing a transaction is optional.
@@ -117,17 +21,17 @@ func AddLink(dbConn *sqlx.DB, transaction *sqlx.Tx, source string, destination s
         );
     `
 
-	sourceId, err := GetIdFromDocument(dbConn, transaction, source)
+	sourceId, err := helpers.GetIdFromDocument(dbConn, transaction, source)
 	if err != nil {
 		return err
 	}
 
-	destinationId, err := GetIdFromDocument(dbConn, transaction, destination)
+	destinationId, err := helpers.GetIdFromDocument(dbConn, transaction, destination)
 	if err != nil {
 		return err
 	}
 
-	return sqlhelpers.Execute(dbConn, transaction, stmt, sourceId, destinationId)
+	return helpers.SqlExecute(dbConn, transaction, stmt, sourceId, destinationId)
 }
 
 // RemoveLink removes the link from source to destination from the db.
@@ -141,16 +45,16 @@ func RemoveLink(dbConn *sqlx.DB, transaction *sqlx.Tx, source string, destinatio
             AND
             Destination = ?;
     `
-	sourceId, err := GetIdFromDocument(dbConn, transaction, source)
+	sourceId, err := helpers.GetIdFromDocument(dbConn, transaction, source)
 	if err != nil {
 		return err
 	}
 
-	destinationId, err := GetIdFromDocument(dbConn, transaction, destination)
+	destinationId, err := helpers.GetIdFromDocument(dbConn, transaction, destination)
 	if err != nil {
 		return err
 	}
-	return sqlhelpers.Execute(dbConn, transaction, stmt, sourceId, destinationId)
+	return helpers.SqlExecute(dbConn, transaction, stmt, sourceId, destinationId)
 }
 
 // ListLinks lists all link destionations from the DB.
@@ -165,7 +69,7 @@ func ListLinks(dbConn *sqlx.DB, source string) ([]string, error) {
             Source = ?;
     `
 
-	sourceId, err := GetIdFromDocument(dbConn, nil, source)
+	sourceId, err := helpers.GetIdFromDocument(dbConn, nil, source)
 	if err != nil {
 		return nil, err
 	}
@@ -198,7 +102,7 @@ func ListBacklinks(dbConn *sqlx.DB, destination string) ([]string, error) {
             Destination = ?;
     `
 
-	destinationId, err := GetIdFromDocument(dbConn, nil, destination)
+	destinationId, err := helpers.GetIdFromDocument(dbConn, nil, destination)
 	if err != nil {
 		return nil, err
 	}
