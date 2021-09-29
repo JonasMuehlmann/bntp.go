@@ -412,7 +412,7 @@ func RemoveBacklink(documentPathDestination string, documentPathSource string) e
 func AddDocument(dbConn *sqlx.DB, transaction *sqlx.Tx, documentPath string, documentType string) error {
 	stmt := `
         INSERT INTO
-            Documents(
+            Document(
                 Path,
                 DocumentTypeId
             )
@@ -429,7 +429,7 @@ func AddDocument(dbConn *sqlx.DB, transaction *sqlx.Tx, documentPath string, doc
 func RemoveDocument(dbConn *sqlx.DB, transaction *sqlx.Tx, documentPath string) error {
 	stmt := `
         DELETE FROM
-            Documents
+            Document
         WHERE
             Path = ?;
     `
@@ -441,7 +441,7 @@ func RemoveDocument(dbConn *sqlx.DB, transaction *sqlx.Tx, documentPath string) 
 func RenameDocument(dbConn *sqlx.DB, transaction *sqlx.Tx, documentPathOld string, documentPathNew string) error {
 	stmt := `
         UPDATE
-            Documents
+            Document
         SET
             Path = ?
         WHERE
@@ -455,7 +455,7 @@ func RenameDocument(dbConn *sqlx.DB, transaction *sqlx.Tx, documentPathOld strin
 func ChangeDocumentType(dbConn *sqlx.DB, transaction *sqlx.Tx, documentPath string, documentTypeNew string) error {
 	stmt := `
         UPDATE
-            Documents
+            Document
         SET
             DocumentTypeId = ?
         WHERE

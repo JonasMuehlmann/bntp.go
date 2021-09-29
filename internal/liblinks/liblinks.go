@@ -12,8 +12,8 @@ func AddLink(dbConn *sqlx.DB, transaction *sqlx.Tx, source string, destination s
 	stmt := `
         INSERT INTO
             Link(
-                Source,
-                Destination
+                SourceId,
+                DestinationId
             )
         VALUES(
             ?,
@@ -41,9 +41,9 @@ func RemoveLink(dbConn *sqlx.DB, transaction *sqlx.Tx, source string, destinatio
         DELETE FROM
             Link
         WHERE
-            Source = ?
+            SourceId = ?
             AND
-            Destination = ?;
+            DestinationId = ?;
     `
 	sourceId, err := helpers.GetIdFromDocument(dbConn, transaction, source)
 	if err != nil {
@@ -66,7 +66,7 @@ func ListLinks(dbConn *sqlx.DB, source string) ([]string, error) {
         FROM
             Link
         WHERE
-            Source = ?;
+            SourceId = ?;
     `
 
 	sourceId, err := helpers.GetIdFromDocument(dbConn, nil, source)
@@ -99,7 +99,7 @@ func ListBacklinks(dbConn *sqlx.DB, destination string) ([]string, error) {
         FROM
             Link
         WHERE
-            Destination = ?;
+            DestinationId = ?;
     `
 
 	destinationId, err := helpers.GetIdFromDocument(dbConn, nil, destination)

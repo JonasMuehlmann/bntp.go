@@ -26,29 +26,31 @@ CREATE TABLE Bookmark
 CREATE TABLE DocumentType
 (
     Id INTEGER PRIMARY KEY,
-    DocumentType Text
+    DocumentType Text NOT NULL
 );
 CREATE TABLE Document
 (
     Id   INTEGER PRIMARY KEY,
-    Path Text,
-    DocumentTypeId REFERENCES DocumentType(Id)
+    Path Text NOT NULL,
+    DocumentTypeId REFERENCES DocumentType(Id) NOT NULL
 );
 CREATE TABLE Link
 (
     Id           INTEGER PRIMARY KEY,
-    SourceId REFERENCES Document(Id),
-    DestinationId REFERENCES Document(Id)
+    SourceId REFERENCES Document(Id) NOT NULL,
+    DestinationId REFERENCES Document(Id) NOT NULL,
+    UNIQUE(SourceId, DestinationId),
+    CHECK(SourceId != DestinationId)
 );
 CREATE TABLE BookmarkContext
 (
     Id PRIMARY KEY,
-    BookmarkId REFERENCES Bookmark(Id),
-    BookmarkTypeId REFERENCES BookmarkType(Id)
+    BookmarkId REFERENCES Bookmark(Id) NOT NULL,
+    BookmarkTypeId REFERENCES BookmarkType(Id) NOT NULL 
 );
 CREATE TABLE DocumentContext
 (
     Id PRIMARY KEY,
-    DocumentId REFERENCES Document (Id),
-    DocumentTypeId REFERENCES DocumentType (Id)
+    DocumentId REFERENCES Document (Id)NOT NULL,
+    DocumentTypeId REFERENCES DocumentType (Id) NOT NULL
 );
