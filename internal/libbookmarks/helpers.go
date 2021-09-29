@@ -68,7 +68,7 @@ func ApplyBookmarkFilters(query string, filter BookmarkFilter) string {
 		} else {
 			types = filter.Types
 		}
-		whereFragments = append(whereFragments, "WHERE Type IN ('"+strings.Join(types, "', '")+"')")
+		whereFragments = append(whereFragments, "WHERE BookmarkType.Type IN ('"+strings.Join(types, "', '")+"')")
 	}
 
 	joinFragment := strings.Join(joinFragments, " AND ")

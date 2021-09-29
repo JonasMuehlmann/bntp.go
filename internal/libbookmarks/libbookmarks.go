@@ -2,6 +2,7 @@
 package libbookmarks
 
 import (
+	"database/sql"
 	"encoding/csv"
 	"errors"
 	"os"
@@ -62,7 +63,7 @@ func ImportMinimalCSV(dbConn *sqlx.DB, csvPath string) error {
 	}
 
 	for _, bookmark := range bookmarks[1:] {
-		err := AddBookmark(dbConn, transaction, bookmark[titleColumn], bookmark[linkColumn], 1, false)
+		err := AddBookmark(dbConn, transaction, bookmark[titleColumn], bookmark[linkColumn], sql.NullInt16{Valid: false})
 
 		if err != nil {
 			return err
@@ -115,21 +116,26 @@ func ExportCSV(bookmarks []Bookmark, csvPath string) error {
 		return err
 	}
 
-	rowsBuffer := make([][]string, 0, len(bookmarks))
-	for i := range rowsBuffer {
-		rowsBuffer[i] = make([]string, 0, 10)
-	}
+	rowsBuffer := make([][]string, len(bookmarks))
 
 	for i, bookmark := range bookmarks {
+		var isCollectionOut string
+
+		if bookmark.IsCollection.Valid {
+			isCollectionOut = strconv.FormatBool(bookmark.IsCollection.Bool)
+		} else {
+			isCollectionOut = "NULL"
+		}
+
 		rowsBuffer[i] = []string{
-			strconv.Itoa(bookmark.Id),
-			bookmark.Title,
+			bookmark.Title.String,
 			bookmark.Url,
-			strconv.FormatBool(bookmark.IsCollection),
-			bookmark.Type,
-			strings.Join(bookmark.Tags, ","),
 			bookmark.TimeAdded,
+			bookmark.Type.String,
+			strings.Join(bookmark.Tags, ","),
+			strconv.Itoa(bookmark.Id),
 			strconv.FormatBool(bookmark.IsRead),
+			isCollectionOut,
 		}
 	}
 
@@ -145,65 +151,47 @@ func ExportCSV(bookmarks []Bookmark, csvPath string) error {
 func GetBookmarks(dbConn *sqlx.DB, filter BookmarkFilter) ([]Bookmark, error) {
 	stmtBookmarks := `
         SELECT
-            Bookmark.Id,
-            Bookmark.IsRead,
-            Bookmark.Title,
-            Bookmark.Url,
-            Bookmark.TimeAdded,
-            Type.Type,
-            Bookmark.IsCollection
+            Bookmark.Id AS Id,
+            Bookmark.IsRead AS IsRead,
+            Bookmark.Title AS Title,
+            Bookmark.Url AS Url,
+            Bookmark.TimeAdded AS TimeAdded,
+            BookmarkType.Type AS Type,
+            Bookmark.IsCollection AS IsCollection
         FROM
             Bookmark
-        INNER JOIN Type ON
-            Type.Id = Bookmark.BookmarkTypeId
+        LEFT JOIN BookmarkType ON
+            BookmarkType.Id = Bookmark.BookmarkTypeId
     `
 
 	stmtBookmarks = ApplyBookmarkFilters(stmtBookmarks, filter)
-
-	stmtNumberOfBookmarks := "SELECT COUNT(*) FROM Bookmark INNER JOIN Type ON Bookmark.BookmarkTypeId = Type.Id"
-
-	stmtNumberOfBookmarks = ApplyBookmarkFilters(stmtNumberOfBookmarks, filter)
 
 	stmtTags := `
         SELECT
             Tag.Tag
         FROM
             Tag
-        INNER JOIN Context ON
-            Context.TagId = Tag.Id
-        WHERE Context.BookmarkId = ?;`
+        INNER JOIN BookmarkContext ON
+            BookmarkContext.TagId = Tag.Id
+        WHERE
+            BookmarkContext.BookmarkId = ?;
+    `
 
-	stmtNumberOfTags := "SELECT COUNT(*) FROM  Context WHERE BookmarkId = ?;"
+	bookmarksBuffer := []Bookmark{}
 
-	var numberOfBookmarks int
-
-	err := dbConn.Get(numberOfBookmarks, stmtNumberOfBookmarks, nil)
-	if err != nil {
-		return nil, errors.New("Could not count number of bookmarks")
-	}
-
-	bookmarksBuffer := make([]Bookmark, 0, numberOfBookmarks)
-
-	err = dbConn.Select(bookmarksBuffer, stmtBookmarks)
+	err := dbConn.Select(&bookmarksBuffer, stmtBookmarks)
 
 	if err != nil {
-		return nil, errors.New("Could not select bookmarks")
+		return nil, err
 	}
-
-	var numberOfTags int
 
 	for _, bookmark := range bookmarksBuffer {
-		err := dbConn.Get(numberOfTags, stmtNumberOfTags, bookmark.Id)
-		if err != nil {
-			return nil, errors.New("Could not read bookmark")
-		}
+		bookmark.Tags = []string{}
 
-		bookmark.Tags = make([]string, 0, 10)
-
-		err = dbConn.Select(bookmark.Tags, stmtTags, bookmark.Id)
+		err = dbConn.Select(&bookmark.Tags, stmtTags, bookmark.Id)
 
 		if err != nil {
-			return nil, errors.New("Could not read bookmark's tags")
+			return nil, err
 		}
 	}
 
@@ -215,7 +203,7 @@ func GetBookmarks(dbConn *sqlx.DB, filter BookmarkFilter) ([]Bookmark, error) {
 func AddType(dbConn *sqlx.DB, transaction *sqlx.Tx, type_ string) error {
 	stmt := `
         INSERT INTO
-            Type(
+            BookmarkType(
                 Type
             )
         VALUES(
@@ -259,7 +247,7 @@ func AddType(dbConn *sqlx.DB, transaction *sqlx.Tx, type_ string) error {
 func RemoveType(dbConn *sqlx.DB, transaction *sqlx.Tx, type_ string) error {
 	stmt := `
         DELETE FROM
-            Type
+            BookmarkType
         WHERE
             Type = ?;
     `
@@ -301,13 +289,13 @@ func ListTypes(dbConn *sqlx.DB) ([]string, error) {
         SELECT
             *
         FROM
-            Type;
+            BookmarkType;
     `
 	stmtCount := `
         SELECT
             Count(*)
         FROM
-            Type;
+            BookmarkType;
     `
 	countRow := dbConn.QueryRow(stmtCount)
 
@@ -340,18 +328,16 @@ func ListTypes(dbConn *sqlx.DB) ([]string, error) {
 // TODO: Allow passing string for type_
 // AddBookmark adds a new bookmark to the DB.
 // Passing a transaction is optional.
-func AddBookmark(dbConn *sqlx.DB, transaction *sqlx.Tx, title string, url string, type_ int, isCollection bool) error {
+func AddBookmark(dbConn *sqlx.DB, transaction *sqlx.Tx, title string, url string, type_ sql.NullInt16) error {
 	stmt := `
         INSERT INTO
             Bookmark(
                 Title,
                 Url,
                 TimeAdded,
-                BookmarkTypeId,
-                IsCollection
+                BookmarkTypeId
             )
         VALUES(
-            ?,
             ?,
             ?,
             ?,
@@ -380,7 +366,7 @@ func AddBookmark(dbConn *sqlx.DB, transaction *sqlx.Tx, title string, url string
 		}
 	}
 
-	_, err = statement.Exec(title, url, time.Now().Format("2006-01-02"), type_, isCollection)
+	_, err = statement.Exec(title, url, time.Now().Format("2006-01-02"), type_)
 	if err != nil {
 		return err
 	}
@@ -496,7 +482,7 @@ func GetIdFromTag(dbConn *sqlx.DB, transaction *sqlx.Tx, tag string) (int, error
 
 	var tagId int
 
-	err = statement.Get(tagId, tag)
+	err = statement.Get(&tagId, tag)
 
 	if err != nil {
 		return 0, err
@@ -515,7 +501,7 @@ func GetIdFromType(dbConn *sqlx.DB, transaction *sqlx.Tx, type_ string) (int, er
         SELECT
             Id
         FROM
-            Type
+            BookmarkType
         WHERE
             Type = ?;
     `
@@ -543,7 +529,7 @@ func GetIdFromType(dbConn *sqlx.DB, transaction *sqlx.Tx, type_ string) (int, er
 
 	var typeId int
 
-	err = statement.Get(typeId, type_)
+	err = statement.Get(&typeId, type_)
 
 	if err != nil {
 		return 0, err
@@ -579,7 +565,7 @@ func EditIsCollection(dbConn *sqlx.DB, transaction *sqlx.Tx, id int, isCollectio
 func AddTag(dbConn *sqlx.DB, transaction *sqlx.Tx, bookmarkId int, newTag string) error {
 	stmt := `
         INSERT INTO
-            Context(BookmarkId, TagId)
+            BookmarkContext(BookmarkId, TagId)
         VALUES(
             ?,
             ?
@@ -627,7 +613,7 @@ func AddTag(dbConn *sqlx.DB, transaction *sqlx.Tx, bookmarkId int, newTag string
 func RemoveTag(dbConn *sqlx.DB, transaction *sqlx.Tx, bookmarkId int, tag_ string) error {
 	stmt := `
         DELETE FROM
-            Context
+            BookmarkContext
         WHERE
             BookmarkId = ?
             AND
