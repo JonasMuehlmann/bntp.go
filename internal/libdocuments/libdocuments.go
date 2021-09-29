@@ -418,7 +418,7 @@ func RemoveBacklink(documentPathDestination string, documentPathSource string) e
 }
 
 // AddDocument adds a new document located at documentPath to the DB.
-func AddDocument(dbConn *sqlx.DB, transaction *sqlx.Tx, documentPath string) error {
+func AddDocument(dbConn *sqlx.DB, transaction *sqlx.Tx, documentPath string, documentType string) error {
 	return errors.New("Not Implemented")
 }
 

@@ -6,6 +6,54 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
+func GetIdFromType(dbConn *sqlx.DB, transaction *sqlx.Tx, type_ string) (int, error) {
+	stmt := `
+        SELECT
+            Id
+        FROM
+            DocumentType
+        WHERE
+            Type = ?;
+    `
+
+	var statement *sqlx.Stmt
+	var err error
+
+	if transaction != nil {
+		statement, err = transaction.Preparex(stmt)
+
+		if err != nil {
+			return 0, err
+		}
+	} else {
+		statement, err = dbConn.Preparex(stmt)
+
+		if err != nil {
+			return 0, err
+		}
+	}
+
+	if err != nil {
+		return 0, err
+	}
+
+	var typeId int
+
+	err = statement.Get(typeId, type_)
+
+	if err != nil {
+		return 0, err
+	}
+
+	err = statement.Close()
+
+	if err != nil {
+		return 0, err
+	}
+
+	return typeId, nil
+}
+
 // AddLink adds a link from source to destination to the DB.
 // Passing a transaction is optional.
 func AddLink(dbConn *sqlx.DB, transaction *sqlx.Tx, source string, destination string) error {
