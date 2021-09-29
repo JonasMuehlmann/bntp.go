@@ -61,7 +61,7 @@ func ImportMinimalCSV(dbConn *sqlx.DB, csvPath string) error {
 		return err
 	}
 
-	for _, bookmark := range bookmarks {
+	for _, bookmark := range bookmarks[1:] {
 		err := AddBookmark(dbConn, transaction, bookmark[titleColumn], bookmark[linkColumn], 1, false)
 
 		if err != nil {
