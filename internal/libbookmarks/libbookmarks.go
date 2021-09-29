@@ -32,6 +32,10 @@ func ImportMinimalCSV(dbConn *sqlx.DB, csvPath string) error {
 		return err
 	}
 
+	if len(bookmarks) < 2 {
+		return errors.New("CSV does not contain at least one entry")
+	}
+
 	header := bookmarks[0]
 
 	if len(header) != 2 {
@@ -58,7 +62,11 @@ func ImportMinimalCSV(dbConn *sqlx.DB, csvPath string) error {
 	}
 
 	for _, bookmark := range bookmarks {
-		AddBookmark(dbConn, transaction, bookmark[titleColumn], bookmark[linkColumn], 1, false)
+		err := AddBookmark(dbConn, transaction, bookmark[titleColumn], bookmark[linkColumn], 1, false)
+
+		if err != nil {
+			return err
+		}
 	}
 
 	err = transaction.Commit()
@@ -143,12 +151,12 @@ func GetBookmarks(dbConn *sqlx.DB, filter BookmarkFilter) ([]Bookmark, error) {
         FROM
             Bookmark
         INNER JOIN Type ON
-            Type.Id = Bookmark.TypeId
+            Type.Id = Bookmark.BookmarkTypeId
     `
 
 	stmtBookmarks = ApplyBookmarkFilters(stmtBookmarks, filter)
 
-	stmtNumberOfBookmarks := "SELECT COUNT(*) FROM Bookmark INNER JOIN Type ON Bookmark.TypeId = Type.Id"
+	stmtNumberOfBookmarks := "SELECT COUNT(*) FROM Bookmark INNER JOIN Type ON Bookmark.BookmarkTypeId = Type.Id"
 
 	stmtNumberOfBookmarks = ApplyBookmarkFilters(stmtNumberOfBookmarks, filter)
 
@@ -335,7 +343,7 @@ func AddBookmark(dbConn *sqlx.DB, transaction *sqlx.Tx, title string, url string
                 Title,
                 Url,
                 TimeAdded,
-                TypeId,
+                BookmarkTypeId,
                 IsCollection
             )
         VALUES(
@@ -346,6 +354,10 @@ func AddBookmark(dbConn *sqlx.DB, transaction *sqlx.Tx, title string, url string
             ?
         );
     `
+	if title == "" || url == "" {
+		return errors.New("Entry is missing a column")
+	}
+
 	var statement *sqlx.Stmt
 
 	var err error
@@ -549,7 +561,7 @@ func EditType(dbConn *sqlx.DB, transaction *sqlx.Tx, id int, newType string) err
 	if err != nil {
 		return err
 	}
-	return EditBookmark(dbConn, transaction, id, "TypeId", typeId)
+	return EditBookmark(dbConn, transaction, id, "BookmarkTypeId", typeId)
 }
 
 // EditIsCollection sets isCollection to isCollection for the bookmark with the specified id.
