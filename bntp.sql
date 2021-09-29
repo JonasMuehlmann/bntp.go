@@ -15,13 +15,13 @@ CREATE TABLE Bookmark
     Id           INTEGER not null
         primary key,
     IsRead       INTEGER default 0,
-    Title        TEXT    not null,
+    Title        TEXT, 
     Url          TEXT    not null
         unique,
     TimeAdded    TEXT    not null,
     BookmarkTypeId
         references BookmarkType (Id),
-    IsCollection INTEGER not null
+    IsCollection INTEGER
 );
 CREATE TABLE DocumentType
 (
@@ -46,11 +46,11 @@ CREATE TABLE BookmarkContext
 (
     Id PRIMARY KEY,
     BookmarkId REFERENCES Bookmark(Id) NOT NULL,
-    BookmarkTypeId REFERENCES BookmarkType(Id) NOT NULL 
+    TagId REFERENCES Tag(Id) NOT NULL 
 );
 CREATE TABLE DocumentContext
 (
     Id PRIMARY KEY,
     DocumentId REFERENCES Document (Id)NOT NULL,
-    DocumentTypeId REFERENCES DocumentType (Id) NOT NULL
+    TagId REFERENCES  Tag(Id) NOT NULL
 );
