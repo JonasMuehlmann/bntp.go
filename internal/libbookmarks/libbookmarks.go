@@ -82,6 +82,10 @@ func ImportMinimalCSV(dbConn *sqlx.DB, csvPath string) error {
 func ExportCSV(bookmarks []Bookmark, csvPath string) error {
 	var writer *csv.Writer
 
+	if len(bookmarks) == 0 {
+		return errors.New("No bookmarks to export")
+	}
+
 	if csvPath != "" { // 0664 UNIX Permission code
 		file, err := os.OpenFile(csvPath, os.O_CREATE|os.O_WRONLY, 0o664)
 		if err != nil {
