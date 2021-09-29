@@ -2,7 +2,9 @@
 package liblinks
 
 import (
-	"github.com/JonasMuehlmann/bntp.go/internal/sqlhelpers"
+	"errors"
+
+	"github.com/JonasMuehlmann/bntp.go/internal/helpers"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -12,8 +14,8 @@ func AddLink(dbConn *sqlx.DB, transaction *sqlx.Tx, source string, destination s
 	stmt := `
         INSERT INTO
             Link(
-                Source,
-                Destination
+                SourceId,
+                DestinationId
             )
         VALUES(
             ?,
@@ -21,7 +23,25 @@ func AddLink(dbConn *sqlx.DB, transaction *sqlx.Tx, source string, destination s
         );
     `
 
-	return sqlhelpers.Execute(dbConn, transaction, stmt, source, destination)
+	sourceId, err := helpers.GetIdFromDocument(dbConn, transaction, source)
+	if err != nil {
+		return err
+	}
+
+	if sourceId == -1 {
+		return errors.New("Could not retrieve DestinationId")
+	}
+
+	destinationId, err := helpers.GetIdFromDocument(dbConn, transaction, destination)
+	if err != nil {
+		return err
+	}
+
+	if destinationId == -1 {
+		return errors.New("Could not retrieve DestinationId")
+	}
+
+	return helpers.SqlExecute(dbConn, transaction, stmt, sourceId, destinationId)
 }
 
 // RemoveLink removes the link from source to destination from the db.
@@ -31,24 +51,52 @@ func RemoveLink(dbConn *sqlx.DB, transaction *sqlx.Tx, source string, destinatio
         DELETE FROM
             Link
         WHERE
-            Source = ?
+            SourceId = ?
             AND
-            Destination = ?;
+            DestinationId = ?;
     `
+	sourceId, err := helpers.GetIdFromDocument(dbConn, transaction, source)
+	if err != nil {
+		return err
+	}
 
-	return sqlhelpers.Execute(dbConn, transaction, stmt, source, destination)
+	if sourceId == -1 {
+		return errors.New("Could not retrieve DestinationId")
+	}
+
+	destinationId, err := helpers.GetIdFromDocument(dbConn, transaction, destination)
+	if err != nil {
+		return err
+	}
+
+	if destinationId == -1 {
+		return errors.New("Could not retrieve DestinationId")
+	}
+
+	return helpers.SqlExecute(dbConn, transaction, stmt, sourceId, destinationId)
 }
 
-// List all link destionations from the DB.
+// ListLinks lists all link destionations from the DB.
 func ListLinks(dbConn *sqlx.DB, source string) ([]string, error) {
 	stmt := `
         SELECT
-            Destination
+            Path
         FROM
-            Link
+            Document
+        LEFT  JOIN Link ON
+            Link.DestinationId = Document.Id
         WHERE
-            Source = ?;
+            SourceId = ?;
     `
+
+	sourceId, err := helpers.GetIdFromDocument(dbConn, nil, source)
+	if err != nil {
+		return nil, err
+	}
+
+	if sourceId == -1 {
+		return nil, errors.New("Could not retrieve DestinationId")
+	}
 
 	linksBuffer := []string{}
 
@@ -59,7 +107,7 @@ func ListLinks(dbConn *sqlx.DB, source string) ([]string, error) {
 
 	defer statementLinks.Close()
 
-	err = dbConn.Select(linksBuffer, stmt)
+	err = dbConn.Select(&linksBuffer, stmt, sourceId)
 	if err != nil {
 		return nil, err
 	}
@@ -67,16 +115,28 @@ func ListLinks(dbConn *sqlx.DB, source string) ([]string, error) {
 	return linksBuffer, nil
 }
 
-// List all link sources from the DB.
+// ListBacklinks lists all link sources from the DB.
 func ListBacklinks(dbConn *sqlx.DB, destination string) ([]string, error) {
 	stmt := `
         SELECT
-            Source
+            Path
         FROM
-            Link
+            Document
+        LEFT  JOIN Link ON
+            Link.SourceId = Document.Id
         WHERE
-            Destination = ?;
+            DestinationId = ?;
     `
+
+	destinationId, err := helpers.GetIdFromDocument(dbConn, nil, destination)
+	if err != nil {
+		return nil, err
+	}
+
+	if destinationId == -1 {
+		return nil, errors.New("Could not retrieve DestinationId")
+	}
+
 	backlinksBuffer := []string{}
 
 	statementLinks, err := dbConn.Preparex(stmt)
@@ -86,7 +146,7 @@ func ListBacklinks(dbConn *sqlx.DB, destination string) ([]string, error) {
 
 	defer statementLinks.Close()
 
-	err = dbConn.Select(backlinksBuffer, stmt)
+	err = dbConn.Select(&backlinksBuffer, stmt, destinationId)
 	if err != nil {
 		return nil, err
 	}

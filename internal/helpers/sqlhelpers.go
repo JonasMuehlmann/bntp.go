@@ -1,11 +1,11 @@
-package sqlhelpers
+package helpers
 
 import (
 	"github.com/jmoiron/sqlx"
 )
 
-// Execute is a wrapper used to run a prepared statement stmt with the specified args.
-func Execute(dbConn *sqlx.DB, transaction *sqlx.Tx, stmt string, args ...interface{}) error {
+// SqlExecute is a wrapper used to run a prepared statement stmt with the specified args.
+func SqlExecute(dbConn *sqlx.DB, transaction *sqlx.Tx, stmt string, args ...interface{}) error {
 	var statement *sqlx.Stmt
 
 	var err error

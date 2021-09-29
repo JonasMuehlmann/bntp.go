@@ -7,7 +7,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/JonasMuehlmann/bntp.go/internal/sqlhelpers"
+	"github.com/JonasMuehlmann/bntp.go/internal/helpers"
 	"github.com/jmoiron/sqlx"
 	"gopkg.in/yaml.v3"
 )
@@ -177,7 +177,7 @@ func AddTag(dbConn *sqlx.DB, transaction *sqlx.Tx, tag string) error {
         VALUES(?);
     `
 
-	return sqlhelpers.Execute(dbConn, transaction, stmt, tag)
+	return helpers.SqlExecute(dbConn, transaction, stmt, tag)
 }
 
 // RenameTag renames the tag oldTag to newTag in the DB.
@@ -192,7 +192,7 @@ func RenameTag(dbConn *sqlx.DB, transaction *sqlx.Tx, oldTag string, newTag stri
             Tag = ?;
     `
 
-	return sqlhelpers.Execute(dbConn, transaction, stmt, oldTag, newTag)
+	return helpers.SqlExecute(dbConn, transaction, stmt, oldTag, newTag)
 }
 
 // DeleteTag removes the tag tag from the DB.
@@ -205,7 +205,7 @@ func DeleteTag(dbConn *sqlx.DB, transaction *sqlx.Tx, tag string) error {
             Tag = ?;
     `
 
-	return sqlhelpers.Execute(dbConn, transaction, stmt, tag)
+	return helpers.SqlExecute(dbConn, transaction, stmt, tag)
 }
 
 // FindAmbiguousTagComponent finds the index (root = 0) of an ambiguous component.

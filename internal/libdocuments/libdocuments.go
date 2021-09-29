@@ -8,6 +8,9 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/JonasMuehlmann/bntp.go/internal/helpers"
+	"github.com/jmoiron/sqlx"
 )
 
 // AddTag adds a tag to the tag line of the doucment at documentPath.
@@ -74,7 +77,6 @@ func RemoveTag(documentPath string, tag string) error {
 // This method preserves the order of all tags in the doucment.
 func RenameTag(documentPath string, oldTag string, newTag string) error {
 	lineNumber, tags, err := FindTagsLine(documentPath)
-
 	if err != nil {
 		return err
 	}
@@ -82,7 +84,6 @@ func RenameTag(documentPath string, oldTag string, newTag string) error {
 	tags = strings.Replace(tags, oldTag, newTag, -1)
 
 	file, err := os.OpenFile(documentPath, os.O_RDWR, 0o644)
-
 	if err != nil {
 		return err
 	}
@@ -90,7 +91,6 @@ func RenameTag(documentPath string, oldTag string, newTag string) error {
 	defer file.Close()
 
 	offset, err := file.Seek(int64(lineNumber), io.SeekStart)
-
 	if err != nil {
 		return err
 	}
@@ -107,7 +107,6 @@ func RenameTag(documentPath string, oldTag string, newTag string) error {
 // GetTags returns all tags contained in the doucment at documentPath.
 func GetTags(documentPath string) ([]string, error) {
 	_, tags, err := FindTagsLine(documentPath)
-
 	if err != nil {
 		return nil, err
 	}
@@ -119,7 +118,6 @@ func GetTags(documentPath string) ([]string, error) {
 // It returns the line lumber of the tags line as well as the line itself.
 func FindTagsLine(documentPath string) (int, string, error) {
 	file, err := os.OpenFile(documentPath, os.O_RDONLY, 0o644)
-
 	if err != nil {
 		return 0, "", err
 	}
@@ -145,7 +143,6 @@ func FindTagsLine(documentPath string) (int, string, error) {
 // HasTags checks if the doucment at documentPath has all specified tags.
 func HasTags(documentPath string, tags []string) (bool, error) {
 	documentTags, err := GetTags(documentPath)
-
 	if err != nil {
 		return false, err
 	}
@@ -175,7 +172,6 @@ func FindDocumentsWithTags(rootDir string, tags []string) ([]string, error) {
 
 		if !info.IsDir() {
 			hasTags, err := HasTags(path, tags)
-
 			if err != nil {
 				return err
 			}
@@ -270,8 +266,8 @@ func FindBacklinksLines(documentPath string) (int, int, []string, error) {
 
 // AddLink adds a link to documentPathDestination into the document at documentPathSource.
 func AddLink(documentPathSource string, documentPathDestination string) error {
-	lineNumberFirstLink, lineNumberLastLink, links, err := FindLinksLines(documentPathSource)
-
+	// lineNumberFirstLink, lineNumberLastLink, links, err := FindLinksLines(documentPathSource)
+	lineNumberFirstLink, _, links, err := FindLinksLines(documentPathSource)
 	if err != nil {
 		return err
 	}
@@ -279,7 +275,6 @@ func AddLink(documentPathSource string, documentPathDestination string) error {
 	links = append(links, documentPathDestination)
 
 	file, err := os.OpenFile(documentPathSource, os.O_RDWR, 0o644)
-
 	if err != nil {
 		return err
 	}
@@ -287,7 +282,6 @@ func AddLink(documentPathSource string, documentPathDestination string) error {
 	defer file.Close()
 
 	offset, err := file.Seek(int64(lineNumberFirstLink), io.SeekStart)
-
 	if err != nil {
 		return err
 	}
@@ -303,8 +297,8 @@ func AddLink(documentPathSource string, documentPathDestination string) error {
 
 // RemoveLink removes the link to documentPathDestination from the document at documentPathSource.
 func RemoveLink(documentPathSource string, documentPathDestination string) error {
-	lineNumberFirstLink, lineNumberLastLink, linksOrig, err := FindLinksLines(documentPathSource)
-
+	// lineNumberFirstLink, lineNumberLastLink, linksOrig, err := FindLinksLines(documentPathSource)
+	lineNumberFirstLink, _, linksOrig, err := FindLinksLines(documentPathSource)
 	if err != nil {
 		return err
 	}
@@ -344,8 +338,8 @@ func RemoveLink(documentPathSource string, documentPathDestination string) error
 
 // AddBacklink adds a Backlink to documentPathSource into the document at documentPathDestination.
 func AddBacklink(documentPathDestination string, documentPathSource string) error {
-	lineNumberFirstLink, lineNumberLastLink, links, err := FindBacklinksLines(documentPathSource)
-
+	// lineNumberFirstLink, lineNumberLastLink, links, err := FindBacklinksLines(documentPathSource)
+	lineNumberFirstLink, _, links, err := FindBacklinksLines(documentPathSource)
 	if err != nil {
 		return err
 	}
@@ -360,7 +354,6 @@ func AddBacklink(documentPathDestination string, documentPathSource string) erro
 	defer file.Close()
 
 	offset, err := file.Seek(int64(lineNumberFirstLink), io.SeekStart)
-
 	if err != nil {
 		return err
 	}
@@ -376,8 +369,8 @@ func AddBacklink(documentPathDestination string, documentPathSource string) erro
 
 // RemoveBacklink removes the backlink to documentPathSource from the document at documentPathDestination.
 func RemoveBacklink(documentPathDestination string, documentPathSource string) error {
-	lineNumberFirstLink, lineNumberLastLink, linksOrig, err := FindBacklinksLines(documentPathSource)
-
+	// lineNumberFirstLink, lineNumberLastLink, linksOrig, err := FindBacklinksLines(documentPathSource)
+	lineNumberFirstLink, _, linksOrig, err := FindBacklinksLines(documentPathSource)
 	if err != nil {
 		return err
 	}
@@ -413,4 +406,69 @@ func RemoveBacklink(documentPathDestination string, documentPathSource string) e
 	}
 
 	return err
+}
+
+// AddDocument adds a new document located at documentPath to the DB.
+func AddDocument(dbConn *sqlx.DB, transaction *sqlx.Tx, documentPath string, documentType string) error {
+	stmt := `
+        INSERT INTO
+            Document(
+                Path,
+                DocumentTypeId
+            )
+        VALUES(
+            ?,
+            ?
+        );
+    `
+
+	return helpers.SqlExecute(dbConn, transaction, stmt, documentPath, documentType)
+}
+
+//  RemoveDocument removes  a document located at documentPath from the DB.
+func RemoveDocument(dbConn *sqlx.DB, transaction *sqlx.Tx, documentPath string) error {
+	stmt := `
+        DELETE FROM
+            Document
+        WHERE
+            Path = ?;
+    `
+
+	return helpers.SqlExecute(dbConn, transaction, stmt, documentPath)
+}
+
+// RenameDocument moves a document located at documentPathOld to documentPathNew.
+func RenameDocument(dbConn *sqlx.DB, transaction *sqlx.Tx, documentPathOld string, documentPathNew string) error {
+	stmt := `
+        UPDATE
+            Document
+        SET
+            Path = ?
+        WHERE
+            Path = ?;
+    `
+
+	return helpers.SqlExecute(dbConn, transaction, stmt, documentPathNew, documentPathOld)
+}
+
+// ChangeDocumentType changes the type of the document located documentPath to documentTypeNew.
+func ChangeDocumentType(dbConn *sqlx.DB, transaction *sqlx.Tx, documentPath string, documentTypeNew string) error {
+	stmt := `
+        UPDATE
+            Document
+        SET
+            DocumentTypeId = ?
+        WHERE
+            Path = ?;
+    `
+
+	documentTypeId, err := helpers.GetIdFromType(dbConn, transaction, documentTypeNew)
+	if err != nil {
+		return err
+	}
+	if documentTypeId == -1 {
+		return errors.New("Could not retrieve DocumentTypeId")
+	}
+
+	return helpers.SqlExecute(dbConn, transaction, stmt, documentTypeId, documentPath)
 }
