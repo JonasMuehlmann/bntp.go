@@ -15,10 +15,13 @@ func TestAddLink(t *testing.T) {
 	db, err := GetDB(t)
 	assert.NoError(t, err)
 
+	err = libdocuments.AddType(db, nil, "Bar")
+	assert.NoError(t, err)
+
 	err = libdocuments.AddDocument(db, nil, "Foo", "Bar")
 	assert.NoError(t, err)
 
-	err = libdocuments.AddDocument(db, nil, "Foo2", "Bar2")
+	err = libdocuments.AddDocument(db, nil, "Foo2", "Bar")
 	assert.NoError(t, err)
 
 	err = liblinks.AddLink(db, nil, "Foo", "Foo2")
@@ -29,7 +32,10 @@ func TestAddLinkSourceDoesNotExist(t *testing.T) {
 	db, err := GetDB(t)
 	assert.NoError(t, err)
 
-	err = libdocuments.AddDocument(db, nil, "Foo2", "Bar2")
+	err = libdocuments.AddType(db, nil, "Bar")
+	assert.NoError(t, err)
+
+	err = libdocuments.AddDocument(db, nil, "Foo2", "Bar")
 	assert.NoError(t, err)
 
 	err = liblinks.AddLink(db, nil, "Foo", "Foo2")
@@ -40,6 +46,9 @@ func TestAddLinkDestionationDoesNotExist(t *testing.T) {
 	db, err := GetDB(t)
 	assert.NoError(t, err)
 
+	err = libdocuments.AddType(db, nil, "Bar")
+	assert.NoError(t, err)
+	
 	err = libdocuments.AddDocument(db, nil, "Foo", "Bar")
 	assert.NoError(t, err)
 
@@ -59,6 +68,9 @@ func TestAddLinkSelfReference(t *testing.T) {
 	db, err := GetDB(t)
 	assert.NoError(t, err)
 
+	err = libdocuments.AddType(db, nil, "Bar")
+	assert.NoError(t, err)
+
 	err = libdocuments.AddDocument(db, nil, "Foo", "Bar")
 	assert.NoError(t, err)
 
@@ -73,10 +85,13 @@ func TestRemoveLink(t *testing.T) {
 	db, err := GetDB(t)
 	assert.NoError(t, err)
 
+	err = libdocuments.AddType(db, nil, "Bar")
+	assert.NoError(t, err)
+
 	err = libdocuments.AddDocument(db, nil, "Foo", "Bar")
 	assert.NoError(t, err)
 
-	err = libdocuments.AddDocument(db, nil, "Foo2", "Bar2")
+	err = libdocuments.AddDocument(db, nil, "Foo2", "Bar")
 	assert.NoError(t, err)
 
 	err = liblinks.AddLink(db, nil, "Foo", "Foo2")
@@ -88,6 +103,9 @@ func TestRemoveLink(t *testing.T) {
 
 func TestRemoveLinkSourceDoesNotExist(t *testing.T) {
 	db, err := GetDB(t)
+	assert.NoError(t, err)
+
+	err = libdocuments.AddType(db, nil, "Bar2")
 	assert.NoError(t, err)
 
 	err = libdocuments.AddDocument(db, nil, "Foo2", "Bar2")
@@ -102,6 +120,9 @@ func TestRemoveLinkSourceDoesNotExist(t *testing.T) {
 
 func TestRemoveLinkDestionationDoesNotExist(t *testing.T) {
 	db, err := GetDB(t)
+	assert.NoError(t, err)
+
+	err = libdocuments.AddType(db, nil, "Bar")
 	assert.NoError(t, err)
 
 	err = libdocuments.AddDocument(db, nil, "Foo", "Bar")
@@ -137,6 +158,9 @@ func TestListLinksOne(t *testing.T) {
 	db, err := GetDB(t)
 	assert.NoError(t, err)
 
+	err = libdocuments.AddType(db, nil, "Bar")
+	assert.NoError(t, err)
+
 	err = libdocuments.AddDocument(db, nil, "Foo", "Bar")
 	assert.NoError(t, err)
 
@@ -156,6 +180,9 @@ func TestListLinksMany(t *testing.T) {
 	db, err := GetDB(t)
 	assert.NoError(t, err)
 
+	err = libdocuments.AddType(db, nil, "Bar")
+	assert.NoError(t, err)
+	
 	err = libdocuments.AddDocument(db, nil, "Foo", "Bar")
 	assert.NoError(t, err)
 
@@ -198,6 +225,9 @@ func TestListBacklinksOne(t *testing.T) {
 	db, err := GetDB(t)
 	assert.NoError(t, err)
 
+	err = libdocuments.AddType(db, nil, "Bar")
+	assert.NoError(t, err)
+	
 	err = libdocuments.AddDocument(db, nil, "Foo", "Bar")
 	assert.NoError(t, err)
 
@@ -217,6 +247,9 @@ func TestListBacklinksMany(t *testing.T) {
 	db, err := GetDB(t)
 	assert.NoError(t, err)
 
+	err = libdocuments.AddType(db, nil, "Bar")
+	assert.NoError(t, err)
+	
 	err = libdocuments.AddDocument(db, nil, "Foo", "Bar")
 	assert.NoError(t, err)
 

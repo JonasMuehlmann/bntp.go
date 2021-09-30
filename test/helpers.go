@@ -52,7 +52,7 @@ func GetDB(t *testing.T) (*sqlx.DB, error) {
 	}
 
 	// Connect to new temporary database
-	db, err := sqlx.Open("sqlite3", tempTestDbPath)
+	db, err := sqlx.Open("sqlite3", tempTestDbPath+"?_foreign_keys=1")
 	if err != nil {
 		return nil, err
 	}
