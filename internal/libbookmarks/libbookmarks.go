@@ -11,6 +11,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/JonasMuehlmann/bntp.go/internal/helpers"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -387,54 +388,18 @@ func EditBookmark(dbConn *sqlx.DB, transaction *sqlx.Tx, id int, column string, 
         UPDATE
             Bookmark
         SET
-            ? = ?
-        WHERE Id =
+            ` + column + ` = ?
+        WHERE
+            Id = ?;
     `
 
-	_, ok := newVal.(string)
-
-	if ok {
-		stmt += "?;"
-	} else {
-		stmt += "?;"
-	}
-
-	var statement *sqlx.Stmt
-
-	var err error
-
-	if transaction != nil {
-		statement, err = transaction.Preparex(stmt)
-
-		if err != nil {
-			return err
-		}
-	} else {
-		statement, err = dbConn.Preparex(stmt)
-
-		if err != nil {
-			return err
-		}
-	}
-
-	_, err = statement.Exec(column, newVal, id)
-	if err != nil {
-		return err
-	}
-
-	err = statement.Close()
-
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return helpers.SqlExecute(dbConn, transaction, stmt, newVal, id)
 }
 
-// MarkAsRead sets IsRead to true for the bookmark with the specified id.
+// EditIsRead sets IsRead to true for the bookmark with the specified id.
 // Passing a transaction is optional.
-func MarkAsRead(dbConn *sqlx.DB, transaction *sqlx.Tx, id int) error {
-	return EditBookmark(dbConn, transaction, id, "IsRead", true)
+func EditIsRead(dbConn *sqlx.DB, transaction *sqlx.Tx, id int, isRead bool) error {
+	return EditBookmark(dbConn, transaction, id, "IsRead", isRead)
 }
 
 // EditTitle sets Title to newTile for the bookmark with the specified id.
