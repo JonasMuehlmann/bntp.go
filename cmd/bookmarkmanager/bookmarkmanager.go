@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+
 	"github.com/docopt/docopt-go"
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -17,4 +19,6 @@ Options:
   --version     Show version.`
 
 	arguments, _ := docopt.ParseDoc(usage)
+
+	fmt.Println(arguments)
 }
