@@ -2,7 +2,7 @@ package helpers
 
 import "github.com/jmoiron/sqlx"
 
-func GetIdFromType(dbConn *sqlx.DB, transaction *sqlx.Tx, type_ string) (int, error) {
+func GetIdFromDocumentType(dbConn *sqlx.DB, transaction *sqlx.Tx, type_ string) (int, error) {
 	stmt := `
         SELECT
             Id
