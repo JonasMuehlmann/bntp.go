@@ -13,7 +13,7 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-// AddTag adds a tag to the tag line of the doucment at documentPath.
+// AddTag adds a tag to the tag line of the document at documentPath.
 func AddTag(documentPath string, tag string) error {
 	lineNumber, tags, err := FindTagsLine(documentPath)
 	if err != nil {
@@ -43,7 +43,7 @@ func AddTag(documentPath string, tag string) error {
 	return nil
 }
 
-// RemoveTag removes a tag from the tag line of the doucment at documentPath.
+// RemoveTag removes a tag from the tag line of the document at documentPath.
 func RemoveTag(documentPath string, tag string) error {
 	lineNumber, tags, err := FindTagsLine(documentPath)
 	if err != nil {
@@ -104,7 +104,7 @@ func RenameTag(documentPath string, oldTag string, newTag string) error {
 	return nil
 }
 
-// GetTags returns all tags contained in the doucment at documentPath.
+// GetTags returns all tags contained in the document at documentPath.
 func GetTags(documentPath string) ([]string, error) {
 	_, tags, err := FindTagsLine(documentPath)
 	if err != nil {
@@ -140,7 +140,7 @@ func FindTagsLine(documentPath string) (int, string, error) {
 	return 0, "", errors.New("Could not find tags line")
 }
 
-// HasTags checks if the doucment at documentPath has all specified tags.
+// HasTags checks if the document at documentPath has all specified tags.
 func HasTags(documentPath string, tags []string) (bool, error) {
 	documentTags, err := GetTags(documentPath)
 	if err != nil {
@@ -422,7 +422,12 @@ func AddDocument(dbConn *sqlx.DB, transaction *sqlx.Tx, documentPath string, doc
         );
     `
 
-	return helpers.SqlExecute(dbConn, transaction, stmt, documentPath, documentType)
+    documentTypeId, err := helpers.GetIdFromDocumentType(dbConn, transaction, documentType)
+    if err != nil {
+    	return err
+	}
+
+	return helpers.SqlExecute(dbConn, transaction, stmt, documentPath, documentTypeId)
 }
 
 //  RemoveDocument removes  a document located at documentPath from the DB.
@@ -462,7 +467,7 @@ func ChangeDocumentType(dbConn *sqlx.DB, transaction *sqlx.Tx, documentPath stri
             Path = ?;
     `
 
-	documentTypeId, err := helpers.GetIdFromType(dbConn, transaction, documentTypeNew)
+	documentTypeId, err := helpers.GetIdFromDocumentType(dbConn, transaction, documentTypeNew)
 	if err != nil {
 		return err
 	}
@@ -471,4 +476,98 @@ func ChangeDocumentType(dbConn *sqlx.DB, transaction *sqlx.Tx, documentPath stri
 	}
 
 	return helpers.SqlExecute(dbConn, transaction, stmt, documentTypeId, documentPath)
+}
+
+// AddType makes a new DocumentType available for use in the DB.
+// Passing a transaction is optional.
+func AddType(dbConn *sqlx.DB, transaction *sqlx.Tx, type_ string) error {
+	if type_ == "" {
+		return errors.New("Can't add empty tag")
+	}
+
+	stmt := `
+        INSERT INTO
+            DocumentType(
+                DocumentType
+            )
+        VALUES(
+            ?
+        );
+    `
+	var statement *sqlx.Stmt
+
+	var err error
+
+	if transaction != nil {
+		statement, err = transaction.Preparex(stmt)
+
+		if err != nil {
+			return err
+		}
+	} else {
+		statement, err = dbConn.Preparex(stmt)
+
+		if err != nil {
+			return err
+		}
+	}
+
+	_, err = statement.Exec(type_)
+	if err != nil {
+		return err
+	}
+
+	err = statement.Close()
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// RemoveType removes an available DocumentType from the DB.
+// Passing a transaction is optional.
+func RemoveType(dbConn *sqlx.DB, transaction *sqlx.Tx, type_ string) error {
+	stmt := `
+        DELETE FROM
+            DocumentType
+        WHERE
+            DocumentType = ?;
+    `
+	var statement *sqlx.Stmt
+
+	var err error
+
+	if transaction != nil {
+		statement, err = transaction.Preparex(stmt)
+
+		if err != nil {
+			return err
+		}
+	} else {
+		statement, err = dbConn.Preparex(stmt)
+
+		if err != nil {
+			return err
+		}
+	}
+
+	result, err := statement.Exec(type_)
+	if err != nil {
+		return err
+	}
+
+	numAffectedRows, err := result.RowsAffected()
+	if numAffectedRows == 0 || err != nil {
+		return errors.New("Type to be deleted does not exist")
+	}
+
+	err = statement.Close()
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
