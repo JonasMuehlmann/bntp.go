@@ -1,0 +1,36 @@
+# Based on https://gist.github.com/lisawolderiksen/a7b99d94c92c6671181611be1641c733
+#
+# Structure of a conventional commit:
+# <type>(<scope>): <subject>
+# <BLANK LINE>
+# <body>
+# <BLANK LINE>
+# <footer>
+#
+#<type> can be one of the following:
+#    docs: Documentation only changes
+#    feat: A new feature
+#    fix: A bug fix
+#    refactor: A code change that neither fixes a bug nor adds a feature
+#        perf: A code change that improves performance
+#        style: Changes that do not affect the meaning of the code (white-space, formatting, missing semi-colons, etc)
+#    test: Adding missing tests or correcting existing tests
+#    chore: Changes that affect neither test, nor documentation, nor production code
+#
+# Title: Summary, imperative, start upper case, don't end with a period
+# The scope is optional, if omitted, also omit the parenthesis after <type>.
+# No more than 50 chars. #### 50 chars is here: #
+# Remember blank line between title and body.
+# ---Write your title below this line---
+
+
+# Body: Explain *what* and *why* (not *how*).
+# You can write multiple paragraphs.
+# Wrap at 72 chars. ################################## which is here: #
+# ---Write your body below this line---
+
+
+# Footer: Optional, list breaking changes or extra info
+# List breaking changes like this: BREAKING CHANGE: Removed parameter foo from function bar.
+# Refer to issues like this: Refers: #999
+# ---Write your footer(s) below this line---
