@@ -1,0 +1,13 @@
+{
+  "plugins": {
+    "commit-analyzer": {
+      "name": "default@^1.0.0"
+    },
+    "changelog-generator": {
+      "name": "default",
+      "options": {
+        "emojis": "true"
+      }
+    }
+  }
+}
