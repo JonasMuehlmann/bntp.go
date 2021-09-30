@@ -224,3 +224,50 @@ func TestAddTypeTransaction(t *testing.T) {
 	err = transaction.Commit()
 	assert.NoError(t, err)
 }
+
+// ################
+// # RemoveType() #
+// ################
+func TestRemoveTypeEmpty(t *testing.T) {
+	db, err := GetDB(t)
+	assert.NoError(t, err)
+
+	err = libbookmarks.RemoveType(db, nil, "")
+	assert.Error(t, err)
+}
+
+func TestRemoveTypeNonExistent(t *testing.T) {
+	db, err := GetDB(t)
+	assert.NoError(t, err)
+
+	err = libbookmarks.RemoveType(db, nil, "Foo")
+	assert.Error(t, err)
+}
+
+func TestRemoveType(t *testing.T) {
+	db, err := GetDB(t)
+	assert.NoError(t, err)
+
+	err = libbookmarks.AddType(db, nil, "Foo")
+	assert.NoError(t, err)
+
+	err = libbookmarks.RemoveType(db, nil, "Foo")
+	assert.NoError(t, err)
+}
+
+func TestRemoveTypeTransaction(t *testing.T) {
+	db, err := GetDB(t)
+	assert.NoError(t, err)
+
+	transaction, err := db.Beginx()
+	assert.NoError(t, err)
+
+	err = libbookmarks.AddType(nil, transaction, "Foo")
+	assert.NoError(t, err)
+
+	err = libbookmarks.RemoveType(nil, transaction, "Foo")
+	assert.NoError(t, err)
+
+	err = transaction.Commit()
+	assert.NoError(t, err)
+}

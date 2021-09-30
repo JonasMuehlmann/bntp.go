@@ -273,9 +273,14 @@ func RemoveType(dbConn *sqlx.DB, transaction *sqlx.Tx, type_ string) error {
 		}
 	}
 
-	_, err = statement.Exec(type_)
+	result, err := statement.Exec(type_)
 	if err != nil {
 		return err
+	}
+
+	numAffectedRows, err := result.RowsAffected()
+	if numAffectedRows == 0 || err != nil {
+		return errors.New("Type to be deleted does not exist")
 	}
 
 	err = statement.Close()
