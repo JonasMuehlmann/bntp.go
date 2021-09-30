@@ -1,3 +1,5 @@
+PRAGMA foreign_keys = ON;
+
 CREATE TABLE Tag
 (
     Id  INTEGER PRIMARY KEY NOT NULL,
