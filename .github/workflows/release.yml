@@ -17,13 +17,13 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           goos: linux
           goarch: amd64
+          project_path: "./cmd/..."
 
       - name: go-semantic-release
         uses: go-semantic-release/action@v1.15.0
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           changelog-file: CHANGELOG.md
-          project_path: "./cmd/..."
       # - name: Release
       #   env:
       #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
