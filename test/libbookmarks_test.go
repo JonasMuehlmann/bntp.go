@@ -445,3 +445,54 @@ func TestAddTagToBookmarkNoTag(t *testing.T) {
 	err = libbookmarks.AddTag(db, nil, bookmarkId, "Foo")
 	assert.Error(t, err)
 }
+
+// ###äää#########
+// # RemoveTag() #
+// ###äää#########
+func TestRemoveTagFromBookmark(t *testing.T) {
+	db, err := GetDB(t)
+	assert.NoError(t, err)
+
+	err = libtags.AddTag(db, nil, "Foo")
+	assert.NoError(t, err)
+
+	err = libbookmarks.AddBookmark(db, nil, "Foo", "Bar", sql.NullInt32{Int32: 0, Valid: false})
+	assert.NoError(t, err)
+
+	bookmarkId, err := helpers.GetIdFromBookmark(db, nil, "Bar")
+	assert.NoError(t, err)
+
+	err = libbookmarks.AddTag(db, nil, bookmarkId, "Foo")
+	assert.NoError(t, err)
+
+	err = libbookmarks.RemoveTag(db, nil, bookmarkId, "Foo")
+	assert.NoError(t, err)
+}
+
+func TestRemoveTagFromBookmarkTagDoesNotExist(t *testing.T) {
+	db, err := GetDB(t)
+	assert.NoError(t, err)
+
+	err = libtags.AddTag(db, nil, "Foo")
+	assert.NoError(t, err)
+
+	err = libbookmarks.AddBookmark(db, nil, "Foo", "Bar", sql.NullInt32{Int32: 0, Valid: false})
+	assert.NoError(t, err)
+
+	bookmarkId, err := helpers.GetIdFromBookmark(db, nil, "Bar")
+	assert.NoError(t, err)
+
+	err = libbookmarks.RemoveTag(db, nil, bookmarkId, "Foo")
+	assert.NoError(t, err)
+}
+
+func TestRemoveTagFromBookmarkBookmarkDoesNotExist(t *testing.T) {
+	db, err := GetDB(t)
+	assert.NoError(t, err)
+
+	err = libtags.AddTag(db, nil, "Foo")
+	assert.NoError(t, err)
+
+	err = libbookmarks.RemoveTag(db, nil, 0, "Foo")
+	assert.NoError(t, err)
+}
