@@ -315,3 +315,52 @@ func TestListTypesEmpty(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Len(t, types, 0)
 }
+
+// #################
+// # AddBookmark() #
+// #################
+func TestAddBookmark(t *testing.T) {
+	db, err := GetDB(t)
+	assert.NoError(t, err)
+
+	err = libbookmarks.AddBookmark(db, nil, "Foo", "Bar", sql.NullInt16{Int16: 0, Valid: true})
+	assert.NoError(t, err)
+}
+
+func TestAddBookmarkTansaction(t *testing.T) {
+	db, err := GetDB(t)
+	assert.NoError(t, err)
+
+	transaction, err := db.Beginx()
+	assert.NoError(t, err)
+
+	err = libbookmarks.AddBookmark(nil, transaction, "Foo", "Bar", sql.NullInt16{Int16: 0, Valid: true})
+	assert.NoError(t, err)
+
+	err = transaction.Commit()
+	assert.NoError(t, err)
+}
+
+func TestAddBookmarkNoTitle(t *testing.T) {
+	db, err := GetDB(t)
+	assert.NoError(t, err)
+
+	err = libbookmarks.AddBookmark(db, nil, "", "Bar", sql.NullInt16{Int16: 0, Valid: true})
+	assert.Error(t, err)
+}
+
+func TestAddBookmarkNoUrl(t *testing.T) {
+	db, err := GetDB(t)
+	assert.NoError(t, err)
+
+	err = libbookmarks.AddBookmark(db, nil, "Foo", "", sql.NullInt16{Int16: 0, Valid: true})
+	assert.Error(t, err)
+}
+
+func TestAddBookmarkNoType(t *testing.T) {
+	db, err := GetDB(t)
+	assert.NoError(t, err)
+
+	err = libbookmarks.AddBookmark(db, nil, "Foo", "Bar", sql.NullInt16{Int16: 0, Valid: false})
+	assert.NoError(t, err)
+}
