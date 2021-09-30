@@ -294,41 +294,32 @@ func RemoveType(dbConn *sqlx.DB, transaction *sqlx.Tx, type_ string) error {
 
 // ListTypes lists all BookmarkTypes available in the DB.
 func ListTypes(dbConn *sqlx.DB) ([]string, error) {
-	stmtRows := `
+	stmtTypes := `
         SELECT
-            *
+            Type
         FROM
             BookmarkType;
     `
-	stmtCount := `
+
+	stmtNumTypes := `
         SELECT
             Count(*)
         FROM
             BookmarkType;
     `
-	countRow := dbConn.QueryRow(stmtCount)
 
-	var rowCount int
+	var numTypes int
 
-	err := countRow.Scan(&rowCount)
+	err := dbConn.Get(&numTypes, stmtNumTypes)
 	if err != nil {
 		return nil, err
 	}
 
-	rows, err := dbConn.Query(stmtRows)
+	types := make([]string, 0, numTypes)
+
+	err = dbConn.Select(&types, stmtTypes)
 	if err != nil {
 		return nil, err
-	}
-
-	types := make([]string, 0, rowCount)
-
-	i := 0
-	for rows.Next() {
-		err := rows.Scan(&types[i])
-		if err != nil {
-			return nil, err
-		}
-		i++
 	}
 
 	return types, nil
