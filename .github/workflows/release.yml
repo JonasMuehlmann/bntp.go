@@ -17,17 +17,10 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           goos: linux
           goarch: amd64
-          project_path: "./cmd/..."
+          build_command: go build ./cmd/bntp
 
       - name: go-semantic-release
         uses: go-semantic-release/action@v1.15.0
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           changelog-file: CHANGELOG.md
-      # - name: Release
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #   run: 
-      #     - npm install @semantic-release/git
-      #     - npm install @semantic-release/changelog
-      #     - npx semantic-release
