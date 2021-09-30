@@ -271,3 +271,47 @@ func TestRemoveTypeTransaction(t *testing.T) {
 	err = transaction.Commit()
 	assert.NoError(t, err)
 }
+
+// ###############
+// # ListTypes() #
+// ###############
+func TestListTypes(t *testing.T) {
+	db, err := GetDB(t)
+	assert.NoError(t, err)
+
+	err = libbookmarks.AddType(db, nil, "Foo")
+	assert.NoError(t, err)
+
+	types, err := libbookmarks.ListTypes(db)
+	assert.NoError(t, err)
+	assert.Len(t, types, 1)
+	assert.Equal(t, "Foo", types[0])
+}
+
+func TestListTypesMany(t *testing.T) {
+	db, err := GetDB(t)
+	assert.NoError(t, err)
+
+	err = libbookmarks.AddType(db, nil, "Foo")
+	assert.NoError(t, err)
+
+	err = libbookmarks.AddType(db, nil, "Foo2")
+	assert.NoError(t, err)
+
+	err = libbookmarks.AddType(db, nil, "Foo3")
+	assert.NoError(t, err)
+
+	types, err := libbookmarks.ListTypes(db)
+	assert.NoError(t, err)
+	assert.Len(t, types, 3)
+	assert.Equal(t, []string{"Foo", "Foo2", "Foo3"}, types)
+}
+
+func TestListTypesEmpty(t *testing.T) {
+	db, err := GetDB(t)
+	assert.NoError(t, err)
+
+	types, err := libbookmarks.ListTypes(db)
+	assert.NoError(t, err)
+	assert.Len(t, types, 0)
+}
