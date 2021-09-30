@@ -63,7 +63,7 @@ func ImportMinimalCSV(dbConn *sqlx.DB, csvPath string) error {
 	}
 
 	for _, bookmark := range bookmarks[1:] {
-		err := AddBookmark(dbConn, transaction, bookmark[titleColumn], bookmark[linkColumn], sql.NullInt16{Valid: false})
+		err := AddBookmark(dbConn, transaction, bookmark[titleColumn], bookmark[linkColumn], sql.NullInt32{Valid: false})
 
 		if err != nil {
 			return err
@@ -328,7 +328,7 @@ func ListTypes(dbConn *sqlx.DB) ([]string, error) {
 // TODO: Allow passing string for type_
 // AddBookmark adds a new bookmark to the DB.
 // Passing a transaction is optional.
-func AddBookmark(dbConn *sqlx.DB, transaction *sqlx.Tx, title string, url string, type_ sql.NullInt16) error {
+func AddBookmark(dbConn *sqlx.DB, transaction *sqlx.Tx, title string, url string, type_ sql.NullInt32) error {
 	stmt := `
         INSERT INTO
             Bookmark(
@@ -594,9 +594,14 @@ func AddTag(dbConn *sqlx.DB, transaction *sqlx.Tx, bookmarkId int, newTag string
 		return err
 	}
 
-	_, err = statementContext.Exec(bookmarkId, tagId)
+	result, err := statementContext.Exec(bookmarkId, tagId)
 	if err != nil {
 		return err
+	}
+
+	numAffectedRows, err := result.RowsAffected()
+	if numAffectedRows == 0 || err != nil {
+		return errors.New("Type to be deleted does not exist")
 	}
 
 	err = statementContext.Close()

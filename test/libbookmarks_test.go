@@ -6,7 +6,9 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/JonasMuehlmann/bntp.go/internal/helpers"
 	"github.com/JonasMuehlmann/bntp.go/internal/libbookmarks"
+	"github.com/JonasMuehlmann/bntp.go/internal/libtags"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -176,13 +178,13 @@ func TestExportCSV(t *testing.T) {
 	db, err := GetDB(t)
 	assert.NoError(t, err)
 
-	err = libbookmarks.AddBookmark(db, nil, "Foo", "Bar", sql.NullInt16{Valid: false})
+	err = libbookmarks.AddBookmark(db, nil, "Foo", "Bar", sql.NullInt32{Valid: false})
 	assert.NoError(t, err)
 
-	err = libbookmarks.AddBookmark(db, nil, "Foo2", "Bar2", sql.NullInt16{Valid: false})
+	err = libbookmarks.AddBookmark(db, nil, "Foo2", "Bar2", sql.NullInt32{Valid: false})
 	assert.NoError(t, err)
 
-	err = libbookmarks.AddBookmark(db, nil, "Foo3", "Bar3", sql.NullInt16{Valid: false})
+	err = libbookmarks.AddBookmark(db, nil, "Foo3", "Bar3", sql.NullInt32{Valid: false})
 	assert.NoError(t, err)
 
 	bookmarks, err := libbookmarks.GetBookmarks(db, libbookmarks.BookmarkFilter{})
@@ -323,18 +325,29 @@ func TestAddBookmark(t *testing.T) {
 	db, err := GetDB(t)
 	assert.NoError(t, err)
 
-	err = libbookmarks.AddBookmark(db, nil, "Foo", "Bar", sql.NullInt16{Int16: 0, Valid: true})
+	err = libbookmarks.AddType(db, nil, "Bar")
+	assert.NoError(t, err)
+
+	typeId, err := helpers.GetIdFromBookmarkType(db, nil, "Bar")
+	assert.NoError(t, err)
+
+	err = libbookmarks.AddBookmark(db, nil, "Foo", "Bar", sql.NullInt32{Int32: int32(typeId), Valid: true})
 	assert.NoError(t, err)
 }
 
 func TestAddBookmarkTansaction(t *testing.T) {
 	db, err := GetDB(t)
 	assert.NoError(t, err)
+	err = libbookmarks.AddType(db, nil, "Bar")
+	assert.NoError(t, err)
 
 	transaction, err := db.Beginx()
 	assert.NoError(t, err)
 
-	err = libbookmarks.AddBookmark(nil, transaction, "Foo", "Bar", sql.NullInt16{Int16: 0, Valid: true})
+	typeId, err := helpers.GetIdFromBookmarkType(db, nil, "Bar")
+	assert.NoError(t, err)
+
+	err = libbookmarks.AddBookmark(nil, transaction, "Foo", "Bar", sql.NullInt32{Int32: int32(typeId), Valid: true})
 	assert.NoError(t, err)
 
 	err = transaction.Commit()
@@ -345,7 +358,7 @@ func TestAddBookmarkNoTitle(t *testing.T) {
 	db, err := GetDB(t)
 	assert.NoError(t, err)
 
-	err = libbookmarks.AddBookmark(db, nil, "", "Bar", sql.NullInt16{Int16: 0, Valid: true})
+	err = libbookmarks.AddBookmark(db, nil, "", "Bar", sql.NullInt32{Int32: 0, Valid: true})
 	assert.Error(t, err)
 }
 
@@ -353,7 +366,7 @@ func TestAddBookmarkNoUrl(t *testing.T) {
 	db, err := GetDB(t)
 	assert.NoError(t, err)
 
-	err = libbookmarks.AddBookmark(db, nil, "Foo", "", sql.NullInt16{Int16: 0, Valid: true})
+	err = libbookmarks.AddBookmark(db, nil, "Foo", "", sql.NullInt32{Int32: 0, Valid: true})
 	assert.Error(t, err)
 }
 
@@ -361,6 +374,74 @@ func TestAddBookmarkNoType(t *testing.T) {
 	db, err := GetDB(t)
 	assert.NoError(t, err)
 
-	err = libbookmarks.AddBookmark(db, nil, "Foo", "Bar", sql.NullInt16{Int16: 0, Valid: false})
+	err = libbookmarks.AddBookmark(db, nil, "Foo", "Bar", sql.NullInt32{Int32: 0, Valid: false})
 	assert.NoError(t, err)
+}
+
+// ############
+// # AddTag() #
+// ############
+func TestAddTagToBookmark(t *testing.T) {
+	db, err := GetDB(t)
+	assert.NoError(t, err)
+
+	err = libtags.AddTag(db, nil, "Foo")
+	assert.NoError(t, err)
+
+	err = libbookmarks.AddBookmark(db, nil, "Foo", "Bar", sql.NullInt32{Int32: 0, Valid: false})
+	assert.NoError(t, err)
+
+	bookmarkId, err := helpers.GetIdFromBookmark(db, nil, "Bar")
+	assert.NoError(t, err)
+
+	err = libbookmarks.AddTag(db, nil, bookmarkId, "Foo")
+	assert.NoError(t, err)
+}
+
+func TestAddTagToBookmarkTransaction(t *testing.T) {
+	db, err := GetDB(t)
+	assert.NoError(t, err)
+
+	err = libtags.AddTag(db, nil, "Foo")
+	assert.NoError(t, err)
+
+	err = libbookmarks.AddBookmark(db, nil, "Foo", "Bar", sql.NullInt32{Int32: 0, Valid: false})
+	assert.NoError(t, err)
+
+	bookmarkId, err := helpers.GetIdFromBookmark(db, nil, "Bar")
+	assert.NoError(t, err)
+
+	transaction, err := db.Beginx()
+	assert.NoError(t, err)
+
+	err = libbookmarks.AddTag(nil, transaction, bookmarkId, "Foo")
+	assert.NoError(t, err)
+
+	err = transaction.Commit()
+	assert.NoError(t, err)
+}
+
+func TestAddTagToBookmarkNoBookmark(t *testing.T) {
+	db, err := GetDB(t)
+	assert.NoError(t, err)
+
+	err = libtags.AddTag(db, nil, "Foo")
+	assert.NoError(t, err)
+
+	err = libbookmarks.AddTag(db, nil, 0, "Foo")
+	assert.Error(t, err)
+}
+
+func TestAddTagToBookmarkNoTag(t *testing.T) {
+	db, err := GetDB(t)
+	assert.NoError(t, err)
+
+	err = libbookmarks.AddBookmark(db, nil, "Foo", "Bar", sql.NullInt32{Int32: 0, Valid: false})
+	assert.NoError(t, err)
+
+	bookmarkId, err := helpers.GetIdFromBookmark(db, nil, "Bar")
+	assert.NoError(t, err)
+
+	err = libbookmarks.AddTag(db, nil, bookmarkId, "Foo")
+	assert.Error(t, err)
 }
