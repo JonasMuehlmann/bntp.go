@@ -191,3 +191,36 @@ func TestExportCSV(t *testing.T) {
 	err = libbookmarks.ExportCSV(bookmarks, filepath.Join(testDataTempDir, t.Name()))
 	assert.NoError(t, err)
 }
+
+// #############
+// # AddType() #
+// #############
+func TestAddTypeEmpty(t *testing.T) {
+	db, err := GetDB(t)
+	assert.NoError(t, err)
+
+	err = libbookmarks.AddType(db, nil, "")
+	assert.Error(t, err)
+}
+
+func TestAddType(t *testing.T) {
+	db, err := GetDB(t)
+	assert.NoError(t, err)
+
+	err = libbookmarks.AddType(db, nil, "Foo")
+	assert.NoError(t, err)
+}
+
+func TestAddTypeTransaction(t *testing.T) {
+	db, err := GetDB(t)
+	assert.NoError(t, err)
+
+	transaction, err := db.Beginx()
+	assert.NoError(t, err)
+
+	err = libbookmarks.AddType(nil, transaction, "Foo")
+	assert.NoError(t, err)
+
+	err = transaction.Commit()
+	assert.NoError(t, err)
+}

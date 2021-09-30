@@ -201,6 +201,10 @@ func GetBookmarks(dbConn *sqlx.DB, filter BookmarkFilter) ([]Bookmark, error) {
 // AddType makes a new BookmarkType available for use in the DB.
 // Passing a transaction is optional.
 func AddType(dbConn *sqlx.DB, transaction *sqlx.Tx, type_ string) error {
+	if type_ == "" {
+		return errors.New("Can't add empty tag")
+	}
+
 	stmt := `
         INSERT INTO
             BookmarkType(
