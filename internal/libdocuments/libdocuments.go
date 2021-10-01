@@ -117,7 +117,13 @@ func GetTags(documentPath string) ([]string, error) {
 		return nil, err
 	}
 
-	return strings.Split(tags, ","), nil
+	tagsBuffer := strings.Split(tags, ",")
+
+	if len(tagsBuffer) == 1 && tagsBuffer[0] == "" {
+		return nil, errors.New("No tags found")
+	}
+
+	return tagsBuffer, nil
 }
 
 // FindTagsLine finds the line in documentPath which contains it's tags.
