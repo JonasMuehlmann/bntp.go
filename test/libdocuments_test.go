@@ -226,3 +226,80 @@ func TestRenameTagFromDocumentTwice(t *testing.T) {
 	err = libdocuments.RenameTag(filePath, "Bar", "Foo")
 	assert.NoError(t, err)
 }
+
+// #############
+// # GetTags() #
+// #############
+func TestGetTagsEmpty(t *testing.T) {
+	filePath := filepath.Join(testDataTempDir, t.Name())
+
+	file, err := os.Create(filePath)
+	assert.NoError(t, err)
+
+	document := ""
+	_, err = file.WriteString(document)
+	assert.NoError(t, err)
+
+	_, err = libdocuments.GetTags(filePath)
+	assert.Error(t, err)
+}
+
+func TestGetTagsNoTags(t *testing.T) {
+	filePath := filepath.Join(testDataTempDir, t.Name())
+
+	file, err := os.Create(filePath)
+	assert.NoError(t, err)
+
+	document := "# Tags"
+	_, err = file.WriteString(document)
+	assert.NoError(t, err)
+
+	_, err = libdocuments.GetTags(filePath)
+	assert.Error(t, err)
+}
+
+func TestGetTagsOneTag(t *testing.T) {
+	filePath := filepath.Join(testDataTempDir, t.Name())
+
+	file, err := os.Create(filePath)
+	assert.NoError(t, err)
+
+	document := "# Tags"
+	_, err = file.WriteString(document)
+	assert.NoError(t, err)
+
+	err = libdocuments.AddTag(filePath, "Foo")
+	assert.NoError(t, err)
+
+	tags, err := libdocuments.GetTags(filePath)
+	assert.NoError(t, err)
+	assert.Len(t, tags, 1)
+	assert.Equal(t, "Foo", tags[0])
+
+}
+
+func TestGetTagsManyTags(t *testing.T) {
+	filePath := filepath.Join(testDataTempDir, t.Name())
+
+	file, err := os.Create(filePath)
+	assert.NoError(t, err)
+
+	document := "# Tags"
+	_, err = file.WriteString(document)
+	assert.NoError(t, err)
+
+	err = libdocuments.AddTag(filePath, "Foo")
+	assert.NoError(t, err)
+
+	err = libdocuments.AddTag(filePath, "Bar")
+	assert.NoError(t, err)
+
+	err = libdocuments.AddTag(filePath, "Baz")
+	assert.NoError(t, err)
+
+	tags, err := libdocuments.GetTags(filePath)
+	assert.NoError(t, err)
+	assert.Len(t, tags, 3)
+	assert.Equal(t, []string{"Foo", "Bar", "Baz"}, tags)
+
+}
