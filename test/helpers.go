@@ -12,7 +12,7 @@ import (
 
 var (
 	testDataTempDir = filepath.Join(os.TempDir(), "bntp_tests")
-	origTestDbPath  = "data/bntp_test.db"
+	origTestDbPath  = "./data/bntp_test.db"
 )
 
 // GetDB opens a copy of the test DB in memory.

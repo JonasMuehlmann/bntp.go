@@ -19,27 +19,26 @@ func AddTag(documentPath string, tag string) error {
 		return errors.New("Can't add empty tag")
 	}
 
-	lineNumber, tags, err := FindTagsLine(documentPath)
+	tagsLineNumber, _, err := FindTagsLine(documentPath)
 	if err != nil {
 		return err
 	}
 
-	tags += tag
-
-	file, err := os.OpenFile(documentPath, os.O_RDWR, 0o644)
+	fileBuffer, err := os.ReadFile(documentPath)
 	if err != nil {
 		return err
 	}
 
-	defer file.Close()
+	lines := strings.Split(string(fileBuffer), "\n")
 
-	offset, err := file.Seek(int64(lineNumber), io.SeekStart)
-	if err != nil {
-		return err
+	// If the tag line is the last line, we append a new one.
+	if len(lines) == tagsLineNumber {
+		lines = append(lines, tag)
+	} else {
+		lines[tagsLineNumber] += "," + tag
 	}
 
-	_, err = file.WriteAt([]byte(tags), offset)
-
+	err = os.WriteFile(documentPath, []byte(strings.Join(lines, "\n")), 0o644)
 	if err != nil {
 		return err
 	}
@@ -123,7 +122,7 @@ func GetTags(documentPath string) ([]string, error) {
 }
 
 // FindTagsLine finds the line in documentPath which contains it's tags.
-// It returns the line lumber of the tags line as well as the line itself.
+// It returns the 0 based line lumber of the tags line as well as the line itself.
 func FindTagsLine(documentPath string) (int, string, error) {
 	file, err := os.OpenFile(documentPath, os.O_RDONLY, 0o644)
 	if err != nil {
