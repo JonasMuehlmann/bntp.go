@@ -72,33 +72,37 @@ func RemoveTag(documentPath string, tag string) error {
 	if err != nil {
 		return err
 	}
+
 	return nil
 }
 
 // Rename renames a tag oldTag to newTag in the tag line of the doucment at documentPath.
 // This method preserves the order of all tags in the doucment.
 func RenameTag(documentPath string, oldTag string, newTag string) error {
-	lineNumber, tags, err := FindTagsLine(documentPath)
+	if oldTag == "" {
+		return errors.New("Can't rename from empty Tag")
+	}
+
+	if newTag == "" {
+		return errors.New("Can't rename tp empty Tag")
+	}
+
+	tagsLineNumber, tags, err := FindTagsLine(documentPath)
 	if err != nil {
 		return err
 	}
 
 	tags = strings.Replace(tags, oldTag, newTag, -1)
 
-	file, err := os.OpenFile(documentPath, os.O_RDWR, 0o644)
+	fileBuffer, err := os.ReadFile(documentPath)
 	if err != nil {
 		return err
 	}
 
-	defer file.Close()
+	lines := strings.Split(string(fileBuffer), "\n")
+	lines[tagsLineNumber] = tags
 
-	offset, err := file.Seek(int64(lineNumber), io.SeekStart)
-	if err != nil {
-		return err
-	}
-
-	_, err = file.WriteAt([]byte(tags), offset)
-
+	err = os.WriteFile(documentPath, []byte(strings.Join(lines, "\n")), 0o644)
 	if err != nil {
 		return err
 	}
