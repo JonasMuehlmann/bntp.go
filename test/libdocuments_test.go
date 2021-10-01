@@ -70,3 +70,74 @@ func TestAddTagToDocumentTwice(t *testing.T) {
 	err = libdocuments.AddTag(filePath, "Bar")
 	assert.NoError(t, err)
 }
+
+// ###############
+// # RemoveTag() #
+// ###############
+func TestRemoveTagFromDocumentEmpty(t *testing.T) {
+	filePath := filepath.Join(testDataTempDir, t.Name())
+
+	file, err := os.Create(filePath)
+	assert.NoError(t, err)
+
+	document := ""
+	_, err = file.WriteString(document)
+	assert.NoError(t, err)
+
+	err = libdocuments.RemoveTag(filePath, "Foo")
+	assert.Error(t, err)
+}
+
+func TestRemoveTagFromDocumentNoTag(t *testing.T) {
+	filePath := filepath.Join(testDataTempDir, t.Name())
+
+	file, err := os.Create(filePath)
+	assert.NoError(t, err)
+
+	document := "# Tags"
+	_, err = file.WriteString(document)
+	assert.NoError(t, err)
+
+	err = libdocuments.RemoveTag(filePath, "")
+	assert.Error(t, err)
+}
+
+func TestRemoveTagFromDocument(t *testing.T) {
+	filePath := filepath.Join(testDataTempDir, t.Name())
+
+	file, err := os.Create(filePath)
+	assert.NoError(t, err)
+
+	document := "# Tags"
+	_, err = file.WriteString(document)
+	assert.NoError(t, err)
+
+	err = libdocuments.AddTag(filePath, "Foo")
+	assert.NoError(t, err)
+
+	err = libdocuments.RemoveTag(filePath, "Foo")
+	assert.NoError(t, err)
+}
+
+func TestRemoveTagFromDocumentTwice(t *testing.T) {
+	filePath := filepath.Join(testDataTempDir, t.Name())
+
+	file, err := os.Create(filePath)
+	assert.NoError(t, err)
+
+	document := "# Tags"
+	_, err = file.WriteString(document)
+	assert.NoError(t, err)
+
+	err = libdocuments.AddTag(filePath, "Foo")
+	assert.NoError(t, err)
+
+	err = libdocuments.AddTag(filePath, "Bar")
+	assert.NoError(t, err)
+
+	err = libdocuments.RemoveTag(filePath, "Foo")
+	assert.NoError(t, err)
+
+	err = libdocuments.RemoveTag(filePath, "Bar")
+	assert.NoError(t, err)
+}

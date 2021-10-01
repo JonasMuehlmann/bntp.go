@@ -15,6 +15,10 @@ import (
 
 // AddTag adds a tag to the tag line of the document at documentPath.
 func AddTag(documentPath string, tag string) error {
+	if tag == "" {
+		return errors.New("Can't add empty tag")
+	}
+
 	lineNumber, tags, err := FindTagsLine(documentPath)
 	if err != nil {
 		return err
@@ -45,6 +49,10 @@ func AddTag(documentPath string, tag string) error {
 
 // RemoveTag removes a tag from the tag line of the document at documentPath.
 func RemoveTag(documentPath string, tag string) error {
+	if tag == "" {
+		return errors.New("Can't remove empty tag")
+	}
+
 	lineNumber, tags, err := FindTagsLine(documentPath)
 	if err != nil {
 		return err
@@ -422,9 +430,9 @@ func AddDocument(dbConn *sqlx.DB, transaction *sqlx.Tx, documentPath string, doc
         );
     `
 
-    documentTypeId, err := helpers.GetIdFromDocumentType(dbConn, transaction, documentType)
-    if err != nil {
-    	return err
+	documentTypeId, err := helpers.GetIdFromDocumentType(dbConn, transaction, documentType)
+	if err != nil {
+		return err
 	}
 
 	return helpers.SqlExecute(dbConn, transaction, stmt, documentPath, documentTypeId)
