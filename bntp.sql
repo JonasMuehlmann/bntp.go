@@ -48,11 +48,13 @@ CREATE TABLE BookmarkContext
 (
     Id PRIMARY KEY,
     BookmarkId REFERENCES Bookmark(Id) NOT NULL,
-    TagId REFERENCES Tag(Id) NOT NULL 
+    TagId REFERENCES Tag(Id) NOT NULL,
+    UNIQUE(TagId, BookmarkId)
 );
 CREATE TABLE DocumentContext
 (
     Id PRIMARY KEY,
     DocumentId REFERENCES Document (Id)NOT NULL,
-    TagId REFERENCES  Tag(Id) NOT NULL
+    TagId REFERENCES  Tag(Id) NOT NULL,
+    UNIQUE(TagId, DocumentId)
 );
