@@ -303,3 +303,72 @@ func TestGetTagsManyTags(t *testing.T) {
 	assert.Equal(t, []string{"Foo", "Bar", "Baz"}, tags)
 
 }
+
+// ##################
+// # FindTagsLine() #
+// ##################
+func TestFindTagsLineEmpty(t *testing.T) {
+	filePath := filepath.Join(testDataTempDir, t.Name())
+
+	file, err := os.Create(filePath)
+	assert.NoError(t, err)
+
+	document := ""
+	_, err = file.WriteString(document)
+	assert.NoError(t, err)
+
+	_, _, err = libdocuments.FindTagsLine(filePath)
+	assert.Error(t, err)
+}
+
+func TestFindTagsLineFirst(t *testing.T) {
+	filePath := filepath.Join(testDataTempDir, t.Name())
+
+	file, err := os.Create(filePath)
+	assert.NoError(t, err)
+
+	document := "# Tags"
+	_, err = file.WriteString(document)
+	assert.NoError(t, err)
+
+	i, _, err := libdocuments.FindTagsLine(filePath)
+	assert.NoError(t, err)
+	assert.Equal(t, i, 1)
+}
+
+func TestFindTagsLineLast(t *testing.T) {
+	filePath := filepath.Join(testDataTempDir, t.Name())
+
+	file, err := os.Create(filePath)
+	assert.NoError(t, err)
+
+	document := `
+
+
+# Tags
+`
+	_, err = file.WriteString(document)
+	assert.NoError(t, err)
+
+	i, _, err := libdocuments.FindTagsLine(filePath)
+	assert.NoError(t, err)
+	assert.Equal(t, i, 4)
+}
+
+func TestFindTagsLineMiddle(t *testing.T) {
+	filePath := filepath.Join(testDataTempDir, t.Name())
+
+	file, err := os.Create(filePath)
+	assert.NoError(t, err)
+
+	document := `
+# Tags
+
+`
+	_, err = file.WriteString(document)
+	assert.NoError(t, err)
+
+	i, _, err := libdocuments.FindTagsLine(filePath)
+	assert.NoError(t, err)
+	assert.Equal(t, i, 2)
+}
