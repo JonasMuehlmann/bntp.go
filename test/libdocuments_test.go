@@ -141,3 +141,88 @@ func TestRemoveTagFromDocumentTwice(t *testing.T) {
 	err = libdocuments.RemoveTag(filePath, "Bar")
 	assert.NoError(t, err)
 }
+
+// ###############
+// # RenameTag() #
+// ###############
+func TestRenameTagFromDocumentEmpty(t *testing.T) {
+	filePath := filepath.Join(testDataTempDir, t.Name())
+
+	file, err := os.Create(filePath)
+	assert.NoError(t, err)
+
+	document := ""
+	_, err = file.WriteString(document)
+	assert.NoError(t, err)
+
+	err = libdocuments.RenameTag(filePath, "Foo", "Bar")
+	assert.Error(t, err)
+}
+
+func TestRenameTagFromDocumentNoOldTag(t *testing.T) {
+	filePath := filepath.Join(testDataTempDir, t.Name())
+
+	file, err := os.Create(filePath)
+	assert.NoError(t, err)
+
+	document := "# Tags"
+	_, err = file.WriteString(document)
+	assert.NoError(t, err)
+
+	err = libdocuments.RenameTag(filePath, "", "Bar")
+	assert.Error(t, err)
+}
+
+func TestRenameTagFromDocumentNoNewTag(t *testing.T) {
+	filePath := filepath.Join(testDataTempDir, t.Name())
+
+	file, err := os.Create(filePath)
+	assert.NoError(t, err)
+
+	document := "# Tags"
+	_, err = file.WriteString(document)
+	assert.NoError(t, err)
+
+	err = libdocuments.RenameTag(filePath, "Foo", "")
+	assert.Error(t, err)
+}
+
+func TestRenameTagFromDocument(t *testing.T) {
+	filePath := filepath.Join(testDataTempDir, t.Name())
+
+	file, err := os.Create(filePath)
+	assert.NoError(t, err)
+
+	document := "# Tags"
+	_, err = file.WriteString(document)
+	assert.NoError(t, err)
+
+	err = libdocuments.AddTag(filePath, "Foo")
+	assert.NoError(t, err)
+
+	err = libdocuments.RenameTag(filePath, "Foo", "Bar")
+	assert.NoError(t, err)
+}
+
+func TestRenameTagFromDocumentTwice(t *testing.T) {
+	filePath := filepath.Join(testDataTempDir, t.Name())
+
+	file, err := os.Create(filePath)
+	assert.NoError(t, err)
+
+	document := "# Tags"
+	_, err = file.WriteString(document)
+	assert.NoError(t, err)
+
+	err = libdocuments.AddTag(filePath, "Foo")
+	assert.NoError(t, err)
+
+	err = libdocuments.AddTag(filePath, "Bar")
+	assert.NoError(t, err)
+
+	err = libdocuments.RenameTag(filePath, "Foo", "Bar")
+	assert.NoError(t, err)
+
+	err = libdocuments.RenameTag(filePath, "Bar", "Foo")
+	assert.NoError(t, err)
+}
