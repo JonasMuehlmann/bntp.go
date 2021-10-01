@@ -154,17 +154,27 @@ func FindTagsLine(documentPath string) (int, string, error) {
 
 // HasTags checks if the document at documentPath has all specified tags.
 func HasTags(documentPath string, tags []string) (bool, error) {
+	if len(tags) == 0 || (len(tags) == 1 && tags[0] == "") {
+		return false, errors.New("No input tags")
+	}
+
 	documentTags, err := GetTags(documentPath)
 	if err != nil {
 		return false, err
 	}
 
 	for _, tag := range tags {
+		hasTag := false
+
 		for _, documentTag := range documentTags {
 			if tag == documentTag {
-				continue
-			}
+				hasTag = true
 
+				break
+			}
+		}
+
+		if !hasTag {
 			return false, nil
 		}
 	}

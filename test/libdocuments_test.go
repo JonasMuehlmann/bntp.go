@@ -372,3 +372,175 @@ func TestFindTagsLineMiddle(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, i, 2)
 }
+
+// #############
+// # HasTags() #
+// #############
+func TestHasTagsEmpty(t *testing.T) {
+	filePath := filepath.Join(testDataTempDir, t.Name())
+
+	file, err := os.Create(filePath)
+	assert.NoError(t, err)
+
+	document := ""
+
+	_, err = file.WriteString(document)
+	assert.NoError(t, err)
+
+	_, err = libdocuments.HasTags(filePath, []string{"Foo"})
+	assert.Error(t, err)
+}
+
+func TestHasTagsNoTags(t *testing.T) {
+	filePath := filepath.Join(testDataTempDir, t.Name())
+
+	file, err := os.Create(filePath)
+	assert.NoError(t, err)
+
+	document := "# Tags"
+
+	_, err = file.WriteString(document)
+	assert.NoError(t, err)
+
+	_, err = libdocuments.HasTags(filePath, []string{"Foo"})
+	assert.Error(t, err)
+}
+
+func TestHasTagsNoInput(t *testing.T) {
+	filePath := filepath.Join(testDataTempDir, t.Name())
+
+	file, err := os.Create(filePath)
+	assert.NoError(t, err)
+
+	document := `# Tags
+Foo
+    `
+
+	_, err = file.WriteString(document)
+	assert.NoError(t, err)
+
+	_, err = libdocuments.HasTags(filePath, []string{})
+	assert.Error(t, err)
+}
+
+func TestHasTagsEmptyStringInput(t *testing.T) {
+	filePath := filepath.Join(testDataTempDir, t.Name())
+
+	file, err := os.Create(filePath)
+	assert.NoError(t, err)
+
+	document := `# Tags
+Foo
+    `
+
+	_, err = file.WriteString(document)
+	assert.NoError(t, err)
+
+	_, err = libdocuments.HasTags(filePath, []string{""})
+	assert.Error(t, err)
+}
+
+func TestHasTagsNotFound(t *testing.T) {
+	filePath := filepath.Join(testDataTempDir, t.Name())
+
+	file, err := os.Create(filePath)
+	assert.NoError(t, err)
+
+	document := `# Tags
+Foo
+    `
+
+	_, err = file.WriteString(document)
+	assert.NoError(t, err)
+
+	hasTag, err := libdocuments.HasTags(filePath, []string{"Bar"})
+	assert.NoError(t, err)
+	assert.False(t, hasTag)
+}
+
+func TestHasTags(t *testing.T) {
+	filePath := filepath.Join(testDataTempDir, t.Name())
+
+	file, err := os.Create(filePath)
+	assert.NoError(t, err)
+
+	document := `# Tags
+Foo
+    `
+	_, err = file.WriteString(document)
+	assert.NoError(t, err)
+
+	hasTag, err := libdocuments.HasTags(filePath, []string{"Foo"})
+	assert.NoError(t, err)
+	assert.True(t, hasTag)
+}
+
+func TestHasTagsMultipleInDocument(t *testing.T) {
+	filePath := filepath.Join(testDataTempDir, t.Name())
+
+	file, err := os.Create(filePath)
+	assert.NoError(t, err)
+
+	document := `# Tags
+Foo,Bar
+    `
+	_, err = file.WriteString(document)
+	assert.NoError(t, err)
+
+	hasTag, err := libdocuments.HasTags(filePath, []string{"Foo"})
+	assert.NoError(t, err)
+	assert.True(t, hasTag)
+}
+
+func TestHasTagsNotFoundMultipleInInput(t *testing.T) {
+	filePath := filepath.Join(testDataTempDir, t.Name())
+
+	file, err := os.Create(filePath)
+	assert.NoError(t, err)
+
+	document := `# Tags
+Foo
+    `
+
+	_, err = file.WriteString(document)
+	assert.NoError(t, err)
+
+	hasTag, err := libdocuments.HasTags(filePath, []string{"Foo", "Bar"})
+	assert.NoError(t, err)
+	assert.False(t, hasTag)
+}
+
+func TestHasTagsMultipleInInput(t *testing.T) {
+	filePath := filepath.Join(testDataTempDir, t.Name())
+
+	file, err := os.Create(filePath)
+	assert.NoError(t, err)
+
+	document := `# Tags
+Foo,Bar
+    `
+
+	_, err = file.WriteString(document)
+	assert.NoError(t, err)
+
+	hasTag, err := libdocuments.HasTags(filePath, []string{"Foo", "Bar"})
+	assert.NoError(t, err)
+	assert.True(t, hasTag)
+}
+func TestHasTagsMultipleInInputReverseOrder(t *testing.T) {
+	filePath := filepath.Join(testDataTempDir, t.Name())
+
+	file, err := os.Create(filePath)
+	assert.NoError(t, err)
+
+	document := `# Tags
+Bar,Foo
+    `
+
+	_, err = file.WriteString(document)
+	assert.NoError(t, err)
+
+	hasTag, err := libdocuments.HasTags(filePath, []string{"Foo", "Bar"})
+	assert.NoError(t, err)
+	assert.True(t, hasTag)
+}
