@@ -52,7 +52,7 @@ func RemoveTag(documentPath string, tag string) error {
 		return errors.New("Can't remove empty tag")
 	}
 
-	lineNumber, tags, err := FindTagsLine(documentPath)
+	tagsLineNumber, tags, err := FindTagsLine(documentPath)
 	if err != nil {
 		return err
 	}
@@ -60,23 +60,18 @@ func RemoveTag(documentPath string, tag string) error {
 	tags = strings.Replace(tags, tag, "", -1)
 	tags = strings.Replace(tags, ",,", ",", -1)
 
-	file, err := os.OpenFile(documentPath, os.O_RDWR, 0o644)
+	fileBuffer, err := os.ReadFile(documentPath)
 	if err != nil {
 		return err
 	}
 
-	defer file.Close()
+	lines := strings.Split(string(fileBuffer), "\n")
+	lines[tagsLineNumber] = tags
 
-	offset, err := file.Seek(int64(lineNumber), io.SeekStart)
+	err = os.WriteFile(documentPath, []byte(strings.Join(lines, "\n")), 0o644)
 	if err != nil {
 		return err
 	}
-
-	_, err = file.WriteAt([]byte(tags), offset)
-	if err != nil {
-		return err
-	}
-
 	return nil
 }
 
