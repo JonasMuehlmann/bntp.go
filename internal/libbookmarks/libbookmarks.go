@@ -414,105 +414,10 @@ func EditUrl(dbConn *sqlx.DB, transaction *sqlx.Tx, id int, newUrl string) error
 	return EditBookmark(dbConn, transaction, id, "Url", newUrl)
 }
 
-func GetIdFromTag(dbConn *sqlx.DB, transaction *sqlx.Tx, tag string) (int, error) {
-	stmt := `
-        SELECT
-            Id
-        FROM
-            Tag
-        WHERE
-            Tag = ?;
-    `
-
-	var statement *sqlx.Stmt
-	var err error
-
-	if transaction != nil {
-		statement, err = transaction.Preparex(stmt)
-
-		if err != nil {
-			return 0, err
-		}
-	} else {
-		statement, err = dbConn.Preparex(stmt)
-
-		if err != nil {
-			return 0, err
-		}
-	}
-
-	if err != nil {
-		return 0, err
-	}
-
-	var tagId int
-
-	err = statement.Get(&tagId, tag)
-
-	if err != nil {
-		return 0, err
-	}
-
-	err = statement.Close()
-
-	if err != nil {
-		return 0, err
-	}
-
-	return tagId, nil
-}
-func GetIdFromType(dbConn *sqlx.DB, transaction *sqlx.Tx, type_ string) (int, error) {
-	stmt := `
-        SELECT
-            Id
-        FROM
-            BookmarkType
-        WHERE
-            Type = ?;
-    `
-
-	var statement *sqlx.Stmt
-	var err error
-
-	if transaction != nil {
-		statement, err = transaction.Preparex(stmt)
-
-		if err != nil {
-			return 0, err
-		}
-	} else {
-		statement, err = dbConn.Preparex(stmt)
-
-		if err != nil {
-			return 0, err
-		}
-	}
-
-	if err != nil {
-		return 0, err
-	}
-
-	var typeId int
-
-	err = statement.Get(&typeId, type_)
-
-	if err != nil {
-		return 0, err
-	}
-
-	err = statement.Close()
-
-	if err != nil {
-		return 0, err
-	}
-
-	return typeId, nil
-}
-
 // EditType sets Type to newType for the bookmark with the specified id.
 // Passing a transaction is optional.
 func EditType(dbConn *sqlx.DB, transaction *sqlx.Tx, id int, newType string) error {
-	typeId, err := GetIdFromType(dbConn, transaction, newType)
+	typeId, err := helpers.GetIdFromType(dbConn, transaction, newType)
 	if err != nil {
 		return err
 	}
@@ -554,7 +459,7 @@ func AddTag(dbConn *sqlx.DB, transaction *sqlx.Tx, bookmarkId int, newTag string
 		}
 	}
 
-	tagId, err := GetIdFromTag(dbConn, transaction, newTag)
+	tagId, err := helpers.GetIdFromTag(dbConn, transaction, newTag)
 	if err != nil {
 		return err
 	}
@@ -608,7 +513,7 @@ func RemoveTag(dbConn *sqlx.DB, transaction *sqlx.Tx, bookmarkId int, tag_ strin
 		}
 	}
 
-	tagId, err := GetIdFromTag(dbConn, transaction, tag_)
+	tagId, err := helpers.GetIdFromTag(dbConn, transaction, tag_)
 	if err != nil {
 		return err
 	}

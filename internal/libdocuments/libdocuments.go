@@ -6,15 +6,125 @@ import (
 	"errors"
 	"io"
 	"os"
-	"path/filepath"
 	"strings"
 
 	"github.com/JonasMuehlmann/bntp.go/internal/helpers"
 	"github.com/jmoiron/sqlx"
 )
 
-// AddTag adds a tag to the tag line of the document at documentPath.
-func AddTag(documentPath string, tag string) error {
+// AddTag adds a tag newTag to the document at documentPath.
+// Passing a transaction is optional.
+func AddTag(dbConn *sqlx.DB, transaction *sqlx.Tx, documentPath string, newTag string) error {
+	stmt := `
+        INSERT INTO
+            DocumentContext(DocumentId, TagId)
+        VALUES(
+            ?,
+            ?
+        );
+    `
+
+	var statementContext *sqlx.Stmt
+	var err error
+
+	if transaction != nil {
+		statementContext, err = transaction.Preparex(stmt)
+
+		if err != nil {
+			return err
+		}
+	} else {
+		statementContext, err = dbConn.Preparex(stmt)
+
+		if err != nil {
+			return err
+		}
+	}
+
+	tagId, err := helpers.GetIdFromTag(dbConn, transaction, newTag)
+	if err != nil {
+		return err
+	}
+
+	documentId, err := helpers.GetIdFromDocument(dbConn, transaction, documentPath)
+	if err != nil {
+		return err
+	}
+
+	result, err := statementContext.Exec(documentId, tagId)
+	if err != nil {
+		return err
+	}
+
+	numAffectedRows, err := result.RowsAffected()
+	if numAffectedRows == 0 || err != nil {
+		return errors.New("Type to be deleted does not exist")
+	}
+
+	err = statementContext.Close()
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// RemoveTag removes a tag tag_ from the document at documentPath
+// Passing a transaction is optional.
+func RemoveTag(dbConn *sqlx.DB, transaction *sqlx.Tx, documentPath string, tag_ string) error {
+	stmt := `
+        DELETE FROM
+            DocumentContext
+        WHERE
+            DocumentId = ?
+            AND
+            TagId = ?;
+    `
+
+	var statement *sqlx.Stmt
+	var err error
+
+	if transaction != nil {
+		statement, err = transaction.Preparex(stmt)
+
+		if err != nil {
+			return err
+		}
+	} else {
+		statement, err = dbConn.Preparex(stmt)
+
+		if err != nil {
+			return err
+		}
+	}
+
+	tagId, err := helpers.GetIdFromTag(dbConn, transaction, tag_)
+	if err != nil {
+		return err
+	}
+
+	documentId, err := helpers.GetIdFromDocument(dbConn, transaction, documentPath)
+	if err != nil {
+		return err
+	}
+
+	_, err = statement.Exec(documentId, tagId)
+	if err != nil {
+		return err
+	}
+
+	err = statement.Close()
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// AddTagToFile adds a tag to the tag line of the document at documentPath.
+func AddTagToFile(documentPath string, tag string) error {
 	if tag == "" {
 		return errors.New("Can't add empty tag")
 	}
@@ -46,8 +156,8 @@ func AddTag(documentPath string, tag string) error {
 	return nil
 }
 
-// RemoveTag removes a tag from the tag line of the document at documentPath.
-func RemoveTag(documentPath string, tag string) error {
+// RemoveTagFromFile removes a tag from the tag line of the document at documentPath.
+func RemoveTagFromFile(documentPath string, tag string) error {
 	if tag == "" {
 		return errors.New("Can't remove empty tag")
 	}
@@ -76,9 +186,9 @@ func RemoveTag(documentPath string, tag string) error {
 	return nil
 }
 
-// Rename renames a tag oldTag to newTag in the tag line of the doucment at documentPath.
+// RenameTagInFile renames a tag oldTag to newTag in the tag line of the doucment at documentPath.
 // This method preserves the order of all tags in the doucment.
-func RenameTag(documentPath string, oldTag string, newTag string) error {
+func RenameTagInFile(documentPath string, oldTag string, newTag string) error {
 	if oldTag == "" {
 		return errors.New("Can't rename from empty Tag")
 	}
@@ -182,7 +292,6 @@ func HasTags(documentPath string, tags []string) (bool, error) {
 	return true, nil
 }
 
-// TODO: Refactor to search in DB not FS
 // FindDocumentsWithTags returns all paths to doucments which have all specified tags.
 func FindDocumentsWithTags(dbConn *sqlx.DB, tags []string) ([]string, error) {
 	if len(tags) == 0 || (len(tags) == 1 && tags[0] == "") {
