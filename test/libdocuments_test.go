@@ -6,13 +6,14 @@ import (
 	"testing"
 
 	"github.com/JonasMuehlmann/bntp.go/internal/libdocuments"
+	"github.com/JonasMuehlmann/bntp.go/internal/libtags"
 	"github.com/stretchr/testify/assert"
 )
 
 // ############
 // # AddTag() #
 // ############
-func TestAddTagToDocumentEmpty(t *testing.T) {
+func TestAddTagToFileEmpty(t *testing.T) {
 	filePath := filepath.Join(testDataTempDir, t.Name())
 
 	file, err := os.Create(filePath)
@@ -22,11 +23,11 @@ func TestAddTagToDocumentEmpty(t *testing.T) {
 	_, err = file.WriteString(document)
 	assert.NoError(t, err)
 
-	err = libdocuments.AddTag(filePath, "Foo")
+	err = libdocuments.AddTagToFile(filePath, "Foo")
 	assert.Error(t, err)
 }
 
-func TestAddTagToDocumentNoTag(t *testing.T) {
+func TestAddTagToFileNoTag(t *testing.T) {
 	filePath := filepath.Join(testDataTempDir, t.Name())
 
 	file, err := os.Create(filePath)
@@ -36,11 +37,11 @@ func TestAddTagToDocumentNoTag(t *testing.T) {
 	_, err = file.WriteString(document)
 	assert.NoError(t, err)
 
-	err = libdocuments.AddTag(filePath, "")
+	err = libdocuments.AddTagToFile(filePath, "")
 	assert.Error(t, err)
 }
 
-func TestAddTagToDocument(t *testing.T) {
+func TestAddTagToFile(t *testing.T) {
 	filePath := filepath.Join(testDataTempDir, t.Name())
 
 	file, err := os.Create(filePath)
@@ -50,11 +51,11 @@ func TestAddTagToDocument(t *testing.T) {
 	_, err = file.WriteString(document)
 	assert.NoError(t, err)
 
-	err = libdocuments.AddTag(filePath, "Foo")
+	err = libdocuments.AddTagToFile(filePath, "Foo")
 	assert.NoError(t, err)
 }
 
-func TestAddTagToDocumentTwice(t *testing.T) {
+func TestAddTagToFileTwice(t *testing.T) {
 	filePath := filepath.Join(testDataTempDir, t.Name())
 
 	file, err := os.Create(filePath)
@@ -64,17 +65,17 @@ func TestAddTagToDocumentTwice(t *testing.T) {
 	_, err = file.WriteString(document)
 	assert.NoError(t, err)
 
-	err = libdocuments.AddTag(filePath, "Foo")
+	err = libdocuments.AddTagToFile(filePath, "Foo")
 	assert.NoError(t, err)
 
-	err = libdocuments.AddTag(filePath, "Bar")
+	err = libdocuments.AddTagToFile(filePath, "Bar")
 	assert.NoError(t, err)
 }
 
 // ###############
 // # RemoveTag() #
 // ###############
-func TestRemoveTagFromDocumentEmpty(t *testing.T) {
+func TestRemoveTagFromFileEmpty(t *testing.T) {
 	filePath := filepath.Join(testDataTempDir, t.Name())
 
 	file, err := os.Create(filePath)
@@ -84,11 +85,11 @@ func TestRemoveTagFromDocumentEmpty(t *testing.T) {
 	_, err = file.WriteString(document)
 	assert.NoError(t, err)
 
-	err = libdocuments.RemoveTag(filePath, "Foo")
+	err = libdocuments.RemoveTagFromFile(filePath, "Foo")
 	assert.Error(t, err)
 }
 
-func TestRemoveTagFromDocumentNoTag(t *testing.T) {
+func TestRemoveTagFromFileNoTag(t *testing.T) {
 	filePath := filepath.Join(testDataTempDir, t.Name())
 
 	file, err := os.Create(filePath)
@@ -98,11 +99,11 @@ func TestRemoveTagFromDocumentNoTag(t *testing.T) {
 	_, err = file.WriteString(document)
 	assert.NoError(t, err)
 
-	err = libdocuments.RemoveTag(filePath, "")
+	err = libdocuments.RemoveTagFromFile(filePath, "")
 	assert.Error(t, err)
 }
 
-func TestRemoveTagFromDocument(t *testing.T) {
+func TestRemoveTagFromFile(t *testing.T) {
 	filePath := filepath.Join(testDataTempDir, t.Name())
 
 	file, err := os.Create(filePath)
@@ -112,14 +113,14 @@ func TestRemoveTagFromDocument(t *testing.T) {
 	_, err = file.WriteString(document)
 	assert.NoError(t, err)
 
-	err = libdocuments.AddTag(filePath, "Foo")
+	err = libdocuments.AddTagToFile(filePath, "Foo")
 	assert.NoError(t, err)
 
-	err = libdocuments.RemoveTag(filePath, "Foo")
+	err = libdocuments.RemoveTagFromFile(filePath, "Foo")
 	assert.NoError(t, err)
 }
 
-func TestRemoveTagFromDocumentTwice(t *testing.T) {
+func TestRemoveTagFromFileTwice(t *testing.T) {
 	filePath := filepath.Join(testDataTempDir, t.Name())
 
 	file, err := os.Create(filePath)
@@ -129,23 +130,23 @@ func TestRemoveTagFromDocumentTwice(t *testing.T) {
 	_, err = file.WriteString(document)
 	assert.NoError(t, err)
 
-	err = libdocuments.AddTag(filePath, "Foo")
+	err = libdocuments.AddTagToFile(filePath, "Foo")
 	assert.NoError(t, err)
 
-	err = libdocuments.AddTag(filePath, "Bar")
+	err = libdocuments.AddTagToFile(filePath, "Bar")
 	assert.NoError(t, err)
 
-	err = libdocuments.RemoveTag(filePath, "Foo")
+	err = libdocuments.RemoveTagFromFile(filePath, "Foo")
 	assert.NoError(t, err)
 
-	err = libdocuments.RemoveTag(filePath, "Bar")
+	err = libdocuments.RemoveTagFromFile(filePath, "Bar")
 	assert.NoError(t, err)
 }
 
 // ###############
 // # RenameTag() #
 // ###############
-func TestRenameTagFromDocumentEmpty(t *testing.T) {
+func TestRenameTagInFileEmpty(t *testing.T) {
 	filePath := filepath.Join(testDataTempDir, t.Name())
 
 	file, err := os.Create(filePath)
@@ -155,11 +156,11 @@ func TestRenameTagFromDocumentEmpty(t *testing.T) {
 	_, err = file.WriteString(document)
 	assert.NoError(t, err)
 
-	err = libdocuments.RenameTag(filePath, "Foo", "Bar")
+	err = libdocuments.RenameTagInFile(filePath, "Foo", "Bar")
 	assert.Error(t, err)
 }
 
-func TestRenameTagFromDocumentNoOldTag(t *testing.T) {
+func TestRenameTagInFileNoOldTag(t *testing.T) {
 	filePath := filepath.Join(testDataTempDir, t.Name())
 
 	file, err := os.Create(filePath)
@@ -169,11 +170,11 @@ func TestRenameTagFromDocumentNoOldTag(t *testing.T) {
 	_, err = file.WriteString(document)
 	assert.NoError(t, err)
 
-	err = libdocuments.RenameTag(filePath, "", "Bar")
+	err = libdocuments.RenameTagInFile(filePath, "", "Bar")
 	assert.Error(t, err)
 }
 
-func TestRenameTagFromDocumentNoNewTag(t *testing.T) {
+func TestRenameTagInFileNoNewTag(t *testing.T) {
 	filePath := filepath.Join(testDataTempDir, t.Name())
 
 	file, err := os.Create(filePath)
@@ -183,11 +184,11 @@ func TestRenameTagFromDocumentNoNewTag(t *testing.T) {
 	_, err = file.WriteString(document)
 	assert.NoError(t, err)
 
-	err = libdocuments.RenameTag(filePath, "Foo", "")
+	err = libdocuments.RenameTagInFile(filePath, "Foo", "")
 	assert.Error(t, err)
 }
 
-func TestRenameTagFromDocument(t *testing.T) {
+func TestRenameTagInFile(t *testing.T) {
 	filePath := filepath.Join(testDataTempDir, t.Name())
 
 	file, err := os.Create(filePath)
@@ -197,14 +198,14 @@ func TestRenameTagFromDocument(t *testing.T) {
 	_, err = file.WriteString(document)
 	assert.NoError(t, err)
 
-	err = libdocuments.AddTag(filePath, "Foo")
+	err = libdocuments.AddTagToFile(filePath, "Foo")
 	assert.NoError(t, err)
 
-	err = libdocuments.RenameTag(filePath, "Foo", "Bar")
+	err = libdocuments.RenameTagInFile(filePath, "Foo", "Bar")
 	assert.NoError(t, err)
 }
 
-func TestRenameTagFromDocumentTwice(t *testing.T) {
+func TestRenameTagInFileTwice(t *testing.T) {
 	filePath := filepath.Join(testDataTempDir, t.Name())
 
 	file, err := os.Create(filePath)
@@ -214,16 +215,16 @@ func TestRenameTagFromDocumentTwice(t *testing.T) {
 	_, err = file.WriteString(document)
 	assert.NoError(t, err)
 
-	err = libdocuments.AddTag(filePath, "Foo")
+	err = libdocuments.AddTagToFile(filePath, "Foo")
 	assert.NoError(t, err)
 
-	err = libdocuments.AddTag(filePath, "Bar")
+	err = libdocuments.AddTagToFile(filePath, "Bar")
 	assert.NoError(t, err)
 
-	err = libdocuments.RenameTag(filePath, "Foo", "Bar")
+	err = libdocuments.RenameTagInFile(filePath, "Foo", "Bar")
 	assert.NoError(t, err)
 
-	err = libdocuments.RenameTag(filePath, "Bar", "Foo")
+	err = libdocuments.RenameTagInFile(filePath, "Bar", "Foo")
 	assert.NoError(t, err)
 }
 
@@ -268,7 +269,7 @@ func TestGetTagsOneTag(t *testing.T) {
 	_, err = file.WriteString(document)
 	assert.NoError(t, err)
 
-	err = libdocuments.AddTag(filePath, "Foo")
+	err = libdocuments.AddTagToFile(filePath, "Foo")
 	assert.NoError(t, err)
 
 	tags, err := libdocuments.GetTags(filePath)
@@ -288,13 +289,13 @@ func TestGetTagsManyTags(t *testing.T) {
 	_, err = file.WriteString(document)
 	assert.NoError(t, err)
 
-	err = libdocuments.AddTag(filePath, "Foo")
+	err = libdocuments.AddTagToFile(filePath, "Foo")
 	assert.NoError(t, err)
 
-	err = libdocuments.AddTag(filePath, "Bar")
+	err = libdocuments.AddTagToFile(filePath, "Bar")
 	assert.NoError(t, err)
 
-	err = libdocuments.AddTag(filePath, "Baz")
+	err = libdocuments.AddTagToFile(filePath, "Baz")
 	assert.NoError(t, err)
 
 	tags, err := libdocuments.GetTags(filePath)
@@ -543,4 +544,65 @@ Bar,Foo
 	hasTag, err := libdocuments.HasTags(filePath, []string{"Foo", "Bar"})
 	assert.NoError(t, err)
 	assert.True(t, hasTag)
+}
+
+// ###########################
+// # FindDocumentsWithTags() #
+// ###########################
+func TestFindDocumentsWithTagsNoInput(t *testing.T) {
+	db, err := GetDB(t)
+	assert.NoError(t, err)
+
+	_, err = libdocuments.FindDocumentsWithTags(db, []string{})
+	assert.Error(t, err)
+}
+
+func TestFindDocumentsWithTagsEmptyStringInput(t *testing.T) {
+	db, err := GetDB(t)
+	assert.NoError(t, err)
+
+	_, err = libdocuments.FindDocumentsWithTags(db, []string{""})
+	assert.Error(t, err)
+}
+
+func TestFindDocumentsWithTagsNoDocuments(t *testing.T) {
+	db, err := GetDB(t)
+	assert.NoError(t, err)
+
+	_, err = libdocuments.FindDocumentsWithTags(db, []string{"Foo"})
+	assert.Error(t, err)
+}
+
+func TestFindDocumentsWithTagsNoneFound(t *testing.T) {
+	db, err := GetDB(t)
+	assert.NoError(t, err)
+
+	err = libdocuments.AddType(db, nil, "Bar")
+	assert.NoError(t, err)
+
+	err = libdocuments.AddDocument(db, nil, "Foo", "Bar")
+	assert.NoError(t, err)
+
+	_, err = libdocuments.FindDocumentsWithTags(db, []string{"Bar"})
+	assert.Error(t, err)
+}
+
+func TestFindDocumentsWithTags(t *testing.T) {
+	db, err := GetDB(t)
+	assert.NoError(t, err)
+
+	err = libdocuments.AddType(db, nil, "Bar")
+	assert.NoError(t, err)
+
+	err = libdocuments.AddDocument(db, nil, "Foo", "Bar")
+	assert.NoError(t, err)
+
+	err = libtags.AddTag(db, nil, "Bar")
+	assert.NoError(t, err)
+
+	err = libdocuments.AddTag(db, nil, "Foo", "Bar")
+	assert.NoError(t, err)
+
+	_, err = libdocuments.FindDocumentsWithTags(db, []string{"Bar"})
+	assert.NoError(t, err)
 }
