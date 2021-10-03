@@ -184,32 +184,71 @@ func HasTags(documentPath string, tags []string) (bool, error) {
 
 // TODO: Refactor to search in DB not FS
 // FindDocumentsWithTags returns all paths to doucments which have all specified tags.
-func FindDocumentsWithTags(rootDir string, tags []string) ([]string, error) {
-	filesWithTags := make([]string, 0, 100)
+func FindDocumentsWithTags(dbConn *sqlx.DB, tags []string) ([]string, error) {
+	if len(tags) == 0 || (len(tags) == 1 && tags[0] == "") {
+		return nil, errors.New("No input tags")
+	}
+	stmtTags := `
+       SELECT
+           Path
+       FROM
+           Document
+       LEFT JOIN DocumentContext ON
+           DocumentId = Document.Id
+       WHERE
+           TagId IN (SELECT Id FROM Tag WHERE Tag IN(?))
+       GROUP BY
+           Document.Id
+       HAVING
+           COUNT(*) =`
 
-	err := filepath.Walk(rootDir, func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
+	stmtNumPaths := `
+       SELECT
+           COUNT(*)
+       FROM
+           Document
+       LEFT JOIN DocumentContext ON
+           DocumentId = Document.Id
+       WHERE
+           TagId IN (SELECT Id FROM Tag WHERE Tag IN(?))
+       GROUP BY
+           Document.Id
+       HAVING
+           COUNT(*) =`
 
-		if !info.IsDir() {
-			hasTags, err := HasTags(path, tags)
-			if err != nil {
-				return err
-			}
-			if !hasTags {
-				return nil
-			}
-			filesWithTags = append(filesWithTags, path)
-		}
+	var numPaths int
 
-		return nil
-	})
+	stmtTagsIn, args, err := sqlx.In(stmtTags, tags)
 	if err != nil {
 		return nil, err
 	}
 
-	return filesWithTags, nil
+	stmtNumPathsIn, args, err := sqlx.In(stmtNumPaths, tags)
+	if err != nil {
+		return nil, err
+	}
+
+	args = append(args, len(tags))
+
+	stmtTagsIn = dbConn.Rebind(stmtTagsIn)
+	stmtNumPathsIn = dbConn.Rebind(stmtNumPathsIn)
+
+	stmtTagsIn += " ?;"
+	stmtNumPathsIn += " ?;"
+
+	err = dbConn.Get(&numPaths, stmtNumPathsIn, args...)
+	if err != nil {
+		return nil, err
+	}
+
+	paths := make([]string, 0, numPaths)
+
+	err = dbConn.Select(&paths, stmtTagsIn, args...)
+	if err != nil {
+		return nil, err
+	}
+
+	return paths, nil
 }
 
 // FindLinksLines finds the lines in documentPath in which links to other documents are listed.
