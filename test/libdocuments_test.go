@@ -695,3 +695,92 @@ func TestFindLinkLinesManyLinks(t *testing.T) {
 	assert.Len(t, links, 3)
 	assert.Equal(t, []string{"- (Foo)[Bar]", "- (Foo)[Bar]", "- (Foo)[Bar]"}, links)
 }
+
+// ########################
+// # FindBacklinksLines() #
+// ########################
+func TestFindBacklinksLinesEmpty(t *testing.T) {
+	filePath := filepath.Join(testDataTempDir, t.Name())
+
+	file, err := os.Create(filePath)
+	assert.NoError(t, err)
+
+	document := ""
+	_, err = file.WriteString(document)
+	assert.NoError(t, err)
+
+	_, _, _, err = libdocuments.FindBacklinksLines(filePath)
+	assert.Error(t, err)
+}
+
+func TestFindBacklinksLinesHeaderOnly(t *testing.T) {
+	filePath := filepath.Join(testDataTempDir, t.Name())
+
+	file, err := os.Create(filePath)
+	assert.NoError(t, err)
+
+	document := "# Backlinks"
+	_, err = file.WriteString(document)
+	assert.NoError(t, err)
+
+	_, _, _, err = libdocuments.FindBacklinksLines(filePath)
+	assert.Error(t, err)
+}
+
+func TestFindBacklinksLinesHeaderButNoBacklinks(t *testing.T) {
+	filePath := filepath.Join(testDataTempDir, t.Name())
+
+	file, err := os.Create(filePath)
+	assert.NoError(t, err)
+
+	document := `# Backlinks
+foo`
+
+	_, err = file.WriteString(document)
+	assert.NoError(t, err)
+
+	_, _, _, err = libdocuments.FindBacklinksLines(filePath)
+	assert.Error(t, err)
+}
+
+func TestFindBacklinksLinesOneLink(t *testing.T) {
+	filePath := filepath.Join(testDataTempDir, t.Name())
+
+	file, err := os.Create(filePath)
+	assert.NoError(t, err)
+
+	document := `# Backlinks
+- (Foo)[Bar]`
+
+	_, err = file.WriteString(document)
+	assert.NoError(t, err)
+
+	lineNrFirstLink, lineNrLastLink, links, err := libdocuments.FindBacklinksLines(filePath)
+	assert.NoError(t, err)
+	assert.Equal(t, 1, lineNrFirstLink)
+	assert.Equal(t, 1, lineNrLastLink)
+	assert.Len(t, links, 1)
+	assert.Equal(t, "- (Foo)[Bar]", links[0])
+}
+
+func TestFindBacklinksLinesManyBacklinks(t *testing.T) {
+	filePath := filepath.Join(testDataTempDir, t.Name())
+
+	file, err := os.Create(filePath)
+	assert.NoError(t, err)
+
+	document := `# Backlinks
+- (Foo)[Bar]
+- (Foo)[Bar]
+- (Foo)[Bar]`
+
+	_, err = file.WriteString(document)
+	assert.NoError(t, err)
+
+	lineNrFirstLink, lineNrLastLink, links, err := libdocuments.FindBacklinksLines(filePath)
+	assert.NoError(t, err)
+	assert.Equal(t, 1, lineNrFirstLink)
+	assert.Equal(t, 3, lineNrLastLink)
+	assert.Len(t, links, 3)
+	assert.Equal(t, []string{"- (Foo)[Bar]", "- (Foo)[Bar]", "- (Foo)[Bar]"}, links)
+}
