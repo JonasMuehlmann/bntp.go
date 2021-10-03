@@ -606,3 +606,92 @@ func TestFindDocumentsWithTags(t *testing.T) {
 	_, err = libdocuments.FindDocumentsWithTags(db, []string{"Bar"})
 	assert.NoError(t, err)
 }
+
+// ####################
+// # FindLinksLines() #
+// ####################
+func TestFindLinkLinesEmpty(t *testing.T) {
+	filePath := filepath.Join(testDataTempDir, t.Name())
+
+	file, err := os.Create(filePath)
+	assert.NoError(t, err)
+
+	document := ""
+	_, err = file.WriteString(document)
+	assert.NoError(t, err)
+
+	_, _, _, err = libdocuments.FindLinksLines(filePath)
+	assert.Error(t, err)
+}
+
+func TestFindLinkLinesHeaderOnly(t *testing.T) {
+	filePath := filepath.Join(testDataTempDir, t.Name())
+
+	file, err := os.Create(filePath)
+	assert.NoError(t, err)
+
+	document := "# Links"
+	_, err = file.WriteString(document)
+	assert.NoError(t, err)
+
+	_, _, _, err = libdocuments.FindLinksLines(filePath)
+	assert.Error(t, err)
+}
+
+func TestFindLinkLinesHeaderButNoLinks(t *testing.T) {
+	filePath := filepath.Join(testDataTempDir, t.Name())
+
+	file, err := os.Create(filePath)
+	assert.NoError(t, err)
+
+	document := `# Links
+foo`
+
+	_, err = file.WriteString(document)
+	assert.NoError(t, err)
+
+	_, _, _, err = libdocuments.FindLinksLines(filePath)
+	assert.Error(t, err)
+}
+
+func TestFindLinkLinesOneLink(t *testing.T) {
+	filePath := filepath.Join(testDataTempDir, t.Name())
+
+	file, err := os.Create(filePath)
+	assert.NoError(t, err)
+
+	document := `# Links
+- (Foo)[Bar]`
+
+	_, err = file.WriteString(document)
+	assert.NoError(t, err)
+
+	lineNrFirstLink, lineNrLastLink, links, err := libdocuments.FindLinksLines(filePath)
+	assert.NoError(t, err)
+	assert.Equal(t, 1, lineNrFirstLink)
+	assert.Equal(t, 1, lineNrLastLink)
+	assert.Len(t, links, 1)
+	assert.Equal(t, "- (Foo)[Bar]", links[0])
+}
+
+func TestFindLinkLinesManyLinks(t *testing.T) {
+	filePath := filepath.Join(testDataTempDir, t.Name())
+
+	file, err := os.Create(filePath)
+	assert.NoError(t, err)
+
+	document := `# Links
+- (Foo)[Bar]
+- (Foo)[Bar]
+- (Foo)[Bar]`
+
+	_, err = file.WriteString(document)
+	assert.NoError(t, err)
+
+	lineNrFirstLink, lineNrLastLink, links, err := libdocuments.FindLinksLines(filePath)
+	assert.NoError(t, err)
+	assert.Equal(t, 1, lineNrFirstLink)
+	assert.Equal(t, 3, lineNrLastLink)
+	assert.Len(t, links, 3)
+	assert.Equal(t, []string{"- (Foo)[Bar]", "- (Foo)[Bar]", "- (Foo)[Bar]"}, links)
+}
