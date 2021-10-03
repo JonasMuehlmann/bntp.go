@@ -363,36 +363,51 @@ func FindDocumentsWithTags(dbConn *sqlx.DB, tags []string) ([]string, error) {
 // FindLinksLines finds the lines in documentPath in which links to other documents are listed.
 // It returns the range of line numbers containing links as well as the lines themselves.
 func FindLinksLines(documentPath string) (int, int, []string, error) {
-	file, err := os.OpenFile(documentPath, os.O_RDONLY, 0o644)
+	file, err := os.ReadFile(documentPath)
 	if err != nil {
 		return 0, 0, nil, err
 	}
 
-	defer file.Close()
-
-	scanner := bufio.NewScanner(file)
+	lines := strings.Split(string(file), "\n")
 
 	lineNumberFirstLink := -1
 	lineNumberLastLink := -1
 	links := make([]string, 0, 10)
 
+	var line string
 	i := 0
 
-	for scanner.Scan() {
-		if scanner.Text() == "# Links" {
-			lineNumberFirstLink = i + 1
+	for _, line = range lines {
+		if line == "# Links" {
+			if i != len(lines)-1 {
+				lineNumberFirstLink = i + 1
 
-			break
+				break
+			} else {
+				return 0, 0, nil, errors.New("Could not find links")
+			}
 		}
-		i++
 	}
 
-	for scanner.Scan() && strings.HasPrefix(scanner.Text(), "- ") {
-		links[i-lineNumberFirstLink] = scanner.Text()
-		i++
+	if lineNumberFirstLink == -1 {
+		return 0, 0, nil, errors.New("Could not find links")
+	}
+
+	for _, line := range lines[lineNumberFirstLink:] {
+		if strings.HasPrefix(line, "- ") {
+			links = append(links, line)
+
+			i++
+		} else {
+			break
+		}
 	}
 
 	lineNumberLastLink = i
+
+	if len(links) == 0 || lineNumberFirstLink == -1 {
+		return 0, 0, nil, errors.New("Could not find links")
+	}
 
 	return lineNumberFirstLink, lineNumberLastLink, links, nil
 }
@@ -400,38 +415,53 @@ func FindLinksLines(documentPath string) (int, int, []string, error) {
 // FindBacklinksLines finds the lines in documentPath in which backlinks to other documents are listed.
 // It returns the range of line numbers containing backlinks as well as the lines themselves.
 func FindBacklinksLines(documentPath string) (int, int, []string, error) {
-	file, err := os.OpenFile(documentPath, os.O_RDONLY, 0o644)
+	file, err := os.ReadFile(documentPath)
 	if err != nil {
 		return 0, 0, nil, err
 	}
 
-	defer file.Close()
+	lines := strings.Split(string(file), "\n")
 
-	scanner := bufio.NewScanner(file)
+	lineNumberFirstBacklink := -1
+	lineNumberLastBacklink := -1
+	backlinks := make([]string, 0, 10)
 
-	lineNumberFirstLink := -1
-	lineNumberLastLink := -1
-	links := make([]string, 0, 10)
-
+	var line string
 	i := 0
 
-	for scanner.Scan() {
-		if scanner.Text() == "# Backlinks" {
-			lineNumberFirstLink = i + 1
+	for _, line = range lines {
+		if line == "# Backlinks" {
+			if i != len(lines)-1 {
+				lineNumberFirstBacklink = i + 1
 
+				break
+			} else {
+				return 0, 0, nil, errors.New("Could not find backlinks")
+			}
+		}
+	}
+
+	if lineNumberFirstBacklink == -1 {
+		return 0, 0, nil, errors.New("Could not find backlinks")
+	}
+
+	for _, line := range lines[lineNumberFirstBacklink:] {
+		if strings.HasPrefix(line, "- ") {
+			backlinks = append(backlinks, line)
+
+			i++
+		} else {
 			break
 		}
-		i++
 	}
 
-	for scanner.Scan() && strings.HasPrefix(scanner.Text(), "- ") {
-		links[i-lineNumberFirstLink] = scanner.Text()
-		i++
+	lineNumberLastBacklink = i
+
+	if len(backlinks) == 0 || lineNumberFirstBacklink == -1 {
+		return 0, 0, nil, errors.New("Could not find links")
 	}
 
-	lineNumberLastLink = i
-
-	return lineNumberFirstLink, lineNumberLastLink, links, nil
+	return lineNumberFirstBacklink, lineNumberLastBacklink, backlinks, nil
 }
 
 // AddLink adds a link to documentPathDestination into the document at documentPathSource.
