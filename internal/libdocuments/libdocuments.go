@@ -4,7 +4,6 @@ package libdocuments
 import (
 	"bufio"
 	"errors"
-	"io"
 	"os"
 	"strings"
 
@@ -466,28 +465,22 @@ func FindBacklinksLines(documentPath string) (int, int, []string, error) {
 
 // AddLink adds a link to documentPathDestination into the document at documentPathSource.
 func AddLink(documentPathSource string, documentPathDestination string) error {
-	// lineNumberFirstLink, lineNumberLastLink, links, err := FindLinksLines(documentPathSource)
-	lineNumberFirstLink, _, links, err := FindLinksLines(documentPathSource)
+	_, lineNumberlastLink, _, err := FindLinksLines(documentPathSource)
 	if err != nil {
 		return err
 	}
 
-	links = append(links, documentPathDestination)
-
-	file, err := os.OpenFile(documentPathSource, os.O_RDWR, 0o644)
+	file, err := os.ReadFile(documentPathSource)
 	if err != nil {
 		return err
 	}
 
-	defer file.Close()
+	linesOld := strings.Split(string(file), "\n")
 
-	offset, err := file.Seek(int64(lineNumberFirstLink), io.SeekStart)
-	if err != nil {
-		return err
-	}
+	linesNew := append(linesOld[:lineNumberlastLink], "- ()["+documentPathDestination+"]")
+	linesNew = append(linesNew, linesOld[lineNumberlastLink+1:]...)
 
-	_, err = file.WriteAt([]byte(strings.Join(links, "\n")), offset)
-
+	err = os.WriteFile(documentPathSource, []byte(strings.Join(linesNew, "\n")), 0o644)
 	if err != nil {
 		return err
 	}
@@ -497,7 +490,6 @@ func AddLink(documentPathSource string, documentPathDestination string) error {
 
 // RemoveLink removes the link to documentPathDestination from the document at documentPathSource.
 func RemoveLink(documentPathSource string, documentPathDestination string) error {
-	// lineNumberFirstLink, lineNumberLastLink, linksOrig, err := FindLinksLines(documentPathSource)
 	lineNumberFirstLink, _, linksOrig, err := FindLinksLines(documentPathSource)
 	if err != nil {
 		return err
@@ -507,59 +499,45 @@ func RemoveLink(documentPathSource string, documentPathDestination string) error
 
 	for i, link := range linksOrig {
 		if link == documentPathSource {
-			iLinkToDelete = i
+			iLinkToDelete = i + lineNumberFirstLink
 		}
 	}
 
-	links := make([]string, 0, 10)
-
-	links = append(links, linksOrig[:iLinkToDelete]...)
-	links = append(links, linksOrig[iLinkToDelete+1:]...)
-
-	file, err := os.OpenFile(documentPathDestination, os.O_RDWR, 0o644)
-	if err != nil {
-		return err
-	}
-	defer file.Close()
-
-	offset, err := file.Seek(int64(lineNumberFirstLink), io.SeekStart)
+	file, err := os.ReadFile(documentPathSource)
 	if err != nil {
 		return err
 	}
 
-	_, err = file.WriteAt([]byte(strings.Join(links, "\n")), offset)
+	linesOld := strings.Split(string(file), "\n")
 
+	linesNew := append(linesOld[:iLinkToDelete-1], linesOld[:iLinkToDelete]...)
+
+	err = os.WriteFile(documentPathSource, []byte(strings.Join(linesNew, "\n")), 0o644)
 	if err != nil {
 		return err
 	}
 
-	return err
+	return nil
 }
 
 // AddBacklink adds a Backlink to documentPathSource into the document at documentPathDestination.
 func AddBacklink(documentPathDestination string, documentPathSource string) error {
-	// lineNumberFirstLink, lineNumberLastLink, links, err := FindBacklinksLines(documentPathSource)
-	lineNumberFirstLink, _, links, err := FindBacklinksLines(documentPathSource)
+	_, lineNumberlastBacklink, _, err := FindBacklinksLines(documentPathDestination)
 	if err != nil {
 		return err
 	}
 
-	links = append(links, documentPathSource)
-
-	file, err := os.OpenFile(documentPathDestination, os.O_RDWR, 0o644)
+	file, err := os.ReadFile(documentPathDestination)
 	if err != nil {
 		return err
 	}
 
-	defer file.Close()
+	linesOld := strings.Split(string(file), "\n")
 
-	offset, err := file.Seek(int64(lineNumberFirstLink), io.SeekStart)
-	if err != nil {
-		return err
-	}
+	linesNew := append(linesOld[:lineNumberlastBacklink], "- ()["+documentPathSource+"]")
+	linesNew = append(linesNew, linesOld[lineNumberlastBacklink+1:]...)
 
-	_, err = file.WriteAt([]byte(strings.Join(links, "\n")), offset)
-
+	err = os.WriteFile(documentPathDestination, []byte(strings.Join(linesNew, "\n")), 0o644)
 	if err != nil {
 		return err
 	}
@@ -569,43 +547,34 @@ func AddBacklink(documentPathDestination string, documentPathSource string) erro
 
 // RemoveBacklink removes the backlink to documentPathSource from the document at documentPathDestination.
 func RemoveBacklink(documentPathDestination string, documentPathSource string) error {
-	// lineNumberFirstLink, lineNumberLastLink, linksOrig, err := FindBacklinksLines(documentPathSource)
-	lineNumberFirstLink, _, linksOrig, err := FindBacklinksLines(documentPathSource)
+	lineNumberFirstBacklink, _, backlinksOrig, err := FindBacklinksLines(documentPathDestination)
 	if err != nil {
 		return err
 	}
 
-	iLinkToDelete := -1
+	iBacklinkToDelete := -1
 
-	for i, link := range linksOrig {
+	for i, link := range backlinksOrig {
 		if link == documentPathSource {
-			iLinkToDelete = i
+			iBacklinkToDelete = i + lineNumberFirstBacklink
 		}
 	}
 
-	links := make([]string, 0, 10)
-
-	links = append(links, linksOrig[:iLinkToDelete]...)
-	links = append(links, linksOrig[iLinkToDelete+1:]...)
-
-	file, err := os.OpenFile(documentPathDestination, os.O_RDWR, 0o644)
-	if err != nil {
-		return err
-	}
-	defer file.Close()
-
-	offset, err := file.Seek(int64(lineNumberFirstLink), io.SeekStart)
+	file, err := os.ReadFile(documentPathDestination)
 	if err != nil {
 		return err
 	}
 
-	_, err = file.WriteAt([]byte(strings.Join(links, "\n")), offset)
+	linesOld := strings.Split(string(file), "\n")
 
+	linesNew := append(linesOld[:iBacklinkToDelete-1], linesOld[:iBacklinkToDelete]...)
+
+	err = os.WriteFile(documentPathDestination, []byte(strings.Join(linesNew, "\n")), 0o644)
 	if err != nil {
 		return err
 	}
 
-	return err
+	return nil
 }
 
 // AddDocument adds a new document located at documentPath to the DB.
