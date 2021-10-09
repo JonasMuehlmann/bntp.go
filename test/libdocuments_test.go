@@ -937,3 +937,64 @@ func RemoveLinkFromFile(t *testing.T) {
 	err = libdocuments.RemoveLink(filePath, "foo")
 	assert.NoError(t, err)
 }
+
+// ################
+// # RemoveBacklink() #
+// ################
+func RemoveBacklinkFromFileEmpty(t *testing.T) {
+	filePath := filepath.Join(testDataTempDir, t.Name())
+
+	file, err := os.Create(filePath)
+	assert.NoError(t, err)
+
+	document := ""
+	_, err = file.WriteString(document)
+	assert.NoError(t, err)
+
+	err = libdocuments.RemoveBacklink(filePath, "foo")
+	assert.Error(t, err)
+}
+
+func RemoveBacklinkFromFileHeaderOnly(t *testing.T) {
+	filePath := filepath.Join(testDataTempDir, t.Name())
+
+	file, err := os.Create(filePath)
+	assert.NoError(t, err)
+
+	document := "# Backlinks"
+	_, err = file.WriteString(document)
+	assert.NoError(t, err)
+
+	err = libdocuments.RemoveBacklink(filePath, "foo")
+	assert.NoError(t, err)
+}
+
+func RemoveBacklinkFromFileNoMatch(t *testing.T) {
+	filePath := filepath.Join(testDataTempDir, t.Name())
+
+	file, err := os.Create(filePath)
+	assert.NoError(t, err)
+
+	document := `# Backlinks
+    - ()[foo]`
+	_, err = file.WriteString(document)
+	assert.NoError(t, err)
+
+	err = libdocuments.RemoveBacklink(filePath, "bar")
+	assert.NoError(t, err)
+}
+
+func RemoveBacklinkFromFile(t *testing.T) {
+	filePath := filepath.Join(testDataTempDir, t.Name())
+
+	file, err := os.Create(filePath)
+	assert.NoError(t, err)
+
+	document := `# Backlinks
+    - ()[foo]`
+	_, err = file.WriteString(document)
+	assert.NoError(t, err)
+
+	err = libdocuments.RemoveBacklink(filePath, "foo")
+	assert.NoError(t, err)
+}
