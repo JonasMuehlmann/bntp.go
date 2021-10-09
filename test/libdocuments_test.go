@@ -938,9 +938,9 @@ func RemoveLinkFromFile(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-// ################
+// ####################
 // # RemoveBacklink() #
-// ################
+// ####################
 func RemoveBacklinkFromFileEmpty(t *testing.T) {
 	filePath := filepath.Join(testDataTempDir, t.Name())
 
@@ -997,4 +997,51 @@ func RemoveBacklinkFromFile(t *testing.T) {
 
 	err = libdocuments.RemoveBacklink(filePath, "foo")
 	assert.NoError(t, err)
+}
+
+// #################
+// # AddDocument() #
+// #################
+func TestAddDocumentTypeDoesNotExist(t *testing.T) {
+	db, err := GetDB(t)
+	assert.NoError(t, err)
+
+	err = libdocuments.AddDocument(db, nil, "Foo", "Bar")
+	assert.Error(t, err)
+}
+
+func TestAddDocument(t *testing.T) {
+	db, err := GetDB(t)
+	assert.NoError(t, err)
+
+	err = libdocuments.AddType(db, nil, "Bar")
+	assert.NoError(t, err)
+
+	err = libdocuments.AddDocument(db, nil, "Foo", "Bar")
+	assert.NoError(t, err)
+}
+
+func TestAddDocumentDuplicate(t *testing.T) {
+	db, err := GetDB(t)
+	assert.NoError(t, err)
+
+	err = libdocuments.AddType(db, nil, "Bar")
+	assert.NoError(t, err)
+
+	err = libdocuments.AddDocument(db, nil, "Foo", "Bar")
+	assert.NoError(t, err)
+
+	err = libdocuments.AddDocument(db, nil, "Foo", "Bar")
+	assert.Error(t, err)
+}
+
+func TestAddDocumentEmptyTag(t *testing.T) {
+	db, err := GetDB(t)
+	assert.NoError(t, err)
+
+	err = libdocuments.AddType(db, nil, "Bar")
+	assert.NoError(t, err)
+
+	err = libdocuments.AddDocument(db, nil, "Foo", "")
+	assert.Error(t, err)
 }
