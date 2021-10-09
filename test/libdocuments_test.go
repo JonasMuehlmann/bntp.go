@@ -1049,7 +1049,7 @@ func TestAddDocumentEmptyTag(t *testing.T) {
 // ####################
 // # RemoveDocument() #
 // ####################
-func TestAddDocumentDocumentDoesNotExist(t *testing.T) {
+func TestRemoveDocumentDocumentDoesNotExist(t *testing.T) {
 	db, err := GetDB(t)
 	assert.NoError(t, err)
 
@@ -1068,5 +1068,47 @@ func TestRemoveDocument(t *testing.T) {
 	assert.NoError(t, err)
 
 	err = libdocuments.RemoveDocument(db, nil, "Foo")
+	assert.NoError(t, err)
+}
+
+// ####################
+// # RenameDocument() #
+// ####################
+func TestRenameDocumentDocumentDoesNotExist(t *testing.T) {
+	db, err := GetDB(t)
+	assert.NoError(t, err)
+
+	err = libdocuments.RenameDocument(db, nil, "Foo", "Bar")
+	assert.Error(t, err)
+}
+
+func TestRenameDoucment(t *testing.T) {
+	db, err := GetDB(t)
+	assert.NoError(t, err)
+
+	err = libdocuments.AddType(db, nil, "Bar")
+	assert.NoError(t, err)
+
+	err = libdocuments.AddDocument(db, nil, "Foo", "Bar")
+	assert.NoError(t, err)
+
+	err = libdocuments.RenameDocument(db, nil, "Foo", "Bar")
+	assert.NoError(t, err)
+}
+
+func TestRenameDoucmentNewNameExists(t *testing.T) {
+	db, err := GetDB(t)
+	assert.NoError(t, err)
+
+	err = libdocuments.AddType(db, nil, "Bar")
+	assert.NoError(t, err)
+
+	err = libdocuments.AddDocument(db, nil, "Foo", "Bar")
+	assert.NoError(t, err)
+
+	err = libdocuments.AddDocument(db, nil, "Bar", "Bar")
+	assert.NoError(t, err)
+
+	err = libdocuments.RenameDocument(db, nil, "Foo", "Bar")
 	assert.NoError(t, err)
 }
