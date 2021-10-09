@@ -784,3 +784,95 @@ func TestFindBacklinksLinesManyBacklinks(t *testing.T) {
 	assert.Len(t, links, 3)
 	assert.Equal(t, []string{"- (Foo)[Bar]", "- (Foo)[Bar]", "- (Foo)[Bar]"}, links)
 }
+
+// #############
+// # AddLink() #
+// #############
+func TestAddLinkToFileEmpty(t *testing.T) {
+	filePath := filepath.Join(testDataTempDir, t.Name())
+
+	file, err := os.Create(filePath)
+	assert.NoError(t, err)
+
+	document := ""
+	_, err = file.WriteString(document)
+	assert.NoError(t, err)
+
+	err = libdocuments.AddLink(filePath, "foo")
+	assert.Error(t, err)
+}
+
+func TestAddLinkToFileHeaderOnly(t *testing.T) {
+	filePath := filepath.Join(testDataTempDir, t.Name())
+
+	file, err := os.Create(filePath)
+	assert.NoError(t, err)
+
+	document := "# Links"
+	_, err = file.WriteString(document)
+	assert.NoError(t, err)
+
+	err = libdocuments.AddLink(filePath, "foo")
+	assert.NoError(t, err)
+}
+
+func TestAddLinkToFileOneLink(t *testing.T) {
+	filePath := filepath.Join(testDataTempDir, t.Name())
+
+	file, err := os.Create(filePath)
+	assert.NoError(t, err)
+
+	document := `# Links
+    - ()[foo]`
+	_, err = file.WriteString(document)
+	assert.NoError(t, err)
+
+	err = libdocuments.AddLink(filePath, "foo")
+	assert.NoError(t, err)
+}
+
+// #################
+// # AddBackLink() #
+// #################
+func TestAddBacklinkToFileEmpty(t *testing.T) {
+	filePath := filepath.Join(testDataTempDir, t.Name())
+
+	file, err := os.Create(filePath)
+	assert.NoError(t, err)
+
+	document := ""
+	_, err = file.WriteString(document)
+	assert.NoError(t, err)
+
+	err = libdocuments.AddBacklink(filePath, "foo")
+	assert.Error(t, err)
+}
+
+func TestAddBacklinkToFileHeaderOnly(t *testing.T) {
+	filePath := filepath.Join(testDataTempDir, t.Name())
+
+	file, err := os.Create(filePath)
+	assert.NoError(t, err)
+
+	document := "# Backlinks"
+	_, err = file.WriteString(document)
+	assert.NoError(t, err)
+
+	err = libdocuments.AddBacklink(filePath, "foo")
+	assert.NoError(t, err)
+}
+
+func TestAddBacklinkToFileOneBacklink(t *testing.T) {
+	filePath := filepath.Join(testDataTempDir, t.Name())
+
+	file, err := os.Create(filePath)
+	assert.NoError(t, err)
+
+	document := `# Backlinks
+    - ()[foo]`
+	_, err = file.WriteString(document)
+	assert.NoError(t, err)
+
+	err = libdocuments.AddBacklink(filePath, "foo")
+	assert.NoError(t, err)
+}
