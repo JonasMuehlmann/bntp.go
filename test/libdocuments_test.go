@@ -1045,3 +1045,28 @@ func TestAddDocumentEmptyTag(t *testing.T) {
 	err = libdocuments.AddDocument(db, nil, "Foo", "")
 	assert.Error(t, err)
 }
+
+// ####################
+// # RemoveDocument() #
+// ####################
+func TestAddDocumentDocumentDoesNotExist(t *testing.T) {
+	db, err := GetDB(t)
+	assert.NoError(t, err)
+
+	err = libdocuments.RemoveDocument(db, nil, "Foo")
+	assert.Error(t, err)
+}
+
+func TestRemoveDocument(t *testing.T) {
+	db, err := GetDB(t)
+	assert.NoError(t, err)
+
+	err = libdocuments.AddType(db, nil, "Bar")
+	assert.NoError(t, err)
+
+	err = libdocuments.AddDocument(db, nil, "Foo", "Bar")
+	assert.NoError(t, err)
+
+	err = libdocuments.RemoveDocument(db, nil, "Foo")
+	assert.NoError(t, err)
+}
