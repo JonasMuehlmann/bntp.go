@@ -1112,3 +1112,45 @@ func TestRenameDoucmentNewNameExists(t *testing.T) {
 	err = libdocuments.RenameDocument(db, nil, "Foo", "Bar")
 	assert.NoError(t, err)
 }
+
+// ########################
+// # ChangeDocumentType() #
+// ########################
+func TestChangeDocumentTypeDocumentDoesNotExist(t *testing.T) {
+	db, err := GetDB(t)
+	assert.NoError(t, err)
+
+	err = libdocuments.AddType(db, nil, "Bar")
+	assert.NoError(t, err)
+
+	err = libdocuments.ChangeDocumentType(db, nil, "Foo", "Bar")
+	assert.Error(t, err)
+}
+
+func TestChangeDocumentTypeTypeDoesNotExist(t *testing.T) {
+	db, err := GetDB(t)
+	assert.NoError(t, err)
+
+	err = libdocuments.AddType(db, nil, "Bar")
+	assert.NoError(t, err)
+
+	err = libdocuments.AddDocument(db, nil, "Foo", "Bar")
+	assert.NoError(t, err)
+
+	err = libdocuments.ChangeDocumentType(db, nil, "Foo", "Baz")
+	assert.Error(t, err)
+}
+
+func TestChangeDocumentType(t *testing.T) {
+	db, err := GetDB(t)
+	assert.NoError(t, err)
+
+	err = libdocuments.AddType(db, nil, "Bar")
+	assert.NoError(t, err)
+
+	err = libdocuments.AddDocument(db, nil, "Foo", "Bar")
+	assert.NoError(t, err)
+
+	err = libdocuments.ChangeDocumentType(db, nil, "Foo", "Bar")
+	assert.NoError(t, err)
+}
