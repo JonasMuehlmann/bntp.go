@@ -10,9 +10,9 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// ############
-// # AddTag() #
-// ############
+// ##################
+// # AddTagToFile() #
+// ##################
 func TestAddTagToFileEmpty(t *testing.T) {
 	filePath := filepath.Join(testDataTempDir, t.Name())
 
@@ -72,9 +72,9 @@ func TestAddTagToFileTwice(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-// ###############
-// # RemoveTag() #
-// ###############
+// #######################
+// # RemoveTagFromFile() #
+// #######################
 func TestRemoveTagFromFileEmpty(t *testing.T) {
 	filePath := filepath.Join(testDataTempDir, t.Name())
 
@@ -143,9 +143,9 @@ func TestRemoveTagFromFileTwice(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-// ###############
-// # RenameTag() #
-// ###############
+// #####################
+// # RenameTagInFile() #
+// #####################
 func TestRenameTagInFileEmpty(t *testing.T) {
 	filePath := filepath.Join(testDataTempDir, t.Name())
 
