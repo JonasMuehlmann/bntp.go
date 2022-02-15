@@ -457,7 +457,7 @@ func FindBacklinksLines(documentPath string) (int, int, []string, error) {
 	lineNumberLastBacklink = i
 
 	if len(backlinks) == 0 || lineNumberFirstBacklink == -1 {
-		return 0, 0, nil, errors.New("Could not find links")
+		return 0, 0, nil, errors.New("Could not find backlinks")
 	}
 
 	return lineNumberFirstBacklink, lineNumberLastBacklink, backlinks, nil
