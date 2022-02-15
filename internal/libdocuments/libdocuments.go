@@ -626,7 +626,11 @@ func RenameDocument(dbConn *sqlx.DB, transaction *sqlx.Tx, documentPathOld strin
             Path = ?;
     `
 
-	_, _, err := helpers.SqlExecute(dbConn, transaction, stmt, documentPathNew, documentPathOld)
+	_, numAffectedRows, err := helpers.SqlExecute(dbConn, transaction, stmt, documentPathNew, documentPathOld)
+
+	if numAffectedRows == 0 {
+		return errors.New("documentPathOld does not exist")
+	}
 
 	return err
 }
