@@ -8,11 +8,11 @@ import (
 )
 
 func main() {
-	usage := `Bookmarkmanager.
+	usage := `bntp - Personal all-in-one productivity system including components like bookmarks, notes, todos, projects, etc. .
 
 Usage:
-  bookmarkmanager -h | --help
-  bookmarkmanager --version
+  bntp -h | --help
+  bntp --version
 
 Options:
   -h --help     Show this screen.
