@@ -596,7 +596,9 @@ func AddDocument(dbConn *sqlx.DB, transaction *sqlx.Tx, documentPath string, doc
 		return err
 	}
 
-	return helpers.SqlExecute(dbConn, transaction, stmt, documentPath, documentTypeId)
+	_, _, err = helpers.SqlExecute(dbConn, transaction, stmt, documentPath, documentTypeId)
+
+	return err
 }
 
 //  RemoveDocument removes  a document located at documentPath from the DB.
@@ -608,7 +610,9 @@ func RemoveDocument(dbConn *sqlx.DB, transaction *sqlx.Tx, documentPath string) 
             Path = ?;
     `
 
-	return helpers.SqlExecute(dbConn, transaction, stmt, documentPath)
+	_, _, err := helpers.SqlExecute(dbConn, transaction, stmt, documentPath)
+
+	return err
 }
 
 // RenameDocument moves a document located at documentPathOld to documentPathNew.
@@ -622,7 +626,9 @@ func RenameDocument(dbConn *sqlx.DB, transaction *sqlx.Tx, documentPathOld strin
             Path = ?;
     `
 
-	return helpers.SqlExecute(dbConn, transaction, stmt, documentPathNew, documentPathOld)
+	_, _, err := helpers.SqlExecute(dbConn, transaction, stmt, documentPathNew, documentPathOld)
+
+	return err
 }
 
 // ChangeDocumentType changes the type of the document located documentPath to documentTypeNew.
@@ -640,6 +646,7 @@ func ChangeDocumentType(dbConn *sqlx.DB, transaction *sqlx.Tx, documentPath stri
 	if err != nil {
 		return err
 	}
+
 	if documentTypeId == -1 {
 		return errors.New("Could not retrieve DocumentTypeId")
 	}

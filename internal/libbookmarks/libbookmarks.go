@@ -393,7 +393,9 @@ func EditBookmark(dbConn *sqlx.DB, transaction *sqlx.Tx, id int, column string, 
             Id = ?;
     `
 
-	return helpers.SqlExecute(dbConn, transaction, stmt, newVal, id)
+	_, _, err := helpers.SqlExecute(dbConn, transaction, stmt, newVal, id)
+
+	return err
 }
 
 // EditIsRead sets IsRead to true for the bookmark with the specified id.
