@@ -610,7 +610,11 @@ func RemoveDocument(dbConn *sqlx.DB, transaction *sqlx.Tx, documentPath string) 
             Path = ?;
     `
 
-	_, _, err := helpers.SqlExecute(dbConn, transaction, stmt, documentPath)
+	_, numAffectedRows, err := helpers.SqlExecute(dbConn, transaction, stmt, documentPath)
+
+	if numAffectedRows == 0 {
+		return errors.New("documentPathOld does not exist")
+	}
 
 	return err
 }
