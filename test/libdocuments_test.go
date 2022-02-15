@@ -823,7 +823,7 @@ func TestAddLinkToFileOneLink(t *testing.T) {
 	assert.NoError(t, err)
 
 	document := `# Links
-    - (Foo)[Bar]`
+- (Foo)[Bar]`
 	_, err = file.WriteString(document)
 	assert.NoError(t, err)
 
@@ -869,7 +869,7 @@ func TestAddBacklinkToFileOneBacklink(t *testing.T) {
 	assert.NoError(t, err)
 
 	document := `# Backlinks
-    - (Foo)[Bar]`
+- (Foo)[Bar]`
 	_, err = file.WriteString(document)
 	assert.NoError(t, err)
 
