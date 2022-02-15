@@ -393,8 +393,8 @@ func FindLinksLines(documentPath string) (int, int, []string, error) {
 			links = append(links, line)
 
 			i++
-		} else {
-			break
+		} else if line != "" {
+            return 0, 0, nil, errors.New("Invalid links list")
 		}
 	}
 
@@ -437,8 +437,8 @@ func FindBacklinksLines(documentPath string) (int, int, []string, error) {
 			backlinks = append(backlinks, line)
 
 			i++
-		} else {
-			break
+		} else if line != "" {
+            return 0, 0, nil, errors.New("Invalid backlinks list")
 		}
 	}
 
