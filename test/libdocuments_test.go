@@ -635,7 +635,7 @@ func TestFindLinkLinesHeaderOnly(t *testing.T) {
 	assert.NoError(t, err)
 
 	_, _, _, err = libdocuments.FindLinksLines(filePath)
-	assert.Error(t, err)
+	assert.NoError(t, err)
 }
 
 func TestFindLinkLinesHeaderButNoLinks(t *testing.T) {
@@ -645,7 +645,7 @@ func TestFindLinkLinesHeaderButNoLinks(t *testing.T) {
 	assert.NoError(t, err)
 
 	document := `# Links
-foo`
+Foo`
 
 	_, err = file.WriteString(document)
 	assert.NoError(t, err)
@@ -724,7 +724,7 @@ func TestFindBacklinksLinesHeaderOnly(t *testing.T) {
 	assert.NoError(t, err)
 
 	_, _, _, err = libdocuments.FindBacklinksLines(filePath)
-	assert.Error(t, err)
+	assert.NoError(t, err)
 }
 
 func TestFindBacklinksLinesHeaderButNoBacklinks(t *testing.T) {
@@ -734,7 +734,7 @@ func TestFindBacklinksLinesHeaderButNoBacklinks(t *testing.T) {
 	assert.NoError(t, err)
 
 	document := `# Backlinks
-foo`
+Foo`
 
 	_, err = file.WriteString(document)
 	assert.NoError(t, err)
@@ -798,7 +798,7 @@ func TestAddLinkToFileEmpty(t *testing.T) {
 	_, err = file.WriteString(document)
 	assert.NoError(t, err)
 
-	err = libdocuments.AddLink(filePath, "foo")
+	err = libdocuments.AddLink(filePath, "Foo")
 	assert.Error(t, err)
 }
 
@@ -812,7 +812,7 @@ func TestAddLinkToFileHeaderOnly(t *testing.T) {
 	_, err = file.WriteString(document)
 	assert.NoError(t, err)
 
-	err = libdocuments.AddLink(filePath, "foo")
+	err = libdocuments.AddLink(filePath, "Foo")
 	assert.NoError(t, err)
 }
 
@@ -823,11 +823,11 @@ func TestAddLinkToFileOneLink(t *testing.T) {
 	assert.NoError(t, err)
 
 	document := `# Links
-    - ()[foo]`
+    - (Foo)[Bar]`
 	_, err = file.WriteString(document)
 	assert.NoError(t, err)
 
-	err = libdocuments.AddLink(filePath, "foo")
+	err = libdocuments.AddLink(filePath, "Foo")
 	assert.NoError(t, err)
 }
 
@@ -844,7 +844,7 @@ func TestAddBacklinkToFileEmpty(t *testing.T) {
 	_, err = file.WriteString(document)
 	assert.NoError(t, err)
 
-	err = libdocuments.AddBacklink(filePath, "foo")
+	err = libdocuments.AddBacklink(filePath, "Foo")
 	assert.Error(t, err)
 }
 
@@ -858,7 +858,7 @@ func TestAddBacklinkToFileHeaderOnly(t *testing.T) {
 	_, err = file.WriteString(document)
 	assert.NoError(t, err)
 
-	err = libdocuments.AddBacklink(filePath, "foo")
+	err = libdocuments.AddBacklink(filePath, "Foo")
 	assert.NoError(t, err)
 }
 
@@ -869,11 +869,11 @@ func TestAddBacklinkToFileOneBacklink(t *testing.T) {
 	assert.NoError(t, err)
 
 	document := `# Backlinks
-    - ()[foo]`
+    - (Foo)[Bar]`
 	_, err = file.WriteString(document)
 	assert.NoError(t, err)
 
-	err = libdocuments.AddBacklink(filePath, "foo")
+	err = libdocuments.AddBacklink(filePath, "Bar")
 	assert.NoError(t, err)
 }
 
@@ -890,7 +890,7 @@ func RemoveLinkFromFileEmpty(t *testing.T) {
 	_, err = file.WriteString(document)
 	assert.NoError(t, err)
 
-	err = libdocuments.RemoveLink(filePath, "foo")
+	err = libdocuments.RemoveLink(filePath, "Foo")
 	assert.Error(t, err)
 }
 
@@ -904,7 +904,7 @@ func RemoveLinkFromFileHeaderOnly(t *testing.T) {
 	_, err = file.WriteString(document)
 	assert.NoError(t, err)
 
-	err = libdocuments.RemoveLink(filePath, "foo")
+	err = libdocuments.RemoveLink(filePath, "Foo")
 	assert.NoError(t, err)
 }
 
@@ -915,11 +915,11 @@ func RemoveLinkFromFileNoMatch(t *testing.T) {
 	assert.NoError(t, err)
 
 	document := `# Backlinks
-    - ()[foo]`
+    - ()[Foo]`
 	_, err = file.WriteString(document)
 	assert.NoError(t, err)
 
-	err = libdocuments.RemoveLink(filePath, "bar")
+	err = libdocuments.RemoveLink(filePath, "Bar")
 	assert.NoError(t, err)
 }
 
@@ -930,11 +930,11 @@ func RemoveLinkFromFile(t *testing.T) {
 	assert.NoError(t, err)
 
 	document := `# Backlinks
-    - ()[foo]`
+    - ()[Foo]`
 	_, err = file.WriteString(document)
 	assert.NoError(t, err)
 
-	err = libdocuments.RemoveLink(filePath, "foo")
+	err = libdocuments.RemoveLink(filePath, "Foo")
 	assert.NoError(t, err)
 }
 
@@ -951,7 +951,7 @@ func RemoveBacklinkFromFileEmpty(t *testing.T) {
 	_, err = file.WriteString(document)
 	assert.NoError(t, err)
 
-	err = libdocuments.RemoveBacklink(filePath, "foo")
+	err = libdocuments.RemoveBacklink(filePath, "Foo")
 	assert.Error(t, err)
 }
 
@@ -965,7 +965,7 @@ func RemoveBacklinkFromFileHeaderOnly(t *testing.T) {
 	_, err = file.WriteString(document)
 	assert.NoError(t, err)
 
-	err = libdocuments.RemoveBacklink(filePath, "foo")
+	err = libdocuments.RemoveBacklink(filePath, "Foo")
 	assert.NoError(t, err)
 }
 
@@ -976,11 +976,11 @@ func RemoveBacklinkFromFileNoMatch(t *testing.T) {
 	assert.NoError(t, err)
 
 	document := `# Backlinks
-    - ()[foo]`
+    - ()[Foo]`
 	_, err = file.WriteString(document)
 	assert.NoError(t, err)
 
-	err = libdocuments.RemoveBacklink(filePath, "bar")
+	err = libdocuments.RemoveBacklink(filePath, "Bar")
 	assert.NoError(t, err)
 }
 
@@ -991,11 +991,11 @@ func RemoveBacklinkFromFile(t *testing.T) {
 	assert.NoError(t, err)
 
 	document := `# Backlinks
-    - ()[foo]`
+    - ()[Foo]`
 	_, err = file.WriteString(document)
 	assert.NoError(t, err)
 
-	err = libdocuments.RemoveBacklink(filePath, "foo")
+	err = libdocuments.RemoveBacklink(filePath, "Foo")
 	assert.NoError(t, err)
 }
 
@@ -1110,7 +1110,7 @@ func TestRenameDoucmentNewNameExists(t *testing.T) {
 	assert.NoError(t, err)
 
 	err = libdocuments.RenameDocument(db, nil, "Foo", "Bar")
-	assert.NoError(t, err)
+	assert.Error(t, err)
 }
 
 // ########################
