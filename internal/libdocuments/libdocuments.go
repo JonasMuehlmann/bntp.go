@@ -651,7 +651,13 @@ func ChangeDocumentType(dbConn *sqlx.DB, transaction *sqlx.Tx, documentPath stri
 		return errors.New("Could not retrieve DocumentTypeId")
 	}
 
-	return helpers.SqlExecute(dbConn, transaction, stmt, documentTypeId, documentPath)
+	_, numAffectedRows, err := helpers.SqlExecute(dbConn, transaction, stmt, documentTypeId, documentPath)
+
+	if numAffectedRows == 0 {
+		return errors.New("DocumentPath does not exist")
+	}
+
+	return err
 }
 
 // AddType makes a new DocumentType available for use in the DB.
