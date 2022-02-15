@@ -4,37 +4,63 @@ package libdocuments
 import (
 	"bufio"
 	"errors"
-	"io"
 	"os"
-	"path/filepath"
 	"strings"
 
 	"github.com/JonasMuehlmann/bntp.go/internal/helpers"
 	"github.com/jmoiron/sqlx"
 )
 
-// AddTag adds a tag to the tag line of the document at documentPath.
-func AddTag(documentPath string, tag string) error {
-	lineNumber, tags, err := FindTagsLine(documentPath)
+// AddTag adds a tag newTag to the document at documentPath.
+// Passing a transaction is optional.
+func AddTag(dbConn *sqlx.DB, transaction *sqlx.Tx, documentPath string, newTag string) error {
+	stmt := `
+        INSERT INTO
+            DocumentContext(DocumentId, TagId)
+        VALUES(
+            ?,
+            ?
+        );
+    `
+
+	var statementContext *sqlx.Stmt
+	var err error
+
+	if transaction != nil {
+		statementContext, err = transaction.Preparex(stmt)
+
+		if err != nil {
+			return err
+		}
+	} else {
+		statementContext, err = dbConn.Preparex(stmt)
+
+		if err != nil {
+			return err
+		}
+	}
+
+	tagId, err := helpers.GetIdFromTag(dbConn, transaction, newTag)
 	if err != nil {
 		return err
 	}
 
-	tags += tag
-
-	file, err := os.OpenFile(documentPath, os.O_RDWR, 0o644)
+	documentId, err := helpers.GetIdFromDocument(dbConn, transaction, documentPath)
 	if err != nil {
 		return err
 	}
 
-	defer file.Close()
-
-	offset, err := file.Seek(int64(lineNumber), io.SeekStart)
+	result, err := statementContext.Exec(documentId, tagId)
 	if err != nil {
 		return err
 	}
 
-	_, err = file.WriteAt([]byte(tags), offset)
+	numAffectedRows, err := result.RowsAffected()
+	if numAffectedRows == 0 || err != nil {
+		return errors.New("Type to be deleted does not exist")
+	}
+
+	err = statementContext.Close()
 
 	if err != nil {
 		return err
@@ -43,9 +69,99 @@ func AddTag(documentPath string, tag string) error {
 	return nil
 }
 
-// RemoveTag removes a tag from the tag line of the document at documentPath.
-func RemoveTag(documentPath string, tag string) error {
-	lineNumber, tags, err := FindTagsLine(documentPath)
+// RemoveTag removes a tag tag_ from the document at documentPath
+// Passing a transaction is optional.
+func RemoveTag(dbConn *sqlx.DB, transaction *sqlx.Tx, documentPath string, tag_ string) error {
+	stmt := `
+        DELETE FROM
+            DocumentContext
+        WHERE
+            DocumentId = ?
+            AND
+            TagId = ?;
+    `
+
+	var statement *sqlx.Stmt
+	var err error
+
+	if transaction != nil {
+		statement, err = transaction.Preparex(stmt)
+
+		if err != nil {
+			return err
+		}
+	} else {
+		statement, err = dbConn.Preparex(stmt)
+
+		if err != nil {
+			return err
+		}
+	}
+
+	tagId, err := helpers.GetIdFromTag(dbConn, transaction, tag_)
+	if err != nil {
+		return err
+	}
+
+	documentId, err := helpers.GetIdFromDocument(dbConn, transaction, documentPath)
+	if err != nil {
+		return err
+	}
+
+	_, err = statement.Exec(documentId, tagId)
+	if err != nil {
+		return err
+	}
+
+	err = statement.Close()
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// AddTagToFile adds a tag to the tag line of the document at documentPath.
+func AddTagToFile(documentPath string, tag string) error {
+	if tag == "" {
+		return errors.New("Can't add empty tag")
+	}
+
+	tagsLineNumber, _, err := FindTagsLine(documentPath)
+	if err != nil {
+		return err
+	}
+
+	fileBuffer, err := os.ReadFile(documentPath)
+	if err != nil {
+		return err
+	}
+
+	lines := strings.Split(string(fileBuffer), "\n")
+
+	// If the tag line is the last line, we append a new one.
+	if len(lines) == tagsLineNumber {
+		lines = append(lines, tag)
+	} else {
+		lines[tagsLineNumber] += "," + tag
+	}
+
+	err = os.WriteFile(documentPath, []byte(strings.Join(lines, "\n")), 0o644)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// RemoveTagFromFile removes a tag from the tag line of the document at documentPath.
+func RemoveTagFromFile(documentPath string, tag string) error {
+	if tag == "" {
+		return errors.New("Can't remove empty tag")
+	}
+
+	tagsLineNumber, tags, err := FindTagsLine(documentPath)
 	if err != nil {
 		return err
 	}
@@ -53,19 +169,15 @@ func RemoveTag(documentPath string, tag string) error {
 	tags = strings.Replace(tags, tag, "", -1)
 	tags = strings.Replace(tags, ",,", ",", -1)
 
-	file, err := os.OpenFile(documentPath, os.O_RDWR, 0o644)
+	fileBuffer, err := os.ReadFile(documentPath)
 	if err != nil {
 		return err
 	}
 
-	defer file.Close()
+	lines := strings.Split(string(fileBuffer), "\n")
+	lines[tagsLineNumber] = tags
 
-	offset, err := file.Seek(int64(lineNumber), io.SeekStart)
-	if err != nil {
-		return err
-	}
-
-	_, err = file.WriteAt([]byte(tags), offset)
+	err = os.WriteFile(documentPath, []byte(strings.Join(lines, "\n")), 0o644)
 	if err != nil {
 		return err
 	}
@@ -73,30 +185,33 @@ func RemoveTag(documentPath string, tag string) error {
 	return nil
 }
 
-// Rename renames a tag oldTag to newTag in the tag line of the doucment at documentPath.
+// RenameTagInFile renames a tag oldTag to newTag in the tag line of the doucment at documentPath.
 // This method preserves the order of all tags in the doucment.
-func RenameTag(documentPath string, oldTag string, newTag string) error {
-	lineNumber, tags, err := FindTagsLine(documentPath)
+func RenameTagInFile(documentPath string, oldTag string, newTag string) error {
+	if oldTag == "" {
+		return errors.New("Can't rename from empty Tag")
+	}
+
+	if newTag == "" {
+		return errors.New("Can't rename tp empty Tag")
+	}
+
+	tagsLineNumber, tags, err := FindTagsLine(documentPath)
 	if err != nil {
 		return err
 	}
 
 	tags = strings.Replace(tags, oldTag, newTag, -1)
 
-	file, err := os.OpenFile(documentPath, os.O_RDWR, 0o644)
+	fileBuffer, err := os.ReadFile(documentPath)
 	if err != nil {
 		return err
 	}
 
-	defer file.Close()
+	lines := strings.Split(string(fileBuffer), "\n")
+	lines[tagsLineNumber] = tags
 
-	offset, err := file.Seek(int64(lineNumber), io.SeekStart)
-	if err != nil {
-		return err
-	}
-
-	_, err = file.WriteAt([]byte(tags), offset)
-
+	err = os.WriteFile(documentPath, []byte(strings.Join(lines, "\n")), 0o644)
 	if err != nil {
 		return err
 	}
@@ -111,11 +226,17 @@ func GetTags(documentPath string) ([]string, error) {
 		return nil, err
 	}
 
-	return strings.Split(tags, ","), nil
+	tagsBuffer := strings.Split(tags, ",")
+
+	if len(tagsBuffer) == 1 && tagsBuffer[0] == "" {
+		return nil, errors.New("No tags found")
+	}
+
+	return tagsBuffer, nil
 }
 
 // FindTagsLine finds the line in documentPath which contains it's tags.
-// It returns the line lumber of the tags line as well as the line itself.
+// It returns the 0 based line lumber of the tags line as well as the line itself.
 func FindTagsLine(documentPath string) (int, string, error) {
 	file, err := os.OpenFile(documentPath, os.O_RDONLY, 0o644)
 	if err != nil {
@@ -142,17 +263,27 @@ func FindTagsLine(documentPath string) (int, string, error) {
 
 // HasTags checks if the document at documentPath has all specified tags.
 func HasTags(documentPath string, tags []string) (bool, error) {
+	if len(tags) == 0 || (len(tags) == 1 && tags[0] == "") {
+		return false, errors.New("No input tags")
+	}
+
 	documentTags, err := GetTags(documentPath)
 	if err != nil {
 		return false, err
 	}
 
 	for _, tag := range tags {
+		hasTag := false
+
 		for _, documentTag := range documentTags {
 			if tag == documentTag {
-				continue
-			}
+				hasTag = true
 
+				break
+			}
+		}
+
+		if !hasTag {
 			return false, nil
 		}
 	}
@@ -160,66 +291,111 @@ func HasTags(documentPath string, tags []string) (bool, error) {
 	return true, nil
 }
 
-// TODO: Refactor to search in DB not FS
 // FindDocumentsWithTags returns all paths to doucments which have all specified tags.
-func FindDocumentsWithTags(rootDir string, tags []string) ([]string, error) {
-	filesWithTags := make([]string, 0, 100)
+func FindDocumentsWithTags(dbConn *sqlx.DB, tags []string) ([]string, error) {
+	if len(tags) == 0 || (len(tags) == 1 && tags[0] == "") {
+		return nil, errors.New("No input tags")
+	}
+	stmtTags := `
+       SELECT
+           Path
+       FROM
+           Document
+       LEFT JOIN DocumentContext ON
+           DocumentId = Document.Id
+       WHERE
+           TagId IN (SELECT Id FROM Tag WHERE Tag IN(?))
+       GROUP BY
+           Document.Id
+       HAVING
+           COUNT(*) =`
 
-	err := filepath.Walk(rootDir, func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
+	stmtNumPaths := `
+       SELECT
+           COUNT(*)
+       FROM
+           Document
+       LEFT JOIN DocumentContext ON
+           DocumentId = Document.Id
+       WHERE
+           TagId IN (SELECT Id FROM Tag WHERE Tag IN(?))
+       GROUP BY
+           Document.Id
+       HAVING
+           COUNT(*) =`
 
-		if !info.IsDir() {
-			hasTags, err := HasTags(path, tags)
-			if err != nil {
-				return err
-			}
-			if !hasTags {
-				return nil
-			}
-			filesWithTags = append(filesWithTags, path)
-		}
+	var numPaths int
 
-		return nil
-	})
+	stmtTagsIn, args, err := sqlx.In(stmtTags, tags)
 	if err != nil {
 		return nil, err
 	}
 
-	return filesWithTags, nil
+	stmtNumPathsIn, args, err := sqlx.In(stmtNumPaths, tags)
+	if err != nil {
+		return nil, err
+	}
+
+	args = append(args, len(tags))
+
+	stmtTagsIn = dbConn.Rebind(stmtTagsIn)
+	stmtNumPathsIn = dbConn.Rebind(stmtNumPathsIn)
+
+	stmtTagsIn += " ?;"
+	stmtNumPathsIn += " ?;"
+
+	err = dbConn.Get(&numPaths, stmtNumPathsIn, args...)
+	if err != nil {
+		return nil, err
+	}
+
+	paths := make([]string, 0, numPaths)
+
+	err = dbConn.Select(&paths, stmtTagsIn, args...)
+	if err != nil {
+		return nil, err
+	}
+
+	return paths, nil
 }
 
 // FindLinksLines finds the lines in documentPath in which links to other documents are listed.
 // It returns the range of line numbers containing links as well as the lines themselves.
 func FindLinksLines(documentPath string) (int, int, []string, error) {
-	file, err := os.OpenFile(documentPath, os.O_RDONLY, 0o644)
+	file, err := os.ReadFile(documentPath)
 	if err != nil {
 		return 0, 0, nil, err
 	}
 
-	defer file.Close()
-
-	scanner := bufio.NewScanner(file)
+	lines := strings.Split(string(file), "\n")
 
 	lineNumberFirstLink := -1
 	lineNumberLastLink := -1
 	links := make([]string, 0, 10)
 
+	var line string
 	i := 0
 
-	for scanner.Scan() {
-		if scanner.Text() == "# Links" {
-			lineNumberFirstLink = i + 1
+	for _, line = range lines {
+		if line == "# Links" {
+            lineNumberFirstLink = i + 1
 
-			break
-		}
-		i++
+            break
+		}  
 	}
 
-	for scanner.Scan() && strings.HasPrefix(scanner.Text(), "- ") {
-		links[i-lineNumberFirstLink] = scanner.Text()
-		i++
+    if lineNumberFirstLink == -1 {
+            return 0, 0, nil, errors.New("Could not find links")
+    }
+
+	for _, line := range lines[lineNumberFirstLink:] {
+		if strings.HasPrefix(line, "- ") {
+			links = append(links, line)
+
+			i++
+		} else if line != "" {
+            return 0, 0, nil, errors.New("Invalid links list")
+		}
 	}
 
 	lineNumberLastLink = i
@@ -230,64 +406,65 @@ func FindLinksLines(documentPath string) (int, int, []string, error) {
 // FindBacklinksLines finds the lines in documentPath in which backlinks to other documents are listed.
 // It returns the range of line numbers containing backlinks as well as the lines themselves.
 func FindBacklinksLines(documentPath string) (int, int, []string, error) {
-	file, err := os.OpenFile(documentPath, os.O_RDONLY, 0o644)
+	file, err := os.ReadFile(documentPath)
 	if err != nil {
 		return 0, 0, nil, err
 	}
 
-	defer file.Close()
+	lines := strings.Split(string(file), "\n")
 
-	scanner := bufio.NewScanner(file)
+	lineNumberFirstBacklink := -1
+	lineNumberLastBacklink := -1
+	backlinks := make([]string, 0, 10)
 
-	lineNumberFirstLink := -1
-	lineNumberLastLink := -1
-	links := make([]string, 0, 10)
-
+	var line string
 	i := 0
 
-	for scanner.Scan() {
-		if scanner.Text() == "# Backlinks" {
-			lineNumberFirstLink = i + 1
+	for _, line = range lines {
+		if line == "# Backlinks" {
+            lineNumberFirstBacklink = i + 1
 
-			break
+            break
 		}
-		i++
+    }
+
+    if lineNumberFirstBacklink == -1 {
+            return 0, 0, nil, errors.New("Could not find links")
+    }
+
+	for _, line := range lines[lineNumberFirstBacklink:] {
+		if strings.HasPrefix(line, "- ") {
+			backlinks = append(backlinks, line)
+
+			i++
+		} else if line != "" {
+            return 0, 0, nil, errors.New("Invalid backlinks list")
+		}
 	}
 
-	for scanner.Scan() && strings.HasPrefix(scanner.Text(), "- ") {
-		links[i-lineNumberFirstLink] = scanner.Text()
-		i++
-	}
+	lineNumberLastBacklink = i
 
-	lineNumberLastLink = i
-
-	return lineNumberFirstLink, lineNumberLastLink, links, nil
+	return lineNumberFirstBacklink, lineNumberLastBacklink, backlinks, nil
 }
 
 // AddLink adds a link to documentPathDestination into the document at documentPathSource.
 func AddLink(documentPathSource string, documentPathDestination string) error {
-	// lineNumberFirstLink, lineNumberLastLink, links, err := FindLinksLines(documentPathSource)
-	lineNumberFirstLink, _, links, err := FindLinksLines(documentPathSource)
+	_, lineNumberlastLink, _, err := FindLinksLines(documentPathSource)
 	if err != nil {
 		return err
 	}
 
-	links = append(links, documentPathDestination)
-
-	file, err := os.OpenFile(documentPathSource, os.O_RDWR, 0o644)
+	file, err := os.ReadFile(documentPathSource)
 	if err != nil {
 		return err
 	}
 
-	defer file.Close()
+	linesOld := strings.Split(string(file), "\n")
 
-	offset, err := file.Seek(int64(lineNumberFirstLink), io.SeekStart)
-	if err != nil {
-		return err
-	}
+	linesNew := append(linesOld[:lineNumberlastLink], "- ()["+documentPathDestination+"]")
+	linesNew = append(linesNew, linesOld[lineNumberlastLink+1:]...)
 
-	_, err = file.WriteAt([]byte(strings.Join(links, "\n")), offset)
-
+	err = os.WriteFile(documentPathSource, []byte(strings.Join(linesNew, "\n")), 0o644)
 	if err != nil {
 		return err
 	}
@@ -297,7 +474,6 @@ func AddLink(documentPathSource string, documentPathDestination string) error {
 
 // RemoveLink removes the link to documentPathDestination from the document at documentPathSource.
 func RemoveLink(documentPathSource string, documentPathDestination string) error {
-	// lineNumberFirstLink, lineNumberLastLink, linksOrig, err := FindLinksLines(documentPathSource)
 	lineNumberFirstLink, _, linksOrig, err := FindLinksLines(documentPathSource)
 	if err != nil {
 		return err
@@ -307,59 +483,45 @@ func RemoveLink(documentPathSource string, documentPathDestination string) error
 
 	for i, link := range linksOrig {
 		if link == documentPathSource {
-			iLinkToDelete = i
+			iLinkToDelete = i + lineNumberFirstLink
 		}
 	}
 
-	links := make([]string, 0, 10)
-
-	links = append(links, linksOrig[:iLinkToDelete]...)
-	links = append(links, linksOrig[iLinkToDelete+1:]...)
-
-	file, err := os.OpenFile(documentPathDestination, os.O_RDWR, 0o644)
-	if err != nil {
-		return err
-	}
-	defer file.Close()
-
-	offset, err := file.Seek(int64(lineNumberFirstLink), io.SeekStart)
+	file, err := os.ReadFile(documentPathSource)
 	if err != nil {
 		return err
 	}
 
-	_, err = file.WriteAt([]byte(strings.Join(links, "\n")), offset)
+	linesOld := strings.Split(string(file), "\n")
 
+	linesNew := append(linesOld[:iLinkToDelete-1], linesOld[:iLinkToDelete]...)
+
+	err = os.WriteFile(documentPathSource, []byte(strings.Join(linesNew, "\n")), 0o644)
 	if err != nil {
 		return err
 	}
 
-	return err
+	return nil
 }
 
 // AddBacklink adds a Backlink to documentPathSource into the document at documentPathDestination.
 func AddBacklink(documentPathDestination string, documentPathSource string) error {
-	// lineNumberFirstLink, lineNumberLastLink, links, err := FindBacklinksLines(documentPathSource)
-	lineNumberFirstLink, _, links, err := FindBacklinksLines(documentPathSource)
+	_, lineNumberlastBacklink, _, err := FindBacklinksLines(documentPathDestination)
 	if err != nil {
 		return err
 	}
 
-	links = append(links, documentPathSource)
-
-	file, err := os.OpenFile(documentPathDestination, os.O_RDWR, 0o644)
+	file, err := os.ReadFile(documentPathDestination)
 	if err != nil {
 		return err
 	}
 
-	defer file.Close()
+	linesOld := strings.Split(string(file), "\n")
 
-	offset, err := file.Seek(int64(lineNumberFirstLink), io.SeekStart)
-	if err != nil {
-		return err
-	}
+	linesNew := append(linesOld[:lineNumberlastBacklink], "- ()["+documentPathSource+"]")
+	linesNew = append(linesNew, linesOld[lineNumberlastBacklink+1:]...)
 
-	_, err = file.WriteAt([]byte(strings.Join(links, "\n")), offset)
-
+	err = os.WriteFile(documentPathDestination, []byte(strings.Join(linesNew, "\n")), 0o644)
 	if err != nil {
 		return err
 	}
@@ -369,43 +531,34 @@ func AddBacklink(documentPathDestination string, documentPathSource string) erro
 
 // RemoveBacklink removes the backlink to documentPathSource from the document at documentPathDestination.
 func RemoveBacklink(documentPathDestination string, documentPathSource string) error {
-	// lineNumberFirstLink, lineNumberLastLink, linksOrig, err := FindBacklinksLines(documentPathSource)
-	lineNumberFirstLink, _, linksOrig, err := FindBacklinksLines(documentPathSource)
+	lineNumberFirstBacklink, _, backlinksOrig, err := FindBacklinksLines(documentPathDestination)
 	if err != nil {
 		return err
 	}
 
-	iLinkToDelete := -1
+	iBacklinkToDelete := -1
 
-	for i, link := range linksOrig {
+	for i, link := range backlinksOrig {
 		if link == documentPathSource {
-			iLinkToDelete = i
+			iBacklinkToDelete = i + lineNumberFirstBacklink
 		}
 	}
 
-	links := make([]string, 0, 10)
-
-	links = append(links, linksOrig[:iLinkToDelete]...)
-	links = append(links, linksOrig[iLinkToDelete+1:]...)
-
-	file, err := os.OpenFile(documentPathDestination, os.O_RDWR, 0o644)
-	if err != nil {
-		return err
-	}
-	defer file.Close()
-
-	offset, err := file.Seek(int64(lineNumberFirstLink), io.SeekStart)
+	file, err := os.ReadFile(documentPathDestination)
 	if err != nil {
 		return err
 	}
 
-	_, err = file.WriteAt([]byte(strings.Join(links, "\n")), offset)
+	linesOld := strings.Split(string(file), "\n")
 
+	linesNew := append(linesOld[:iBacklinkToDelete-1], linesOld[:iBacklinkToDelete]...)
+
+	err = os.WriteFile(documentPathDestination, []byte(strings.Join(linesNew, "\n")), 0o644)
 	if err != nil {
 		return err
 	}
 
-	return err
+	return nil
 }
 
 // AddDocument adds a new document located at documentPath to the DB.
@@ -422,12 +575,14 @@ func AddDocument(dbConn *sqlx.DB, transaction *sqlx.Tx, documentPath string, doc
         );
     `
 
-    documentTypeId, err := helpers.GetIdFromDocumentType(dbConn, transaction, documentType)
-    if err != nil {
-    	return err
+	documentTypeId, err := helpers.GetIdFromDocumentType(dbConn, transaction, documentType)
+	if err != nil {
+		return err
 	}
 
-	return helpers.SqlExecute(dbConn, transaction, stmt, documentPath, documentTypeId)
+	_, _, err = helpers.SqlExecute(dbConn, transaction, stmt, documentPath, documentTypeId)
+
+	return err
 }
 
 //  RemoveDocument removes  a document located at documentPath from the DB.
@@ -439,7 +594,13 @@ func RemoveDocument(dbConn *sqlx.DB, transaction *sqlx.Tx, documentPath string) 
             Path = ?;
     `
 
-	return helpers.SqlExecute(dbConn, transaction, stmt, documentPath)
+	_, numAffectedRows, err := helpers.SqlExecute(dbConn, transaction, stmt, documentPath)
+
+	if numAffectedRows == 0 {
+		return errors.New("documentPathOld does not exist")
+	}
+
+	return err
 }
 
 // RenameDocument moves a document located at documentPathOld to documentPathNew.
@@ -453,7 +614,13 @@ func RenameDocument(dbConn *sqlx.DB, transaction *sqlx.Tx, documentPathOld strin
             Path = ?;
     `
 
-	return helpers.SqlExecute(dbConn, transaction, stmt, documentPathNew, documentPathOld)
+	_, numAffectedRows, err := helpers.SqlExecute(dbConn, transaction, stmt, documentPathNew, documentPathOld)
+
+	if numAffectedRows == 0 {
+		return errors.New("documentPathOld does not exist")
+	}
+
+	return err
 }
 
 // ChangeDocumentType changes the type of the document located documentPath to documentTypeNew.
@@ -471,11 +638,18 @@ func ChangeDocumentType(dbConn *sqlx.DB, transaction *sqlx.Tx, documentPath stri
 	if err != nil {
 		return err
 	}
+
 	if documentTypeId == -1 {
 		return errors.New("Could not retrieve DocumentTypeId")
 	}
 
-	return helpers.SqlExecute(dbConn, transaction, stmt, documentTypeId, documentPath)
+	_, numAffectedRows, err := helpers.SqlExecute(dbConn, transaction, stmt, documentTypeId, documentPath)
+
+	if numAffectedRows == 0 {
+		return errors.New("DocumentPath does not exist")
+	}
+
+	return err
 }
 
 // AddType makes a new DocumentType available for use in the DB.

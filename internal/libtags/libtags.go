@@ -177,7 +177,9 @@ func AddTag(dbConn *sqlx.DB, transaction *sqlx.Tx, tag string) error {
         VALUES(?);
     `
 
-	return helpers.SqlExecute(dbConn, transaction, stmt, tag)
+	_, _, err := helpers.SqlExecute(dbConn, transaction, stmt, tag)
+
+	return err
 }
 
 // RenameTag renames the tag oldTag to newTag in the DB.
@@ -192,7 +194,9 @@ func RenameTag(dbConn *sqlx.DB, transaction *sqlx.Tx, oldTag string, newTag stri
             Tag = ?;
     `
 
-	return helpers.SqlExecute(dbConn, transaction, stmt, oldTag, newTag)
+	_, _, err := helpers.SqlExecute(dbConn, transaction, stmt, oldTag, newTag)
+
+	return err
 }
 
 // DeleteTag removes the tag tag from the DB.
@@ -205,7 +209,9 @@ func DeleteTag(dbConn *sqlx.DB, transaction *sqlx.Tx, tag string) error {
             Tag = ?;
     `
 
-	return helpers.SqlExecute(dbConn, transaction, stmt, tag)
+	_, _, err := helpers.SqlExecute(dbConn, transaction, stmt, tag)
+
+	return err
 }
 
 // FindAmbiguousTagComponent finds the index (root = 0) of an ambiguous component.

@@ -41,7 +41,9 @@ func AddLink(dbConn *sqlx.DB, transaction *sqlx.Tx, source string, destination s
 		return errors.New("Could not retrieve DestinationId")
 	}
 
-	return helpers.SqlExecute(dbConn, transaction, stmt, sourceId, destinationId)
+	_, _, err = helpers.SqlExecute(dbConn, transaction, stmt, sourceId, destinationId)
+
+	return err
 }
 
 // RemoveLink removes the link from source to destination from the db.
@@ -73,7 +75,9 @@ func RemoveLink(dbConn *sqlx.DB, transaction *sqlx.Tx, source string, destinatio
 		return errors.New("Could not retrieve DestinationId")
 	}
 
-	return helpers.SqlExecute(dbConn, transaction, stmt, sourceId, destinationId)
+	_, _, err = helpers.SqlExecute(dbConn, transaction, stmt, sourceId, destinationId)
+
+	return err
 }
 
 // ListLinks lists all link destionations from the DB.

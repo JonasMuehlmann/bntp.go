@@ -33,7 +33,7 @@ CREATE TABLE DocumentType
 CREATE TABLE Document
 (
     Id   INTEGER PRIMARY KEY,
-    Path Text NOT NULL,
+    Path Text NOT NULL UNIQUE,
     DocumentTypeId REFERENCES DocumentType(Id) NOT NULL
 );
 CREATE TABLE Link
@@ -48,11 +48,13 @@ CREATE TABLE BookmarkContext
 (
     Id PRIMARY KEY,
     BookmarkId REFERENCES Bookmark(Id) NOT NULL,
-    TagId REFERENCES Tag(Id) NOT NULL 
+    TagId REFERENCES Tag(Id) NOT NULL,
+    UNIQUE(TagId, BookmarkId)
 );
 CREATE TABLE DocumentContext
 (
     Id PRIMARY KEY,
     DocumentId REFERENCES Document (Id)NOT NULL,
-    TagId REFERENCES  Tag(Id) NOT NULL
+    TagId REFERENCES  Tag(Id) NOT NULL,
+    UNIQUE(TagId, DocumentId)
 );
