@@ -378,15 +378,15 @@ func FindLinksLines(documentPath string) (int, int, []string, error) {
 
 	for _, line = range lines {
 		if line == "# Links" {
-            lineNumberFirstLink = i + 1
+			lineNumberFirstLink = i + 1
 
-            break
-		}  
+			break
+		}
 	}
 
-    if lineNumberFirstLink == -1 {
-            return 0, 0, nil, errors.New("Could not find links")
-    }
+	if lineNumberFirstLink == -1 {
+		return 0, 0, nil, errors.New("Could not find links")
+	}
 
 	for _, line := range lines[lineNumberFirstLink:] {
 		if strings.HasPrefix(line, "- ") {
@@ -394,7 +394,7 @@ func FindLinksLines(documentPath string) (int, int, []string, error) {
 
 			i++
 		} else if line != "" {
-            return 0, 0, nil, errors.New("Invalid links list")
+			return 0, 0, nil, errors.New("Invalid links list")
 		}
 	}
 
@@ -422,15 +422,15 @@ func FindBacklinksLines(documentPath string) (int, int, []string, error) {
 
 	for _, line = range lines {
 		if line == "# Backlinks" {
-            lineNumberFirstBacklink = i + 1
+			lineNumberFirstBacklink = i + 1
 
-            break
+			break
 		}
-    }
+	}
 
-    if lineNumberFirstBacklink == -1 {
-            return 0, 0, nil, errors.New("Could not find links")
-    }
+	if lineNumberFirstBacklink == -1 {
+		return 0, 0, nil, errors.New("Could not find links")
+	}
 
 	for _, line := range lines[lineNumberFirstBacklink:] {
 		if strings.HasPrefix(line, "- ") {
@@ -438,7 +438,7 @@ func FindBacklinksLines(documentPath string) (int, int, []string, error) {
 
 			i++
 		} else if line != "" {
-            return 0, 0, nil, errors.New("Invalid backlinks list")
+			return 0, 0, nil, errors.New("Invalid backlinks list")
 		}
 	}
 
