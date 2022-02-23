@@ -65,13 +65,27 @@ func LinkMain() {
 			log.Fatal(err)
 		}
 
-		log.Fatal(liblinks.ListLinks(db, source))
+		links, err := liblinks.ListLinks(db, source)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		for _, link := range links {
+			println(link)
+		}
 	} else if _, ok := arguments["--list-back"]; ok {
 		destination, err := arguments.String("DEST")
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		log.Fatal(liblinks.ListBacklinks(db, destination))
+		backlinks, err := liblinks.ListBacklinks(db, destination)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		for _, backlink := range backlinks {
+			println(backlink)
+		}
 	}
 }
