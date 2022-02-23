@@ -18,10 +18,10 @@ Usage:
 
 Options:
     -h --help       Show this screen.
-    -a --add        Add a link
-    -r --remove     Remove a link
-    -l --list       List all links
-    -L --list-back  List backlinks
+    -a --add        Add a link.
+    -r --remove     Remove a link.
+    -l --list       List all links.
+    -L --list-back  List backlinks.
 `
 
 func LinkMain() {
