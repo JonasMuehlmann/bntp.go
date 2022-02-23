@@ -45,3 +45,12 @@ func SqlExecute(dbConn *sqlx.DB, transaction *sqlx.Tx, stmt string, args ...inte
 	}
 	return lastInsertedId, numAffectedRows, nil
 }
+
+func GetDefaultDB() (*sqlx.DB, error) {
+	db, err := sqlx.Open("sqlite3", "~/Documents/bntp/bookmarks.db?_foreign_keys=1")
+	if err != nil {
+		return nil, err
+	}
+
+	return db, nil
+}
