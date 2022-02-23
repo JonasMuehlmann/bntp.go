@@ -9,8 +9,6 @@ Usage:
 
 Options:
     -h --help                   Show this screen.
-    -a --add                    Add a document.
-    -r --remove                 Remove a document.
     --add-tag                   Add a tag to a document.
     --remove-tag                Remove a tag from a document.
     --rename-tag                Rename a tag in a document.
@@ -24,9 +22,9 @@ Options:
     --remove-link               Remove a link from a document.
     --add-backlink              Add a backlink to a document.
     --remove-backlink           Remove a backlink from a document.
-    --add-doc                   Add a document.
-    --remove-doc                Remove a document.
-    --rename-doc                Rename a document.
+    -a --add-doc                Add a document.
+    -r --remove-doc             Remove a document.
+    -R --rename-doc             Rename a document.
     --change-doc-type           Change a document's type.
     --add-doc-type              Add a new type to give documents.
     --remove-doc-type           Remove a type to give documents.
