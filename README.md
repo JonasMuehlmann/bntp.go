@@ -4,6 +4,7 @@
 Libraries and CLIs for my personal all-in-one productivity system including components like bookmarks, notes, todos, projects, etc. 
 
 Neovim integration available at https://github.com/JonasMuehlmann/bntp.nvim
+Suggestions and ideas are welcome.
 
 # Why?
 
