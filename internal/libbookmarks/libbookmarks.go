@@ -382,9 +382,49 @@ func AddBookmark(dbConn *sqlx.DB, transaction *sqlx.Tx, title string, url string
 	return nil
 }
 
-// TODO: Implement
 func RemoveBookmark(dbConn *sqlx.DB, transaction *sqlx.Tx, ID int) error {
+	stmt := `
+        DELETE FROM
+            Bookmark
+        WHERE
+            ID = ?;
+    `
+	var statement *sqlx.Stmt
+
+	var err error
+
+	if transaction != nil {
+		statement, err = transaction.Preparex(stmt)
+
+		if err != nil {
+			return err
+		}
+	} else {
+		statement, err = dbConn.Preparex(stmt)
+
+		if err != nil {
+			return err
+		}
+	}
+
+	result, err := statement.Exec(ID)
+	if err != nil {
+		return err
+	}
+
+	numAffectedRows, err := result.RowsAffected()
+	if numAffectedRows == 0 || err != nil {
+		return errors.New("Bookmark to be deleted does not exist")
+	}
+
+	err = statement.Close()
+
+	if err != nil {
+		return err
+	}
+
 	return nil
+
 }
 
 func EditBookmark(dbConn *sqlx.DB, transaction *sqlx.Tx, newData Bookmark) error {

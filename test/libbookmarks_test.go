@@ -378,6 +378,62 @@ func TestAddBookmarkNoType(t *testing.T) {
 	assert.NoError(t, err)
 }
 
+// ####################
+// # RemoveBookmark() #
+// ####################
+func TestRemoveBookmark(t *testing.T) {
+	db, err := GetDB(t)
+	assert.NoError(t, err)
+
+	err = libbookmarks.AddType(db, nil, "Bar")
+	assert.NoError(t, err)
+
+	typeId, err := helpers.GetIdFromBookmarkType(db, nil, "Bar")
+	assert.NoError(t, err)
+
+	err = libbookmarks.AddBookmark(db, nil, "Foo", "Bar", sql.NullInt32{Int32: int32(typeId), Valid: true})
+	assert.NoError(t, err)
+
+	bookmarks, err := libbookmarks.GetBookmarks(db, libbookmarks.BookmarkFilter{})
+	assert.NoError(t, err)
+
+	err = libbookmarks.RemoveBookmark(db, nil, bookmarks[0].Id)
+	assert.NoError(t, err)
+}
+
+func TestRemoveBookmarkTansaction(t *testing.T) {
+	db, err := GetDB(t)
+	assert.NoError(t, err)
+	err = libbookmarks.AddType(db, nil, "Bar")
+	assert.NoError(t, err)
+
+	transaction, err := db.Beginx()
+	assert.NoError(t, err)
+
+	typeId, err := helpers.GetIdFromBookmarkType(db, nil, "Bar")
+	assert.NoError(t, err)
+
+	err = libbookmarks.AddBookmark(db, nil, "Foo", "Bar", sql.NullInt32{Int32: int32(typeId), Valid: true})
+	assert.NoError(t, err)
+
+	err = transaction.Commit()
+	assert.NoError(t, err)
+
+	bookmarks, err := libbookmarks.GetBookmarks(db, libbookmarks.BookmarkFilter{})
+	assert.NoError(t, err)
+
+	err = libbookmarks.RemoveBookmark(db, nil, bookmarks[0].Id)
+	assert.NoError(t, err)
+}
+
+func TestRemoveBookmarkNonExistent(t *testing.T) {
+	db, err := GetDB(t)
+	assert.NoError(t, err)
+
+	err = libbookmarks.RemoveBookmark(db, nil, 0)
+	assert.Error(t, err)
+}
+
 // ############
 // # AddTag() #
 // ############
