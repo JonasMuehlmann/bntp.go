@@ -585,7 +585,7 @@ func AddDocument(dbConn *sqlx.DB, transaction *sqlx.Tx, documentPath string, doc
 	return err
 }
 
-//  RemoveDocument removes  a document located at documentPath from the DB.
+// RemoveDocument removes a document located at documentPath from the DB.
 func RemoveDocument(dbConn *sqlx.DB, transaction *sqlx.Tx, documentPath string) error {
 	stmt := `
         DELETE FROM

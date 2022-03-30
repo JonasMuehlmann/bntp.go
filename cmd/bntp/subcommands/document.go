@@ -26,6 +26,17 @@ var usageDocument string = `bntp document - Interact with documents.
 
 Usage:
     bntp document -h | --help
+    bntp document (--add-tag | --remove-tag) DOCUMENT_PATH TAG
+    bntp document --rename-tag DOCUMENT_PATH OLD_TAG NEW_TAG
+    bntp document (--get-tags | --find-tags-line | --find-links-line | --find-backlinks-line) DOCUMENT_PATH
+    bntp document --has-tag DOCUMENT_PATH TAG
+    bntp document --find-documents-with-tags TAGS
+    bntp document (--add-link | --remove-link) DOCUMENT_PATH LINK
+    bntp document (--add-backlink | --remove-backlink) DOCUMENT_PATH BACKLINK
+    bntp document (--add-doc| --remove-doc) DOCUMENT_PATH
+    bntp document --rename-doc OLD_PATH NEW_PATH
+    bntp document --change-doc-type DOCUMENT_PATH NEW_TYPE
+    bntp document (--add-doc-type | --remove-doc-type) TYPE
 
 Options:
     -h --help                   Show this screen.
