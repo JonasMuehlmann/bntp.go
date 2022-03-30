@@ -327,6 +327,7 @@ func ListTypes(dbConn *sqlx.DB) ([]string, error) {
 }
 
 // TODO: Allow passing string for type_
+
 // AddBookmark adds a new bookmark to the DB.
 // Passing a transaction is optional.
 func AddBookmark(dbConn *sqlx.DB, transaction *sqlx.Tx, title string, url string, type_ sql.NullInt32) error {
