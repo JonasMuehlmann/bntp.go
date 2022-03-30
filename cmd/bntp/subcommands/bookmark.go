@@ -26,7 +26,20 @@ var usageBookmark string = `bntp bookmark - Interact with bookmarks.
 
 Usage:
     bntp bookmark -h | --help
-    bntp bookmark -l [--filter]
+    bntp bookmark -l [--filter FILTER]
+    bntp bookmark --import FILE
+    bntp bookmark --export FILE [--filter FILTER]
+    bntp bookmark (--add-type | --remove-type) TYPE
+    bntp bookmark --list-types
+    bntp bookmark -a DATA
+    bntp bookmark -r BOOKMARK_ID
+    bntp bookmark -e NEW_DATA
+    bntp bookmark --edit-is-read BOOKMARK_ID IS_READ
+    bntp bookmark --edit-title BOOKMARK_ID TITLE
+    bntp bookmark --edit-url BOOKMARK_ID TITLE
+    bntp bookmark --edit-type BOOKMARK_ID TITLE
+    bntp bookmark --edit-is-collection BOOKMARK_ID IS_COLLECTION
+    bntp bookmark (--add-tag | --remove-tag) TAG
 
 Options:
     -h --help               Show this screen.
@@ -38,7 +51,7 @@ Options:
     --remove-type           Remove a bookmark type.
     --list-types            List the bookmark types.
     -a --add                Add a bookmark.
-    -r --rmove              Remove a bookmark.
+    -r --remove             Remove a bookmark.
     -e --edit               Edit a bookmark.
     --edit-is-read          Change the is read status of a bookmark.
     --edit-title            Change the title of a bookmark.
