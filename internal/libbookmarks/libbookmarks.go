@@ -381,9 +381,35 @@ func AddBookmark(dbConn *sqlx.DB, transaction *sqlx.Tx, title string, url string
 	return nil
 }
 
-// EditBookmark sets column to newVal for the bookmark with the specified id.
+// TODO: Implement
+func RemoveBookmark(dbConn *sqlx.DB, transaction *sqlx.Tx, ID int) error {
+	return nil
+}
+
+func EditBookmark(dbConn *sqlx.DB, transaction *sqlx.Tx, newData Bookmark) error {
+	stmt := `
+        UPDATE
+            Bookmark
+        SET
+            Title = :Title,
+            Url = :Url
+            TimeAdded = :TimeAdded
+            Type = :Type
+            Id = :Id
+            IsRead = :IsRead
+            IsCollection = :IsCollection
+        WHERE
+            Id = ?;
+    `
+
+	_, _, err := helpers.SqlExecuteNamed(dbConn, transaction, stmt, newData)
+
+	return err
+}
+
+// editBookmarkField sets column to newVal for the bookmark with the specified id.
 // Passing a transaction is optional.
-func EditBookmark(dbConn *sqlx.DB, transaction *sqlx.Tx, id int, column string, newVal interface{}) error {
+func editBookmarkField(dbConn *sqlx.DB, transaction *sqlx.Tx, id int, column string, newVal interface{}) error {
 	stmt := `
         UPDATE
             Bookmark
@@ -401,19 +427,19 @@ func EditBookmark(dbConn *sqlx.DB, transaction *sqlx.Tx, id int, column string, 
 // EditIsRead sets IsRead to true for the bookmark with the specified id.
 // Passing a transaction is optional.
 func EditIsRead(dbConn *sqlx.DB, transaction *sqlx.Tx, id int, isRead bool) error {
-	return EditBookmark(dbConn, transaction, id, "IsRead", isRead)
+	return editBookmarkField(dbConn, transaction, id, "IsRead", isRead)
 }
 
 // EditTitle sets Title to newTile for the bookmark with the specified id.
 // Passing a transaction is optional.
 func EditTitle(dbConn *sqlx.DB, transaction *sqlx.Tx, id int, newTitle string) error {
-	return EditBookmark(dbConn, transaction, id, "Title", newTitle)
+	return editBookmarkField(dbConn, transaction, id, "Title", newTitle)
 }
 
 // EditUrl sets Url to newUrl for the bookmark with the specified id.
 // Passing a transaction is optional.
 func EditUrl(dbConn *sqlx.DB, transaction *sqlx.Tx, id int, newUrl string) error {
-	return EditBookmark(dbConn, transaction, id, "Url", newUrl)
+	return editBookmarkField(dbConn, transaction, id, "Url", newUrl)
 }
 
 // EditType sets Type to newType for the bookmark with the specified id.
@@ -423,13 +449,13 @@ func EditType(dbConn *sqlx.DB, transaction *sqlx.Tx, id int, newType string) err
 	if err != nil {
 		return err
 	}
-	return EditBookmark(dbConn, transaction, id, "BookmarkTypeId", typeId)
+	return editBookmarkField(dbConn, transaction, id, "BookmarkTypeId", typeId)
 }
 
 // EditIsCollection sets isCollection to isCollection for the bookmark with the specified id.
 // Passing a transaction is optional.
 func EditIsCollection(dbConn *sqlx.DB, transaction *sqlx.Tx, id int, isCollection bool) error {
-	return EditBookmark(dbConn, transaction, id, "IsCollection", isCollection)
+	return editBookmarkField(dbConn, transaction, id, "IsCollection", isCollection)
 }
 
 // AddTag adds a tag newTag to the bookmark with bookmarkId.
