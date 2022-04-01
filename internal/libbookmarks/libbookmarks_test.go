@@ -339,13 +339,14 @@ func TestAddBookmark(t *testing.T) {
 func TestAddBookmarkTansaction(t *testing.T) {
 	db, err := test.GetDB(t)
 	assert.NoError(t, err)
+
 	err = libbookmarks.AddType(db, nil, "Bar")
 	assert.NoError(t, err)
 
-	transaction, err := db.Beginx()
+	typeId, err := helpers.GetIdFromBookmarkType(db, nil, "Bar")
 	assert.NoError(t, err)
 
-	typeId, err := helpers.GetIdFromBookmarkType(db, nil, "Bar")
+	transaction, err := db.Beginx()
 	assert.NoError(t, err)
 
 	err = libbookmarks.AddBookmark(nil, transaction, "Foo", "Bar", sql.NullInt32{Int32: int32(typeId), Valid: true})
