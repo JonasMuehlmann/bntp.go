@@ -1,7 +1,7 @@
 // Copyright © 2021-2022 Jonas Muehlmann
 //
 // Permission is hereby granted, free of charge, to any person obtaining
-// a copy of this software and associated documentation files (the "Software"),
+// a copy of this software and associated documentation files (the"Software"),
 // to deal in the Software without restriction, including without limitation
 // the rights to use, copy, modify, merge, publish, distribute, sublicense,
 // and/or sell copies of the Software, and to permit persons to whom the
@@ -10,7 +10,7 @@
 // The above copyright notice and this permission notice shall be included
 // in all copies or substantial portions of the Software.
 //
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+// THE SOFTWARE IS PROVIDED"AS IS", WITHOUT WARRANTY OF ANY KIND,
 // EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
 // OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
 // IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
@@ -20,7 +20,14 @@
 
 package subcommands
 
-import "github.com/docopt/docopt-go"
+import (
+	"fmt"
+	"log"
+
+	"github.com/JonasMuehlmann/bntp.go/internal/helpers"
+	"github.com/JonasMuehlmann/bntp.go/internal/libdocuments"
+	"github.com/docopt/docopt-go"
+)
 
 var usageDocument string = `bntp document - Interact with documents.
 
@@ -62,5 +69,206 @@ Options:
 `
 
 func DocumentMain() {
-	_, _ = docopt.ParseDoc(usageDocument)
+	arguments, err := docopt.ParseDoc(usageDocument)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	db, err := helpers.GetDefaultDB()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if _, ok := arguments["--add-tag"]; ok {
+		documentPath, err := arguments.String("DOCUMENT_PATH")
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		tag, err := arguments.String("TAG")
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		err = libdocuments.AddTagToFile(documentPath, tag)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		err = libdocuments.AddTag(db, nil, documentPath, tag)
+		if err != nil {
+			log.Fatal(err)
+		}
+	} else if _, ok := arguments["--remove-tag"]; ok {
+		documentPath, err := arguments.String("DOCUMENT_PATH")
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		tag, err := arguments.String("TAG")
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		err = libdocuments.RemoveTagFromFile(documentPath, tag)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		err = libdocuments.RemoveTag(db, nil, documentPath, tag)
+		if err != nil {
+			log.Fatal(err)
+		}
+	} else if _, ok := arguments["--rename-tag"]; ok {
+		documentPath, err := arguments.String("DOCUMENT_PATH")
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		oldTag, err := arguments.String("OLD_TAG")
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		newTag, err := arguments.String("NEW_TAG")
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		err = libdocuments.RenameTagInFile(documentPath, oldTag, newTag)
+		if err != nil {
+			log.Fatal(err)
+		}
+	} else if _, ok := arguments["--get-tags"]; ok {
+		documentPath, err := arguments.String("DOCUMENT_PATH")
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		tags, err := libdocuments.GetTags(documentPath)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		for tag := range tags {
+			println(tag)
+		}
+	} else if _, ok := arguments["--find-tags-line"]; ok {
+		documentPath, err := arguments.String("DOCUMENT_PATH")
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		index, line, err := libdocuments.FindTagsLine(documentPath)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		fmt.Println("%v %v", index, line)
+	} else if _, ok := arguments["--has-tags"]; ok {
+		documentPath, err := arguments.String("DOCUMENT_PATH")
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		tag, err := arguments.String("TAG")
+		if err != nil {
+			log.Fatal(err)
+		}
+	} else if _, ok := arguments["--find-docs-with-tags"]; ok {
+		tagsRaw, err := arguments.String("TAGS")
+		if err != nil {
+			log.Fatal(err)
+		}
+	} else if _, ok := arguments["--find-links-lines"]; ok {
+		documentPath, err := arguments.String("DOCUMENT_PATH")
+		if err != nil {
+			log.Fatal(err)
+		}
+	} else if _, ok := arguments["--find-backlinks-lines"]; ok {
+		documentPath, err := arguments.String("DOCUMENT_PATH")
+		if err != nil {
+			log.Fatal(err)
+		}
+	} else if _, ok := arguments["--add-link"]; ok {
+		documentPath, err := arguments.String("DOCUMENT_PATH")
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		link, err := arguments.String("LINK")
+		if err != nil {
+			log.Fatal(err)
+		}
+	} else if _, ok := arguments["--remove-link"]; ok {
+		documentPath, err := arguments.String("DOCUMENT_PATH")
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		link, err := arguments.String("LINK")
+		if err != nil {
+			log.Fatal(err)
+		}
+	} else if _, ok := arguments["--add-backlink"]; ok {
+		documentPath, err := arguments.String("DOCUMENT_PATH")
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		backlink, err := arguments.String("BACKLINK")
+		if err != nil {
+			log.Fatal(err)
+		}
+	} else if _, ok := arguments["--remove-backlink"]; ok {
+		documentPath, err := arguments.String("DOCUMENT_PATH")
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		backlink, err := arguments.String("BACKLINK")
+		if err != nil {
+			log.Fatal(err)
+		}
+	} else if _, ok := arguments["--add-doc"]; ok {
+		documentPath, err := arguments.String("DOCUMENT_PATH")
+		if err != nil {
+			log.Fatal(err)
+		}
+	} else if _, ok := arguments["--remove-doc"]; ok {
+		documentPath, err := arguments.String("DOCUMENT_PATH")
+		if err != nil {
+			log.Fatal(err)
+		}
+	} else if _, ok := arguments["--rename-doc"]; ok {
+		oldPath, err := arguments.String("OLD_PATH")
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		newPath, err := arguments.String("NEW_PATH")
+		if err != nil {
+			log.Fatal(err)
+		}
+	} else if _, ok := arguments["--change-doc-type"]; ok {
+		documentPath, err := arguments.String("DOCUMENT_PATH")
+		if err != nil {
+			log.Fatal(err)
+		}
+	} else if _, ok := arguments["--add-doc-type"]; ok {
+		documentPath, err := arguments.String("DOCUMENT_PATH")
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		type_, err := arguments.String("TYPE")
+		if err != nil {
+			log.Fatal(err)
+		}
+	} else if _, ok := arguments["--remove-doc-type"]; ok {
+		type_, err := arguments.String("TYPE")
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
 }
