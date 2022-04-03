@@ -293,3 +293,10 @@ func GetIdFromType(dbConn *sqlx.DB, transaction *sqlx.Tx, type_ string) (int, er
 
 	return typeId, nil
 }
+
+// OnError executes handler(err) if err != nil.
+func OnError(err error, handler func(args ...interface{})) {
+	if err != nil {
+		handler(err)
+	}
+}
