@@ -382,9 +382,9 @@ func TestAddBookmarkNoType(t *testing.T) {
 
 // ####################
 // # RemoveBookmark() #
-// ####################
+// ####################.
 func TestRemoveBookmark(t *testing.T) {
-	db, err := GetDB(t)
+	db, err := test.GetDB(t)
 	assert.NoError(t, err)
 
 	err = libbookmarks.AddType(db, nil, "Bar")
@@ -404,18 +404,18 @@ func TestRemoveBookmark(t *testing.T) {
 }
 
 func TestRemoveBookmarkTansaction(t *testing.T) {
-	db, err := GetDB(t)
+	db, err := test.GetDB(t)
 	assert.NoError(t, err)
 	err = libbookmarks.AddType(db, nil, "Bar")
-	assert.NoError(t, err)
-
-	transaction, err := db.Beginx()
 	assert.NoError(t, err)
 
 	typeId, err := helpers.GetIdFromBookmarkType(db, nil, "Bar")
 	assert.NoError(t, err)
 
-	err = libbookmarks.AddBookmark(db, nil, "Foo", "Bar", sql.NullInt32{Int32: int32(typeId), Valid: true})
+	transaction, err := db.Beginx()
+	assert.NoError(t, err)
+
+	err = libbookmarks.AddBookmark(nil, transaction, "Foo", "Bar", sql.NullInt32{Int32: int32(typeId), Valid: true})
 	assert.NoError(t, err)
 
 	err = transaction.Commit()
@@ -429,7 +429,7 @@ func TestRemoveBookmarkTansaction(t *testing.T) {
 }
 
 func TestRemoveBookmarkNonExistent(t *testing.T) {
-	db, err := GetDB(t)
+	db, err := test.GetDB(t)
 	assert.NoError(t, err)
 
 	err = libbookmarks.RemoveBookmark(db, nil, 0)
