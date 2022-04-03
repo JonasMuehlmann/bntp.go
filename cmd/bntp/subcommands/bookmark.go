@@ -73,100 +73,66 @@ Options:
 
 func BookmarkMain() {
 	arguments, err := docopt.ParseDoc(usageBookmark)
-	if err != nil {
-		log.Fatal(err)
-	}
+	OnError(err, log.Fatal)
 
 	db, err := helpers.GetDefaultDB()
-	if err != nil {
-		log.Fatal(err)
-	}
+	OnError(err, log.Fatal)
 
 	if _, ok := arguments["--import"]; ok {
 		source, err := arguments.String("FILE")
-		if err != nil {
-			log.Fatal(err)
-		}
+		OnError(err, log.Fatal)
 
 		err = libbookmarks.ImportMinimalCSV(db, source)
-		if err != nil {
-			log.Fatal(err)
-		}
+		OnError(err, log.Fatal)
 	} else if _, ok := arguments["--export"]; ok {
 		source, err := arguments.String("FILE")
-		if err != nil {
-			log.Fatal(err)
-		}
+		OnError(err, log.Fatal)
 
 		filter := libbookmarks.BookmarkFilter{}
 		if _, ok := arguments["--filter"]; ok {
 			filterRaw, err := arguments.String("FILTER")
-			if err != nil {
-				log.Fatal(err)
-			}
+			OnError(err, log.Fatal)
 
 			err = json.Unmarshal([]byte(filterRaw), &filter)
-			if err != nil {
-				log.Fatal(err)
-			}
+			OnError(err, log.Fatal)
 		}
 
 		bookmarks, err := libbookmarks.GetBookmarks(db, filter)
-		if err != nil {
-			log.Fatal(err)
-		}
+		OnError(err, log.Fatal)
 
 		err = libbookmarks.ExportCSV(bookmarks, source)
-		if err != nil {
-			log.Fatal(err)
-		}
+		OnError(err, log.Fatal)
 	} else if _, ok := arguments["--list"]; ok {
 		filter := libbookmarks.BookmarkFilter{}
 		if _, ok := arguments["--filter"]; ok {
 			filterRaw, err := arguments.String("FILTER")
-			if err != nil {
-				log.Fatal(err)
-			}
+			OnError(err, log.Fatal)
 
 			err = json.Unmarshal([]byte(filterRaw), &filter)
-			if err != nil {
-				log.Fatal(err)
-			}
+			OnError(err, log.Fatal)
 		}
 
 		bookmarks, err := libbookmarks.GetBookmarks(db, filter)
-		if err != nil {
-			log.Fatal(err)
-		}
+		OnError(err, log.Fatal)
 
 		for bookmark := range bookmarks {
 			println(bookmark)
 		}
 	} else if _, ok := arguments["--add-type"]; ok {
 		type_, err := arguments.String("TYPE")
-		if err != nil {
-			log.Fatal(err)
-		}
+		OnError(err, log.Fatal)
 
 		err = libbookmarks.AddType(db, nil, type_)
-		if err != nil {
-			log.Fatal(err)
-		}
+		OnError(err, log.Fatal)
 	} else if _, ok := arguments["--remove-type"]; ok {
 		type_, err := arguments.String("TYPE")
-		if err != nil {
-			log.Fatal(err)
-		}
+		OnError(err, log.Fatal)
 
 		err = libbookmarks.RemoveType(db, nil, type_)
-		if err != nil {
-			log.Fatal(err)
-		}
+		OnError(err, log.Fatal)
 	} else if _, ok := arguments["--list-types"]; ok {
 		types, err := libbookmarks.ListTypes(db)
-		if err != nil {
-			log.Fatal(err)
-		}
+		OnError(err, log.Fatal)
 
 		for type_ := range types {
 			println(type_)
@@ -174,14 +140,10 @@ func BookmarkMain() {
 	} else if _, ok := arguments["--add"]; ok {
 		var data map[string]string
 		dataRaw, err := arguments.String("DATA")
-		if err != nil {
-			log.Fatal(err)
-		}
+		OnError(err, log.Fatal)
 
 		err = json.Unmarshal([]byte(dataRaw), &data)
-		if err != nil {
-			log.Fatal(err)
-		}
+		OnError(err, log.Fatal)
 
 		title, ok := data["title"]
 		if !ok {
@@ -204,184 +166,112 @@ func BookmarkMain() {
 		type_.Int32 = int32(typeInt)
 
 		err = libbookmarks.AddBookmark(db, nil, title, url, type_)
-		if err != nil {
-			log.Fatal(err)
-		}
+		OnError(err, log.Fatal)
 	} else if _, ok := arguments["--edit"]; ok {
 		var data libbookmarks.Bookmark
 		dataRaw, err := arguments.String("NEW_DATA")
-		if err != nil {
-			log.Fatal(err)
-		}
+		OnError(err, log.Fatal)
 
 		err = json.Unmarshal([]byte(dataRaw), &data)
-		if err != nil {
-			log.Fatal(err)
-		}
+		OnError(err, log.Fatal)
 
 		err = libbookmarks.EditBookmark(db, nil, data)
-		if err != nil {
-			log.Fatal(err)
-		}
+		OnError(err, log.Fatal)
 	} else if _, ok := arguments["--edit-is-read"]; ok {
 		IDRaw, err := arguments.String("BOOKMARK_ID")
-		if err != nil {
-			log.Fatal(err)
-		}
+		OnError(err, log.Fatal)
 
 		isReadRaw, err := arguments.String("IS_READ")
-		if err != nil {
-			log.Fatal(err)
-		}
+		OnError(err, log.Fatal)
 
 		ID, err := strconv.Atoi(IDRaw)
-		if err != nil {
-			log.Fatal(err)
-		}
+		OnError(err, log.Fatal)
 
 		isRead, err := strconv.ParseBool(isReadRaw)
-		if err != nil {
-			log.Fatal(err)
-		}
+		OnError(err, log.Fatal)
 
 		err = libbookmarks.EditIsRead(db, nil, ID, isRead)
-		if err != nil {
-			log.Fatal(err)
-		}
+		OnError(err, log.Fatal)
 	} else if _, ok := arguments["--edit-title"]; ok {
 		IDRaw, err := arguments.String("BOOKMARK_ID")
-		if err != nil {
-			log.Fatal(err)
-		}
+		OnError(err, log.Fatal)
 
 		title, err := arguments.String("TITLE")
-		if err != nil {
-			log.Fatal(err)
-		}
+		OnError(err, log.Fatal)
 
 		ID, err := strconv.Atoi(IDRaw)
-		if err != nil {
-			log.Fatal(err)
-		}
+		OnError(err, log.Fatal)
 
 		err = libbookmarks.EditTitle(db, nil, ID, title)
-		if err != nil {
-			log.Fatal(err)
-		}
+		OnError(err, log.Fatal)
 	} else if _, ok := arguments["--edit-url"]; ok {
 		IDRaw, err := arguments.String("BOOKMARK_ID")
-		if err != nil {
-			log.Fatal(err)
-		}
+		OnError(err, log.Fatal)
 
 		url, err := arguments.String("URL")
-		if err != nil {
-			log.Fatal(err)
-		}
+		OnError(err, log.Fatal)
 
 		ID, err := strconv.Atoi(IDRaw)
-		if err != nil {
-			log.Fatal(err)
-		}
+		OnError(err, log.Fatal)
 
 		err = libbookmarks.EditUrl(db, nil, ID, url)
-		if err != nil {
-			log.Fatal(err)
-		}
+		OnError(err, log.Fatal)
 	} else if _, ok := arguments["--edit-type"]; ok {
 		IDRaw, err := arguments.String("BOOKMARK_ID")
-		if err != nil {
-			log.Fatal(err)
-		}
+		OnError(err, log.Fatal)
 
 		type_, err := arguments.String("TYPE")
-		if err != nil {
-			log.Fatal(err)
-		}
+		OnError(err, log.Fatal)
 
 		ID, err := strconv.Atoi(IDRaw)
-		if err != nil {
-			log.Fatal(err)
-		}
+		OnError(err, log.Fatal)
 
 		err = libbookmarks.EditType(db, nil, ID, type_)
-		if err != nil {
-			log.Fatal(err)
-		}
+		OnError(err, log.Fatal)
 	} else if _, ok := arguments["--edit-is-collection"]; ok {
 		IDRaw, err := arguments.String("BOOKMARK_ID")
-		if err != nil {
-			log.Fatal(err)
-		}
+		OnError(err, log.Fatal)
 
 		isCollectionRaw, err := arguments.String("IS_COLLECTION")
-		if err != nil {
-			log.Fatal(err)
-		}
+		OnError(err, log.Fatal)
 
 		ID, err := strconv.Atoi(IDRaw)
-		if err != nil {
-			log.Fatal(err)
-		}
+		OnError(err, log.Fatal)
 
 		isCollection, err := strconv.ParseBool(isCollectionRaw)
-		if err != nil {
-			log.Fatal(err)
-		}
+		OnError(err, log.Fatal)
 
 		err = libbookmarks.EditIsCollection(db, nil, ID, isCollection)
-		if err != nil {
-			log.Fatal(err)
-		}
+		OnError(err, log.Fatal)
 	} else if _, ok := arguments["--add-tag"]; ok {
 		tag, err := arguments.String("TAG")
-		if err != nil {
-			log.Fatal(err)
-		}
+		OnError(err, log.Fatal)
 
 		IDRaw, err := arguments.String("BOOKMARK_ID")
-		if err != nil {
-			log.Fatal(err)
-		}
+		OnError(err, log.Fatal)
 
 		err = libbookmarks.AddType(db, nil, tag)
-		if err != nil {
-			log.Fatal(err)
-		}
+		OnError(err, log.Fatal)
 
 		ID, err := strconv.Atoi(IDRaw)
-		if err != nil {
-			log.Fatal(err)
-		}
+		OnError(err, log.Fatal)
 
 		err = libbookmarks.AddTag(db, nil, ID, tag)
-		if err != nil {
-			log.Fatal(err)
-		}
+		OnError(err, log.Fatal)
 	} else if _, ok := arguments["--remove-tag"]; ok {
 		tag, err := arguments.String("TAG")
-		if err != nil {
-			log.Fatal(err)
-		}
+		OnError(err, log.Fatal)
 
 		IDRaw, err := arguments.String("BOOKMARK_ID")
-		if err != nil {
-			log.Fatal(err)
-		}
+		OnError(err, log.Fatal)
 
 		err = libbookmarks.RemoveType(db, nil, tag)
-		if err != nil {
-			log.Fatal(err)
-		}
+		OnError(err, log.Fatal)
 
 		ID, err := strconv.Atoi(IDRaw)
-		if err != nil {
-			log.Fatal(err)
-		}
+		OnError(err, log.Fatal)
 
 		err = libbookmarks.RemoveTag(db, nil, ID, tag)
-		if err != nil {
-			log.Fatal(err)
-		}
+		OnError(err, log.Fatal)
 	}
 }

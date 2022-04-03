@@ -54,114 +54,66 @@ Options:
 
 func TagMain() {
 	arguments, err := docopt.ParseDoc(usageTag)
-	if err != nil {
-		log.Fatal(err)
-	}
+	OnError(err, log.Fatal)
 
 	db, err := helpers.GetDefaultDB()
-	if err != nil {
-		log.Fatal(err)
-	}
+	OnError(err, log.Fatal)
 
 	if _, ok := arguments["--import"]; ok {
 		path, err := arguments.String("PATH")
-		if err != nil {
-			log.Fatal(err)
-		}
+		OnError(err, log.Fatal)
 
 		log.Fatal(libtags.ImportYML(db, path))
 	} else if _, ok := arguments["--export"]; ok {
 		path, err := arguments.String("PATH")
-		if err != nil {
-			log.Fatal(err)
-		}
+		OnError(err, log.Fatal)
 
 		log.Fatal(libtags.ExportYML(db, path))
 	} else if _, ok := arguments["--ambiguous"]; ok {
 		tag, err := arguments.String("TAG")
-		if err != nil {
-			log.Fatal(err)
-		}
+		OnError(err, log.Fatal)
 
 		isAmbiguous, err := libtags.IsLeafAmbiguous(db, tag)
-		if err != nil {
-			log.Fatal(err)
-		}
+		OnError(err, log.Fatal)
 
 		println(strconv.FormatBool(isAmbiguous))
 	} else if _, ok := arguments["--component"]; ok {
 		tag, err := arguments.String("TAG")
-		if err != nil {
-			log.Fatal(err)
-		}
+		OnError(err, log.Fatal)
 
 		index, err := libtags.FindAmbiguousTagComponent(db, tag)
-		if err != nil {
-			return
-		}
-
-		println(strconv.FormatInt(int64(index), 10))
-	} else if _, ok := arguments["--add"]; ok {
-		tag, err := arguments.String("TAG")
-		if err != nil {
-			log.Fatal(err)
-		}
+		OnError(err, log.Fatal)
 
 		err = libtags.AddTag(db, nil, tag)
-		if err != nil {
-			log.Fatal(err)
-		}
+		OnError(err, log.Fatal)
 	} else if _, ok := arguments["--remove"]; ok {
 		tag, err := arguments.String("TAG")
-		if err != nil {
-			log.Fatal(err)
-		}
+		OnError(err, log.Fatal)
 
 		err = libtags.DeleteTag(db, nil, tag)
-		if err != nil {
-			log.Fatal(err)
-		}
+		OnError(err, log.Fatal)
 	} else if _, ok := arguments["--rename"]; ok {
 		oldName, err := arguments.String("OLD")
-		if err != nil {
-			log.Fatal(err)
-		}
+		OnError(err, log.Fatal)
 
 		newName, err := arguments.String("NEW")
-		if err != nil {
-			log.Fatal(err)
-		}
+		OnError(err, log.Fatal)
 
 		err = libtags.RenameTag(db, nil, oldName, newName)
-		if err != nil {
-			log.Fatal(err)
-		}
+		OnError(err, log.Fatal)
 	} else if _, ok := arguments["--shorten"]; ok {
 		tag, err := arguments.String("TAG")
-		if err != nil {
-			log.Fatal(err)
-		}
+		OnError(err, log.Fatal)
 
 		shortened, err := libtags.TryShortenTag(db, tag)
-		if err != nil {
-			return
-		}
-
-		println(shortened)
-	} else if _, ok := arguments["--list"]; ok {
-		tags, err := libtags.ListTags(db)
-		if err != nil {
-			log.Fatal(err)
-		}
+		OnError(err, log.Fatal)
 
 		for _, tag := range tags {
 			println(tag)
 		}
 	} else if _, ok := arguments["--list-short"]; ok {
 		tags, err := libtags.ListTags(db)
-		if err != nil {
-			log.Fatal(err)
-		}
+		OnError(err, log.Fatal)
 
 		for _, tag := range tags {
 			println(tag)

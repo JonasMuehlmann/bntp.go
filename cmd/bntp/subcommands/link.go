@@ -46,63 +46,43 @@ Options:
 
 func LinkMain() {
 	arguments, err := docopt.ParseDoc(usageLink)
-	if err != nil {
-		log.Fatal(err)
-	}
+	OnError(err, log.Fatal)
 
 	db, err := helpers.GetDefaultDB()
-	if err != nil {
-		log.Fatal(err)
-	}
+	OnError(err, log.Fatal)
 
 	if _, ok := arguments["--add"]; ok {
 		source, err := arguments.String("SRC")
-		if err != nil {
-			log.Fatal(err)
-		}
+		OnError(err, log.Fatal)
 
 		destination, err := arguments.String("DEST")
-		if err != nil {
-			log.Fatal(err)
-		}
+		OnError(err, log.Fatal)
 
 		log.Fatal(liblinks.AddLink(db, nil, source, destination))
 	} else if _, ok := arguments["--remove"]; ok {
 		source, err := arguments.String("SRC")
-		if err != nil {
-			log.Fatal(err)
-		}
+		OnError(err, log.Fatal)
 
 		destination, err := arguments.String("DEST")
-		if err != nil {
-			log.Fatal(err)
-		}
+		OnError(err, log.Fatal)
 
 		log.Fatal(liblinks.RemoveLink(db, nil, source, destination))
 	} else if _, ok := arguments["--list"]; ok {
 		source, err := arguments.String("SRC")
-		if err != nil {
-			log.Fatal(err)
-		}
+		OnError(err, log.Fatal)
 
 		links, err := liblinks.ListLinks(db, source)
-		if err != nil {
-			log.Fatal(err)
-		}
+		OnError(err, log.Fatal)
 
 		for _, link := range links {
 			println(link)
 		}
 	} else if _, ok := arguments["--list-back"]; ok {
 		destination, err := arguments.String("DEST")
-		if err != nil {
-			log.Fatal(err)
-		}
+		OnError(err, log.Fatal)
 
 		backlinks, err := liblinks.ListBacklinks(db, destination)
-		if err != nil {
-			log.Fatal(err)
-		}
+		OnError(err, log.Fatal)
 
 		for _, backlink := range backlinks {
 			println(backlink)
