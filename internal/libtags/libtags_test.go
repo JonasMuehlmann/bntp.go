@@ -1,11 +1,13 @@
-package test
+package libtags_test
 
 import (
 	"os"
 	"path/filepath"
+
 	"testing"
 
 	"github.com/JonasMuehlmann/bntp.go/internal/libtags"
+	"github.com/JonasMuehlmann/bntp.go/test"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -13,7 +15,7 @@ import (
 // # AddTag() #
 // ############
 func TestAddTag(t *testing.T) {
-	db, err := GetDB(t)
+	db, err := test.GetDB(t)
 	assert.NoError(t, err)
 
 	err = libtags.AddTag(db, nil, "Foo")
@@ -21,7 +23,7 @@ func TestAddTag(t *testing.T) {
 }
 
 func TestAddTagTransaction(t *testing.T) {
-	db, err := GetDB(t)
+	db, err := test.GetDB(t)
 	assert.NoError(t, err)
 
 	transaction, err := db.Beginx()
@@ -35,7 +37,7 @@ func TestAddTagTransaction(t *testing.T) {
 }
 
 func TestAddTagEmptyTag(t *testing.T) {
-	db, err := GetDB(t)
+	db, err := test.GetDB(t)
 	assert.NoError(t, err)
 
 	err = libtags.AddTag(db, nil, "")
@@ -46,7 +48,7 @@ func TestAddTagEmptyTag(t *testing.T) {
 // # RemoveTag() #
 // ###############
 func TestRemoveTag(t *testing.T) {
-	db, err := GetDB(t)
+	db, err := test.GetDB(t)
 	assert.NoError(t, err)
 
 	err = libtags.AddTag(db, nil, "Foo")
@@ -57,7 +59,7 @@ func TestRemoveTag(t *testing.T) {
 }
 
 func TestRemoveTagTransaction(t *testing.T) {
-	db, err := GetDB(t)
+	db, err := test.GetDB(t)
 	assert.NoError(t, err)
 
 	transaction, err := db.Beginx()
@@ -74,7 +76,7 @@ func TestRemoveTagTransaction(t *testing.T) {
 }
 
 func TestRemoveTagDoesNotExist(t *testing.T) {
-	db, err := GetDB(t)
+	db, err := test.GetDB(t)
 	assert.NoError(t, err)
 
 	err = libtags.AddTag(db, nil, "")
@@ -88,7 +90,7 @@ func TestRemoveTagDoesNotExist(t *testing.T) {
 // # RenameTag() #
 // ###############
 func TestRenameTag(t *testing.T) {
-	db, err := GetDB(t)
+	db, err := test.GetDB(t)
 	assert.NoError(t, err)
 
 	err = libtags.AddTag(db, nil, "Foo")
@@ -99,7 +101,7 @@ func TestRenameTag(t *testing.T) {
 }
 
 func TestRenameTagTransaction(t *testing.T) {
-	db, err := GetDB(t)
+	db, err := test.GetDB(t)
 	assert.NoError(t, err)
 
 	transaction, err := db.Beginx()
@@ -116,7 +118,7 @@ func TestRenameTagTransaction(t *testing.T) {
 }
 
 func TestRenameTagNoOld(t *testing.T) {
-	db, err := GetDB(t)
+	db, err := test.GetDB(t)
 	assert.NoError(t, err)
 
 	err = libtags.AddTag(db, nil, "")
@@ -127,7 +129,7 @@ func TestRenameTagNoOld(t *testing.T) {
 }
 
 func TestRenameTagNewEmpty(t *testing.T) {
-	db, err := GetDB(t)
+	db, err := test.GetDB(t)
 	assert.NoError(t, err)
 
 	err = libtags.AddTag(db, nil, "")
@@ -141,7 +143,7 @@ func TestRenameTagNewEmpty(t *testing.T) {
 // # ListTags() #
 // ##############
 func TestListTagsOneTag(t *testing.T) {
-	db, err := GetDB(t)
+	db, err := test.GetDB(t)
 	assert.NoError(t, err)
 
 	err = libtags.AddTag(db, nil, "Foo")
@@ -153,7 +155,7 @@ func TestListTagsOneTag(t *testing.T) {
 }
 
 func TestListTagsManyTags(t *testing.T) {
-	db, err := GetDB(t)
+	db, err := test.GetDB(t)
 	assert.NoError(t, err)
 
 	err = libtags.AddTag(db, nil, "Foo1")
@@ -174,7 +176,7 @@ func TestListTagsManyTags(t *testing.T) {
 }
 
 func TestListTagsEmpty(t *testing.T) {
-	db, err := GetDB(t)
+	db, err := test.GetDB(t)
 	assert.NoError(t, err)
 
 	tagsBefore, err := libtags.ListTags(db)
@@ -186,7 +188,7 @@ func TestListTagsEmpty(t *testing.T) {
 // # ListTagsShortened() #
 // #######################
 func TestListTagsShortenedOneTagNoComponents(t *testing.T) {
-	db, err := GetDB(t)
+	db, err := test.GetDB(t)
 	assert.NoError(t, err)
 
 	err = libtags.AddTag(db, nil, "Foo")
@@ -199,7 +201,7 @@ func TestListTagsShortenedOneTagNoComponents(t *testing.T) {
 }
 
 func TestListTagsShortenedOneTagManyComponents(t *testing.T) {
-	db, err := GetDB(t)
+	db, err := test.GetDB(t)
 	assert.NoError(t, err)
 
 	err = libtags.AddTag(db, nil, "X::Y::Z")
@@ -212,7 +214,7 @@ func TestListTagsShortenedOneTagManyComponents(t *testing.T) {
 }
 
 func TestListTagsShortenedManyTags(t *testing.T) {
-	db, err := GetDB(t)
+	db, err := test.GetDB(t)
 	assert.NoError(t, err)
 
 	err = libtags.AddTag(db, nil, "X::Y::Z")
@@ -228,7 +230,7 @@ func TestListTagsShortenedManyTags(t *testing.T) {
 }
 
 func TestListTagsShortenedManyTagsAmbiguousComponent(t *testing.T) {
-	db, err := GetDB(t)
+	db, err := test.GetDB(t)
 	assert.NoError(t, err)
 
 	err = libtags.AddTag(db, nil, "X::Y::C")
@@ -247,10 +249,10 @@ func TestListTagsShortenedManyTagsAmbiguousComponent(t *testing.T) {
 // # ImportYML() #
 // ###############
 func TestImportYMLNoTagsKey(t *testing.T) {
-	db, err := GetDB(t)
+	db, err := test.GetDB(t)
 	assert.NoError(t, err)
 
-	file, err := os.Create(filepath.Join(testDataTempDir, t.Name()))
+	file, err := os.Create(filepath.Join(test.TestDataTempDir, t.Name()))
 	assert.NoError(t, err)
 
 	yml := `
@@ -261,15 +263,15 @@ foo:
 	_, err = file.WriteString(yml)
 	assert.NoError(t, err)
 
-	err = libtags.ImportYML(db, filepath.Join(testDataTempDir, t.Name()))
+	err = libtags.ImportYML(db, filepath.Join(test.TestDataTempDir, t.Name()))
 	assert.Error(t, err)
 }
 
 func TestImportYMLNoTags(t *testing.T) {
-	db, err := GetDB(t)
+	db, err := test.GetDB(t)
 	assert.NoError(t, err)
 
-	file, err := os.Create(filepath.Join(testDataTempDir, t.Name()))
+	file, err := os.Create(filepath.Join(test.TestDataTempDir, t.Name()))
 	assert.NoError(t, err)
 
 	yml := `
@@ -278,15 +280,15 @@ tags:
 	_, err = file.WriteString(yml)
 	assert.NoError(t, err)
 
-	err = libtags.ImportYML(db, filepath.Join(testDataTempDir, t.Name()))
+	err = libtags.ImportYML(db, filepath.Join(test.TestDataTempDir, t.Name()))
 	assert.Error(t, err)
 }
 
 func TestImportYMLOnlyTopLevel(t *testing.T) {
-	db, err := GetDB(t)
+	db, err := test.GetDB(t)
 	assert.NoError(t, err)
 
-	file, err := os.Create(filepath.Join(testDataTempDir, t.Name()))
+	file, err := os.Create(filepath.Join(test.TestDataTempDir, t.Name()))
 	assert.NoError(t, err)
 
 	yml := `
@@ -298,15 +300,15 @@ tags:
 	_, err = file.WriteString(yml)
 	assert.NoError(t, err)
 
-	err = libtags.ImportYML(db, filepath.Join(testDataTempDir, t.Name()))
+	err = libtags.ImportYML(db, filepath.Join(test.TestDataTempDir, t.Name()))
 	assert.NoError(t, err)
 }
 
 func TestImportYMLOnePath(t *testing.T) {
-	db, err := GetDB(t)
+	db, err := test.GetDB(t)
 	assert.NoError(t, err)
 
-	file, err := os.Create(filepath.Join(testDataTempDir, t.Name()))
+	file, err := os.Create(filepath.Join(test.TestDataTempDir, t.Name()))
 	assert.NoError(t, err)
 
 	yml := `
@@ -318,14 +320,14 @@ tags:
 	_, err = file.WriteString(yml)
 	assert.NoError(t, err)
 
-	err = libtags.ImportYML(db, filepath.Join(testDataTempDir, t.Name()))
+	err = libtags.ImportYML(db, filepath.Join(test.TestDataTempDir, t.Name()))
 	assert.NoError(t, err)
 }
 func TestImportYMLTwoPaths(t *testing.T) {
-	db, err := GetDB(t)
+	db, err := test.GetDB(t)
 	assert.NoError(t, err)
 
-	file, err := os.Create(filepath.Join(testDataTempDir, t.Name()))
+	file, err := os.Create(filepath.Join(test.TestDataTempDir, t.Name()))
 	assert.NoError(t, err)
 
 	yml := `
@@ -340,7 +342,7 @@ tags:
 	_, err = file.WriteString(yml)
 	assert.NoError(t, err)
 
-	err = libtags.ImportYML(db, filepath.Join(testDataTempDir, t.Name()))
+	err = libtags.ImportYML(db, filepath.Join(test.TestDataTempDir, t.Name()))
 	assert.NoError(t, err)
 }
 
@@ -348,18 +350,18 @@ tags:
 // # ExportYML() #
 // ###############
 func TestExportYMLNoTags(t *testing.T) {
-	db, err := GetDB(t)
+	db, err := test.GetDB(t)
 	assert.NoError(t, err)
 
-	err = libtags.ExportYML(db, filepath.Join(testDataTempDir, t.Name()))
+	err = libtags.ExportYML(db, filepath.Join(test.TestDataTempDir, t.Name()))
 	assert.NoError(t, err)
 }
 
 func TestExportYMLOnlyTopLevel(t *testing.T) {
-	db, err := GetDB(t)
+	db, err := test.GetDB(t)
 	assert.NoError(t, err)
 
-	file, err := os.Create(filepath.Join(testDataTempDir, t.Name()+"In"))
+	file, err := os.Create(filepath.Join(test.TestDataTempDir, t.Name()+"In"))
 	assert.NoError(t, err)
 
 	yml := `tags:
@@ -369,15 +371,15 @@ func TestExportYMLOnlyTopLevel(t *testing.T) {
 	_, err = file.WriteString(yml)
 	assert.NoError(t, err)
 
-	err = libtags.ImportYML(db, filepath.Join(testDataTempDir, t.Name()+"In"))
+	err = libtags.ImportYML(db, filepath.Join(test.TestDataTempDir, t.Name()+"In"))
 	assert.NoError(t, err)
 }
 
 func TestExportYMLOnePath(t *testing.T) {
-	db, err := GetDB(t)
+	db, err := test.GetDB(t)
 	assert.NoError(t, err)
 
-	file, err := os.Create(filepath.Join(testDataTempDir, t.Name()+"In"))
+	file, err := os.Create(filepath.Join(test.TestDataTempDir, t.Name()+"In"))
 	assert.NoError(t, err)
 
 	yml := `tags:
@@ -387,14 +389,14 @@ func TestExportYMLOnePath(t *testing.T) {
 	_, err = file.WriteString(yml)
 	assert.NoError(t, err)
 
-	err = libtags.ImportYML(db, filepath.Join(testDataTempDir, t.Name()+"In"))
+	err = libtags.ImportYML(db, filepath.Join(test.TestDataTempDir, t.Name()+"In"))
 	assert.NoError(t, err)
 }
 func TestExportYMLTwoPaths(t *testing.T) {
-	db, err := GetDB(t)
+	db, err := test.GetDB(t)
 	assert.NoError(t, err)
 
-	file, err := os.Create(filepath.Join(testDataTempDir, t.Name()+"In"))
+	file, err := os.Create(filepath.Join(test.TestDataTempDir, t.Name()+"In"))
 	assert.NoError(t, err)
 
 	yml := `tags:
@@ -407,6 +409,6 @@ func TestExportYMLTwoPaths(t *testing.T) {
 	_, err = file.WriteString(yml)
 	assert.NoError(t, err)
 
-	err = libtags.ImportYML(db, filepath.Join(testDataTempDir, t.Name()+"In"))
+	err = libtags.ImportYML(db, filepath.Join(test.TestDataTempDir, t.Name()+"In"))
 	assert.NoError(t, err)
 }

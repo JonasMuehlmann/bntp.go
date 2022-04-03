@@ -1,3 +1,4 @@
 .idea
 .lvimrc
 __debug_bin
+coverage.out

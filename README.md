@@ -4,6 +4,7 @@
 Libraries and CLIs for my personal all-in-one productivity system including components like bookmarks, notes, todos, projects, etc. 
 
 Neovim integration available at https://github.com/JonasMuehlmann/bntp.nvim
+Suggestions and ideas are welcome.
 
 # Why?
 
@@ -26,6 +27,8 @@ Tools and systems, which have or, after research and considerations, might influ
 - Integrate with and built upon my **neovim/terminal based workflows and tools** (no bloated and unergonomic graphical or web based interfaces)
 - **Scriptable** (e.g. periodic bookmark imports)
 - **Modular** (Interfaces built **on top of** CLIs built **on top of different** libraries)
+- **Hackable** by through a GRPC based plugin framework (Decide how you want to store data; Local FS? Cloud Storage? Import from new file format? Put something in a Redis cache?)
+- **Customizable** through the Plugin framework and extensive customization and hooking into the core code (e.g. trigger upload after change or trigger versioning, if you don't store your data in a git repo)
 - **Portable** through import/export to/from and use of common file formats (`YML`,`CSV`,`Markdown`) using a local `SQLite` database only where it makes sense
 - **Discoverable** through context given by a hierarchical tag structure fuzzy searching and using filters
 - **Extensive association** through links/backlinks between documents and declaration of sources and *related pages*

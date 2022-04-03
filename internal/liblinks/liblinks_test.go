@@ -1,10 +1,11 @@
-package test
+package liblinks_test
 
 import (
 	"testing"
 
 	"github.com/JonasMuehlmann/bntp.go/internal/libdocuments"
 	"github.com/JonasMuehlmann/bntp.go/internal/liblinks"
+	"github.com/JonasMuehlmann/bntp.go/test"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -12,7 +13,7 @@ import (
 // # AddLink() #
 // #############
 func TestAddLink(t *testing.T) {
-	db, err := GetDB(t)
+	db, err := test.GetDB(t)
 	assert.NoError(t, err)
 
 	err = libdocuments.AddType(db, nil, "Bar")
@@ -29,7 +30,7 @@ func TestAddLink(t *testing.T) {
 }
 
 func TestAddLinkSourceDoesNotExist(t *testing.T) {
-	db, err := GetDB(t)
+	db, err := test.GetDB(t)
 	assert.NoError(t, err)
 
 	err = libdocuments.AddType(db, nil, "Bar")
@@ -43,12 +44,12 @@ func TestAddLinkSourceDoesNotExist(t *testing.T) {
 }
 
 func TestAddLinkDestionationDoesNotExist(t *testing.T) {
-	db, err := GetDB(t)
+	db, err := test.GetDB(t)
 	assert.NoError(t, err)
 
 	err = libdocuments.AddType(db, nil, "Bar")
 	assert.NoError(t, err)
-	
+
 	err = libdocuments.AddDocument(db, nil, "Foo", "Bar")
 	assert.NoError(t, err)
 
@@ -57,7 +58,7 @@ func TestAddLinkDestionationDoesNotExist(t *testing.T) {
 }
 
 func TestAddLinkNoneExist(t *testing.T) {
-	db, err := GetDB(t)
+	db, err := test.GetDB(t)
 	assert.NoError(t, err)
 
 	err = liblinks.AddLink(db, nil, "Foo", "Foo2")
@@ -65,7 +66,7 @@ func TestAddLinkNoneExist(t *testing.T) {
 }
 
 func TestAddLinkSelfReference(t *testing.T) {
-	db, err := GetDB(t)
+	db, err := test.GetDB(t)
 	assert.NoError(t, err)
 
 	err = libdocuments.AddType(db, nil, "Bar")
@@ -82,7 +83,7 @@ func TestAddLinkSelfReference(t *testing.T) {
 // # RemoveLink() #
 // ################
 func TestRemoveLink(t *testing.T) {
-	db, err := GetDB(t)
+	db, err := test.GetDB(t)
 	assert.NoError(t, err)
 
 	err = libdocuments.AddType(db, nil, "Bar")
@@ -102,7 +103,7 @@ func TestRemoveLink(t *testing.T) {
 }
 
 func TestRemoveLinkSourceDoesNotExist(t *testing.T) {
-	db, err := GetDB(t)
+	db, err := test.GetDB(t)
 	assert.NoError(t, err)
 
 	err = libdocuments.AddType(db, nil, "Bar2")
@@ -119,7 +120,7 @@ func TestRemoveLinkSourceDoesNotExist(t *testing.T) {
 }
 
 func TestRemoveLinkDestionationDoesNotExist(t *testing.T) {
-	db, err := GetDB(t)
+	db, err := test.GetDB(t)
 	assert.NoError(t, err)
 
 	err = libdocuments.AddType(db, nil, "Bar")
@@ -136,7 +137,7 @@ func TestRemoveLinkDestionationDoesNotExist(t *testing.T) {
 }
 
 func TestRemoveLinkNoneExist(t *testing.T) {
-	db, err := GetDB(t)
+	db, err := test.GetDB(t)
 	assert.NoError(t, err)
 
 	err = liblinks.RemoveLink(db, nil, "Foo", "Foo2")
@@ -147,7 +148,7 @@ func TestRemoveLinkNoneExist(t *testing.T) {
 // # ListLinks() #
 // ###############
 func TestListLinksNoneExist(t *testing.T) {
-	db, err := GetDB(t)
+	db, err := test.GetDB(t)
 	assert.NoError(t, err)
 
 	_, err = liblinks.ListLinks(db, "Foo")
@@ -155,7 +156,7 @@ func TestListLinksNoneExist(t *testing.T) {
 }
 
 func TestListLinksOne(t *testing.T) {
-	db, err := GetDB(t)
+	db, err := test.GetDB(t)
 	assert.NoError(t, err)
 
 	err = libdocuments.AddType(db, nil, "Bar")
@@ -177,12 +178,12 @@ func TestListLinksOne(t *testing.T) {
 }
 
 func TestListLinksMany(t *testing.T) {
-	db, err := GetDB(t)
+	db, err := test.GetDB(t)
 	assert.NoError(t, err)
 
 	err = libdocuments.AddType(db, nil, "Bar")
 	assert.NoError(t, err)
-	
+
 	err = libdocuments.AddDocument(db, nil, "Foo", "Bar")
 	assert.NoError(t, err)
 
@@ -214,7 +215,7 @@ func TestListLinksMany(t *testing.T) {
 // # ListLinks() #
 // ###############
 func TestListBacklinksNoneExist(t *testing.T) {
-	db, err := GetDB(t)
+	db, err := test.GetDB(t)
 	assert.NoError(t, err)
 
 	_, err = liblinks.ListBacklinks(db, "Foo")
@@ -222,12 +223,12 @@ func TestListBacklinksNoneExist(t *testing.T) {
 }
 
 func TestListBacklinksOne(t *testing.T) {
-	db, err := GetDB(t)
+	db, err := test.GetDB(t)
 	assert.NoError(t, err)
 
 	err = libdocuments.AddType(db, nil, "Bar")
 	assert.NoError(t, err)
-	
+
 	err = libdocuments.AddDocument(db, nil, "Foo", "Bar")
 	assert.NoError(t, err)
 
@@ -244,12 +245,12 @@ func TestListBacklinksOne(t *testing.T) {
 }
 
 func TestListBacklinksMany(t *testing.T) {
-	db, err := GetDB(t)
+	db, err := test.GetDB(t)
 	assert.NoError(t, err)
 
 	err = libdocuments.AddType(db, nil, "Bar")
 	assert.NoError(t, err)
-	
+
 	err = libdocuments.AddDocument(db, nil, "Foo", "Bar")
 	assert.NoError(t, err)
 
