@@ -59,16 +59,19 @@ func TagMain() {
 	db, err := helpers.GetDefaultDB()
 	OnError(err, log.Fatal)
 
+	//******************************************************************//
 	if _, ok := arguments["--import"]; ok {
 		path, err := arguments.String("PATH")
 		OnError(err, log.Fatal)
 
 		log.Fatal(libtags.ImportYML(db, path))
+		//******************************************************************//
 	} else if _, ok := arguments["--export"]; ok {
 		path, err := arguments.String("PATH")
 		OnError(err, log.Fatal)
 
 		log.Fatal(libtags.ExportYML(db, path))
+		//******************************************************************//
 	} else if _, ok := arguments["--ambiguous"]; ok {
 		tag, err := arguments.String("TAG")
 		OnError(err, log.Fatal)
@@ -77,6 +80,7 @@ func TagMain() {
 		OnError(err, log.Fatal)
 
 		println(strconv.FormatBool(isAmbiguous))
+		//******************************************************************//
 	} else if _, ok := arguments["--component"]; ok {
 		tag, err := arguments.String("TAG")
 		OnError(err, log.Fatal)
@@ -84,14 +88,15 @@ func TagMain() {
 		index, err := libtags.FindAmbiguousTagComponent(db, tag)
 		OnError(err, log.Fatal)
 
-		err = libtags.AddTag(db, nil, tag)
-		OnError(err, log.Fatal)
+		println(index)
+		//******************************************************************//
 	} else if _, ok := arguments["--remove"]; ok {
 		tag, err := arguments.String("TAG")
 		OnError(err, log.Fatal)
 
 		err = libtags.DeleteTag(db, nil, tag)
 		OnError(err, log.Fatal)
+		//******************************************************************//
 	} else if _, ok := arguments["--rename"]; ok {
 		oldName, err := arguments.String("OLD")
 		OnError(err, log.Fatal)
@@ -101,6 +106,7 @@ func TagMain() {
 
 		err = libtags.RenameTag(db, nil, oldName, newName)
 		OnError(err, log.Fatal)
+		//******************************************************************//
 	} else if _, ok := arguments["--shorten"]; ok {
 		tag, err := arguments.String("TAG")
 		OnError(err, log.Fatal)
@@ -108,9 +114,8 @@ func TagMain() {
 		shortened, err := libtags.TryShortenTag(db, tag)
 		OnError(err, log.Fatal)
 
-		for _, tag := range tags {
-			println(tag)
-		}
+		println(shortened)
+		//******************************************************************//
 	} else if _, ok := arguments["--list-short"]; ok {
 		tags, err := libtags.ListTags(db)
 		OnError(err, log.Fatal)

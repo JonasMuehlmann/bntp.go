@@ -78,12 +78,14 @@ func BookmarkMain() {
 	db, err := helpers.GetDefaultDB()
 	OnError(err, log.Fatal)
 
+	//******************************************************************//
 	if _, ok := arguments["--import"]; ok {
 		source, err := arguments.String("FILE")
 		OnError(err, log.Fatal)
 
 		err = libbookmarks.ImportMinimalCSV(db, source)
 		OnError(err, log.Fatal)
+		//******************************************************************//
 	} else if _, ok := arguments["--export"]; ok {
 		source, err := arguments.String("FILE")
 		OnError(err, log.Fatal)
@@ -102,6 +104,7 @@ func BookmarkMain() {
 
 		err = libbookmarks.ExportCSV(bookmarks, source)
 		OnError(err, log.Fatal)
+		//******************************************************************//
 	} else if _, ok := arguments["--list"]; ok {
 		filter := libbookmarks.BookmarkFilter{}
 		if _, ok := arguments["--filter"]; ok {
@@ -118,18 +121,21 @@ func BookmarkMain() {
 		for bookmark := range bookmarks {
 			println(bookmark)
 		}
+		//******************************************************************//
 	} else if _, ok := arguments["--add-type"]; ok {
 		type_, err := arguments.String("TYPE")
 		OnError(err, log.Fatal)
 
 		err = libbookmarks.AddType(db, nil, type_)
 		OnError(err, log.Fatal)
+		//******************************************************************//
 	} else if _, ok := arguments["--remove-type"]; ok {
 		type_, err := arguments.String("TYPE")
 		OnError(err, log.Fatal)
 
 		err = libbookmarks.RemoveType(db, nil, type_)
 		OnError(err, log.Fatal)
+		//******************************************************************//
 	} else if _, ok := arguments["--list-types"]; ok {
 		types, err := libbookmarks.ListTypes(db)
 		OnError(err, log.Fatal)
@@ -137,6 +143,7 @@ func BookmarkMain() {
 		for type_ := range types {
 			println(type_)
 		}
+		//******************************************************************//
 	} else if _, ok := arguments["--add"]; ok {
 		var data map[string]string
 		dataRaw, err := arguments.String("DATA")
@@ -167,6 +174,7 @@ func BookmarkMain() {
 
 		err = libbookmarks.AddBookmark(db, nil, title, url, type_)
 		OnError(err, log.Fatal)
+		//******************************************************************//
 	} else if _, ok := arguments["--edit"]; ok {
 		var data libbookmarks.Bookmark
 		dataRaw, err := arguments.String("NEW_DATA")
@@ -177,6 +185,7 @@ func BookmarkMain() {
 
 		err = libbookmarks.EditBookmark(db, nil, data)
 		OnError(err, log.Fatal)
+		//******************************************************************//
 	} else if _, ok := arguments["--edit-is-read"]; ok {
 		IDRaw, err := arguments.String("BOOKMARK_ID")
 		OnError(err, log.Fatal)
@@ -192,6 +201,7 @@ func BookmarkMain() {
 
 		err = libbookmarks.EditIsRead(db, nil, ID, isRead)
 		OnError(err, log.Fatal)
+		//******************************************************************//
 	} else if _, ok := arguments["--edit-title"]; ok {
 		IDRaw, err := arguments.String("BOOKMARK_ID")
 		OnError(err, log.Fatal)
@@ -204,6 +214,7 @@ func BookmarkMain() {
 
 		err = libbookmarks.EditTitle(db, nil, ID, title)
 		OnError(err, log.Fatal)
+		//******************************************************************//
 	} else if _, ok := arguments["--edit-url"]; ok {
 		IDRaw, err := arguments.String("BOOKMARK_ID")
 		OnError(err, log.Fatal)
@@ -216,6 +227,7 @@ func BookmarkMain() {
 
 		err = libbookmarks.EditUrl(db, nil, ID, url)
 		OnError(err, log.Fatal)
+		//******************************************************************//
 	} else if _, ok := arguments["--edit-type"]; ok {
 		IDRaw, err := arguments.String("BOOKMARK_ID")
 		OnError(err, log.Fatal)
@@ -228,6 +240,7 @@ func BookmarkMain() {
 
 		err = libbookmarks.EditType(db, nil, ID, type_)
 		OnError(err, log.Fatal)
+		//******************************************************************//
 	} else if _, ok := arguments["--edit-is-collection"]; ok {
 		IDRaw, err := arguments.String("BOOKMARK_ID")
 		OnError(err, log.Fatal)
@@ -243,6 +256,7 @@ func BookmarkMain() {
 
 		err = libbookmarks.EditIsCollection(db, nil, ID, isCollection)
 		OnError(err, log.Fatal)
+		//******************************************************************//
 	} else if _, ok := arguments["--add-tag"]; ok {
 		tag, err := arguments.String("TAG")
 		OnError(err, log.Fatal)
@@ -258,6 +272,7 @@ func BookmarkMain() {
 
 		err = libbookmarks.AddTag(db, nil, ID, tag)
 		OnError(err, log.Fatal)
+		//******************************************************************//
 	} else if _, ok := arguments["--remove-tag"]; ok {
 		tag, err := arguments.String("TAG")
 		OnError(err, log.Fatal)
