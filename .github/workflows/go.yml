@@ -28,7 +28,7 @@ jobs:
       run: go build -v ./...
 
     - name: Test
-      run: go test -coverprofile coverage.out -v ./test
+      run: go test -coverprofile coverage.out -v ./...
 
     - name: Report coverage
       uses: codecov/codecov-action@v2
