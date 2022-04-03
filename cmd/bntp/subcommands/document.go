@@ -23,6 +23,7 @@ package subcommands
 import (
 	"fmt"
 	"log"
+	"strings"
 
 	"github.com/JonasMuehlmann/bntp.go/internal/helpers"
 	"github.com/JonasMuehlmann/bntp.go/internal/libdocuments"
@@ -36,11 +37,11 @@ Usage:
     bntp document (--add-tag | --remove-tag) DOCUMENT_PATH TAG
     bntp document --rename-tag DOCUMENT_PATH OLD_TAG NEW_TAG
     bntp document (--get-tags | --find-tags-line | --find-links-line | --find-backlinks-line) DOCUMENT_PATH
-    bntp document --has-tag DOCUMENT_PATH TAG
-    bntp document --find-documents-with-tags TAGS
+    bntp document --has-tags DOCUMENT_PATH TAG...
+    bntp document --find-documents-with-tags TAG...
     bntp document (--add-link | --remove-link) DOCUMENT_PATH LINK
     bntp document (--add-backlink | --remove-backlink) DOCUMENT_PATH BACKLINK
-    bntp document (--add-doc| --remove-doc) DOCUMENT_PATH
+    bntp document (--add-doc| --remove-doc) DOCUMENT_PATH TAG
     bntp document --rename-doc OLD_PATH NEW_PATH
     bntp document --change-doc-type DOCUMENT_PATH NEW_TYPE
     bntp document (--add-doc-type | --remove-doc-type) TYPE
@@ -171,24 +172,54 @@ func DocumentMain() {
 			log.Fatal(err)
 		}
 
-		tag, err := arguments.String("TAG")
+		tagsRaw, err := arguments.String("TAGS")
 		if err != nil {
 			log.Fatal(err)
 		}
+
+		hasTag, err := libdocuments.HasTags(documentPath, strings.Split(tagsRaw, ","))
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		println(hasTag)
 	} else if _, ok := arguments["--find-docs-with-tags"]; ok {
 		tagsRaw, err := arguments.String("TAGS")
 		if err != nil {
 			log.Fatal(err)
+		}
+
+		documents, err := libdocuments.FindDocumentsWithTags(db, strings.Split(tagsRaw, ","))
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		for document := range documents {
+			println(document)
 		}
 	} else if _, ok := arguments["--find-links-lines"]; ok {
 		documentPath, err := arguments.String("DOCUMENT_PATH")
 		if err != nil {
 			log.Fatal(err)
 		}
+
+		start, end, links, err := libdocuments.FindLinksLines(documentPath)
+
+		fmt.Printf("%v %v\n", start, end)
+		for link := range links {
+			println(link)
+		}
 	} else if _, ok := arguments["--find-backlinks-lines"]; ok {
 		documentPath, err := arguments.String("DOCUMENT_PATH")
 		if err != nil {
 			log.Fatal(err)
+		}
+
+		start, end, backlinks, err := libdocuments.FindBacklinksLines(documentPath)
+
+		fmt.Printf("%v %v\n", start, end)
+		for link := range backlinks {
+			println(link)
 		}
 	} else if _, ok := arguments["--add-link"]; ok {
 		documentPath, err := arguments.String("DOCUMENT_PATH")
@@ -197,6 +228,11 @@ func DocumentMain() {
 		}
 
 		link, err := arguments.String("LINK")
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		err = libdocuments.AddLink(documentPath, link)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -210,6 +246,11 @@ func DocumentMain() {
 		if err != nil {
 			log.Fatal(err)
 		}
+
+		err = libdocuments.RemoveLink(documentPath, link)
+		if err != nil {
+			log.Fatal(err)
+		}
 	} else if _, ok := arguments["--add-backlink"]; ok {
 		documentPath, err := arguments.String("DOCUMENT_PATH")
 		if err != nil {
@@ -217,6 +258,11 @@ func DocumentMain() {
 		}
 
 		backlink, err := arguments.String("BACKLINK")
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		err = libdocuments.AddBacklink(documentPath, backlink)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -230,13 +276,33 @@ func DocumentMain() {
 		if err != nil {
 			log.Fatal(err)
 		}
+
+		err = libdocuments.RemoveBacklink(documentPath, backlink)
+		if err != nil {
+			log.Fatal(err)
+		}
 	} else if _, ok := arguments["--add-doc"]; ok {
 		documentPath, err := arguments.String("DOCUMENT_PATH")
 		if err != nil {
 			log.Fatal(err)
 		}
+
+		type_, err := arguments.String("TYPE")
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		err = libdocuments.AddDocument(db, nil, documentPath, type_)
+		if err != nil {
+			log.Fatal(err)
+		}
 	} else if _, ok := arguments["--remove-doc"]; ok {
 		documentPath, err := arguments.String("DOCUMENT_PATH")
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		err = libdocuments.RemoveDocument(db, nil, documentPath)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -250,12 +316,12 @@ func DocumentMain() {
 		if err != nil {
 			log.Fatal(err)
 		}
-	} else if _, ok := arguments["--change-doc-type"]; ok {
-		documentPath, err := arguments.String("DOCUMENT_PATH")
+
+		err = libdocuments.RenameDocument(db, nil, oldPath, newPath)
 		if err != nil {
 			log.Fatal(err)
 		}
-	} else if _, ok := arguments["--add-doc-type"]; ok {
+	} else if _, ok := arguments["--change-doc-type"]; ok {
 		documentPath, err := arguments.String("DOCUMENT_PATH")
 		if err != nil {
 			log.Fatal(err)
@@ -265,8 +331,28 @@ func DocumentMain() {
 		if err != nil {
 			log.Fatal(err)
 		}
+
+		err = libdocuments.ChangeDocumentType(db, nil, documentPath, type_)
+		if err != nil {
+			log.Fatal(err)
+		}
+	} else if _, ok := arguments["--add-doc-type"]; ok {
+		type_, err := arguments.String("TYPE")
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		err = libdocuments.AddType(db, nil, type_)
+		if err != nil {
+			log.Fatal(err)
+		}
 	} else if _, ok := arguments["--remove-doc-type"]; ok {
 		type_, err := arguments.String("TYPE")
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		err = libdocuments.RemoveType(db, nil, type_)
 		if err != nil {
 			log.Fatal(err)
 		}
