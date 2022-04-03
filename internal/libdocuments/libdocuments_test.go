@@ -3,7 +3,6 @@ package libdocuments_test
 import (
 	"os"
 	"path/filepath"
-
 	"testing"
 
 	"github.com/JonasMuehlmann/bntp.go/internal/libdocuments"
@@ -14,7 +13,7 @@ import (
 
 // ##################
 // # AddTagToFile() #
-// ##################
+// ##################.
 func TestAddTagToFileEmpty(t *testing.T) {
 	filePath := filepath.Join(test.TestDataTempDir, t.Name())
 
@@ -76,7 +75,7 @@ func TestAddTagToFileTwice(t *testing.T) {
 
 // #######################
 // # RemoveTagFromFile() #
-// #######################
+// #######################.
 func TestRemoveTagFromFileEmpty(t *testing.T) {
 	filePath := filepath.Join(test.TestDataTempDir, t.Name())
 
@@ -147,7 +146,7 @@ func TestRemoveTagFromFileTwice(t *testing.T) {
 
 // #####################
 // # RenameTagInFile() #
-// #####################
+// #####################.
 func TestRenameTagInFileEmpty(t *testing.T) {
 	filePath := filepath.Join(test.TestDataTempDir, t.Name())
 
@@ -232,7 +231,7 @@ func TestRenameTagInFileTwice(t *testing.T) {
 
 // #############
 // # GetTags() #
-// #############
+// #############.
 func TestGetTagsEmpty(t *testing.T) {
 	filePath := filepath.Join(test.TestDataTempDir, t.Name())
 
@@ -278,7 +277,6 @@ func TestGetTagsOneTag(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Len(t, tags, 1)
 	assert.Equal(t, "Foo", tags[0])
-
 }
 
 func TestGetTagsManyTags(t *testing.T) {
@@ -304,12 +302,11 @@ func TestGetTagsManyTags(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Len(t, tags, 3)
 	assert.Equal(t, []string{"Foo", "Bar", "Baz"}, tags)
-
 }
 
 // ##################
 // # FindTagsLine() #
-// ##################
+// ##################.
 func TestFindTagsLineEmpty(t *testing.T) {
 	filePath := filepath.Join(test.TestDataTempDir, t.Name())
 
@@ -378,7 +375,7 @@ func TestFindTagsLineMiddle(t *testing.T) {
 
 // #############
 // # HasTags() #
-// #############
+// #############.
 func TestHasTagsEmpty(t *testing.T) {
 	filePath := filepath.Join(test.TestDataTempDir, t.Name())
 
@@ -530,6 +527,7 @@ Foo,Bar
 	assert.NoError(t, err)
 	assert.True(t, hasTag)
 }
+
 func TestHasTagsMultipleInInputReverseOrder(t *testing.T) {
 	filePath := filepath.Join(test.TestDataTempDir, t.Name())
 
@@ -550,7 +548,7 @@ Bar,Foo
 
 // ###########################
 // # FindDocumentsWithTags() #
-// ###########################
+// ###########################.
 func TestFindDocumentsWithTagsNoInput(t *testing.T) {
 	db, err := test.GetDB(t)
 	assert.NoError(t, err)
@@ -611,7 +609,7 @@ func TestFindDocumentsWithTags(t *testing.T) {
 
 // ####################
 // # FindLinksLines() #
-// ####################
+// ####################.
 func TestFindLinkLinesEmpty(t *testing.T) {
 	filePath := filepath.Join(test.TestDataTempDir, t.Name())
 
@@ -700,7 +698,7 @@ func TestFindLinkLinesManyLinks(t *testing.T) {
 
 // ########################
 // # FindBacklinksLines() #
-// ########################
+// ########################.
 func TestFindBacklinksLinesEmpty(t *testing.T) {
 	filePath := filepath.Join(test.TestDataTempDir, t.Name())
 
@@ -789,7 +787,7 @@ func TestFindBacklinksLinesManyBacklinks(t *testing.T) {
 
 // #############
 // # AddLink() #
-// #############
+// #############.
 func TestAddLinkToFileEmpty(t *testing.T) {
 	filePath := filepath.Join(test.TestDataTempDir, t.Name())
 
@@ -835,7 +833,7 @@ func TestAddLinkToFileOneLink(t *testing.T) {
 
 // #################
 // # AddBackLink() #
-// #################
+// #################.
 func TestAddBacklinkToFileEmpty(t *testing.T) {
 	filePath := filepath.Join(test.TestDataTempDir, t.Name())
 
@@ -881,7 +879,7 @@ func TestAddBacklinkToFileOneBacklink(t *testing.T) {
 
 // ################
 // # RemoveLink() #
-// ################
+// ################.
 func RemoveLinkFromFileEmpty(t *testing.T) {
 	filePath := filepath.Join(test.TestDataTempDir, t.Name())
 
@@ -942,7 +940,7 @@ func RemoveLinkFromFile(t *testing.T) {
 
 // ####################
 // # RemoveBacklink() #
-// ####################
+// ####################.
 func RemoveBacklinkFromFileEmpty(t *testing.T) {
 	filePath := filepath.Join(test.TestDataTempDir, t.Name())
 
@@ -1003,7 +1001,7 @@ func RemoveBacklinkFromFile(t *testing.T) {
 
 // #################
 // # AddDocument() #
-// #################
+// #################.
 func TestAddDocumentTypeDoesNotExist(t *testing.T) {
 	db, err := test.GetDB(t)
 	assert.NoError(t, err)
@@ -1050,7 +1048,7 @@ func TestAddDocumentEmptyTag(t *testing.T) {
 
 // ####################
 // # RemoveDocument() #
-// ####################
+// ####################.
 func TestRemoveDocumentDocumentDoesNotExist(t *testing.T) {
 	db, err := test.GetDB(t)
 	assert.NoError(t, err)
@@ -1075,7 +1073,7 @@ func TestRemoveDocument(t *testing.T) {
 
 // ####################
 // # RenameDocument() #
-// ####################
+// ####################.
 func TestRenameDocumentDocumentDoesNotExist(t *testing.T) {
 	db, err := test.GetDB(t)
 	assert.NoError(t, err)
@@ -1117,7 +1115,7 @@ func TestRenameDoucmentNewNameExists(t *testing.T) {
 
 // ########################
 // # ChangeDocumentType() #
-// ########################
+// ########################.
 func TestChangeDocumentTypeDocumentDoesNotExist(t *testing.T) {
 	db, err := test.GetDB(t)
 	assert.NoError(t, err)

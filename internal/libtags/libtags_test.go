@@ -252,7 +252,7 @@ func TestImportYMLNoTagsKey(t *testing.T) {
 	db, err := test.GetDB(t)
 	assert.NoError(t, err)
 
-	file, err := os.Create(filepath.Join(test.TestDataTempDir, t.Name()))
+	file, err := test.CreateTestTempFile(t.Name())
 	assert.NoError(t, err)
 
 	yml := `
@@ -271,7 +271,7 @@ func TestImportYMLNoTags(t *testing.T) {
 	db, err := test.GetDB(t)
 	assert.NoError(t, err)
 
-	file, err := os.Create(filepath.Join(test.TestDataTempDir, t.Name()))
+	file, err := test.CreateTestTempFile(t.Name())
 	assert.NoError(t, err)
 
 	yml := `
@@ -288,7 +288,7 @@ func TestImportYMLOnlyTopLevel(t *testing.T) {
 	db, err := test.GetDB(t)
 	assert.NoError(t, err)
 
-	file, err := os.Create(filepath.Join(test.TestDataTempDir, t.Name()))
+	file, err := test.CreateTestTempFile(t.Name())
 	assert.NoError(t, err)
 
 	yml := `
@@ -308,7 +308,7 @@ func TestImportYMLOnePath(t *testing.T) {
 	db, err := test.GetDB(t)
 	assert.NoError(t, err)
 
-	file, err := os.Create(filepath.Join(test.TestDataTempDir, t.Name()))
+	file, err := test.CreateTestTempFile(t.Name())
 	assert.NoError(t, err)
 
 	yml := `
@@ -327,7 +327,7 @@ func TestImportYMLTwoPaths(t *testing.T) {
 	db, err := test.GetDB(t)
 	assert.NoError(t, err)
 
-	file, err := os.Create(filepath.Join(test.TestDataTempDir, t.Name()))
+	file, err := test.CreateTestTempFile(t.Name())
 	assert.NoError(t, err)
 
 	yml := `

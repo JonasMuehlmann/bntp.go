@@ -2,7 +2,6 @@ package libbookmarks_test
 
 import (
 	"database/sql"
-	"os"
 	"path/filepath"
 	"testing"
 
@@ -20,7 +19,7 @@ func TestImportMinimalCSVEmpty(t *testing.T) {
 	db, err := test.GetDB(t)
 	assert.NoError(t, err)
 
-	file, err := os.Create(filepath.Join(test.TestDataTempDir, t.Name()))
+	file, err := test.CreateTestTempFile(t.Name())
 	assert.NoError(t, err)
 
 	csv := ""
@@ -35,7 +34,7 @@ func TestImportMinimalCSVNoHeaderButData(t *testing.T) {
 	db, err := test.GetDB(t)
 	assert.NoError(t, err)
 
-	file, err := os.Create(filepath.Join(test.TestDataTempDir, t.Name()))
+	file, err := test.CreateTestTempFile(t.Name())
 	assert.NoError(t, err)
 
 	csv := "Foo;Bar"
@@ -50,7 +49,7 @@ func TestImportMinimalCSVHeaderNoTitle(t *testing.T) {
 	db, err := test.GetDB(t)
 	assert.NoError(t, err)
 
-	file, err := os.Create(filepath.Join(test.TestDataTempDir, t.Name()))
+	file, err := test.CreateTestTempFile(t.Name())
 	assert.NoError(t, err)
 
 	csv := "dss;Title"
@@ -65,7 +64,7 @@ func TestImportMinimalCSVHeaderNoUrl(t *testing.T) {
 	db, err := test.GetDB(t)
 	assert.NoError(t, err)
 
-	file, err := os.Create(filepath.Join(test.TestDataTempDir, t.Name()))
+	file, err := test.CreateTestTempFile(t.Name())
 	assert.NoError(t, err)
 
 	csv := "dss;Url"
@@ -80,7 +79,7 @@ func TestImportMinimalCSVOnlyHeader(t *testing.T) {
 	db, err := test.GetDB(t)
 	assert.NoError(t, err)
 
-	file, err := os.Create(filepath.Join(test.TestDataTempDir, t.Name()))
+	file, err := test.CreateTestTempFile(t.Name())
 	assert.NoError(t, err)
 
 	csv := "Url;Title"
@@ -95,7 +94,7 @@ func TestImportMinimalCSVOneEntry(t *testing.T) {
 	db, err := test.GetDB(t)
 	assert.NoError(t, err)
 
-	file, err := os.Create(filepath.Join(test.TestDataTempDir, t.Name()))
+	file, err := test.CreateTestTempFile(t.Name())
 	assert.NoError(t, err)
 
 	csv := `Url;Title
@@ -111,7 +110,7 @@ func TestImportMinimalCSVManyEntries(t *testing.T) {
 	db, err := test.GetDB(t)
 	assert.NoError(t, err)
 
-	file, err := os.Create(filepath.Join(test.TestDataTempDir, t.Name()))
+	file, err := test.CreateTestTempFile(t.Name())
 	assert.NoError(t, err)
 
 	csv := `Url;Title
@@ -129,7 +128,7 @@ func TestImportMinimalCSVEntryWithIncompleteUrl(t *testing.T) {
 	db, err := test.GetDB(t)
 	assert.NoError(t, err)
 
-	file, err := os.Create(filepath.Join(test.TestDataTempDir, t.Name()))
+	file, err := test.CreateTestTempFile(t.Name())
 	assert.NoError(t, err)
 
 	csv := `Url;Title
@@ -147,7 +146,7 @@ func TestImportMinimalCSVEntryWithIncompleteTitle(t *testing.T) {
 	db, err := test.GetDB(t)
 	assert.NoError(t, err)
 
-	file, err := os.Create(filepath.Join(test.TestDataTempDir, t.Name()))
+	file, err := test.CreateTestTempFile(t.Name())
 	assert.NoError(t, err)
 
 	csv := `Url;Title

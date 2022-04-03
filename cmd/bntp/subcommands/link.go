@@ -51,7 +51,7 @@ func LinkMain() {
 	db, err := helpers.GetDefaultDB()
 	helpers.OnError(err, log.Fatal)
 
-	//******************************************************************//
+	// ******************************************************************//
 	if _, ok := arguments["--add"]; ok {
 		source, err := arguments.String("SRC")
 		helpers.OnError(err, log.Fatal)
@@ -60,7 +60,7 @@ func LinkMain() {
 		helpers.OnError(err, log.Fatal)
 
 		log.Fatal(liblinks.AddLink(db, nil, source, destination))
-		//******************************************************************//
+		// ******************************************************************//
 	} else if _, ok := arguments["--remove"]; ok {
 		source, err := arguments.String("SRC")
 		helpers.OnError(err, log.Fatal)
@@ -69,7 +69,7 @@ func LinkMain() {
 		helpers.OnError(err, log.Fatal)
 
 		log.Fatal(liblinks.RemoveLink(db, nil, source, destination))
-		//******************************************************************//
+		// ******************************************************************//
 	} else if _, ok := arguments["--list"]; ok {
 		source, err := arguments.String("SRC")
 		helpers.OnError(err, log.Fatal)
@@ -80,7 +80,7 @@ func LinkMain() {
 		for _, link := range links {
 			println(link)
 		}
-		//******************************************************************//
+		// ******************************************************************//
 	} else if _, ok := arguments["--list-back"]; ok {
 		destination, err := arguments.String("DEST")
 		helpers.OnError(err, log.Fatal)
