@@ -20,7 +20,11 @@
 
 package helpers
 
-import "github.com/jmoiron/sqlx"
+import (
+	"log"
+
+	"github.com/jmoiron/sqlx"
+)
 
 func GetIdFromDocumentType(dbConn *sqlx.DB, transaction *sqlx.Tx, type_ string) (int, error) {
 	stmt := `
@@ -299,4 +303,15 @@ func OnError(err error, handler func(args ...interface{})) {
 	if err != nil {
 		handler(err)
 	}
+}
+
+// MakeFatalLogger is a replacement for log.Fatal and allows for easier testing through dependency injection.
+func MakeFatalLogger(exiter func(int)) func(...interface{}) {
+	return func(args ...interface{}) {
+		log.Println(args...)
+		exiter(1)
+	}
+}
+
+func NOPExiter(code int) {
 }
