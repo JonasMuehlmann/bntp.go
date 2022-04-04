@@ -69,4 +69,5 @@ func TestImportFileDoesNotExist(t *testing.T) {
 	os.Args = []string{"", "tag", "--import", "foo"}
 
 	subcommands.TagMain(db, helpers.NOPExiter)
+	assert.Contains(t, logInterceptBuffer.String(), "no such file")
 }
