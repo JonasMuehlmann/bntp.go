@@ -2,3 +2,4 @@
 .lvimrc
 __debug_bin
 coverage.out
+test/bntp.sql
