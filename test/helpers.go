@@ -1,7 +1,6 @@
 package test
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
@@ -14,20 +13,11 @@ import (
 
 var TestDataTempDir = filepath.Join(os.TempDir(), "bntp_tests")
 
-//go:embed ../bntp.sql
-var sqlSchemaEmbed string
+//go:embed bntp.sql
+var sqlSchema string
 
 // GetDB opens a copy of the test DB in memory.
 func GetDB(t *testing.T) (*sqlx.DB, error) {
-	path := filepath.Join("..", "..", "bntp.sql")
-
-	schema, err := ioutil.ReadFile(path)
-	if err != nil {
-		return nil, err
-	}
-
-	schemaCommand := string(schema)
-
 	// Connect to new temporary database
 	db, err := sqlx.Open("sqlite3", ":memory:?_foreign_keys=1")
 	if err != nil {
@@ -35,7 +25,7 @@ func GetDB(t *testing.T) (*sqlx.DB, error) {
 	}
 
 	// Load schema
-	_, err = db.Exec(schemaCommand)
+	_, err = db.Exec(sqlSchema)
 	if err != nil {
 		return nil, err
 	}
