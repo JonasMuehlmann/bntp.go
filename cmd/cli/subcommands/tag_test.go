@@ -27,6 +27,7 @@ import (
 	"testing"
 
 	"github.com/JonasMuehlmann/bntp.go/cmd/cli/subcommands"
+	"github.com/JonasMuehlmann/bntp.go/internal/helpers"
 	"github.com/JonasMuehlmann/bntp.go/test"
 	"github.com/stretchr/testify/assert"
 )
@@ -44,7 +45,7 @@ func TestImport(t *testing.T) {
 	assert.NoError(t, err)
 
 	yml := `
-foo:
+tags:
 - bar
 - baz
     `
@@ -53,5 +54,19 @@ foo:
 
 	os.Args = []string{"", "tag", "--import", file.Name()}
 
-	subcommands.TagMain(db)
+	subcommands.TagMain(db, helpers.NOPExiter)
+}
+
+func TestImportFileDoesNotExist(t *testing.T) {
+	logInterceptBuffer := strings.Builder{}
+	log.SetOutput(&logInterceptBuffer)
+
+	defer log.SetOutput(os.Stdout)
+
+	db, err := test.GetDB(t)
+	assert.NoError(t, err)
+
+	os.Args = []string{"", "tag", "--import", "foo"}
+
+	subcommands.TagMain(db, helpers.NOPExiter)
 }

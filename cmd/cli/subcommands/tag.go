@@ -21,7 +21,6 @@
 package subcommands
 
 import (
-	"log"
 	"strconv"
 
 	"github.com/JonasMuehlmann/bntp.go/internal/helpers"
@@ -53,72 +52,72 @@ Options:
     -L --list-short     List all tags, shortened.
 `
 
-func TagMain(db *sqlx.DB) {
+func TagMain(db *sqlx.DB, exiter func(int)) {
 	arguments, err := docopt.ParseDoc(usageTag)
-	helpers.OnError(err, log.Panic)
+	helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
 	// ******************************************************************//
 	if _, ok := arguments["--import"]; ok {
 		path, err := arguments.String("PATH")
-		helpers.OnError(err, log.Panic)
+		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
 		err = libtags.ImportYML(db, path)
-		helpers.OnError(err, log.Panic)
+		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 		// ******************************************************************//
 	} else if _, ok := arguments["--export"]; ok {
 		path, err := arguments.String("PATH")
-		helpers.OnError(err, log.Panic)
+		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
 		err = libtags.ExportYML(db, path)
-		helpers.OnError(err, log.Panic)
+		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 		// ******************************************************************//
 	} else if _, ok := arguments["--ambiguous"]; ok {
 		tag, err := arguments.String("TAG")
-		helpers.OnError(err, log.Panic)
+		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
 		isAmbiguous, err := libtags.IsLeafAmbiguous(db, tag)
-		helpers.OnError(err, log.Panic)
+		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
 		println(strconv.FormatBool(isAmbiguous))
 		// ******************************************************************//
 	} else if _, ok := arguments["--component"]; ok {
 		tag, err := arguments.String("TAG")
-		helpers.OnError(err, log.Panic)
+		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
 		index, err := libtags.FindAmbiguousTagComponent(db, tag)
-		helpers.OnError(err, log.Panic)
+		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
 		println(index)
 		// ******************************************************************//
 	} else if _, ok := arguments["--remove"]; ok {
 		tag, err := arguments.String("TAG")
-		helpers.OnError(err, log.Panic)
+		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
 		err = libtags.DeleteTag(db, nil, tag)
-		helpers.OnError(err, log.Panic)
+		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 		// ******************************************************************//
 	} else if _, ok := arguments["--rename"]; ok {
 		oldName, err := arguments.String("OLD")
-		helpers.OnError(err, log.Panic)
+		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
 		newName, err := arguments.String("NEW")
-		helpers.OnError(err, log.Panic)
+		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
 		err = libtags.RenameTag(db, nil, oldName, newName)
-		helpers.OnError(err, log.Panic)
+		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 		// ******************************************************************//
 	} else if _, ok := arguments["--shorten"]; ok {
 		tag, err := arguments.String("TAG")
-		helpers.OnError(err, log.Panic)
+		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
 		shortened, err := libtags.TryShortenTag(db, tag)
-		helpers.OnError(err, log.Panic)
+		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
 		println(shortened)
 		// ******************************************************************//
 	} else if _, ok := arguments["--list-short"]; ok {
 		tags, err := libtags.ListTags(db)
-		helpers.OnError(err, log.Panic)
+		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
 		for _, tag := range tags {
 			println(tag)

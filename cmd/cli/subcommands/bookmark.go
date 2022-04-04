@@ -72,49 +72,49 @@ Options:
     --remove-tag            Remove a tag from a bookmark.
 `
 
-func BookmarkMain(db *sqlx.DB) {
+func BookmarkMain(db *sqlx.DB, exiter func(int)) {
 	arguments, err := docopt.ParseDoc(usageBookmark)
-	helpers.OnError(err, log.Panic)
+	helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
 	// ******************************************************************//
 	if _, ok := arguments["--import"]; ok {
 		source, err := arguments.String("FILE")
-		helpers.OnError(err, log.Panic)
+		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
 		err = libbookmarks.ImportMinimalCSV(db, source)
-		helpers.OnError(err, log.Panic)
+		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 		// ******************************************************************//
 	} else if _, ok := arguments["--export"]; ok {
 		source, err := arguments.String("FILE")
-		helpers.OnError(err, log.Panic)
+		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
 		filter := libbookmarks.BookmarkFilter{}
 		if _, ok := arguments["--filter"]; ok {
 			filterRaw, err := arguments.String("FILTER")
-			helpers.OnError(err, log.Panic)
+			helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
 			err = json.Unmarshal([]byte(filterRaw), &filter)
-			helpers.OnError(err, log.Panic)
+			helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 		}
 
 		bookmarks, err := libbookmarks.GetBookmarks(db, filter)
-		helpers.OnError(err, log.Panic)
+		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
 		err = libbookmarks.ExportCSV(bookmarks, source)
-		helpers.OnError(err, log.Panic)
+		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 		// ******************************************************************//
 	} else if _, ok := arguments["--list"]; ok {
 		filter := libbookmarks.BookmarkFilter{}
 		if _, ok := arguments["--filter"]; ok {
 			filterRaw, err := arguments.String("FILTER")
-			helpers.OnError(err, log.Panic)
+			helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
 			err = json.Unmarshal([]byte(filterRaw), &filter)
-			helpers.OnError(err, log.Panic)
+			helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 		}
 
 		bookmarks, err := libbookmarks.GetBookmarks(db, filter)
-		helpers.OnError(err, log.Panic)
+		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
 		for bookmark := range bookmarks {
 			println(bookmark)
@@ -122,21 +122,21 @@ func BookmarkMain(db *sqlx.DB) {
 		// ******************************************************************//
 	} else if _, ok := arguments["--add-type"]; ok {
 		type_, err := arguments.String("TYPE")
-		helpers.OnError(err, log.Panic)
+		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
 		err = libbookmarks.AddType(db, nil, type_)
-		helpers.OnError(err, log.Panic)
+		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 		// ******************************************************************//
 	} else if _, ok := arguments["--remove-type"]; ok {
 		type_, err := arguments.String("TYPE")
-		helpers.OnError(err, log.Panic)
+		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
 		err = libbookmarks.RemoveType(db, nil, type_)
-		helpers.OnError(err, log.Panic)
+		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 		// ******************************************************************//
 	} else if _, ok := arguments["--list-types"]; ok {
 		types, err := libbookmarks.ListTypes(db)
-		helpers.OnError(err, log.Panic)
+		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
 		for type_ := range types {
 			println(type_)
@@ -145,10 +145,10 @@ func BookmarkMain(db *sqlx.DB) {
 	} else if _, ok := arguments["--add"]; ok {
 		var data map[string]string
 		dataRaw, err := arguments.String("DATA")
-		helpers.OnError(err, log.Panic)
+		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
 		err = json.Unmarshal([]byte(dataRaw), &data)
-		helpers.OnError(err, log.Panic)
+		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
 		title, ok := data["title"]
 		if !ok {
@@ -171,120 +171,120 @@ func BookmarkMain(db *sqlx.DB) {
 		type_.Int32 = int32(typeInt)
 
 		err = libbookmarks.AddBookmark(db, nil, title, url, type_)
-		helpers.OnError(err, log.Panic)
+		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 		// ******************************************************************//
 	} else if _, ok := arguments["--edit"]; ok {
 		var data libbookmarks.Bookmark
 		dataRaw, err := arguments.String("NEW_DATA")
-		helpers.OnError(err, log.Panic)
+		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
 		err = json.Unmarshal([]byte(dataRaw), &data)
-		helpers.OnError(err, log.Panic)
+		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
 		err = libbookmarks.EditBookmark(db, nil, data)
-		helpers.OnError(err, log.Panic)
+		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 		// ******************************************************************//
 	} else if _, ok := arguments["--edit-is-read"]; ok {
 		IDRaw, err := arguments.String("BOOKMARK_ID")
-		helpers.OnError(err, log.Panic)
+		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
 		isReadRaw, err := arguments.String("IS_READ")
-		helpers.OnError(err, log.Panic)
+		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
 		ID, err := strconv.Atoi(IDRaw)
-		helpers.OnError(err, log.Panic)
+		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
 		isRead, err := strconv.ParseBool(isReadRaw)
-		helpers.OnError(err, log.Panic)
+		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
 		err = libbookmarks.EditIsRead(db, nil, ID, isRead)
-		helpers.OnError(err, log.Panic)
+		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 		// ******************************************************************//
 	} else if _, ok := arguments["--edit-title"]; ok {
 		IDRaw, err := arguments.String("BOOKMARK_ID")
-		helpers.OnError(err, log.Panic)
+		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
 		title, err := arguments.String("TITLE")
-		helpers.OnError(err, log.Panic)
+		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
 		ID, err := strconv.Atoi(IDRaw)
-		helpers.OnError(err, log.Panic)
+		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
 		err = libbookmarks.EditTitle(db, nil, ID, title)
-		helpers.OnError(err, log.Panic)
+		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 		// ******************************************************************//
 	} else if _, ok := arguments["--edit-url"]; ok {
 		IDRaw, err := arguments.String("BOOKMARK_ID")
-		helpers.OnError(err, log.Panic)
+		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
 		url, err := arguments.String("URL")
-		helpers.OnError(err, log.Panic)
+		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
 		ID, err := strconv.Atoi(IDRaw)
-		helpers.OnError(err, log.Panic)
+		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
 		err = libbookmarks.EditUrl(db, nil, ID, url)
-		helpers.OnError(err, log.Panic)
+		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 		// ******************************************************************//
 	} else if _, ok := arguments["--edit-type"]; ok {
 		IDRaw, err := arguments.String("BOOKMARK_ID")
-		helpers.OnError(err, log.Panic)
+		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
 		type_, err := arguments.String("TYPE")
-		helpers.OnError(err, log.Panic)
+		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
 		ID, err := strconv.Atoi(IDRaw)
-		helpers.OnError(err, log.Panic)
+		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
 		err = libbookmarks.EditType(db, nil, ID, type_)
-		helpers.OnError(err, log.Panic)
+		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 		// ******************************************************************//
 	} else if _, ok := arguments["--edit-is-collection"]; ok {
 		IDRaw, err := arguments.String("BOOKMARK_ID")
-		helpers.OnError(err, log.Panic)
+		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
 		isCollectionRaw, err := arguments.String("IS_COLLECTION")
-		helpers.OnError(err, log.Panic)
+		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
 		ID, err := strconv.Atoi(IDRaw)
-		helpers.OnError(err, log.Panic)
+		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
 		isCollection, err := strconv.ParseBool(isCollectionRaw)
-		helpers.OnError(err, log.Panic)
+		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
 		err = libbookmarks.EditIsCollection(db, nil, ID, isCollection)
-		helpers.OnError(err, log.Panic)
+		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 		// ******************************************************************//
 	} else if _, ok := arguments["--add-tag"]; ok {
 		tag, err := arguments.String("TAG")
-		helpers.OnError(err, log.Panic)
+		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
 		IDRaw, err := arguments.String("BOOKMARK_ID")
-		helpers.OnError(err, log.Panic)
+		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
 		err = libbookmarks.AddType(db, nil, tag)
-		helpers.OnError(err, log.Panic)
+		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
 		ID, err := strconv.Atoi(IDRaw)
-		helpers.OnError(err, log.Panic)
+		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
 		err = libbookmarks.AddTag(db, nil, ID, tag)
-		helpers.OnError(err, log.Panic)
+		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 		// ******************************************************************//
 	} else if _, ok := arguments["--remove-tag"]; ok {
 		tag, err := arguments.String("TAG")
-		helpers.OnError(err, log.Panic)
+		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
 		IDRaw, err := arguments.String("BOOKMARK_ID")
-		helpers.OnError(err, log.Panic)
+		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
 		err = libbookmarks.RemoveType(db, nil, tag)
-		helpers.OnError(err, log.Panic)
+		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
 		ID, err := strconv.Atoi(IDRaw)
-		helpers.OnError(err, log.Panic)
+		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
 		err = libbookmarks.RemoveTag(db, nil, ID, tag)
-		helpers.OnError(err, log.Panic)
+		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 	}
 }

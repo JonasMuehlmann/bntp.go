@@ -21,8 +21,6 @@
 package subcommands
 
 import (
-	"log"
-
 	"github.com/JonasMuehlmann/bntp.go/internal/helpers"
 	"github.com/JonasMuehlmann/bntp.go/internal/liblinks"
 	"github.com/docopt/docopt-go"
@@ -45,37 +43,37 @@ Options:
     -L --list-back  List backlinks.
 `
 
-func LinkMain(db *sqlx.DB) {
+func LinkMain(db *sqlx.DB, exiter func(int)) {
 	arguments, err := docopt.ParseDoc(usageLink)
-	helpers.OnError(err, log.Panic)
+	helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
 	// ******************************************************************//
 	if _, ok := arguments["--add"]; ok {
 		source, err := arguments.String("SRC")
-		helpers.OnError(err, log.Panic)
+		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
 		destination, err := arguments.String("DEST")
-		helpers.OnError(err, log.Panic)
+		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
 		err = liblinks.AddLink(db, nil, source, destination)
-		helpers.OnError(err, log.Panic)
+		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 		// ******************************************************************//
 	} else if _, ok := arguments["--remove"]; ok {
 		source, err := arguments.String("SRC")
-		helpers.OnError(err, log.Panic)
+		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
 		destination, err := arguments.String("DEST")
-		helpers.OnError(err, log.Panic)
+		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
 		err = liblinks.RemoveLink(db, nil, source, destination)
-		helpers.OnError(err, log.Panic)
+		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 		// ******************************************************************//
 	} else if _, ok := arguments["--list"]; ok {
 		source, err := arguments.String("SRC")
-		helpers.OnError(err, log.Panic)
+		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
 		links, err := liblinks.ListLinks(db, source)
-		helpers.OnError(err, log.Panic)
+		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
 		for _, link := range links {
 			println(link)
@@ -83,10 +81,10 @@ func LinkMain(db *sqlx.DB) {
 		// ******************************************************************//
 	} else if _, ok := arguments["--list-back"]; ok {
 		destination, err := arguments.String("DEST")
-		helpers.OnError(err, log.Panic)
+		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
 		backlinks, err := liblinks.ListBacklinks(db, destination)
-		helpers.OnError(err, log.Panic)
+		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
 		for _, backlink := range backlinks {
 			println(backlink)
