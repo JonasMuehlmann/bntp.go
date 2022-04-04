@@ -24,7 +24,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/JonasMuehlmann/bntp.go/cmd/bntp/subcommands"
+	"github.com/JonasMuehlmann/bntp.go/cmd/cli/subcommands"
 	"github.com/docopt/docopt-go"
 	_ "github.com/mattn/go-sqlite3"
 )
