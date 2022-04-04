@@ -27,6 +27,7 @@ import (
 	"github.com/JonasMuehlmann/bntp.go/internal/helpers"
 	"github.com/JonasMuehlmann/bntp.go/internal/libtags"
 	"github.com/docopt/docopt-go"
+	"github.com/jmoiron/sqlx"
 )
 
 var usageTag string = `bntp tag - Interact with bookmark's or document's tags.
@@ -52,73 +53,72 @@ Options:
     -L --list-short     List all tags, shortened.
 `
 
-func TagMain() {
+func TagMain(db *sqlx.DB) {
 	arguments, err := docopt.ParseDoc(usageTag)
-	helpers.OnError(err, log.Fatal)
+	helpers.OnError(err, log.Panic)
 
-	db, err := helpers.GetDefaultDB()
-	helpers.OnError(err, log.Fatal)
-
-	//******************************************************************//
+	// ******************************************************************//
 	if _, ok := arguments["--import"]; ok {
 		path, err := arguments.String("PATH")
-		helpers.OnError(err, log.Fatal)
+		helpers.OnError(err, log.Panic)
 
-		log.Fatal(libtags.ImportYML(db, path))
-		//******************************************************************//
+		err = libtags.ImportYML(db, path)
+		helpers.OnError(err, log.Panic)
+		// ******************************************************************//
 	} else if _, ok := arguments["--export"]; ok {
 		path, err := arguments.String("PATH")
-		helpers.OnError(err, log.Fatal)
+		helpers.OnError(err, log.Panic)
 
-		log.Fatal(libtags.ExportYML(db, path))
-		//******************************************************************//
+		err = libtags.ExportYML(db, path)
+		helpers.OnError(err, log.Panic)
+		// ******************************************************************//
 	} else if _, ok := arguments["--ambiguous"]; ok {
 		tag, err := arguments.String("TAG")
-		helpers.OnError(err, log.Fatal)
+		helpers.OnError(err, log.Panic)
 
 		isAmbiguous, err := libtags.IsLeafAmbiguous(db, tag)
-		helpers.OnError(err, log.Fatal)
+		helpers.OnError(err, log.Panic)
 
 		println(strconv.FormatBool(isAmbiguous))
-		//******************************************************************//
+		// ******************************************************************//
 	} else if _, ok := arguments["--component"]; ok {
 		tag, err := arguments.String("TAG")
-		helpers.OnError(err, log.Fatal)
+		helpers.OnError(err, log.Panic)
 
 		index, err := libtags.FindAmbiguousTagComponent(db, tag)
-		helpers.OnError(err, log.Fatal)
+		helpers.OnError(err, log.Panic)
 
 		println(index)
-		//******************************************************************//
+		// ******************************************************************//
 	} else if _, ok := arguments["--remove"]; ok {
 		tag, err := arguments.String("TAG")
-		helpers.OnError(err, log.Fatal)
+		helpers.OnError(err, log.Panic)
 
 		err = libtags.DeleteTag(db, nil, tag)
-		helpers.OnError(err, log.Fatal)
-		//******************************************************************//
+		helpers.OnError(err, log.Panic)
+		// ******************************************************************//
 	} else if _, ok := arguments["--rename"]; ok {
 		oldName, err := arguments.String("OLD")
-		helpers.OnError(err, log.Fatal)
+		helpers.OnError(err, log.Panic)
 
 		newName, err := arguments.String("NEW")
-		helpers.OnError(err, log.Fatal)
+		helpers.OnError(err, log.Panic)
 
 		err = libtags.RenameTag(db, nil, oldName, newName)
-		helpers.OnError(err, log.Fatal)
-		//******************************************************************//
+		helpers.OnError(err, log.Panic)
+		// ******************************************************************//
 	} else if _, ok := arguments["--shorten"]; ok {
 		tag, err := arguments.String("TAG")
-		helpers.OnError(err, log.Fatal)
+		helpers.OnError(err, log.Panic)
 
 		shortened, err := libtags.TryShortenTag(db, tag)
-		helpers.OnError(err, log.Fatal)
+		helpers.OnError(err, log.Panic)
 
 		println(shortened)
-		//******************************************************************//
+		// ******************************************************************//
 	} else if _, ok := arguments["--list-short"]; ok {
 		tags, err := libtags.ListTags(db)
-		helpers.OnError(err, log.Fatal)
+		helpers.OnError(err, log.Panic)
 
 		for _, tag := range tags {
 			println(tag)

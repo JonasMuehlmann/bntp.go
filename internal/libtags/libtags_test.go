@@ -3,7 +3,6 @@ package libtags_test
 import (
 	"os"
 	"path/filepath"
-
 	"testing"
 
 	"github.com/JonasMuehlmann/bntp.go/internal/libtags"
@@ -13,7 +12,7 @@ import (
 
 // ############
 // # AddTag() #
-// ############
+// ############.
 func TestAddTag(t *testing.T) {
 	db, err := test.GetDB(t)
 	assert.NoError(t, err)
@@ -46,7 +45,7 @@ func TestAddTagEmptyTag(t *testing.T) {
 
 // ###############
 // # RemoveTag() #
-// ###############
+// ###############.
 func TestRemoveTag(t *testing.T) {
 	db, err := test.GetDB(t)
 	assert.NoError(t, err)
@@ -88,7 +87,7 @@ func TestRemoveTagDoesNotExist(t *testing.T) {
 
 // ###############
 // # RenameTag() #
-// ###############
+// ###############.
 func TestRenameTag(t *testing.T) {
 	db, err := test.GetDB(t)
 	assert.NoError(t, err)
@@ -141,7 +140,7 @@ func TestRenameTagNewEmpty(t *testing.T) {
 
 // ##############
 // # ListTags() #
-// ##############
+// ##############.
 func TestListTagsOneTag(t *testing.T) {
 	db, err := test.GetDB(t)
 	assert.NoError(t, err)
@@ -186,7 +185,7 @@ func TestListTagsEmpty(t *testing.T) {
 
 // #######################
 // # ListTagsShortened() #
-// #######################
+// #######################.
 func TestListTagsShortenedOneTagNoComponents(t *testing.T) {
 	db, err := test.GetDB(t)
 	assert.NoError(t, err)
@@ -247,7 +246,7 @@ func TestListTagsShortenedManyTagsAmbiguousComponent(t *testing.T) {
 
 // ###############
 // # ImportYML() #
-// ###############
+// ###############.
 func TestImportYMLNoTagsKey(t *testing.T) {
 	db, err := test.GetDB(t)
 	assert.NoError(t, err)
@@ -323,6 +322,7 @@ tags:
 	err = libtags.ImportYML(db, filepath.Join(test.TestDataTempDir, t.Name()))
 	assert.NoError(t, err)
 }
+
 func TestImportYMLTwoPaths(t *testing.T) {
 	db, err := test.GetDB(t)
 	assert.NoError(t, err)
@@ -348,7 +348,7 @@ tags:
 
 // ###############
 // # ExportYML() #
-// ###############
+// ###############.
 func TestExportYMLNoTags(t *testing.T) {
 	db, err := test.GetDB(t)
 	assert.NoError(t, err)
@@ -392,6 +392,7 @@ func TestExportYMLOnePath(t *testing.T) {
 	err = libtags.ImportYML(db, filepath.Join(test.TestDataTempDir, t.Name()+"In"))
 	assert.NoError(t, err)
 }
+
 func TestExportYMLTwoPaths(t *testing.T) {
 	db, err := test.GetDB(t)
 	assert.NoError(t, err)

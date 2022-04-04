@@ -25,6 +25,7 @@ import (
 	"os"
 
 	"github.com/JonasMuehlmann/bntp.go/cmd/cli/subcommands"
+	"github.com/JonasMuehlmann/bntp.go/internal/helpers"
 	"github.com/docopt/docopt-go"
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -68,18 +69,19 @@ func main() {
 		return
 	}
 
-	log.Println(subcommand)
+	db, err := helpers.GetDefaultDB()
+	helpers.OnError(err, log.Panic)
 
 	switch subcommand {
 	case "bookmark":
-		subcommands.BookmarkMain()
+		subcommands.BookmarkMain(db)
 	case "link":
-		subcommands.LinkMain()
+		subcommands.LinkMain(db)
 	case "tag":
-		subcommands.TagMain()
+		subcommands.TagMain(db)
 	case "document":
-		subcommands.DocumentMain()
+		subcommands.DocumentMain(db)
 	default:
-		log.Fatal("Invalid subcommand")
+		log.Panic("Invalid subcommand")
 	}
 }

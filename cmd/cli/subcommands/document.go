@@ -28,6 +28,7 @@ import (
 	"github.com/JonasMuehlmann/bntp.go/internal/helpers"
 	"github.com/JonasMuehlmann/bntp.go/internal/libdocuments"
 	"github.com/docopt/docopt-go"
+	"github.com/jmoiron/sqlx"
 )
 
 var usageDocument string = `bntp document - Interact with documents.
@@ -69,99 +70,96 @@ Options:
     --remove-doc-type           Remove a type to give documents.
 `
 
-func DocumentMain() {
+func DocumentMain(db *sqlx.DB) {
 	arguments, err := docopt.ParseDoc(usageDocument)
-	helpers.OnError(err, log.Fatal)
+	helpers.OnError(err, log.Panic)
 
-	db, err := helpers.GetDefaultDB()
-	helpers.OnError(err, log.Fatal)
-
-	//******************************************************************//
+	// ******************************************************************//
 	if _, ok := arguments["--add-tag"]; ok {
 		documentPath, err := arguments.String("DOCUMENT_PATH")
-		helpers.OnError(err, log.Fatal)
+		helpers.OnError(err, log.Panic)
 
 		tag, err := arguments.String("TAG")
-		helpers.OnError(err, log.Fatal)
+		helpers.OnError(err, log.Panic)
 
 		err = libdocuments.AddTagToFile(documentPath, tag)
-		helpers.OnError(err, log.Fatal)
+		helpers.OnError(err, log.Panic)
 
 		err = libdocuments.AddTag(db, nil, documentPath, tag)
-		helpers.OnError(err, log.Fatal)
-		//******************************************************************//
+		helpers.OnError(err, log.Panic)
+		// ******************************************************************//
 	} else if _, ok := arguments["--remove-tag"]; ok {
 		documentPath, err := arguments.String("DOCUMENT_PATH")
-		helpers.OnError(err, log.Fatal)
+		helpers.OnError(err, log.Panic)
 
 		tag, err := arguments.String("TAG")
-		helpers.OnError(err, log.Fatal)
+		helpers.OnError(err, log.Panic)
 
 		err = libdocuments.RemoveTagFromFile(documentPath, tag)
-		helpers.OnError(err, log.Fatal)
+		helpers.OnError(err, log.Panic)
 
 		err = libdocuments.RemoveTag(db, nil, documentPath, tag)
-		helpers.OnError(err, log.Fatal)
-		//******************************************************************//
+		helpers.OnError(err, log.Panic)
+		// ******************************************************************//
 	} else if _, ok := arguments["--rename-tag"]; ok {
 		documentPath, err := arguments.String("DOCUMENT_PATH")
-		helpers.OnError(err, log.Fatal)
+		helpers.OnError(err, log.Panic)
 
 		oldTag, err := arguments.String("OLD_TAG")
-		helpers.OnError(err, log.Fatal)
+		helpers.OnError(err, log.Panic)
 
 		newTag, err := arguments.String("NEW_TAG")
-		helpers.OnError(err, log.Fatal)
+		helpers.OnError(err, log.Panic)
 
 		err = libdocuments.RenameTagInFile(documentPath, oldTag, newTag)
-		helpers.OnError(err, log.Fatal)
-		//******************************************************************//
+		helpers.OnError(err, log.Panic)
+		// ******************************************************************//
 	} else if _, ok := arguments["--get-tags"]; ok {
 		documentPath, err := arguments.String("DOCUMENT_PATH")
-		helpers.OnError(err, log.Fatal)
+		helpers.OnError(err, log.Panic)
 
 		tags, err := libdocuments.GetTags(documentPath)
-		helpers.OnError(err, log.Fatal)
+		helpers.OnError(err, log.Panic)
 
 		for tag := range tags {
 			println(tag)
 		}
-		//******************************************************************//
+		// ******************************************************************//
 	} else if _, ok := arguments["--find-tags-line"]; ok {
 		documentPath, err := arguments.String("DOCUMENT_PATH")
-		helpers.OnError(err, log.Fatal)
+		helpers.OnError(err, log.Panic)
 
 		index, line, err := libdocuments.FindTagsLine(documentPath)
-		helpers.OnError(err, log.Fatal)
+		helpers.OnError(err, log.Panic)
 
 		fmt.Printf("%v %v", index, line)
-		//******************************************************************//
+		// ******************************************************************//
 	} else if _, ok := arguments["--has-tags"]; ok {
 		documentPath, err := arguments.String("DOCUMENT_PATH")
-		helpers.OnError(err, log.Fatal)
+		helpers.OnError(err, log.Panic)
 
 		tagsRaw, err := arguments.String("TAGS")
-		helpers.OnError(err, log.Fatal)
+		helpers.OnError(err, log.Panic)
 
 		hasTag, err := libdocuments.HasTags(documentPath, strings.Split(tagsRaw, ","))
-		helpers.OnError(err, log.Fatal)
+		helpers.OnError(err, log.Panic)
 
 		println(hasTag)
-		//******************************************************************//
+		// ******************************************************************//
 	} else if _, ok := arguments["--find-docs-with-tags"]; ok {
 		tagsRaw, err := arguments.String("TAGS")
-		helpers.OnError(err, log.Fatal)
+		helpers.OnError(err, log.Panic)
 
 		documents, err := libdocuments.FindDocumentsWithTags(db, strings.Split(tagsRaw, ","))
-		helpers.OnError(err, log.Fatal)
+		helpers.OnError(err, log.Panic)
 
 		for document := range documents {
 			println(document)
 		}
-		//******************************************************************//
+		// ******************************************************************//
 	} else if _, ok := arguments["--find-links-lines"]; ok {
 		documentPath, err := arguments.String("DOCUMENT_PATH")
-		helpers.OnError(err, log.Fatal)
+		helpers.OnError(err, log.Panic)
 
 		start, end, links, err := libdocuments.FindLinksLines(documentPath)
 
@@ -169,10 +167,10 @@ func DocumentMain() {
 		for link := range links {
 			println(link)
 		}
-		//******************************************************************//
+		// ******************************************************************//
 	} else if _, ok := arguments["--find-backlinks-lines"]; ok {
 		documentPath, err := arguments.String("DOCUMENT_PATH")
-		helpers.OnError(err, log.Fatal)
+		helpers.OnError(err, log.Panic)
 
 		start, end, backlinks, err := libdocuments.FindBacklinksLines(documentPath)
 
@@ -180,96 +178,96 @@ func DocumentMain() {
 		for link := range backlinks {
 			println(link)
 		}
-		//******************************************************************//
+		// ******************************************************************//
 	} else if _, ok := arguments["--add-link"]; ok {
 		documentPath, err := arguments.String("DOCUMENT_PATH")
-		helpers.OnError(err, log.Fatal)
+		helpers.OnError(err, log.Panic)
 
 		link, err := arguments.String("LINK")
-		helpers.OnError(err, log.Fatal)
+		helpers.OnError(err, log.Panic)
 
 		err = libdocuments.AddLink(documentPath, link)
-		helpers.OnError(err, log.Fatal)
-		//******************************************************************//
+		helpers.OnError(err, log.Panic)
+		// ******************************************************************//
 	} else if _, ok := arguments["--remove-link"]; ok {
 		documentPath, err := arguments.String("DOCUMENT_PATH")
-		helpers.OnError(err, log.Fatal)
+		helpers.OnError(err, log.Panic)
 
 		link, err := arguments.String("LINK")
-		helpers.OnError(err, log.Fatal)
+		helpers.OnError(err, log.Panic)
 
 		err = libdocuments.RemoveLink(documentPath, link)
-		helpers.OnError(err, log.Fatal)
-		//******************************************************************//
+		helpers.OnError(err, log.Panic)
+		// ******************************************************************//
 	} else if _, ok := arguments["--add-backlink"]; ok {
 		documentPath, err := arguments.String("DOCUMENT_PATH")
-		helpers.OnError(err, log.Fatal)
+		helpers.OnError(err, log.Panic)
 
 		backlink, err := arguments.String("BACKLINK")
-		helpers.OnError(err, log.Fatal)
+		helpers.OnError(err, log.Panic)
 
 		err = libdocuments.AddBacklink(documentPath, backlink)
-		helpers.OnError(err, log.Fatal)
-		//******************************************************************//
+		helpers.OnError(err, log.Panic)
+		// ******************************************************************//
 	} else if _, ok := arguments["--remove-backlink"]; ok {
 		documentPath, err := arguments.String("DOCUMENT_PATH")
-		helpers.OnError(err, log.Fatal)
+		helpers.OnError(err, log.Panic)
 
 		backlink, err := arguments.String("BACKLINK")
-		helpers.OnError(err, log.Fatal)
+		helpers.OnError(err, log.Panic)
 
 		err = libdocuments.RemoveBacklink(documentPath, backlink)
-		helpers.OnError(err, log.Fatal)
-		//******************************************************************//
+		helpers.OnError(err, log.Panic)
+		// ******************************************************************//
 	} else if _, ok := arguments["--add-doc"]; ok {
 		documentPath, err := arguments.String("DOCUMENT_PATH")
-		helpers.OnError(err, log.Fatal)
+		helpers.OnError(err, log.Panic)
 
 		type_, err := arguments.String("TYPE")
-		helpers.OnError(err, log.Fatal)
+		helpers.OnError(err, log.Panic)
 
 		err = libdocuments.AddDocument(db, nil, documentPath, type_)
-		helpers.OnError(err, log.Fatal)
-		//******************************************************************//
+		helpers.OnError(err, log.Panic)
+		// ******************************************************************//
 	} else if _, ok := arguments["--remove-doc"]; ok {
 		documentPath, err := arguments.String("DOCUMENT_PATH")
-		helpers.OnError(err, log.Fatal)
+		helpers.OnError(err, log.Panic)
 
 		err = libdocuments.RemoveDocument(db, nil, documentPath)
-		helpers.OnError(err, log.Fatal)
-		//******************************************************************//
+		helpers.OnError(err, log.Panic)
+		// ******************************************************************//
 	} else if _, ok := arguments["--rename-doc"]; ok {
 		oldPath, err := arguments.String("OLD_PATH")
-		helpers.OnError(err, log.Fatal)
+		helpers.OnError(err, log.Panic)
 
 		newPath, err := arguments.String("NEW_PATH")
-		helpers.OnError(err, log.Fatal)
+		helpers.OnError(err, log.Panic)
 
 		err = libdocuments.RenameDocument(db, nil, oldPath, newPath)
-		helpers.OnError(err, log.Fatal)
-		//******************************************************************//
+		helpers.OnError(err, log.Panic)
+		// ******************************************************************//
 	} else if _, ok := arguments["--change-doc-type"]; ok {
 		documentPath, err := arguments.String("DOCUMENT_PATH")
-		helpers.OnError(err, log.Fatal)
+		helpers.OnError(err, log.Panic)
 
 		type_, err := arguments.String("TYPE")
-		helpers.OnError(err, log.Fatal)
+		helpers.OnError(err, log.Panic)
 
 		err = libdocuments.ChangeDocumentType(db, nil, documentPath, type_)
-		helpers.OnError(err, log.Fatal)
-		//******************************************************************//
+		helpers.OnError(err, log.Panic)
+		// ******************************************************************//
 	} else if _, ok := arguments["--add-doc-type"]; ok {
 		type_, err := arguments.String("TYPE")
-		helpers.OnError(err, log.Fatal)
+		helpers.OnError(err, log.Panic)
 
 		err = libdocuments.AddType(db, nil, type_)
-		helpers.OnError(err, log.Fatal)
-		//******************************************************************//
+		helpers.OnError(err, log.Panic)
+		// ******************************************************************//
 	} else if _, ok := arguments["--remove-doc-type"]; ok {
 		type_, err := arguments.String("TYPE")
-		helpers.OnError(err, log.Fatal)
+		helpers.OnError(err, log.Panic)
 
 		err = libdocuments.RemoveType(db, nil, type_)
-		helpers.OnError(err, log.Fatal)
+		helpers.OnError(err, log.Panic)
 	}
 }

@@ -19,3 +19,39 @@
 // OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 package subcommands_test
+
+import (
+	"log"
+	"os"
+	"strings"
+	"testing"
+
+	"github.com/JonasMuehlmann/bntp.go/cmd/cli/subcommands"
+	"github.com/JonasMuehlmann/bntp.go/test"
+	"github.com/stretchr/testify/assert"
+)
+
+func TestImport(t *testing.T) {
+	logInterceptBuffer := strings.Builder{}
+	log.SetOutput(&logInterceptBuffer)
+
+	defer log.SetOutput(os.Stdout)
+
+	db, err := test.GetDB(t)
+	assert.NoError(t, err)
+
+	file, err := test.CreateTestTempFile(t.Name())
+	assert.NoError(t, err)
+
+	yml := `
+foo:
+- bar
+- baz
+    `
+	_, err = file.WriteString(yml)
+	assert.NoError(t, err)
+
+	os.Args = []string{"", "tag", "--import", file.Name()}
+
+	subcommands.TagMain(db)
+}

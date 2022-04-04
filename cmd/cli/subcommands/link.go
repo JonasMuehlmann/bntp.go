@@ -26,6 +26,7 @@ import (
 	"github.com/JonasMuehlmann/bntp.go/internal/helpers"
 	"github.com/JonasMuehlmann/bntp.go/internal/liblinks"
 	"github.com/docopt/docopt-go"
+	"github.com/jmoiron/sqlx"
 )
 
 var usageLink string = `bntp link - Interact with links between documents.
@@ -44,38 +45,37 @@ Options:
     -L --list-back  List backlinks.
 `
 
-func LinkMain() {
+func LinkMain(db *sqlx.DB) {
 	arguments, err := docopt.ParseDoc(usageLink)
-	helpers.OnError(err, log.Fatal)
-
-	db, err := helpers.GetDefaultDB()
-	helpers.OnError(err, log.Fatal)
+	helpers.OnError(err, log.Panic)
 
 	// ******************************************************************//
 	if _, ok := arguments["--add"]; ok {
 		source, err := arguments.String("SRC")
-		helpers.OnError(err, log.Fatal)
+		helpers.OnError(err, log.Panic)
 
 		destination, err := arguments.String("DEST")
-		helpers.OnError(err, log.Fatal)
+		helpers.OnError(err, log.Panic)
 
-		log.Fatal(liblinks.AddLink(db, nil, source, destination))
+		err = liblinks.AddLink(db, nil, source, destination)
+		helpers.OnError(err, log.Panic)
 		// ******************************************************************//
 	} else if _, ok := arguments["--remove"]; ok {
 		source, err := arguments.String("SRC")
-		helpers.OnError(err, log.Fatal)
+		helpers.OnError(err, log.Panic)
 
 		destination, err := arguments.String("DEST")
-		helpers.OnError(err, log.Fatal)
+		helpers.OnError(err, log.Panic)
 
-		log.Fatal(liblinks.RemoveLink(db, nil, source, destination))
+		err = liblinks.RemoveLink(db, nil, source, destination)
+		helpers.OnError(err, log.Panic)
 		// ******************************************************************//
 	} else if _, ok := arguments["--list"]; ok {
 		source, err := arguments.String("SRC")
-		helpers.OnError(err, log.Fatal)
+		helpers.OnError(err, log.Panic)
 
 		links, err := liblinks.ListLinks(db, source)
-		helpers.OnError(err, log.Fatal)
+		helpers.OnError(err, log.Panic)
 
 		for _, link := range links {
 			println(link)
@@ -83,10 +83,10 @@ func LinkMain() {
 		// ******************************************************************//
 	} else if _, ok := arguments["--list-back"]; ok {
 		destination, err := arguments.String("DEST")
-		helpers.OnError(err, log.Fatal)
+		helpers.OnError(err, log.Panic)
 
 		backlinks, err := liblinks.ListBacklinks(db, destination)
-		helpers.OnError(err, log.Fatal)
+		helpers.OnError(err, log.Panic)
 
 		for _, backlink := range backlinks {
 			println(backlink)
