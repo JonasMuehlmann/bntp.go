@@ -69,18 +69,19 @@ func main() {
 		return
 	}
 
+	exiter := os.Exit
 	db, err := helpers.GetDefaultDB()
-	helpers.OnError(err, log.Panic)
+	helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
 	switch subcommand {
 	case "bookmark":
-		subcommands.BookmarkMain(db)
+		subcommands.BookmarkMain(db, exiter)
 	case "link":
-		subcommands.LinkMain(db)
+		subcommands.LinkMain(db, exiter)
 	case "tag":
-		subcommands.TagMain(db)
+		subcommands.TagMain(db, exiter)
 	case "document":
-		subcommands.DocumentMain(db)
+		subcommands.DocumentMain(db, exiter)
 	default:
 		log.Panic("Invalid subcommand")
 	}
