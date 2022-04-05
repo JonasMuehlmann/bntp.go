@@ -90,6 +90,13 @@ func TagMain(db *sqlx.DB, exiter func(int)) {
 
 		fmt.Println(index, component)
 		// ******************************************************************//
+	} else if isSet, ok := arguments["--add"]; ok && isSet.(bool) {
+		tag, err := arguments.String("TAG")
+		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+
+		err = libtags.AddTag(db, nil, tag)
+		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		// ******************************************************************//
 	} else if isSet, ok := arguments["--remove"]; ok && isSet.(bool) {
 		tag, err := arguments.String("TAG")
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
