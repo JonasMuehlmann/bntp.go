@@ -78,19 +78,19 @@ func BookmarkMain(db *sqlx.DB, exiter func(int)) {
 	helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
 	// ******************************************************************//
-	if _, ok := arguments["--import"]; ok {
+	if isSet, ok := arguments["--import"]; ok && isSet.(bool) {
 		source, err := arguments.String("FILE")
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
 		err = libbookmarks.ImportMinimalCSV(db, source)
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 		// ******************************************************************//
-	} else if _, ok := arguments["--export"]; ok {
+	} else if isSet, ok := arguments["--export"]; ok && isSet.(bool) {
 		source, err := arguments.String("FILE")
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
 		filter := libbookmarks.BookmarkFilter{}
-		if _, ok := arguments["--filter"]; ok {
+		if isSet, ok := arguments["--filter"]; ok && isSet.(bool) {
 			filterRaw, err := arguments.String("FILTER")
 			helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
@@ -104,9 +104,9 @@ func BookmarkMain(db *sqlx.DB, exiter func(int)) {
 		err = libbookmarks.ExportCSV(bookmarks, source)
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 		// ******************************************************************//
-	} else if _, ok := arguments["--list"]; ok {
+	} else if isSet, ok := arguments["--list"]; ok && isSet.(bool) {
 		filter := libbookmarks.BookmarkFilter{}
-		if _, ok := arguments["--filter"]; ok {
+		if isSet, ok := arguments["--filter"]; ok && isSet.(bool) {
 			filterRaw, err := arguments.String("FILTER")
 			helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
@@ -121,21 +121,21 @@ func BookmarkMain(db *sqlx.DB, exiter func(int)) {
 			fmt.Println(bookmark)
 		}
 		// ******************************************************************//
-	} else if _, ok := arguments["--add-type"]; ok {
+	} else if isSet, ok := arguments["--add-type"]; ok && isSet.(bool) {
 		type_, err := arguments.String("TYPE")
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
 		err = libbookmarks.AddType(db, nil, type_)
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 		// ******************************************************************//
-	} else if _, ok := arguments["--remove-type"]; ok {
+	} else if isSet, ok := arguments["--remove-type"]; ok && isSet.(bool) {
 		type_, err := arguments.String("TYPE")
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
 		err = libbookmarks.RemoveType(db, nil, type_)
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 		// ******************************************************************//
-	} else if _, ok := arguments["--list-types"]; ok {
+	} else if isSet, ok := arguments["--list-types"]; ok && isSet.(bool) {
 		types, err := libbookmarks.ListTypes(db)
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
@@ -143,7 +143,7 @@ func BookmarkMain(db *sqlx.DB, exiter func(int)) {
 			fmt.Println(type_)
 		}
 		// ******************************************************************//
-	} else if _, ok := arguments["--add"]; ok {
+	} else if isSet, ok := arguments["--add"]; ok && isSet.(bool) {
 		var data map[string]string
 		dataRaw, err := arguments.String("DATA")
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
@@ -174,7 +174,7 @@ func BookmarkMain(db *sqlx.DB, exiter func(int)) {
 		err = libbookmarks.AddBookmark(db, nil, title, url, type_)
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 		// ******************************************************************//
-	} else if _, ok := arguments["--edit"]; ok {
+	} else if isSet, ok := arguments["--edit"]; ok && isSet.(bool) {
 		var data libbookmarks.Bookmark
 		dataRaw, err := arguments.String("NEW_DATA")
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
@@ -185,7 +185,7 @@ func BookmarkMain(db *sqlx.DB, exiter func(int)) {
 		err = libbookmarks.EditBookmark(db, nil, data)
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 		// ******************************************************************//
-	} else if _, ok := arguments["--edit-is-read"]; ok {
+	} else if isSet, ok := arguments["--edit-is-read"]; ok && isSet.(bool) {
 		IDRaw, err := arguments.String("BOOKMARK_ID")
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
@@ -201,7 +201,7 @@ func BookmarkMain(db *sqlx.DB, exiter func(int)) {
 		err = libbookmarks.EditIsRead(db, nil, ID, isRead)
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 		// ******************************************************************//
-	} else if _, ok := arguments["--edit-title"]; ok {
+	} else if isSet, ok := arguments["--edit-title"]; ok && isSet.(bool) {
 		IDRaw, err := arguments.String("BOOKMARK_ID")
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
@@ -214,7 +214,7 @@ func BookmarkMain(db *sqlx.DB, exiter func(int)) {
 		err = libbookmarks.EditTitle(db, nil, ID, title)
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 		// ******************************************************************//
-	} else if _, ok := arguments["--edit-url"]; ok {
+	} else if isSet, ok := arguments["--edit-url"]; ok && isSet.(bool) {
 		IDRaw, err := arguments.String("BOOKMARK_ID")
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
@@ -227,7 +227,7 @@ func BookmarkMain(db *sqlx.DB, exiter func(int)) {
 		err = libbookmarks.EditUrl(db, nil, ID, url)
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 		// ******************************************************************//
-	} else if _, ok := arguments["--edit-type"]; ok {
+	} else if isSet, ok := arguments["--edit-type"]; ok && isSet.(bool) {
 		IDRaw, err := arguments.String("BOOKMARK_ID")
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
@@ -240,7 +240,7 @@ func BookmarkMain(db *sqlx.DB, exiter func(int)) {
 		err = libbookmarks.EditType(db, nil, ID, type_)
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 		// ******************************************************************//
-	} else if _, ok := arguments["--edit-is-collection"]; ok {
+	} else if isSet, ok := arguments["--edit-is-collection"]; ok && isSet.(bool) {
 		IDRaw, err := arguments.String("BOOKMARK_ID")
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
@@ -256,7 +256,7 @@ func BookmarkMain(db *sqlx.DB, exiter func(int)) {
 		err = libbookmarks.EditIsCollection(db, nil, ID, isCollection)
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 		// ******************************************************************//
-	} else if _, ok := arguments["--add-tag"]; ok {
+	} else if isSet, ok := arguments["--add-tag"]; ok && isSet.(bool) {
 		tag, err := arguments.String("TAG")
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
@@ -272,7 +272,7 @@ func BookmarkMain(db *sqlx.DB, exiter func(int)) {
 		err = libbookmarks.AddTag(db, nil, ID, tag)
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 		// ******************************************************************//
-	} else if _, ok := arguments["--remove-tag"]; ok {
+	} else if isSet, ok := arguments["--remove-tag"]; ok && isSet.(bool) {
 		tag, err := arguments.String("TAG")
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 

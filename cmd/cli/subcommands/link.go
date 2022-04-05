@@ -50,7 +50,7 @@ func LinkMain(db *sqlx.DB, exiter func(int)) {
 	helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
 	// ******************************************************************//
-	if _, ok := arguments["--add"]; ok {
+	if isSet, ok := arguments["--add"]; ok && isSet.(bool) {
 		source, err := arguments.String("SRC")
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
@@ -60,7 +60,7 @@ func LinkMain(db *sqlx.DB, exiter func(int)) {
 		err = liblinks.AddLink(db, nil, source, destination)
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 		// ******************************************************************//
-	} else if _, ok := arguments["--remove"]; ok {
+	} else if isSet, ok := arguments["--remove"]; ok && isSet.(bool) {
 		source, err := arguments.String("SRC")
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
@@ -70,7 +70,7 @@ func LinkMain(db *sqlx.DB, exiter func(int)) {
 		err = liblinks.RemoveLink(db, nil, source, destination)
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 		// ******************************************************************//
-	} else if _, ok := arguments["--list"]; ok {
+	} else if isSet, ok := arguments["--list"]; ok && isSet.(bool) {
 		source, err := arguments.String("SRC")
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
@@ -81,7 +81,7 @@ func LinkMain(db *sqlx.DB, exiter func(int)) {
 			fmt.Println(link)
 		}
 		// ******************************************************************//
-	} else if _, ok := arguments["--list-back"]; ok {
+	} else if isSet, ok := arguments["--list-back"]; ok && isSet.(bool) {
 		destination, err := arguments.String("DEST")
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 

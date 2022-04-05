@@ -58,21 +58,21 @@ func TagMain(db *sqlx.DB, exiter func(int)) {
 	helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
 	// ******************************************************************//
-	if _, ok := arguments["--import"]; ok {
+	if isSet, ok := arguments["--import"]; ok && isSet.(bool) {
 		path, err := arguments.String("PATH")
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
 		err = libtags.ImportYML(db, path)
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 		// ******************************************************************//
-	} else if _, ok := arguments["--export"]; ok {
+	} else if isSet, ok := arguments["--export"]; ok && isSet.(bool) {
 		path, err := arguments.String("PATH")
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
 		err = libtags.ExportYML(db, path)
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 		// ******************************************************************//
-	} else if _, ok := arguments["--ambiguous"]; ok {
+	} else if isSet, ok := arguments["--ambiguous"]; ok && isSet.(bool) {
 		tag, err := arguments.String("TAG")
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
@@ -81,7 +81,7 @@ func TagMain(db *sqlx.DB, exiter func(int)) {
 
 		fmt.Println(strconv.FormatBool(isAmbiguous))
 		// ******************************************************************//
-	} else if _, ok := arguments["--component"]; ok {
+	} else if isSet, ok := arguments["--component"]; ok && isSet.(bool) {
 		tag, err := arguments.String("TAG")
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
@@ -90,14 +90,14 @@ func TagMain(db *sqlx.DB, exiter func(int)) {
 
 		fmt.Println(index)
 		// ******************************************************************//
-	} else if _, ok := arguments["--remove"]; ok {
+	} else if isSet, ok := arguments["--remove"]; ok && isSet.(bool) {
 		tag, err := arguments.String("TAG")
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
 		err = libtags.DeleteTag(db, nil, tag)
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 		// ******************************************************************//
-	} else if _, ok := arguments["--rename"]; ok {
+	} else if isSet, ok := arguments["--rename"]; ok && isSet.(bool) {
 		oldName, err := arguments.String("OLD")
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
@@ -107,7 +107,7 @@ func TagMain(db *sqlx.DB, exiter func(int)) {
 		err = libtags.RenameTag(db, nil, oldName, newName)
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 		// ******************************************************************//
-	} else if _, ok := arguments["--shorten"]; ok {
+	} else if isSet, ok := arguments["--shorten"]; ok && isSet.(bool) {
 		tag, err := arguments.String("TAG")
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
@@ -116,7 +116,7 @@ func TagMain(db *sqlx.DB, exiter func(int)) {
 
 		fmt.Println(shortened)
 		// ******************************************************************//
-	} else if _, ok := arguments["--list-short"]; ok {
+	} else if isSet, ok := arguments["--list-short"]; ok && isSet.(bool) {
 		tags, err := libtags.ListTags(db)
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 

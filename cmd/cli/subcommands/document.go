@@ -74,7 +74,7 @@ func DocumentMain(db *sqlx.DB, exiter func(int)) {
 	helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
 	// ******************************************************************//
-	if _, ok := arguments["--add-tag"]; ok {
+	if isSet, ok := arguments["--add-tag"]; ok && isSet.(bool) {
 		documentPath, err := arguments.String("DOCUMENT_PATH")
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
@@ -87,7 +87,7 @@ func DocumentMain(db *sqlx.DB, exiter func(int)) {
 		err = libdocuments.AddTag(db, nil, documentPath, tag)
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 		// ******************************************************************//
-	} else if _, ok := arguments["--remove-tag"]; ok {
+	} else if isSet, ok := arguments["--remove-tag"]; ok && isSet.(bool) {
 		documentPath, err := arguments.String("DOCUMENT_PATH")
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
@@ -100,7 +100,7 @@ func DocumentMain(db *sqlx.DB, exiter func(int)) {
 		err = libdocuments.RemoveTag(db, nil, documentPath, tag)
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 		// ******************************************************************//
-	} else if _, ok := arguments["--rename-tag"]; ok {
+	} else if isSet, ok := arguments["--rename-tag"]; ok && isSet.(bool) {
 		documentPath, err := arguments.String("DOCUMENT_PATH")
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
@@ -113,7 +113,7 @@ func DocumentMain(db *sqlx.DB, exiter func(int)) {
 		err = libdocuments.RenameTagInFile(documentPath, oldTag, newTag)
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 		// ******************************************************************//
-	} else if _, ok := arguments["--get-tags"]; ok {
+	} else if isSet, ok := arguments["--get-tags"]; ok && isSet.(bool) {
 		documentPath, err := arguments.String("DOCUMENT_PATH")
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
@@ -124,7 +124,7 @@ func DocumentMain(db *sqlx.DB, exiter func(int)) {
 			fmt.Println(tag)
 		}
 		// ******************************************************************//
-	} else if _, ok := arguments["--find-tags-line"]; ok {
+	} else if isSet, ok := arguments["--find-tags-line"]; ok && isSet.(bool) {
 		documentPath, err := arguments.String("DOCUMENT_PATH")
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
@@ -133,7 +133,7 @@ func DocumentMain(db *sqlx.DB, exiter func(int)) {
 
 		fmt.Printf("%v %v", index, line)
 		// ******************************************************************//
-	} else if _, ok := arguments["--has-tags"]; ok {
+	} else if isSet, ok := arguments["--has-tags"]; ok && isSet.(bool) {
 		documentPath, err := arguments.String("DOCUMENT_PATH")
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
@@ -145,7 +145,7 @@ func DocumentMain(db *sqlx.DB, exiter func(int)) {
 
 		fmt.Println(hasTag)
 		// ******************************************************************//
-	} else if _, ok := arguments["--find-docs-with-tags"]; ok {
+	} else if isSet, ok := arguments["--find-docs-with-tags"]; ok && isSet.(bool) {
 		tagsRaw, err := arguments.String("TAGS")
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
@@ -156,7 +156,7 @@ func DocumentMain(db *sqlx.DB, exiter func(int)) {
 			fmt.Println(document)
 		}
 		// ******************************************************************//
-	} else if _, ok := arguments["--find-links-lines"]; ok {
+	} else if isSet, ok := arguments["--find-links-lines"]; ok && isSet.(bool) {
 		documentPath, err := arguments.String("DOCUMENT_PATH")
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
@@ -167,7 +167,7 @@ func DocumentMain(db *sqlx.DB, exiter func(int)) {
 			fmt.Println(link)
 		}
 		// ******************************************************************//
-	} else if _, ok := arguments["--find-backlinks-lines"]; ok {
+	} else if isSet, ok := arguments["--find-backlinks-lines"]; ok && isSet.(bool) {
 		documentPath, err := arguments.String("DOCUMENT_PATH")
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
@@ -178,7 +178,7 @@ func DocumentMain(db *sqlx.DB, exiter func(int)) {
 			fmt.Println(link)
 		}
 		// ******************************************************************//
-	} else if _, ok := arguments["--add-link"]; ok {
+	} else if isSet, ok := arguments["--add-link"]; ok && isSet.(bool) {
 		documentPath, err := arguments.String("DOCUMENT_PATH")
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
@@ -188,7 +188,7 @@ func DocumentMain(db *sqlx.DB, exiter func(int)) {
 		err = libdocuments.AddLink(documentPath, link)
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 		// ******************************************************************//
-	} else if _, ok := arguments["--remove-link"]; ok {
+	} else if isSet, ok := arguments["--remove-link"]; ok && isSet.(bool) {
 		documentPath, err := arguments.String("DOCUMENT_PATH")
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
@@ -198,7 +198,7 @@ func DocumentMain(db *sqlx.DB, exiter func(int)) {
 		err = libdocuments.RemoveLink(documentPath, link)
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 		// ******************************************************************//
-	} else if _, ok := arguments["--add-backlink"]; ok {
+	} else if isSet, ok := arguments["--add-backlink"]; ok && isSet.(bool) {
 		documentPath, err := arguments.String("DOCUMENT_PATH")
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
@@ -208,7 +208,7 @@ func DocumentMain(db *sqlx.DB, exiter func(int)) {
 		err = libdocuments.AddBacklink(documentPath, backlink)
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 		// ******************************************************************//
-	} else if _, ok := arguments["--remove-backlink"]; ok {
+	} else if isSet, ok := arguments["--remove-backlink"]; ok && isSet.(bool) {
 		documentPath, err := arguments.String("DOCUMENT_PATH")
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
@@ -218,7 +218,7 @@ func DocumentMain(db *sqlx.DB, exiter func(int)) {
 		err = libdocuments.RemoveBacklink(documentPath, backlink)
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 		// ******************************************************************//
-	} else if _, ok := arguments["--add-doc"]; ok {
+	} else if isSet, ok := arguments["--add-doc"]; ok && isSet.(bool) {
 		documentPath, err := arguments.String("DOCUMENT_PATH")
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
@@ -228,14 +228,14 @@ func DocumentMain(db *sqlx.DB, exiter func(int)) {
 		err = libdocuments.AddDocument(db, nil, documentPath, type_)
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 		// ******************************************************************//
-	} else if _, ok := arguments["--remove-doc"]; ok {
+	} else if isSet, ok := arguments["--remove-doc"]; ok && isSet.(bool) {
 		documentPath, err := arguments.String("DOCUMENT_PATH")
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
 		err = libdocuments.RemoveDocument(db, nil, documentPath)
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 		// ******************************************************************//
-	} else if _, ok := arguments["--rename-doc"]; ok {
+	} else if isSet, ok := arguments["--rename-doc"]; ok && isSet.(bool) {
 		oldPath, err := arguments.String("OLD_PATH")
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
@@ -245,7 +245,7 @@ func DocumentMain(db *sqlx.DB, exiter func(int)) {
 		err = libdocuments.RenameDocument(db, nil, oldPath, newPath)
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 		// ******************************************************************//
-	} else if _, ok := arguments["--change-doc-type"]; ok {
+	} else if isSet, ok := arguments["--change-doc-type"]; ok && isSet.(bool) {
 		documentPath, err := arguments.String("DOCUMENT_PATH")
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
@@ -255,14 +255,14 @@ func DocumentMain(db *sqlx.DB, exiter func(int)) {
 		err = libdocuments.ChangeDocumentType(db, nil, documentPath, type_)
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 		// ******************************************************************//
-	} else if _, ok := arguments["--add-doc-type"]; ok {
+	} else if isSet, ok := arguments["--add-doc-type"]; ok && isSet.(bool) {
 		type_, err := arguments.String("TYPE")
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
 		err = libdocuments.AddType(db, nil, type_)
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 		// ******************************************************************//
-	} else if _, ok := arguments["--remove-doc-type"]; ok {
+	} else if isSet, ok := arguments["--remove-doc-type"]; ok && isSet.(bool) {
 		type_, err := arguments.String("TYPE")
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
