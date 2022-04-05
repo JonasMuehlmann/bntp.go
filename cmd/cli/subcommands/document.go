@@ -37,13 +37,13 @@ Usage:
     bntp document (--add-tag | --remove-tag) DOCUMENT_PATH TAG
     bntp document --rename-tag DOCUMENT_PATH OLD_TAG NEW_TAG
     bntp document (--get-tags | --find-tags-line | --find-links-line | --find-backlinks-line) DOCUMENT_PATH
-    bntp document --has-tags DOCUMENT_PATH TAG...
-    bntp document --find-documents-with-tags TAG...
+    bntp document --has-tags DOCUMENT_PATH TAGS...
+    bntp document --find-documents-with-tags TAGS...
     bntp document (--add-link | --remove-link) DOCUMENT_PATH LINK
     bntp document (--add-backlink | --remove-backlink) DOCUMENT_PATH BACKLINK
-    bntp document (--add-doc| --remove-doc) DOCUMENT_PATH TAG
+    bntp document (--add-doc| --remove-doc) DOCUMENT_PATH TYPE
     bntp document --rename-doc OLD_PATH NEW_PATH
-    bntp document --change-doc-type DOCUMENT_PATH NEW_TYPE
+    bntp document --change-doc-type DOCUMENT_PATH TYPE
     bntp document (--add-doc-type | --remove-doc-type) TYPE
 
 Options:
@@ -84,6 +84,7 @@ func DocumentMain(db *sqlx.DB, exiter func(int)) {
 		err = libdocuments.AddTagToFile(documentPath, tag)
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
+		// FIX: This returns an unclear error message: no rows in result set
 		err = libdocuments.AddTag(db, nil, documentPath, tag)
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 		// ******************************************************************//
@@ -120,7 +121,7 @@ func DocumentMain(db *sqlx.DB, exiter func(int)) {
 		tags, err := libdocuments.GetTags(documentPath)
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
-		for tag := range tags {
+		for _, tag := range tags {
 			fmt.Println(tag)
 		}
 		// ******************************************************************//
@@ -152,7 +153,7 @@ func DocumentMain(db *sqlx.DB, exiter func(int)) {
 		documents, err := libdocuments.FindDocumentsWithTags(db, strings.Split(tagsRaw, ","))
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
-		for document := range documents {
+		for _, document := range documents {
 			fmt.Println(document)
 		}
 		// ******************************************************************//
@@ -163,7 +164,7 @@ func DocumentMain(db *sqlx.DB, exiter func(int)) {
 		start, end, links, err := libdocuments.FindLinksLines(documentPath)
 
 		fmt.Printf("%v %v\n", start, end)
-		for link := range links {
+		for _, link := range links {
 			fmt.Println(link)
 		}
 		// ******************************************************************//
@@ -174,7 +175,7 @@ func DocumentMain(db *sqlx.DB, exiter func(int)) {
 		start, end, backlinks, err := libdocuments.FindBacklinksLines(documentPath)
 
 		fmt.Printf("%v %v\n", start, end)
-		for link := range backlinks {
+		for _, link := range backlinks {
 			fmt.Println(link)
 		}
 		// ******************************************************************//
@@ -239,7 +240,7 @@ func DocumentMain(db *sqlx.DB, exiter func(int)) {
 		oldPath, err := arguments.String("OLD_PATH")
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
-		newPath, err := arguments.String("NEW_PATH")
+		newPath, err := arguments.String("PATH")
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
 		err = libdocuments.RenameDocument(db, nil, oldPath, newPath)

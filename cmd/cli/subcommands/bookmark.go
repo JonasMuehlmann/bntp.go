@@ -117,7 +117,7 @@ func BookmarkMain(db *sqlx.DB, exiter func(int)) {
 		bookmarks, err := libbookmarks.GetBookmarks(db, filter)
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
-		for bookmark := range bookmarks {
+		for _, bookmark := range bookmarks {
 			fmt.Println(bookmark)
 		}
 		// ******************************************************************//
@@ -139,7 +139,7 @@ func BookmarkMain(db *sqlx.DB, exiter func(int)) {
 		types, err := libbookmarks.ListTypes(db)
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
-		for type_ := range types {
+		for _, type_ := range types {
 			fmt.Println(type_)
 		}
 		// ******************************************************************//
