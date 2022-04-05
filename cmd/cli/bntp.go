@@ -48,6 +48,8 @@ Options:
     --version     Show version.`
 
 func main() {
+	*log.Default() = *log.New(os.Stdout, "BNTP - ", log.Ltime|log.Lshortfile)
+
 	parser := &docopt.Parser{
 		HelpHandler:  docopt.PrintHelpOnly,
 		OptionsFirst: true,
