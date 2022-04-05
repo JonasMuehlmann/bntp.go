@@ -234,6 +234,8 @@ func DeleteTag(dbConn *sqlx.DB, transaction *sqlx.Tx, tag string) error {
 	return err
 }
 
+// TODO: This should also return the ambiguous part
+
 // FindAmbiguousTagComponent finds the index (root = 0) of an ambiguous component.
 func FindAmbiguousTagComponent(dbConn *sqlx.DB, tag string) (int, error) {
 	stmt := `
