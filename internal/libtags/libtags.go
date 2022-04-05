@@ -311,17 +311,20 @@ func IsLeafAmbiguous(dbConn *sqlx.DB, tag string) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	tagComponents := strings.Split(tag, "::")
 
+	tagComponents := strings.Split(tag, "::")
 	leaf := tagComponents[len(tagComponents)-1]
+	seenOnce := false
 
 	for _, tag := range tags {
 		curTagComponents := strings.Split(tag, "::")
 		curLeaf := curTagComponents[len(curTagComponents)-1]
 
-		if curLeaf == leaf {
+		if curLeaf == leaf && seenOnce {
 			return true, nil
 		}
+
+		seenOnce = true
 	}
 
 	return false, nil
