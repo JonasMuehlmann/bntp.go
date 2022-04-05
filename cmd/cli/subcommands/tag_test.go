@@ -188,6 +188,24 @@ func TestAmbiguousComponent(t *testing.T) {
 }
 
 // ******************************************************************//
+//                               --add                              //
+// ******************************************************************//.
+func TestAddTag(t *testing.T) {
+	logInterceptBuffer := strings.Builder{}
+	log.SetOutput(&logInterceptBuffer)
+
+	defer log.SetOutput(os.Stderr)
+
+	db, err := test.GetDB(t)
+	assert.NoError(t, err)
+
+	os.Args = []string{"", "tag", "--add", "foo"}
+
+	subcommands.TagMain(db, helpers.NOPExiter)
+	assert.Empty(t, logInterceptBuffer.String())
+}
+
+// ******************************************************************//
 //                             --remove                             //
 // ******************************************************************//.
 func TestRemove(t *testing.T) {
