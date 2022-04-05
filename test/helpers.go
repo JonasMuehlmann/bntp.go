@@ -1,6 +1,7 @@
 package test
 
 import (
+	"bufio"
 	"os"
 	"path/filepath"
 	"testing"
@@ -9,6 +10,7 @@ import (
 
 	"github.com/jmoiron/sqlx"
 	_ "github.com/mattn/go-sqlite3"
+	"github.com/stretchr/testify/assert"
 )
 
 var TestDataTempDir = filepath.Join(os.TempDir(), "bntp_tests")
@@ -45,4 +47,29 @@ func CreateTestTempFile(filename string) (*os.File, error) {
 	}
 
 	return file, nil
+}
+
+func InterceptStdout(t *testing.T) (*bufio.Scanner, *os.File, *os.File) {
+	reader, writer, err := os.Pipe()
+	if err != nil {
+		assert.Fail(t, "Error creating pipe: %v", err)
+	}
+
+	os.Stdout = writer
+
+	return bufio.NewScanner(reader), reader, writer
+}
+
+func ResetStdout(t *testing.T, reader *os.File, writer *os.File) {
+	err := reader.Close()
+	if err != nil {
+		assert.Fail(t, "Error closing reader: %v", err)
+	}
+
+	err = writer.Close()
+	if err != nil {
+		assert.Fail(t, "Error closing writer: %v", err)
+	}
+
+	os.Stdout = os.Stderr
 }
