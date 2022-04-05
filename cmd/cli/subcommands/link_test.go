@@ -19,3 +19,70 @@
 // OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 package subcommands_test
+
+import (
+	"log"
+	"os"
+	"strings"
+	"testing"
+
+	"github.com/JonasMuehlmann/bntp.go/cmd/cli/subcommands"
+	"github.com/JonasMuehlmann/bntp.go/internal/helpers"
+	"github.com/JonasMuehlmann/bntp.go/internal/libdocuments"
+	"github.com/JonasMuehlmann/bntp.go/test"
+	"github.com/stretchr/testify/assert"
+)
+
+// ******************************************************************//
+//                               --add                              //
+// ******************************************************************//.
+func TestAddLink(t *testing.T) {
+	logInterceptBuffer := strings.Builder{}
+	log.SetOutput(&logInterceptBuffer)
+
+	defer log.SetOutput(os.Stderr)
+
+	db, err := test.GetDB(t)
+	assert.NoError(t, err)
+
+	os.Args = []string{"", "link", "--add", "foo", "bar"}
+
+	err = libdocuments.AddType(db, nil, "type")
+	assert.NoError(t, err)
+
+	err = libdocuments.AddDocument(db, nil, "foo", "type")
+	assert.NoError(t, err)
+
+	err = libdocuments.AddDocument(db, nil, "bar", "type")
+	assert.NoError(t, err)
+
+	subcommands.LinkMain(db, helpers.NOPExiter)
+	assert.Empty(t, logInterceptBuffer.String())
+}
+
+// ******************************************************************//
+//                             --remove                             //
+// ******************************************************************//.
+func TestRemoveLink(t *testing.T) {
+	logInterceptBuffer := strings.Builder{}
+	log.SetOutput(&logInterceptBuffer)
+
+	defer log.SetOutput(os.Stderr)
+
+	db, err := test.GetDB(t)
+	assert.NoError(t, err)
+
+	os.Args = []string{"", "link", "--remove", "foo", "bar"}
+
+	err = libdocuments.AddType(db, nil, "type")
+	assert.NoError(t, err)
+
+	err = libdocuments.AddDocument(db, nil, "foo", "type")
+	assert.NoError(t, err)
+
+	err = libdocuments.AddDocument(db, nil, "bar", "type")
+	assert.NoError(t, err)
+
+	subcommands.LinkMain(db, helpers.NOPExiter)
+	assert.Empty(t, logInterceptBuffer.String())
+}
