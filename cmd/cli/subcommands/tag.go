@@ -37,7 +37,7 @@ Usage:
     bntp tag (-i | -e) PATH
     bntp tag (-A | -c | -a | -r | -s) TAG
     bntp tag -R OLD NEW
-    bntp (-l | -L)
+    bntp tag (-l | -L)
 
 Options:
     -h --help           Show this screen.
@@ -116,8 +116,16 @@ func TagMain(db *sqlx.DB, exiter func(int)) {
 
 		fmt.Println(shortened)
 		// ******************************************************************//
-	} else if isSet, ok := arguments["--list-short"]; ok && isSet.(bool) {
+	} else if isSet, ok := arguments["--list"]; ok && isSet.(bool) {
 		tags, err := libtags.ListTags(db)
+		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+
+		for _, tag := range tags {
+			fmt.Println(tag)
+		}
+		// ******************************************************************//
+	} else if isSet, ok := arguments["--list-short"]; ok && isSet.(bool) {
+		tags, err := libtags.ListTagsShortened(db)
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
 		for _, tag := range tags {
