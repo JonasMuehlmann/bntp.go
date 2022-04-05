@@ -25,7 +25,9 @@ jobs:
         sqlite3 test/data/bntp_test.db < bntp.sql
 
     - name: Build
-      run: go build -v ./...
+      run: |
+        go build -v ./...
+        cp bntp.sql test/bntp.sql
 
     - name: Test
       run: go test -coverprofile coverage.out -v ./...
