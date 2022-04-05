@@ -28,15 +28,19 @@ import (
 
 	"github.com/JonasMuehlmann/bntp.go/cmd/cli/subcommands"
 	"github.com/JonasMuehlmann/bntp.go/internal/helpers"
+	"github.com/JonasMuehlmann/bntp.go/internal/libtags"
 	"github.com/JonasMuehlmann/bntp.go/test"
 	"github.com/stretchr/testify/assert"
 )
 
+// ******************************************************************//
+//                             --import                             //
+// ******************************************************************//.
 func TestImport(t *testing.T) {
 	logInterceptBuffer := strings.Builder{}
 	log.SetOutput(&logInterceptBuffer)
 
-	defer log.SetOutput(os.Stdout)
+	defer log.SetOutput(os.Stderr)
 
 	db, err := test.GetDB(t)
 	assert.NoError(t, err)
@@ -55,13 +59,14 @@ tags:
 	os.Args = []string{"", "tag", "--import", file.Name()}
 
 	subcommands.TagMain(db, helpers.NOPExiter)
+	assert.Empty(t, logInterceptBuffer.String())
 }
 
 func TestImportFileDoesNotExist(t *testing.T) {
 	logInterceptBuffer := strings.Builder{}
 	log.SetOutput(&logInterceptBuffer)
 
-	defer log.SetOutput(os.Stdout)
+	defer log.SetOutput(os.Stderr)
 
 	db, err := test.GetDB(t)
 	assert.NoError(t, err)
@@ -69,5 +74,83 @@ func TestImportFileDoesNotExist(t *testing.T) {
 	os.Args = []string{"", "tag", "--import", "foo"}
 
 	subcommands.TagMain(db, helpers.NOPExiter)
+	assert.Contains(t, logInterceptBuffer.String(), "no such file")
+}
+
+// ******************************************************************//
+//                             --export                             //
+// ******************************************************************//.
+func TestExport(t *testing.T) {
+	db, err := test.GetDB(t)
+	assert.NoError(t, err)
+
+	file, err := test.CreateTestTempFile(t.Name())
+	assert.NoError(t, err)
+
+	os.Args = []string{"", "tag", "--export", file.Name()}
+
+	err = libtags.AddTag(db, nil, "foo")
+	assert.NoError(t, err)
+
+	err = libtags.AddTag(db, nil, "bar")
+	assert.NoError(t, err)
+
+	subcommands.TagMain(db, helpers.NOPExiter)
+}
+
+// ******************************************************************//
+//                            --ambiguous                           //
+// ******************************************************************//.
+func TestAmbiguousNotAmbiguous(t *testing.T) {
+	logInterceptBuffer := strings.Builder{}
+	log.SetOutput(&logInterceptBuffer)
+
+	defer log.SetOutput(os.Stderr)
+
+	stdOutInterceptBuffer, reader, writer := test.InterceptStdout(t)
+	defer test.ResetStdout(t, reader, writer)
+
+	db, err := test.GetDB(t)
+	assert.NoError(t, err)
+
+	tag := "foo::bar::baz"
+	os.Args = []string{"", "tag", "--ambiguous", tag}
+
+	err = libtags.AddTag(db, nil, tag)
+	assert.NoError(t, err)
+
+	subcommands.TagMain(db, helpers.NOPExiter)
+	// stdOutInterceptBuffer.Scan()
+
+	assert.Contains(t, stdOutInterceptBuffer.Text(), "False")
+	assert.Contains(t, logInterceptBuffer.String(), "no such file")
+}
+
+func TestAmbiguousAmbiguous(t *testing.T) {
+	logInterceptBuffer := strings.Builder{}
+	log.SetOutput(&logInterceptBuffer)
+
+	defer log.SetOutput(os.Stderr)
+
+	stdOutInterceptBuffer, reader, writer := test.InterceptStdout(t)
+	defer test.ResetStdout(t, reader, writer)
+
+	db, err := test.GetDB(t)
+	assert.NoError(t, err)
+
+	tag1 := "foo::bar::baz"
+	tag2 := "foo::foo::baz"
+	os.Args = []string{"", "tag", "--ambiguous", tag1}
+
+	err = libtags.AddTag(db, nil, tag1)
+	assert.NoError(t, err)
+
+	err = libtags.AddTag(db, nil, tag2)
+	assert.NoError(t, err)
+
+	subcommands.TagMain(db, helpers.NOPExiter)
+	// stdOutInterceptBuffer.Scan()
+
+	assert.Contains(t, stdOutInterceptBuffer.Text(), "True")
 	assert.Contains(t, logInterceptBuffer.String(), "no such file")
 }
