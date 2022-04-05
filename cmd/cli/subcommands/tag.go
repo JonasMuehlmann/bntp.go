@@ -21,6 +21,7 @@
 package subcommands
 
 import (
+	"fmt"
 	"strconv"
 
 	"github.com/JonasMuehlmann/bntp.go/internal/helpers"
@@ -78,7 +79,7 @@ func TagMain(db *sqlx.DB, exiter func(int)) {
 		isAmbiguous, err := libtags.IsLeafAmbiguous(db, tag)
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
-		println(strconv.FormatBool(isAmbiguous))
+		fmt.Println(strconv.FormatBool(isAmbiguous))
 		// ******************************************************************//
 	} else if _, ok := arguments["--component"]; ok {
 		tag, err := arguments.String("TAG")
@@ -87,7 +88,7 @@ func TagMain(db *sqlx.DB, exiter func(int)) {
 		index, err := libtags.FindAmbiguousTagComponent(db, tag)
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
-		println(index)
+		fmt.Println(index)
 		// ******************************************************************//
 	} else if _, ok := arguments["--remove"]; ok {
 		tag, err := arguments.String("TAG")
@@ -113,14 +114,14 @@ func TagMain(db *sqlx.DB, exiter func(int)) {
 		shortened, err := libtags.TryShortenTag(db, tag)
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
-		println(shortened)
+		fmt.Println(shortened)
 		// ******************************************************************//
 	} else if _, ok := arguments["--list-short"]; ok {
 		tags, err := libtags.ListTags(db)
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
 		for _, tag := range tags {
-			println(tag)
+			fmt.Println(tag)
 		}
 	}
 }

@@ -121,7 +121,7 @@ func DocumentMain(db *sqlx.DB, exiter func(int)) {
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
 		for tag := range tags {
-			println(tag)
+			fmt.Println(tag)
 		}
 		// ******************************************************************//
 	} else if _, ok := arguments["--find-tags-line"]; ok {
@@ -143,7 +143,7 @@ func DocumentMain(db *sqlx.DB, exiter func(int)) {
 		hasTag, err := libdocuments.HasTags(documentPath, strings.Split(tagsRaw, ","))
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
-		println(hasTag)
+		fmt.Println(hasTag)
 		// ******************************************************************//
 	} else if _, ok := arguments["--find-docs-with-tags"]; ok {
 		tagsRaw, err := arguments.String("TAGS")
@@ -153,7 +153,7 @@ func DocumentMain(db *sqlx.DB, exiter func(int)) {
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
 		for document := range documents {
-			println(document)
+			fmt.Println(document)
 		}
 		// ******************************************************************//
 	} else if _, ok := arguments["--find-links-lines"]; ok {
@@ -164,7 +164,7 @@ func DocumentMain(db *sqlx.DB, exiter func(int)) {
 
 		fmt.Printf("%v %v\n", start, end)
 		for link := range links {
-			println(link)
+			fmt.Println(link)
 		}
 		// ******************************************************************//
 	} else if _, ok := arguments["--find-backlinks-lines"]; ok {
@@ -175,7 +175,7 @@ func DocumentMain(db *sqlx.DB, exiter func(int)) {
 
 		fmt.Printf("%v %v\n", start, end)
 		for link := range backlinks {
-			println(link)
+			fmt.Println(link)
 		}
 		// ******************************************************************//
 	} else if _, ok := arguments["--add-link"]; ok {

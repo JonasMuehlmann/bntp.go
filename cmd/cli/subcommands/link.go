@@ -21,6 +21,8 @@
 package subcommands
 
 import (
+	"fmt"
+
 	"github.com/JonasMuehlmann/bntp.go/internal/helpers"
 	"github.com/JonasMuehlmann/bntp.go/internal/liblinks"
 	"github.com/docopt/docopt-go"
@@ -76,7 +78,7 @@ func LinkMain(db *sqlx.DB, exiter func(int)) {
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
 		for _, link := range links {
-			println(link)
+			fmt.Println(link)
 		}
 		// ******************************************************************//
 	} else if _, ok := arguments["--list-back"]; ok {
@@ -87,7 +89,7 @@ func LinkMain(db *sqlx.DB, exiter func(int)) {
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
 		for _, backlink := range backlinks {
-			println(backlink)
+			fmt.Println(backlink)
 		}
 	}
 }

@@ -23,6 +23,7 @@ package subcommands
 import (
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"log"
 	"strconv"
 
@@ -117,7 +118,7 @@ func BookmarkMain(db *sqlx.DB, exiter func(int)) {
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
 		for bookmark := range bookmarks {
-			println(bookmark)
+			fmt.Println(bookmark)
 		}
 		// ******************************************************************//
 	} else if _, ok := arguments["--add-type"]; ok {
@@ -139,7 +140,7 @@ func BookmarkMain(db *sqlx.DB, exiter func(int)) {
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
 		for type_ := range types {
-			println(type_)
+			fmt.Println(type_)
 		}
 		// ******************************************************************//
 	} else if _, ok := arguments["--add"]; ok {
