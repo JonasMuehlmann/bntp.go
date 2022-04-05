@@ -26,8 +26,9 @@ jobs:
 
     - name: Build
       run: |
-        go build -v ./...
         cp bntp.sql test/bntp.sql
+        go build -v ./...
+
 
     - name: Test
       run: go test -coverprofile coverage.out -v ./...
