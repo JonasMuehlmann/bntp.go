@@ -122,7 +122,7 @@ func TestAmbiguousNotAmbiguous(t *testing.T) {
 	subcommands.TagMain(db, helpers.NOPExiter)
 	stdOutInterceptBuffer.Scan()
 
-	assert.Contains(t, stdOutInterceptBuffer.Text(), "false")
+	assert.Equal(t, "false", stdOutInterceptBuffer.Text())
 	assert.Empty(t, logInterceptBuffer.String())
 }
 
@@ -151,6 +151,176 @@ func TestAmbiguousAmbiguous(t *testing.T) {
 	subcommands.TagMain(db, helpers.NOPExiter)
 	stdOutInterceptBuffer.Scan()
 
-	assert.Contains(t, stdOutInterceptBuffer.Text(), "true")
+	assert.Equal(t, "true", stdOutInterceptBuffer.Text())
 	assert.Empty(t, logInterceptBuffer.String())
+}
+
+// ******************************************************************//
+//                            --comonent                            //
+// ******************************************************************//.
+func TestAmbiguousComponent(t *testing.T) {
+	logInterceptBuffer := strings.Builder{}
+	log.SetOutput(&logInterceptBuffer)
+
+	defer log.SetOutput(os.Stderr)
+
+	stdOutInterceptBuffer, reader, writer := test.InterceptStdout(t)
+	defer test.ResetStdout(t, reader, writer)
+
+	db, err := test.GetDB(t)
+	assert.NoError(t, err)
+
+	tag1 := "foo::bar::baz"
+	tag2 := "foo::foo::baz"
+	os.Args = []string{"", "tag", "--component", tag1}
+
+	err = libtags.AddTag(db, nil, tag1)
+	assert.NoError(t, err)
+
+	err = libtags.AddTag(db, nil, tag2)
+	assert.NoError(t, err)
+
+	subcommands.TagMain(db, helpers.NOPExiter)
+	stdOutInterceptBuffer.Scan()
+
+	assert.Equal(t, "1", stdOutInterceptBuffer.Text())
+	assert.Empty(t, logInterceptBuffer.String())
+}
+
+// ******************************************************************//
+//                             --remove                             //
+// ******************************************************************//.
+func TestRemove(t *testing.T) {
+	logInterceptBuffer := strings.Builder{}
+	log.SetOutput(&logInterceptBuffer)
+
+	defer log.SetOutput(os.Stderr)
+
+	db, err := test.GetDB(t)
+	assert.NoError(t, err)
+
+	os.Args = []string{"", "tag", "--remove", "foo"}
+
+	subcommands.TagMain(db, helpers.NOPExiter)
+	assert.Empty(t, logInterceptBuffer.String())
+}
+
+// ******************************************************************//
+//                             --rename                             //
+// ******************************************************************//.
+func TestRename(t *testing.T) {
+	logInterceptBuffer := strings.Builder{}
+	log.SetOutput(&logInterceptBuffer)
+
+	defer log.SetOutput(os.Stderr)
+
+	db, err := test.GetDB(t)
+	assert.NoError(t, err)
+
+	os.Args = []string{"", "tag", "--rename", "foo", "bar"}
+
+	subcommands.TagMain(db, helpers.NOPExiter)
+	assert.Empty(t, logInterceptBuffer.String())
+}
+
+// ******************************************************************//
+//                             --shorten                            //
+// ******************************************************************//.
+func TestShorten(t *testing.T) {
+	logInterceptBuffer := strings.Builder{}
+	log.SetOutput(&logInterceptBuffer)
+
+	defer log.SetOutput(os.Stderr)
+
+	stdOutInterceptBuffer, reader, writer := test.InterceptStdout(t)
+	defer test.ResetStdout(t, reader, writer)
+
+	db, err := test.GetDB(t)
+	assert.NoError(t, err)
+
+	tag1 := "foo::foo::baz"
+	os.Args = []string{"", "tag", "--shorten", tag1}
+
+	err = libtags.AddTag(db, nil, tag1)
+	assert.NoError(t, err)
+
+	subcommands.TagMain(db, helpers.NOPExiter)
+	stdOutInterceptBuffer.Scan()
+
+	assert.Empty(t, logInterceptBuffer.String())
+	assert.Equal(t, "baz", stdOutInterceptBuffer.Text())
+}
+
+// ******************************************************************//
+//                              --list                              //
+// ******************************************************************//.
+func TestList(t *testing.T) {
+	logInterceptBuffer := strings.Builder{}
+	log.SetOutput(&logInterceptBuffer)
+
+	defer log.SetOutput(os.Stderr)
+
+	stdOutInterceptBuffer, reader, writer := test.InterceptStdout(t)
+	defer test.ResetStdout(t, reader, writer)
+
+	db, err := test.GetDB(t)
+	assert.NoError(t, err)
+
+	tag1 := "foo::foo::baz"
+	tag2 := "foo::bar::baz"
+	os.Args = []string{"", "tag", "--list"}
+
+	err = libtags.AddTag(db, nil, tag1)
+	assert.NoError(t, err)
+
+	err = libtags.AddTag(db, nil, tag2)
+	assert.NoError(t, err)
+
+	subcommands.TagMain(db, helpers.NOPExiter)
+	stdOutInterceptBuffer.Scan()
+
+	assert.Empty(t, logInterceptBuffer.String())
+	assert.Equal(t, tag1, stdOutInterceptBuffer.Text())
+
+	stdOutInterceptBuffer.Scan()
+
+	assert.Empty(t, logInterceptBuffer.String())
+	assert.Equal(t, tag2, stdOutInterceptBuffer.Text())
+}
+
+// ******************************************************************//
+//                           --list-short                           //
+// ******************************************************************//.
+func TestListShort(t *testing.T) {
+	logInterceptBuffer := strings.Builder{}
+	log.SetOutput(&logInterceptBuffer)
+
+	defer log.SetOutput(os.Stderr)
+
+	stdOutInterceptBuffer, reader, writer := test.InterceptStdout(t)
+	defer test.ResetStdout(t, reader, writer)
+
+	db, err := test.GetDB(t)
+	assert.NoError(t, err)
+
+	tag1 := "foo::foo::baz"
+	tag2 := "foo::bar::baz"
+	os.Args = []string{"", "tag", "--list-short"}
+
+	err = libtags.AddTag(db, nil, tag1)
+	assert.NoError(t, err)
+
+	err = libtags.AddTag(db, nil, tag2)
+	assert.NoError(t, err)
+
+	subcommands.TagMain(db, helpers.NOPExiter)
+	stdOutInterceptBuffer.Scan()
+
+	assert.Empty(t, logInterceptBuffer.String())
+	assert.Equal(t, "foo::baz", stdOutInterceptBuffer.Text())
+
+	stdOutInterceptBuffer.Scan()
+
+	assert.Empty(t, logInterceptBuffer.String())
+	assert.Equal(t, "bar::baz", stdOutInterceptBuffer.Text())
 }
