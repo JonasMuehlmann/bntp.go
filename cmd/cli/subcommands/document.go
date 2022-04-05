@@ -132,15 +132,17 @@ func DocumentMain(db *sqlx.DB, exiter func(int)) {
 		index, line, err := libdocuments.FindTagsLine(documentPath)
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
-		fmt.Printf("%v %v", index, line)
+		fmt.Printf("%v %v\n", index, line)
 		// ******************************************************************//
 	} else if isSet, ok := arguments["--has-tags"]; ok && isSet.(bool) {
 		documentPath, err := arguments.String("DOCUMENT_PATH")
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
+		// FIX: This is an array of strings, not a string
 		tagsRaw, err := arguments.String("TAGS")
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
+		// FIX: This splitting is nonsense
 		hasTag, err := libdocuments.HasTags(documentPath, strings.Split(tagsRaw, ","))
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
