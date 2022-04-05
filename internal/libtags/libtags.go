@@ -234,10 +234,8 @@ func DeleteTag(dbConn *sqlx.DB, transaction *sqlx.Tx, tag string) error {
 	return err
 }
 
-// TODO: This should also return the ambiguous part
-
 // FindAmbiguousTagComponent finds the index (root = 0) of an ambiguous component.
-func FindAmbiguousTagComponent(dbConn *sqlx.DB, tag string) (int, error) {
+func FindAmbiguousTagComponent(dbConn *sqlx.DB, tag string) (int, string, error) {
 	stmt := `
         SELECT
             Tag
@@ -255,7 +253,7 @@ func FindAmbiguousTagComponent(dbConn *sqlx.DB, tag string) (int, error) {
 
 	statement, err := dbConn.Preparex(stmt)
 	if err != nil {
-		return -1, err
+		return -1, "", err
 	}
 
 	defer statement.Close()
@@ -281,7 +279,7 @@ func FindAmbiguousTagComponent(dbConn *sqlx.DB, tag string) (int, error) {
 		j--
 	}
 
-	return j, nil
+	return j, ambiguousTagComponents[j], nil
 }
 
 // TryShortenTag shortens tag as much as possible, while keeping it unambiguous.
