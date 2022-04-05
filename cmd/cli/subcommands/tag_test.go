@@ -120,10 +120,10 @@ func TestAmbiguousNotAmbiguous(t *testing.T) {
 	assert.NoError(t, err)
 
 	subcommands.TagMain(db, helpers.NOPExiter)
-	// stdOutInterceptBuffer.Scan()
+	stdOutInterceptBuffer.Scan()
 
-	assert.Contains(t, stdOutInterceptBuffer.Text(), "False")
-	assert.Contains(t, logInterceptBuffer.String(), "no such file")
+	assert.Contains(t, stdOutInterceptBuffer.Text(), "false")
+	assert.Empty(t, logInterceptBuffer.String())
 }
 
 func TestAmbiguousAmbiguous(t *testing.T) {
@@ -149,8 +149,8 @@ func TestAmbiguousAmbiguous(t *testing.T) {
 	assert.NoError(t, err)
 
 	subcommands.TagMain(db, helpers.NOPExiter)
-	// stdOutInterceptBuffer.Scan()
+	stdOutInterceptBuffer.Scan()
 
-	assert.Contains(t, stdOutInterceptBuffer.Text(), "True")
-	assert.Contains(t, logInterceptBuffer.String(), "no such file")
+	assert.Contains(t, stdOutInterceptBuffer.Text(), "true")
+	assert.Empty(t, logInterceptBuffer.String())
 }
