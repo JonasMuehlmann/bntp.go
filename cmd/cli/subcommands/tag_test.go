@@ -183,7 +183,7 @@ func TestAmbiguousComponent(t *testing.T) {
 	subcommands.TagMain(db, helpers.NOPExiter)
 	stdOutInterceptBuffer.Scan()
 
-	assert.Equal(t, "1", stdOutInterceptBuffer.Text())
+	assert.Equal(t, "1 bar", stdOutInterceptBuffer.Text())
 	assert.Empty(t, logInterceptBuffer.String())
 }
 

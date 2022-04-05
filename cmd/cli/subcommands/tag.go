@@ -85,10 +85,10 @@ func TagMain(db *sqlx.DB, exiter func(int)) {
 		tag, err := arguments.String("TAG")
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
-		index, err := libtags.FindAmbiguousTagComponent(db, tag)
+		index, component, err := libtags.FindAmbiguousTagComponent(db, tag)
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
-		fmt.Println(index)
+		fmt.Println(index, component)
 		// ******************************************************************//
 	} else if isSet, ok := arguments["--remove"]; ok && isSet.(bool) {
 		tag, err := arguments.String("TAG")

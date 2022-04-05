@@ -279,7 +279,7 @@ func FindAmbiguousTagComponent(dbConn *sqlx.DB, tag string) (int, string, error)
 		j--
 	}
 
-	return j, ambiguousTagComponents[j], nil
+	return j, inputTagComponents[j], nil
 }
 
 // TryShortenTag shortens tag as much as possible, while keeping it unambiguous.
@@ -294,7 +294,7 @@ func TryShortenTag(dbConn *sqlx.DB, tag string) (string, error) {
 	}
 
 	if isAmbiguous {
-		i, err := FindAmbiguousTagComponent(dbConn, tag)
+		i, _, err := FindAmbiguousTagComponent(dbConn, tag)
 		if err != nil {
 			return "", err
 		}
