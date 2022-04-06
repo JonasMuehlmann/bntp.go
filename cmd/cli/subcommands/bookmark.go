@@ -44,7 +44,7 @@ Usage:
     bntp bookmark --list-types
     bntp bookmark -a DATA
     bntp bookmark -r BOOKMARK_ID
-    bntp bookmark -e NEW_DATA
+    bntp bookmark -E NEW_DATA
     bntp bookmark --edit-is-read BOOKMARK_ID IS_READ
     bntp bookmark --edit-title BOOKMARK_ID TITLE
     bntp bookmark --edit-url BOOKMARK_ID TITLE
@@ -63,7 +63,7 @@ Options:
     --list-types            List the bookmark types.
     -a --add                Add a bookmark.
     -r --remove             Remove a bookmark.
-    -e --edit               Edit a bookmark.
+    -E --edit               Edit a bookmark.
     --edit-is-read          Change the is read status of a bookmark.
     --edit-title            Change the title of a bookmark.
     --edit-url              Change the url of a bookmark.
