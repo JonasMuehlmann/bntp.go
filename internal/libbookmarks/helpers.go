@@ -25,17 +25,19 @@ import (
 	"strings"
 )
 
+// REFACTOR: This might need an overhaul
+
 // ApplyBookmarkFilters takes an SQL query and adds JOIN and WHERE clauses for filtering.
 func ApplyBookmarkFilters(query string, filter BookmarkFilter) string {
 	joinFragments := make([]string, 0, 10)
 	whereFragments := make([]string, 0, 10)
 
 	if filter.Title != nil {
-		whereFragments = append(whereFragments, "WHERE Title LIKE = "+*filter.Title)
+		whereFragments = append(whereFragments, "Title LIKE '"+*filter.Title+"'")
 	}
 
 	if filter.Url != nil {
-		whereFragments = append(whereFragments, "WHERE Url LIKE = "+*filter.Url)
+		whereFragments = append(whereFragments, "Url LIKE '"+*filter.Url+"'")
 	}
 
 	if filter.IsCollection != nil {
@@ -47,7 +49,7 @@ func ApplyBookmarkFilters(query string, filter BookmarkFilter) string {
 			valConverted = "0"
 		}
 
-		whereFragments = append(whereFragments, "WHERE IsCollection = "+valConverted)
+		whereFragments = append(whereFragments, "IsCollection = "+valConverted)
 	}
 
 	if filter.IsRead != nil {
@@ -59,11 +61,11 @@ func ApplyBookmarkFilters(query string, filter BookmarkFilter) string {
 			valConverted = "0"
 		}
 
-		whereFragments = append(whereFragments, "WHERE IsRead = "+valConverted)
+		whereFragments = append(whereFragments, "IsRead = "+valConverted)
 	}
 
 	if filter.MaxAge != nil {
-		whereFragments = append(whereFragments, "WHERE timeAdded BETWEEN DATE('now') AND datetime(DATE('now'),'-'"+strconv.Itoa(*filter.MaxAge)+" days')")
+		whereFragments = append(whereFragments, "timeAdded BETWEEN DATE('now') AND datetime(DATE('now'),'-'"+strconv.Itoa(*filter.MaxAge)+" days')")
 	}
 
 	if filter.Tags != nil {
@@ -77,7 +79,7 @@ func ApplyBookmarkFilters(query string, filter BookmarkFilter) string {
 			tags = filter.Tags
 		}
 
-		whereFragments = append(whereFragments, "WHERE Tag IN ('"+strings.Join(tags, "', '")+"')")
+		whereFragments = append(whereFragments, "Tag IN ('"+strings.Join(tags, "', '")+"')")
 	}
 
 	if filter.Types != nil {
@@ -88,13 +90,19 @@ func ApplyBookmarkFilters(query string, filter BookmarkFilter) string {
 		} else {
 			types = filter.Types
 		}
-		whereFragments = append(whereFragments, "WHERE BookmarkType.Type IN ('"+strings.Join(types, "', '")+"')")
+		whereFragments = append(whereFragments, "BookmarkType.Type IN ('"+strings.Join(types, "', '")+"')")
 	}
 
 	joinFragment := strings.Join(joinFragments, " AND ")
 	whereFragment := strings.Join(whereFragments, " AND ")
 
-	filteredQuery := query + " " + joinFragment + " " + whereFragment + ";"
+	filteredQuery := query + " " + joinFragment
+
+	if len(whereFragments) > 0 {
+		filteredQuery += " WHERE " + whereFragment
+	}
+
+	filteredQuery += ";"
 
 	return filteredQuery
 }
