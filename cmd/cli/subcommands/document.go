@@ -36,7 +36,7 @@ Usage:
     bntp document -h | --help
     bntp document (--add-tag | --remove-tag) DOCUMENT_PATH TAG
     bntp document --rename-tag DOCUMENT_PATH OLD_TAG NEW_TAG
-    bntp document (--get-tags | --find-tags-line | --find-links-line | --find-backlinks-line) DOCUMENT_PATH
+    bntp document (--get-tags | --find-tags-line | --find-links-lines | --find-backlinks-lines) DOCUMENT_PATH
     bntp document --has-tags DOCUMENT_PATH TAGS...
     bntp document --find-docs-with-tags TAGS...
     bntp document (--add-link | --remove-link) DOCUMENT_PATH LINK
@@ -279,5 +279,4 @@ func DocumentMain(db *sqlx.DB, exiter func(int)) {
 		err = libdocuments.RemoveType(db, nil, type_)
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 	}
-	// TODO: Guard against unrecognized flags
 }
