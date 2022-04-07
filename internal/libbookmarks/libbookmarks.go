@@ -100,6 +100,8 @@ func ImportMinimalCSV(dbConn *sqlx.DB, csvPath string) error {
 	return nil
 }
 
+// TODO: Split conversion and export of bookmarks
+
 // ExportCSV exports an array of bookmarks to a CSV file at csvPath.
 func ExportCSV(bookmarks []Bookmark, csvPath string) error {
 	var writer *csv.Writer
