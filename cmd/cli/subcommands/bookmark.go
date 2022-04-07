@@ -47,8 +47,8 @@ Usage:
     bntp bookmark -E NEW_DATA
     bntp bookmark --edit-is-read BOOKMARK_ID IS_READ
     bntp bookmark --edit-title BOOKMARK_ID TITLE
-    bntp bookmark --edit-url BOOKMARK_ID TITLE
-    bntp bookmark --edit-type BOOKMARK_ID TITLE
+    bntp bookmark --edit-url BOOKMARK_ID URL
+    bntp bookmark --edit-type BOOKMARK_ID TYPE
     bntp bookmark --edit-is-collection BOOKMARK_ID IS_COLLECTION
     bntp bookmark (--add-tag | --remove-tag) BOOKMARK_ID TAG
 
@@ -265,9 +265,6 @@ func BookmarkMain(db *sqlx.DB, exiter func(int)) {
 		IDRaw, err := arguments.String("BOOKMARK_ID")
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
-		err = libbookmarks.AddType(db, nil, tag)
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
-
 		ID, err := strconv.Atoi(IDRaw)
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
@@ -279,9 +276,6 @@ func BookmarkMain(db *sqlx.DB, exiter func(int)) {
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
 		IDRaw, err := arguments.String("BOOKMARK_ID")
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
-
-		err = libbookmarks.RemoveType(db, nil, tag)
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
 		ID, err := strconv.Atoi(IDRaw)
