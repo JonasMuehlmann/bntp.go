@@ -235,6 +235,9 @@ func TestFindTagsLine(t *testing.T) {
 	assert.Empty(t, logInterceptBuffer.String())
 }
 
+// ******************************************************************//
+//                            --has-tags                            //
+// ******************************************************************//.
 func TestHasTags(t *testing.T) {
 	logInterceptBuffer := strings.Builder{}
 	log.SetOutput(&logInterceptBuffer)
@@ -270,5 +273,471 @@ func TestHasTags(t *testing.T) {
 	stdOutInterceptBuffer.Scan()
 
 	assert.Equal(t, "true", stdOutInterceptBuffer.Text())
+	assert.Empty(t, logInterceptBuffer.String())
+}
+
+// ******************************************************************//
+//                         --find-docs-with-tags                    //
+// ******************************************************************//.
+func TestFindDocumentsWithTags(t *testing.T) {
+	logInterceptBuffer := strings.Builder{}
+	log.SetOutput(&logInterceptBuffer)
+
+	defer log.SetOutput(os.Stderr)
+
+	stdOutInterceptBuffer, reader, writer := test.InterceptStdout(t)
+	defer test.ResetStdout(t, reader, writer)
+
+	db, err := test.GetDB(t)
+	assert.NoError(t, err)
+
+	document1 := path.Join(test.TestDataTempDir, t.Name()+"1")
+	document2 := path.Join(test.TestDataTempDir, t.Name()+"2")
+	docType := "bar"
+
+	tag1 := "foo::bar::baz"
+	tag2 := "foo::bar"
+	os.Args = []string{"", "document", "--find-docs-with-tags", tag1, tag2}
+
+	file, err := test.CreateTestTempFile(t.Name())
+	assert.NoError(t, err)
+
+	_, err = file.WriteString(fmt.Sprintf("# Tags\n%v,%v", tag1, tag2))
+	assert.NoError(t, err)
+
+	err = libdocuments.AddType(db, nil, docType)
+	assert.NoError(t, err)
+
+	err = libdocuments.AddDocument(db, nil, document1, docType)
+	assert.NoError(t, err)
+
+	err = libdocuments.AddDocument(db, nil, document2, docType)
+	assert.NoError(t, err)
+
+	subcommands.DocumentMain(db, helpers.NOPExiter)
+
+	stdOutInterceptBuffer.Scan()
+	assert.Equal(t, "document1", stdOutInterceptBuffer.Text())
+
+	stdOutInterceptBuffer.Scan()
+	assert.Equal(t, "document2", stdOutInterceptBuffer.Text())
+
+	assert.Empty(t, logInterceptBuffer.String())
+}
+
+// ******************************************************************//
+//                         --find-links-line                        //
+// ******************************************************************//.
+func TestFindLinksLine(t *testing.T) {
+	logInterceptBuffer := strings.Builder{}
+	log.SetOutput(&logInterceptBuffer)
+
+	defer log.SetOutput(os.Stderr)
+
+	stdOutInterceptBuffer, reader, writer := test.InterceptStdout(t)
+	defer test.ResetStdout(t, reader, writer)
+
+	db, err := test.GetDB(t)
+	assert.NoError(t, err)
+
+	document := path.Join(test.TestDataTempDir, t.Name())
+	docType := "bar"
+
+	os.Args = []string{"", "document", "--find-links-line", document}
+
+	file, err := test.CreateTestTempFile(t.Name())
+	assert.NoError(t, err)
+
+	link := "- [foo](bar)"
+	_, err = file.WriteString("\n# Links\n" + link)
+	assert.NoError(t, err)
+
+	err = libdocuments.AddType(db, nil, docType)
+	assert.NoError(t, err)
+
+	err = libdocuments.AddDocument(db, nil, document, docType)
+	assert.NoError(t, err)
+
+	subcommands.DocumentMain(db, helpers.NOPExiter)
+
+	stdOutInterceptBuffer.Scan()
+	assert.Equal(t, "2 2", stdOutInterceptBuffer.Text())
+
+	stdOutInterceptBuffer.Scan()
+	assert.Equal(t, link, stdOutInterceptBuffer.Text())
+
+	assert.Empty(t, logInterceptBuffer.String())
+}
+
+// ******************************************************************//
+//                      --find-backlinks-lines                      //
+// ******************************************************************//.
+func TestFindBackLinksLine(t *testing.T) {
+	logInterceptBuffer := strings.Builder{}
+	log.SetOutput(&logInterceptBuffer)
+
+	defer log.SetOutput(os.Stderr)
+
+	stdOutInterceptBuffer, reader, writer := test.InterceptStdout(t)
+	defer test.ResetStdout(t, reader, writer)
+
+	db, err := test.GetDB(t)
+	assert.NoError(t, err)
+
+	document := path.Join(test.TestDataTempDir, t.Name())
+	docType := "bar"
+
+	os.Args = []string{"", "document", "--find-backlinks-line", document}
+
+	file, err := test.CreateTestTempFile(t.Name())
+	assert.NoError(t, err)
+
+	link := "- [foo](bar)"
+	_, err = file.WriteString("\n# Backlinks\n" + link)
+	assert.NoError(t, err)
+
+	err = libdocuments.AddType(db, nil, docType)
+	assert.NoError(t, err)
+
+	err = libdocuments.AddDocument(db, nil, document, docType)
+	assert.NoError(t, err)
+
+	subcommands.DocumentMain(db, helpers.NOPExiter)
+
+	stdOutInterceptBuffer.Scan()
+	assert.Equal(t, "2 2", stdOutInterceptBuffer.Text())
+
+	stdOutInterceptBuffer.Scan()
+	assert.Equal(t, link, stdOutInterceptBuffer.Text())
+
+	assert.Empty(t, logInterceptBuffer.String())
+}
+
+// ******************************************************************//
+//                            --add-link                            //
+// ******************************************************************//.
+func TestAddLinkToDocument(t *testing.T) {
+	logInterceptBuffer := strings.Builder{}
+	log.SetOutput(&logInterceptBuffer)
+
+	defer log.SetOutput(os.Stderr)
+
+	db, err := test.GetDB(t)
+	assert.NoError(t, err)
+
+	sourceFileName := t.Name() + "Source"
+	destFileName := t.Name() + "Dest"
+
+	sourcePath := path.Join(test.TestDataTempDir, sourceFileName)
+	destPath := path.Join(test.TestDataTempDir, destFileName)
+
+	sourceFile, err := test.CreateTestTempFile(sourceFileName)
+	assert.NoError(t, err)
+
+	_, err = sourceFile.WriteString("# Links")
+	assert.NoError(t, err)
+
+	_, err = test.CreateTestTempFile(destFileName)
+	assert.NoError(t, err)
+
+	docType := "bar"
+	err = libdocuments.AddType(db, nil, docType)
+	assert.NoError(t, err)
+
+	err = libdocuments.AddDocument(db, nil, sourcePath, docType)
+	assert.NoError(t, err)
+
+	err = libdocuments.AddDocument(db, nil, destPath, docType)
+	assert.NoError(t, err)
+
+	os.Args = []string{"", "document", "--add-link", sourcePath, sourcePath}
+	subcommands.DocumentMain(db, helpers.NOPExiter)
+
+	assert.Empty(t, logInterceptBuffer.String())
+}
+
+// ******************************************************************//
+//                           --remove-link                          //
+// ******************************************************************//.
+func TestRemoveLinkToDocument(t *testing.T) {
+	logInterceptBuffer := strings.Builder{}
+	log.SetOutput(&logInterceptBuffer)
+
+	defer log.SetOutput(os.Stderr)
+
+	db, err := test.GetDB(t)
+	assert.NoError(t, err)
+
+	sourceFileName := t.Name() + "Source"
+	destFileName := t.Name() + "Dest"
+
+	sourcePath := path.Join(test.TestDataTempDir, sourceFileName)
+	destPath := path.Join(test.TestDataTempDir, destFileName)
+
+	sourceFile, err := test.CreateTestTempFile(sourceFileName)
+	assert.NoError(t, err)
+
+	_, err = sourceFile.WriteString(fmt.Sprintf("# Links\n- ()[%v]\n\n", destPath))
+	assert.NoError(t, err)
+
+	_, err = test.CreateTestTempFile(destFileName)
+	assert.NoError(t, err)
+
+	docType := "bar"
+	err = libdocuments.AddType(db, nil, docType)
+	assert.NoError(t, err)
+
+	err = libdocuments.AddDocument(db, nil, sourcePath, docType)
+	assert.NoError(t, err)
+
+	err = libdocuments.AddDocument(db, nil, destPath, docType)
+	assert.NoError(t, err)
+
+	os.Args = []string{"", "document", "--remove-link", sourcePath, destPath}
+	subcommands.DocumentMain(db, helpers.NOPExiter)
+
+	assert.Empty(t, logInterceptBuffer.String())
+}
+
+// ******************************************************************//
+//                            --add-backlink                         //
+// ******************************************************************//.
+func TestAddBacklinkToDocument(t *testing.T) {
+	logInterceptBuffer := strings.Builder{}
+	log.SetOutput(&logInterceptBuffer)
+
+	defer log.SetOutput(os.Stderr)
+
+	db, err := test.GetDB(t)
+	assert.NoError(t, err)
+
+	sourceFileName := t.Name() + "Source"
+	destFileName := t.Name() + "Dest"
+
+	sourcePath := path.Join(test.TestDataTempDir, sourceFileName)
+	destPath := path.Join(test.TestDataTempDir, destFileName)
+
+	sourceFile, err := test.CreateTestTempFile(sourceFileName)
+	assert.NoError(t, err)
+
+	_, err = sourceFile.WriteString("# Backlinks")
+	assert.NoError(t, err)
+
+	_, err = test.CreateTestTempFile(destFileName)
+	assert.NoError(t, err)
+
+	docType := "bar"
+	err = libdocuments.AddType(db, nil, docType)
+	assert.NoError(t, err)
+
+	err = libdocuments.AddDocument(db, nil, sourcePath, docType)
+	assert.NoError(t, err)
+
+	err = libdocuments.AddDocument(db, nil, destPath, docType)
+	assert.NoError(t, err)
+
+	os.Args = []string{"", "document", "--add-backlink", sourcePath, sourcePath}
+	subcommands.DocumentMain(db, helpers.NOPExiter)
+
+	assert.Empty(t, logInterceptBuffer.String())
+}
+
+// ******************************************************************//
+//                           --remove-backlink                       //
+// ******************************************************************//.
+func TestRemoveBacklinkToDocument(t *testing.T) {
+	logInterceptBuffer := strings.Builder{}
+	log.SetOutput(&logInterceptBuffer)
+
+	defer log.SetOutput(os.Stderr)
+
+	db, err := test.GetDB(t)
+	assert.NoError(t, err)
+
+	sourceFileName := t.Name() + "Source"
+	destFileName := t.Name() + "Dest"
+
+	sourcePath := path.Join(test.TestDataTempDir, sourceFileName)
+	destPath := path.Join(test.TestDataTempDir, destFileName)
+
+	sourceFile, err := test.CreateTestTempFile(sourceFileName)
+	assert.NoError(t, err)
+
+	_, err = sourceFile.WriteString(fmt.Sprintf("# Backlinks\n- ()[%v]\n\n", destPath))
+	assert.NoError(t, err)
+
+	_, err = test.CreateTestTempFile(destFileName)
+	assert.NoError(t, err)
+
+	docType := "bar"
+	err = libdocuments.AddType(db, nil, docType)
+	assert.NoError(t, err)
+
+	err = libdocuments.AddDocument(db, nil, sourcePath, docType)
+	assert.NoError(t, err)
+
+	err = libdocuments.AddDocument(db, nil, destPath, docType)
+	assert.NoError(t, err)
+
+	os.Args = []string{"", "document", "--remove-backlink", sourcePath, destPath}
+	subcommands.DocumentMain(db, helpers.NOPExiter)
+
+	assert.Empty(t, logInterceptBuffer.String())
+}
+
+// ******************************************************************//
+//                             --add-doc                            //
+// ******************************************************************//.
+func TestAddDocument(t *testing.T) {
+	logInterceptBuffer := strings.Builder{}
+	log.SetOutput(&logInterceptBuffer)
+
+	defer log.SetOutput(os.Stderr)
+
+	db, err := test.GetDB(t)
+	assert.NoError(t, err)
+
+	docPath := path.Join(test.TestDataTempDir, t.Name())
+
+	_, err = test.CreateTestTempFile(docPath)
+	assert.NoError(t, err)
+
+	docType := "bar"
+	err = libdocuments.AddType(db, nil, docType)
+	assert.NoError(t, err)
+
+	err = libdocuments.AddDocument(db, nil, docPath, docType)
+	assert.NoError(t, err)
+
+	os.Args = []string{"", "document", "--add-doc", docPath, docType}
+	subcommands.DocumentMain(db, helpers.NOPExiter)
+
+	assert.Empty(t, logInterceptBuffer.String())
+}
+
+// ******************************************************************//
+//                           --remove-doc                           //
+// ******************************************************************//.
+func TestRemoveDocument(t *testing.T) {
+	logInterceptBuffer := strings.Builder{}
+	log.SetOutput(&logInterceptBuffer)
+
+	defer log.SetOutput(os.Stderr)
+
+	db, err := test.GetDB(t)
+	assert.NoError(t, err)
+
+	docPath := path.Join(test.TestDataTempDir, t.Name())
+
+	_, err = test.CreateTestTempFile(docPath)
+	assert.NoError(t, err)
+
+	docType := "bar"
+	err = libdocuments.AddType(db, nil, docType)
+	assert.NoError(t, err)
+
+	err = libdocuments.AddDocument(db, nil, docPath, docType)
+	assert.NoError(t, err)
+
+	os.Args = []string{"", "document", "--remove-doc", docPath, docType}
+	subcommands.DocumentMain(db, helpers.NOPExiter)
+
+	assert.Empty(t, logInterceptBuffer.String())
+}
+
+// ******************************************************************//
+//                           --rename-doc                           //
+// ******************************************************************//.
+func TestRenameDocument(t *testing.T) {
+	logInterceptBuffer := strings.Builder{}
+	log.SetOutput(&logInterceptBuffer)
+
+	defer log.SetOutput(os.Stderr)
+
+	db, err := test.GetDB(t)
+	assert.NoError(t, err)
+
+	docPath := path.Join(test.TestDataTempDir, t.Name())
+
+	_, err = test.CreateTestTempFile(docPath)
+	assert.NoError(t, err)
+
+	docType := "bar"
+	err = libdocuments.AddType(db, nil, docType)
+	assert.NoError(t, err)
+
+	err = libdocuments.AddDocument(db, nil, docPath, docType)
+	assert.NoError(t, err)
+
+	os.Args = []string{"", "document", "--rename-doc", docPath, "foo"}
+	subcommands.DocumentMain(db, helpers.NOPExiter)
+
+	assert.Empty(t, logInterceptBuffer.String())
+}
+
+// ******************************************************************//
+//                         --change-doc-type                        //
+// ******************************************************************//.
+func TestChangeDocumentType(t *testing.T) {
+	logInterceptBuffer := strings.Builder{}
+	log.SetOutput(&logInterceptBuffer)
+
+	defer log.SetOutput(os.Stderr)
+
+	db, err := test.GetDB(t)
+	assert.NoError(t, err)
+
+	docPath := path.Join(test.TestDataTempDir, t.Name())
+
+	_, err = test.CreateTestTempFile(docPath)
+	assert.NoError(t, err)
+
+	docType := "bar"
+	err = libdocuments.AddType(db, nil, docType)
+	assert.NoError(t, err)
+
+	err = libdocuments.AddDocument(db, nil, docPath, docType)
+	assert.NoError(t, err)
+
+	os.Args = []string{"", "document", "--change-doc-type", docPath, "foo"}
+	subcommands.DocumentMain(db, helpers.NOPExiter)
+
+	assert.Empty(t, logInterceptBuffer.String())
+}
+
+// ******************************************************************//
+//                          --add-doc-type                          //
+// ******************************************************************//.
+func TestAddDocumentType(t *testing.T) {
+	logInterceptBuffer := strings.Builder{}
+	log.SetOutput(&logInterceptBuffer)
+
+	defer log.SetOutput(os.Stderr)
+
+	db, err := test.GetDB(t)
+	assert.NoError(t, err)
+
+	os.Args = []string{"", "document", "--add-doc-type", "foo"}
+	subcommands.DocumentMain(db, helpers.NOPExiter)
+
+	assert.Empty(t, logInterceptBuffer.String())
+}
+
+func TestRemoveDocumentType(t *testing.T) {
+	logInterceptBuffer := strings.Builder{}
+	log.SetOutput(&logInterceptBuffer)
+
+	defer log.SetOutput(os.Stderr)
+
+	db, err := test.GetDB(t)
+	assert.NoError(t, err)
+
+	docType := "bar"
+	err = libdocuments.AddType(db, nil, docType)
+	assert.NoError(t, err)
+
+	os.Args = []string{"", "document", "--remove-doc-type", "foo"}
+	subcommands.DocumentMain(db, helpers.NOPExiter)
+
 	assert.Empty(t, logInterceptBuffer.String())
 }
