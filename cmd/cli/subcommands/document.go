@@ -169,6 +169,7 @@ func DocumentMain(db *sqlx.DB, exiter func(int)) {
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
 		start, end, links, err := libdocuments.FindLinksLines(documentPath)
+		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
 		fmt.Printf("%v %v\n", start, end)
 		for _, link := range links {
@@ -180,6 +181,7 @@ func DocumentMain(db *sqlx.DB, exiter func(int)) {
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
 		start, end, backlinks, err := libdocuments.FindBacklinksLines(documentPath)
+		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
 		fmt.Printf("%v %v\n", start, end)
 		for _, link := range backlinks {
@@ -277,4 +279,5 @@ func DocumentMain(db *sqlx.DB, exiter func(int)) {
 		err = libdocuments.RemoveType(db, nil, type_)
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 	}
+	// TODO: Guard against unrecognized flags
 }
