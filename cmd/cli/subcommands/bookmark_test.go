@@ -21,7 +21,6 @@
 package subcommands_test
 
 import (
-	"database/sql"
 	"encoding/json"
 	"log"
 	"os"
@@ -71,7 +70,7 @@ func TestExportBookmarskUnfiltered(t *testing.T) {
 	db, err := test.GetDB(t)
 	assert.NoError(t, err)
 
-	err = libbookmarks.AddBookmark(db, nil, "Foo", "bar", sql.NullInt32{})
+	err = libbookmarks.AddBookmark(db, nil, "Foo", "bar", helpers.Optional[int]{})
 	assert.NoError(t, err)
 
 	os.Args = []string{"", "bookmark", "--export", path.Join(test.TestDataTempDir, t.Name())}
@@ -96,7 +95,7 @@ func TestExportBookmarksFiltered(t *testing.T) {
 	filterSerialized, err := json.Marshal(filter)
 	assert.NoError(t, err)
 
-	err = libbookmarks.AddBookmark(db, nil, "Foo", "bar", sql.NullInt32{})
+	err = libbookmarks.AddBookmark(db, nil, "Foo", "bar", helpers.Optional[int]{})
 	os.Args = []string{"", "bookmark", "--export", path.Join(test.TestDataTempDir, t.Name()), "--filter", string(filterSerialized)}
 	assert.NoError(t, err)
 
@@ -119,10 +118,10 @@ func TestListBookmarksUnfiltered(t *testing.T) {
 	db, err := test.GetDB(t)
 	assert.NoError(t, err)
 
-	err = libbookmarks.AddBookmark(db, nil, "Foo", "bar", sql.NullInt32{})
+	err = libbookmarks.AddBookmark(db, nil, "Foo", "bar", helpers.Optional[int]{})
 	assert.NoError(t, err)
 
-	err = libbookmarks.AddBookmark(db, nil, "Bar", "abc", sql.NullInt32{})
+	err = libbookmarks.AddBookmark(db, nil, "Bar", "abc", helpers.Optional[int]{})
 	assert.NoError(t, err)
 
 	os.Args = []string{"", "bookmark", "--list"}
@@ -155,7 +154,7 @@ func TestListBookmarksFiltered(t *testing.T) {
 	filterSerialized, err := json.Marshal(filter)
 	assert.NoError(t, err)
 
-	err = libbookmarks.AddBookmark(db, nil, "Foo", "bar", sql.NullInt32{})
+	err = libbookmarks.AddBookmark(db, nil, "Foo", "bar", helpers.Optional[int]{})
 	assert.NoError(t, err)
 
 	os.Args = []string{"", "bookmark", "--list", "--filter", string(filterSerialized)}
@@ -277,9 +276,9 @@ func TestEditBookmark(t *testing.T) {
 	err = libbookmarks.AddType(db, nil, "Foo")
 	assert.NoError(t, err)
 
-	err = libbookmarks.AddBookmark(db, nil, "foo", "bar", sql.NullInt32{
-		Int32: 1,
-		Valid: true,
+	err = libbookmarks.AddBookmark(db, nil, "foo", "bar", helpers.Optional[int]{
+		Wrappee: 1,
+		HasValue: true,
 	})
 	assert.NoError(t, err)
 
@@ -304,9 +303,9 @@ func TestEditIsRead(t *testing.T) {
 	err = libbookmarks.AddType(db, nil, "Foo")
 	assert.NoError(t, err)
 
-	err = libbookmarks.AddBookmark(db, nil, "foo", "bar", sql.NullInt32{
-		Int32: 1,
-		Valid: true,
+	err = libbookmarks.AddBookmark(db, nil, "foo", "bar", helpers.Optional[int]{
+		Wrappee: 1,
+		HasValue: true,
 	})
 	assert.NoError(t, err)
 
@@ -331,9 +330,9 @@ func TestEditTitle(t *testing.T) {
 	err = libbookmarks.AddType(db, nil, "Foo")
 	assert.NoError(t, err)
 
-	err = libbookmarks.AddBookmark(db, nil, "foo", "bar", sql.NullInt32{
-		Int32: 1,
-		Valid: true,
+	err = libbookmarks.AddBookmark(db, nil, "foo", "bar", helpers.Optional[int]{
+		Wrappee: 1,
+		HasValue: true,
 	})
 	assert.NoError(t, err)
 
@@ -358,9 +357,9 @@ func TestEditUrl(t *testing.T) {
 	err = libbookmarks.AddType(db, nil, "Foo")
 	assert.NoError(t, err)
 
-	err = libbookmarks.AddBookmark(db, nil, "foo", "bar", sql.NullInt32{
-		Int32: 1,
-		Valid: true,
+	err = libbookmarks.AddBookmark(db, nil, "foo", "bar", helpers.Optional[int]{
+		Wrappee: 1,
+		HasValue: true,
 	})
 	assert.NoError(t, err)
 
@@ -385,9 +384,9 @@ func TestEditType(t *testing.T) {
 	err = libbookmarks.AddType(db, nil, "Foo")
 	assert.NoError(t, err)
 
-	err = libbookmarks.AddBookmark(db, nil, "foo", "bar", sql.NullInt32{
-		Int32: 1,
-		Valid: true,
+	err = libbookmarks.AddBookmark(db, nil, "foo", "bar", helpers.Optional[int]{
+		Wrappee: 1,
+		HasValue: true,
 	})
 	assert.NoError(t, err)
 
@@ -412,9 +411,9 @@ func TestEditIsCollection(t *testing.T) {
 	err = libbookmarks.AddType(db, nil, "Foo")
 	assert.NoError(t, err)
 
-	err = libbookmarks.AddBookmark(db, nil, "foo", "bar", sql.NullInt32{
-		Int32: 1,
-		Valid: true,
+	err = libbookmarks.AddBookmark(db, nil, "foo", "bar", helpers.Optional[int]{
+		Wrappee: 1,
+		HasValue: true,
 	})
 	assert.NoError(t, err)
 
@@ -439,9 +438,9 @@ func TestAddTagToBookmark(t *testing.T) {
 	err = libbookmarks.AddType(db, nil, "Foo")
 	assert.NoError(t, err)
 
-	err = libbookmarks.AddBookmark(db, nil, "foo", "bar", sql.NullInt32{
-		Int32: 1,
-		Valid: true,
+	err = libbookmarks.AddBookmark(db, nil, "foo", "bar", helpers.Optional[int]{
+		Wrappee: 1,
+		HasValue: true,
 	})
 	assert.NoError(t, err)
 
@@ -469,9 +468,9 @@ func TestRemoveTagFromBookmark(t *testing.T) {
 	err = libbookmarks.AddType(db, nil, "Foo")
 	assert.NoError(t, err)
 
-	err = libbookmarks.AddBookmark(db, nil, "foo", "bar", sql.NullInt32{
-		Int32: 1,
-		Valid: true,
+	err = libbookmarks.AddBookmark(db, nil, "foo", "bar", helpers.Optional[int]{
+		Wrappee: 1,
+		HasValue: true,
 	})
 	assert.NoError(t, err)
 

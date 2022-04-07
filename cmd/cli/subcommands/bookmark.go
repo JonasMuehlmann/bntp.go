@@ -21,7 +21,6 @@
 package subcommands
 
 import (
-	"database/sql"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -163,15 +162,15 @@ func BookmarkMain(db *sqlx.DB, exiter func(int)) {
 			exiter(1)
 		}
 
-		var type_ sql.NullInt32
+		var type_ helpers.Optional[int]
 		typeRaw, ok := data["type"]
 		if !ok {
-			type_.Valid = false
+			type_.HasValue = false
 		}
 
 		typeInt, err := strconv.ParseInt(typeRaw, 10, 32)
 
-		type_.Int32 = int32(typeInt)
+		type_.Wrappee = int(typeInt)
 
 		err = libbookmarks.AddBookmark(db, nil, title, url, type_)
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))

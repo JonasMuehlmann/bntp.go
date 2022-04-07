@@ -22,7 +22,6 @@
 package libbookmarks
 
 import (
-	"database/sql"
 	"encoding/csv"
 	"errors"
 	"os"
@@ -84,7 +83,7 @@ func ImportMinimalCSV(dbConn *sqlx.DB, csvPath string) error {
 	}
 
 	for _, bookmark := range bookmarks[1:] {
-		err := AddBookmark(dbConn, transaction, bookmark[titleColumn], bookmark[linkColumn], sql.NullInt32{Valid: false})
+		err := AddBookmark(dbConn, transaction, bookmark[titleColumn], bookmark[linkColumn], helpers.Optional[int]{HasValue: false})
 
 		if err != nil {
 			return err
@@ -144,17 +143,17 @@ func ExportCSV(bookmarks []Bookmark, csvPath string) error {
 	for i, bookmark := range bookmarks {
 		var isCollectionOut string
 
-		if bookmark.IsCollection.Valid {
-			isCollectionOut = strconv.FormatBool(bookmark.IsCollection.Bool)
+		if bookmark.IsCollection.HasValue {
+			isCollectionOut = strconv.FormatBool(bookmark.IsCollection.Wrappee)
 		} else {
 			isCollectionOut = "NULL"
 		}
 
 		rowsBuffer[i] = []string{
-			bookmark.Title.String,
+			bookmark.Title.Wrappee,
 			bookmark.Url,
 			bookmark.TimeAdded,
-			bookmark.Type.String,
+			bookmark.Type.Wrappee,
 			strings.Join(bookmark.Tags, ","),
 			strconv.Itoa(bookmark.Id),
 			strconv.FormatBool(bookmark.IsRead),
@@ -352,7 +351,7 @@ func ListTypes(dbConn *sqlx.DB) ([]string, error) {
 
 // AddBookmark adds a new bookmark to the DB.
 // Passing a transaction is optional.
-func AddBookmark(dbConn *sqlx.DB, transaction *sqlx.Tx, title string, url string, type_ sql.NullInt32) error {
+func AddBookmark(dbConn *sqlx.DB, transaction *sqlx.Tx, title string, url string, type_ helpers.Optional[int]) error {
 	stmt := `
         INSERT INTO
             Bookmark(
