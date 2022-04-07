@@ -402,6 +402,8 @@ func FindLinksLines(documentPath string) (int, int, []string, error) {
 
 			break
 		}
+
+		i++
 	}
 
 	if lineNumberFirstLink == -1 {
@@ -446,6 +448,7 @@ func FindBacklinksLines(documentPath string) (int, int, []string, error) {
 
 			break
 		}
+		i++
 	}
 
 	if lineNumberFirstBacklink == -1 {
