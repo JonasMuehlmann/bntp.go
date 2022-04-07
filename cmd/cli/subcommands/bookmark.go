@@ -117,9 +117,9 @@ func BookmarkMain(db *sqlx.DB, exiter func(int)) {
 		bookmarks, err := libbookmarks.GetBookmarks(db, filter)
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
-		for _, bookmark := range bookmarks {
-			fmt.Println(bookmark)
-		}
+		// TODO: This export should be configurable
+		err = libbookmarks.ExportCSV(bookmarks, "")
+		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 		// ******************************************************************//
 	} else if isSet, ok := arguments["--add-type"]; ok && isSet.(bool) {
 		type_, err := arguments.String("TYPE")
@@ -153,12 +153,14 @@ func BookmarkMain(db *sqlx.DB, exiter func(int)) {
 
 		title, ok := data["title"]
 		if !ok {
-			log.Panic("Missing parameter title in DATA")
+			log.Println("Missing parameter title in DATA")
+			exiter(1)
 		}
 
 		url, ok := data["url"]
 		if !ok {
-			log.Panic("Missing parameter url in DATA")
+			log.Println("Missing parameter url in DATA")
+			exiter(1)
 		}
 
 		var type_ sql.NullInt32
