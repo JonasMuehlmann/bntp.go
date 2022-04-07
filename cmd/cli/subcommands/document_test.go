@@ -610,14 +610,11 @@ func TestAddDocument(t *testing.T) {
 
 	docPath := path.Join(test.TestDataTempDir, t.Name())
 
-	_, err = test.CreateTestTempFile(docPath)
+	_, err = test.CreateTestTempFile(t.Name())
 	assert.NoError(t, err)
 
 	docType := "bar"
 	err = libdocuments.AddType(db, nil, docType)
-	assert.NoError(t, err)
-
-	err = libdocuments.AddDocument(db, nil, docPath, docType)
 	assert.NoError(t, err)
 
 	os.Args = []string{"", "document", "--add-doc", docPath, docType}
@@ -640,7 +637,7 @@ func TestRemoveDocument(t *testing.T) {
 
 	docPath := path.Join(test.TestDataTempDir, t.Name())
 
-	_, err = test.CreateTestTempFile(docPath)
+	_, err = test.CreateTestTempFile(t.Name())
 	assert.NoError(t, err)
 
 	docType := "bar"
@@ -670,7 +667,7 @@ func TestRenameDocument(t *testing.T) {
 
 	docPath := path.Join(test.TestDataTempDir, t.Name())
 
-	_, err = test.CreateTestTempFile(docPath)
+	_, err = test.CreateTestTempFile(t.Name())
 	assert.NoError(t, err)
 
 	docType := "bar"
@@ -700,17 +697,21 @@ func TestChangeDocumentType(t *testing.T) {
 
 	docPath := path.Join(test.TestDataTempDir, t.Name())
 
-	_, err = test.CreateTestTempFile(docPath)
+	_, err = test.CreateTestTempFile(t.Name())
 	assert.NoError(t, err)
 
-	docType := "bar"
-	err = libdocuments.AddType(db, nil, docType)
+	oldType := "bar"
+	err = libdocuments.AddType(db, nil, oldType)
 	assert.NoError(t, err)
 
-	err = libdocuments.AddDocument(db, nil, docPath, docType)
+	newType := "foo"
+	err = libdocuments.AddType(db, nil, newType)
 	assert.NoError(t, err)
 
-	os.Args = []string{"", "document", "--change-doc-type", docPath, "foo"}
+	err = libdocuments.AddDocument(db, nil, docPath, oldType)
+	assert.NoError(t, err)
+
+	os.Args = []string{"", "document", "--change-doc-type", docPath, newType}
 	subcommands.DocumentMain(db, helpers.NOPExiter)
 
 	assert.Empty(t, logInterceptBuffer.String())
@@ -747,7 +748,7 @@ func TestRemoveDocumentType(t *testing.T) {
 	err = libdocuments.AddType(db, nil, docType)
 	assert.NoError(t, err)
 
-	os.Args = []string{"", "document", "--remove-doc-type", "foo"}
+	os.Args = []string{"", "document", "--remove-doc-type", docType}
 	subcommands.DocumentMain(db, helpers.NOPExiter)
 
 	assert.Empty(t, logInterceptBuffer.String())

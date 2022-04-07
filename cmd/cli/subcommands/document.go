@@ -249,7 +249,7 @@ func DocumentMain(db *sqlx.DB, exiter func(int)) {
 		oldPath, err := arguments.String("OLD_PATH")
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
-		newPath, err := arguments.String("PATH")
+		newPath, err := arguments.String("NEW_PATH")
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
 		err = libdocuments.RenameDocument(db, nil, oldPath, newPath)
