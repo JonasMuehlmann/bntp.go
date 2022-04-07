@@ -22,7 +22,7 @@ package subcommands
 
 import (
 	"fmt"
-	"strings"
+	"log"
 
 	"github.com/JonasMuehlmann/bntp.go/internal/helpers"
 	"github.com/JonasMuehlmann/bntp.go/internal/libdocuments"
@@ -38,7 +38,7 @@ Usage:
     bntp document --rename-tag DOCUMENT_PATH OLD_TAG NEW_TAG
     bntp document (--get-tags | --find-tags-line | --find-links-line | --find-backlinks-line) DOCUMENT_PATH
     bntp document --has-tags DOCUMENT_PATH TAGS...
-    bntp document --find-documents-with-tags TAGS...
+    bntp document --find-docs-with-tags TAGS...
     bntp document (--add-link | --remove-link) DOCUMENT_PATH LINK
     bntp document (--add-backlink | --remove-backlink) DOCUMENT_PATH BACKLINK
     bntp document (--add-doc| --remove-doc) DOCUMENT_PATH TYPE
@@ -138,21 +138,26 @@ func DocumentMain(db *sqlx.DB, exiter func(int)) {
 		documentPath, err := arguments.String("DOCUMENT_PATH")
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
-		// FIX: This is an array of strings, not a string
-		tagsRaw, err := arguments.String("TAGS")
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		tagsRaw, ok := arguments["TAGS"].([]string)
+		if !ok {
+			log.Println("Missing parameter TAGS")
+			exiter(1)
+		}
 
-		// FIX: This splitting is nonsense
-		hasTag, err := libdocuments.HasTags(documentPath, strings.Split(tagsRaw, ","))
+		hasTag, err := libdocuments.HasTags(documentPath, tagsRaw)
+		// REFACTOR: Use regular if err != nil {return err}
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
 		fmt.Println(hasTag)
 		// ******************************************************************//
 	} else if isSet, ok := arguments["--find-docs-with-tags"]; ok && isSet.(bool) {
-		tagsRaw, err := arguments.String("TAGS")
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		tagsRaw, ok := arguments["TAGS"].([]string)
+		if !ok {
+			log.Println("Missing parameter TAGS")
+			exiter(1)
+		}
 
-		documents, err := libdocuments.FindDocumentsWithTags(db, strings.Split(tagsRaw, ","))
+		documents, err := libdocuments.FindDocumentsWithTags(db, tagsRaw)
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
 		for _, document := range documents {
