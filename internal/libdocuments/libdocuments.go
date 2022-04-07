@@ -504,10 +504,8 @@ func RemoveLink(documentPathSource string, documentPathDestination string) error
 
 	iLinkToDelete := -1
 
-	// FIX: Shouldn't this compare with documentPathDestination?
-	// TODO: This needs further testing
 	for i, link := range linksOrig {
-		if link == documentPathSource {
+		if strings.Contains(link, documentPathDestination) {
 			iLinkToDelete = i + lineNumberFirstLink
 		}
 	}
@@ -564,7 +562,7 @@ func RemoveBacklink(documentPathDestination string, documentPathSource string) e
 	iBacklinkToDelete := -1
 
 	for i, link := range backlinksOrig {
-		if link == documentPathSource {
+		if strings.Contains(link, documentPathSource) {
 			iBacklinkToDelete = i + lineNumberFirstBacklink
 		}
 	}
