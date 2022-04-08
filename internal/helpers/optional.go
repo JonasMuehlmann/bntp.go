@@ -50,6 +50,19 @@ func (optional Optional[T]) OrElse(alternative func() T) T {
 	return alternative()
 }
 
+// Push sets a Wrappee to val value and the HasValue flag to true.
+func (optional *Optional[T]) Push(val T) {
+	optional.Wrappee = val
+	optional.HasValue = true
+}
+
+// Pop sets the HasValue flag to false and returns the Wrappee.
+func (optional *Optional[T]) Pop() T {
+	optional.HasValue = false
+
+	return optional.Wrappee
+}
+
 func (optional *Optional[T]) UnmarshalJSON(input []byte) error {
 	// Try to parse key with value of equal type as "Wrapee"
 	err := json.Unmarshal(input, &optional.Wrappee)
