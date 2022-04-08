@@ -28,6 +28,7 @@ import (
 
 	"github.com/JonasMuehlmann/bntp.go/internal/helpers"
 	"github.com/JonasMuehlmann/bntp.go/internal/libbookmarks"
+	"github.com/JonasMuehlmann/optional.go"
 	"github.com/docopt/docopt-go"
 	"github.com/jmoiron/sqlx"
 )
@@ -162,7 +163,7 @@ func BookmarkMain(db *sqlx.DB, exiter func(int)) {
 			exiter(1)
 		}
 
-		var type_ helpers.Optional[int]
+		var type_ optional.Optional[int]
 		typeRaw, ok := data["type"]
 		if !ok {
 			type_.HasValue = false

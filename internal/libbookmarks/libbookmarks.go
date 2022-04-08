@@ -31,6 +31,7 @@ import (
 	"time"
 
 	"github.com/JonasMuehlmann/bntp.go/internal/helpers"
+	"github.com/JonasMuehlmann/optional.go"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -83,7 +84,7 @@ func ImportMinimalCSV(dbConn *sqlx.DB, csvPath string) error {
 	}
 
 	for _, bookmark := range bookmarks[1:] {
-		err := AddBookmark(dbConn, transaction, bookmark[titleColumn], bookmark[linkColumn], helpers.Optional[int]{HasValue: false})
+		err := AddBookmark(dbConn, transaction, bookmark[titleColumn], bookmark[linkColumn], optional.Optional[int]{HasValue: false})
 
 		if err != nil {
 			return err
@@ -355,7 +356,7 @@ func ListTypes(dbConn *sqlx.DB) ([]string, error) {
 
 // AddBookmark adds a new bookmark to the DB.
 // Passing a transaction is optional.
-func AddBookmark(dbConn *sqlx.DB, transaction *sqlx.Tx, title string, url string, type_ helpers.Optional[int]) error {
+func AddBookmark(dbConn *sqlx.DB, transaction *sqlx.Tx, title string, url string, type_ optional.Optional[int]) error {
 	stmt := `
         INSERT INTO
             Bookmark(
@@ -468,7 +469,7 @@ func EditBookmark(dbConn *sqlx.DB, transaction *sqlx.Tx, newData Bookmark) error
             Id = ?;
     `
 
-	var typeID helpers.Optional[int]
+	var typeID optional.Optional[int]
 	if newData.Type.HasValue {
 		typeIDUnwrapped, err := helpers.GetIdFromBookmarkType(dbConn, transaction, newData.Type.Wrappee)
 		if err != nil {
