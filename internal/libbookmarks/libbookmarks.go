@@ -220,6 +220,8 @@ func GetBookmarks(dbConn *sqlx.DB, filter BookmarkFilter) ([]Bookmark, error) {
 	return bookmarksBuffer, nil
 }
 
+// TODO: Allow passing string and id for type_
+
 // AddType makes a new BookmarkType available for use in the DB.
 // Passing a transaction is optional.
 func AddType(dbConn *sqlx.DB, transaction *sqlx.Tx, type_ string) error {
@@ -267,6 +269,8 @@ func AddType(dbConn *sqlx.DB, transaction *sqlx.Tx, type_ string) error {
 
 	return nil
 }
+
+// TODO: Allow passing string and id for type_
 
 // RemoveType removes an available BookmarkType from the DB.
 // Passing a transaction is optional.
@@ -347,7 +351,7 @@ func ListTypes(dbConn *sqlx.DB) ([]string, error) {
 	return types, nil
 }
 
-// TODO: Allow passing string for type_
+// TODO: Allow passing string and id for type_
 
 // AddBookmark adds a new bookmark to the DB.
 // Passing a transaction is optional.
@@ -514,6 +518,8 @@ func EditUrl(dbConn *sqlx.DB, transaction *sqlx.Tx, id int, newUrl string) error
 	return editBookmarkField(dbConn, transaction, id, "Url", newUrl)
 }
 
+// TODO: Allow passing string and id for type_
+
 // EditType sets Type to newType for the bookmark with the specified id.
 // Passing a transaction is optional.
 func EditType(dbConn *sqlx.DB, transaction *sqlx.Tx, id int, newType string) error {
@@ -582,6 +588,8 @@ func AddTag(dbConn *sqlx.DB, transaction *sqlx.Tx, bookmarkId int, newTag string
 
 	return nil
 }
+
+// TODO: Allow passing string and id for tag_
 
 // RemoveTag removes a tag tag_ from the bookmark with bookmarkId.
 // Passing a transaction is optional.

@@ -32,18 +32,18 @@ func ApplyBookmarkFilters(query string, filter BookmarkFilter) string {
 	joinFragments := make([]string, 0, 10)
 	whereFragments := make([]string, 0, 10)
 
-	if filter.Title != nil {
-		whereFragments = append(whereFragments, "Title LIKE '"+*filter.Title+"'")
+	if filter.Title.HasValue {
+		whereFragments = append(whereFragments, "Title LIKE '"+*&filter.Title.Wrappee+"'")
 	}
 
-	if filter.Url != nil {
-		whereFragments = append(whereFragments, "Url LIKE '"+*filter.Url+"'")
+	if filter.Url.HasValue {
+		whereFragments = append(whereFragments, "Url LIKE '"+filter.Url.Wrappee+"'")
 	}
 
-	if filter.IsCollection != nil {
+	if filter.IsCollection.HasValue {
 		var valConverted string
 
-		if *filter.IsCollection {
+		if filter.IsCollection.Wrappee {
 			valConverted = "1"
 		} else {
 			valConverted = "0"
@@ -52,10 +52,10 @@ func ApplyBookmarkFilters(query string, filter BookmarkFilter) string {
 		whereFragments = append(whereFragments, "IsCollection = "+valConverted)
 	}
 
-	if filter.IsRead != nil {
+	if filter.IsRead.HasValue {
 		var valConverted string
 
-		if *filter.IsRead {
+		if filter.IsRead.Wrappee {
 			valConverted = "1"
 		} else {
 			valConverted = "0"
@@ -64,31 +64,31 @@ func ApplyBookmarkFilters(query string, filter BookmarkFilter) string {
 		whereFragments = append(whereFragments, "IsRead = "+valConverted)
 	}
 
-	if filter.MaxAge != nil {
-		whereFragments = append(whereFragments, "timeAdded BETWEEN DATE('now') AND datetime(DATE('now'),'-'"+strconv.Itoa(*filter.MaxAge)+" days')")
+	if filter.MaxAge.HasValue {
+		whereFragments = append(whereFragments, "timeAdded BETWEEN DATE('now') AND datetime(DATE('now'),'-'"+strconv.Itoa(filter.MaxAge.Wrappee)+" days')")
 	}
 
-	if filter.Tags != nil {
+	if filter.Tags.HasValue {
 		joinFragments = append(joinFragments, "INNER JOIN Context ON Context.BookmarkId = Bookmark.Id INNER JOIN Tag ON Tag.Id = Context.TagId")
 
 		var tags []string
 
-		if len(filter.Tags) == 0 {
+		if len(filter.Tags.Wrappee) == 0 {
 			tags = []string{"NULL"}
 		} else {
-			tags = filter.Tags
+			tags = filter.Tags.Wrappee
 		}
 
 		whereFragments = append(whereFragments, "Tag IN ('"+strings.Join(tags, "', '")+"')")
 	}
 
-	if filter.Types != nil {
+	if filter.Types.HasValue {
 		var types []string
 
-		if len(filter.Types) == 0 {
+		if len(filter.Types.Wrappee) == 0 {
 			types = []string{"NULL"}
 		} else {
-			types = filter.Types
+			types = filter.Types.Wrappee
 		}
 		whereFragments = append(whereFragments, "BookmarkType.Type IN ('"+strings.Join(types, "', '")+"')")
 	}

@@ -88,9 +88,9 @@ func TestExportBookmarksFiltered(t *testing.T) {
 	db, err := test.GetDB(t)
 	assert.NoError(t, err)
 
-	url := "bar"
-	isRead := false
-	filter := libbookmarks.BookmarkFilter{Url: &url, IsRead: &isRead}
+	url := helpers.Optional[string]{Wrappee: "bar", HasValue: true}
+	isRead := helpers.Optional[bool]{Wrappee: false, HasValue: true}
+	filter := libbookmarks.BookmarkFilter{Url: url, IsRead: isRead}
 
 	filterSerialized, err := json.Marshal(filter)
 	assert.NoError(t, err)
@@ -147,9 +147,9 @@ func TestListBookmarksFiltered(t *testing.T) {
 	db, err := test.GetDB(t)
 	assert.NoError(t, err)
 
-	url := "bar"
-	isRead := false
-	filter := libbookmarks.BookmarkFilter{Url: &url, IsRead: &isRead}
+	url := helpers.Optional[string]{Wrappee: "bar", HasValue: true}
+	isRead := helpers.Optional[bool]{Wrappee: false, HasValue: true}
+	filter := libbookmarks.BookmarkFilter{Url: url, IsRead: isRead}
 
 	filterSerialized, err := json.Marshal(filter)
 	assert.NoError(t, err)

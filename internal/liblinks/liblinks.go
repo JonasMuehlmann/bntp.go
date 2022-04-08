@@ -28,6 +28,8 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
+// TODO: Allow passing string and id for document
+
 // AddLink adds a link from source to destination to the DB.
 // Passing a transaction is optional.
 func AddLink(dbConn *sqlx.DB, transaction *sqlx.Tx, source string, destination string) error {
@@ -66,6 +68,8 @@ func AddLink(dbConn *sqlx.DB, transaction *sqlx.Tx, source string, destination s
 	return err
 }
 
+// TODO: Allow passing string and id for document
+
 // RemoveLink removes the link from source to destination from the db.
 // Passing a transaction is optional.
 func RemoveLink(dbConn *sqlx.DB, transaction *sqlx.Tx, source string, destination string) error {
@@ -99,6 +103,8 @@ func RemoveLink(dbConn *sqlx.DB, transaction *sqlx.Tx, source string, destinatio
 
 	return err
 }
+
+// TODO: Allow passing string and id for document
 
 // ListLinks lists all link destionations from the DB.
 func ListLinks(dbConn *sqlx.DB, source string) ([]string, error) {
@@ -138,6 +144,8 @@ func ListLinks(dbConn *sqlx.DB, source string) ([]string, error) {
 
 	return linksBuffer, nil
 }
+
+// TODO: Allow passing string and id for document
 
 // ListBacklinks lists all link sources from the DB.
 func ListBacklinks(dbConn *sqlx.DB, destination string) ([]string, error) {

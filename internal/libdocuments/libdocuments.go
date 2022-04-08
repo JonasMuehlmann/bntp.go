@@ -31,6 +31,8 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
+// TODO: Allow passing string and id for document and tag
+
 // AddTag adds a tag newTag to the document at documentPath.
 // Passing a transaction is optional.
 func AddTag(dbConn *sqlx.DB, transaction *sqlx.Tx, documentPath string, newTag string) error {
@@ -89,6 +91,8 @@ func AddTag(dbConn *sqlx.DB, transaction *sqlx.Tx, documentPath string, newTag s
 	return nil
 }
 
+// TODO: Allow passing string and id for document and tag
+
 // RemoveTag removes a tag tag_ from the document at documentPath
 // Passing a transaction is optional.
 func RemoveTag(dbConn *sqlx.DB, transaction *sqlx.Tx, documentPath string, tag_ string) error {
@@ -142,6 +146,8 @@ func RemoveTag(dbConn *sqlx.DB, transaction *sqlx.Tx, documentPath string, tag_ 
 	return nil
 }
 
+// TODO: Allow passing string and id for document and tag
+
 // AddTagToFile adds a tag to the tag line of the document at documentPath.
 func AddTagToFile(documentPath string, tag string) error {
 	if tag == "" {
@@ -175,6 +181,8 @@ func AddTagToFile(documentPath string, tag string) error {
 	return nil
 }
 
+// TODO: Allow passing string and id for document and tag
+
 // RemoveTagFromFile removes a tag from the tag line of the document at documentPath.
 func RemoveTagFromFile(documentPath string, tag string) error {
 	if tag == "" {
@@ -204,6 +212,8 @@ func RemoveTagFromFile(documentPath string, tag string) error {
 
 	return nil
 }
+
+// TODO: Allow passing string and id for document and tag
 
 // RenameTagInFile renames a tag oldTag to newTag in the tag line of the doucment at documentPath.
 // This method preserves the order of all tags in the doucment.
@@ -239,6 +249,8 @@ func RenameTagInFile(documentPath string, oldTag string, newTag string) error {
 	return nil
 }
 
+// TODO: Allow passing string and id for document
+
 // GetTags returns all tags contained in the document at documentPath.
 func GetTags(documentPath string) ([]string, error) {
 	_, tags, err := FindTagsLine(documentPath)
@@ -254,6 +266,8 @@ func GetTags(documentPath string) ([]string, error) {
 
 	return tagsBuffer, nil
 }
+
+// TODO: Allow passing string and id for document
 
 // FindTagsLine finds the line in documentPath which contains it's tags.
 // It returns the 0 based line lumber of the tags line as well as the line itself.
@@ -280,6 +294,8 @@ func FindTagsLine(documentPath string) (int, string, error) {
 
 	return 0, "", errors.New("Could not find tags line")
 }
+
+// TODO: Allow passing string and id for document and tag
 
 // HasTags checks if the document at documentPath has all specified tags.
 func HasTags(documentPath string, tags []string) (bool, error) {
@@ -310,6 +326,8 @@ func HasTags(documentPath string, tags []string) (bool, error) {
 
 	return true, nil
 }
+
+// TODO: Allow passing string and id for tag
 
 // FindDocumentsWithTags returns all paths to doucments which have all specified tags.
 func FindDocumentsWithTags(dbConn *sqlx.DB, tags []string) ([]string, error) {
@@ -379,6 +397,8 @@ func FindDocumentsWithTags(dbConn *sqlx.DB, tags []string) ([]string, error) {
 	return paths, nil
 }
 
+// TODO: Allow passing string and id for document
+
 // FindLinksLines finds the lines in documentPath in which links to other documents are listed.
 // It returns the range of line numbers containing links as well as the lines themselves.
 func FindLinksLines(documentPath string) (int, int, []string, error) {
@@ -425,6 +445,8 @@ func FindLinksLines(documentPath string) (int, int, []string, error) {
 	return lineNumberFirstLink, lineNumberLastLink, links, nil
 }
 
+// TODO: Allow passing string and id for document
+
 // FindBacklinksLines finds the lines in documentPath in which backlinks to other documents are listed.
 // It returns the range of line numbers containing backlinks as well as the lines themselves.
 func FindBacklinksLines(documentPath string) (int, int, []string, error) {
@@ -470,6 +492,8 @@ func FindBacklinksLines(documentPath string) (int, int, []string, error) {
 	return lineNumberFirstBacklink, lineNumberLastBacklink, backlinks, nil
 }
 
+// TODO: Allow passing string and id for document
+
 // AddLink adds a link to documentPathDestination into the document at documentPathSource.
 func AddLink(documentPathSource string, documentPathDestination string) error {
 	_, lineNumberlastLink, _, err := FindLinksLines(documentPathSource)
@@ -494,6 +518,8 @@ func AddLink(documentPathSource string, documentPathDestination string) error {
 
 	return nil
 }
+
+// TODO: Allow passing string and id for document
 
 // RemoveLink removes the link to documentPathDestination from the document at documentPathSource.
 func RemoveLink(documentPathSource string, documentPathDestination string) error {
@@ -527,6 +553,8 @@ func RemoveLink(documentPathSource string, documentPathDestination string) error
 	return nil
 }
 
+// TODO: Allow passing string and id for document
+
 // AddBacklink adds a Backlink to documentPathSource into the document at documentPathDestination.
 func AddBacklink(documentPathDestination string, documentPathSource string) error {
 	_, lineNumberlastBacklink, _, err := FindBacklinksLines(documentPathDestination)
@@ -551,6 +579,8 @@ func AddBacklink(documentPathDestination string, documentPathSource string) erro
 
 	return nil
 }
+
+// TODO: Allow passing string and id for document
 
 // RemoveBacklink removes the backlink to documentPathSource from the document at documentPathDestination.
 func RemoveBacklink(documentPathDestination string, documentPathSource string) error {
@@ -584,6 +614,8 @@ func RemoveBacklink(documentPathDestination string, documentPathSource string) e
 	return nil
 }
 
+// TODO: Allow passing string and id for type
+
 // AddDocument adds a new document located at documentPath to the DB.
 func AddDocument(dbConn *sqlx.DB, transaction *sqlx.Tx, documentPath string, documentType string) error {
 	stmt := `
@@ -608,6 +640,8 @@ func AddDocument(dbConn *sqlx.DB, transaction *sqlx.Tx, documentPath string, doc
 	return err
 }
 
+// TODO: Allow passing string and id for document
+
 // RemoveDocument removes a document located at documentPath from the DB.
 func RemoveDocument(dbConn *sqlx.DB, transaction *sqlx.Tx, documentPath string) error {
 	stmt := `
@@ -625,6 +659,8 @@ func RemoveDocument(dbConn *sqlx.DB, transaction *sqlx.Tx, documentPath string) 
 
 	return err
 }
+
+// TODO: Allow passing string and id for old document
 
 // RenameDocument moves a document located at documentPathOld to documentPathNew.
 func RenameDocument(dbConn *sqlx.DB, transaction *sqlx.Tx, documentPathOld string, documentPathNew string) error {
@@ -645,6 +681,8 @@ func RenameDocument(dbConn *sqlx.DB, transaction *sqlx.Tx, documentPathOld strin
 
 	return err
 }
+
+// TODO: Allow passing string and id for document and type
 
 // ChangeDocumentType changes the type of the document located documentPath to documentTypeNew.
 func ChangeDocumentType(dbConn *sqlx.DB, transaction *sqlx.Tx, documentPath string, documentTypeNew string) error {
@@ -674,6 +712,8 @@ func ChangeDocumentType(dbConn *sqlx.DB, transaction *sqlx.Tx, documentPath stri
 
 	return err
 }
+
+// TODO: Allow passing string and id for document and type
 
 // AddType makes a new DocumentType available for use in the DB.
 // Passing a transaction is optional.
@@ -722,6 +762,8 @@ func AddType(dbConn *sqlx.DB, transaction *sqlx.Tx, type_ string) error {
 
 	return nil
 }
+
+// TODO: Allow passing string and id for document and type
 
 // RemoveType removes an available DocumentType from the DB.
 // Passing a transaction is optional.

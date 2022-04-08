@@ -188,6 +188,8 @@ func ExportYML(dbConn *sqlx.DB, ymlPath string) error {
 	return nil
 }
 
+// TODO: Allow passing string and id for tag
+
 // AddTag adds a new tag to the DB.
 // Passing a transaction is optional.
 func AddTag(dbConn *sqlx.DB, transaction *sqlx.Tx, tag string) error {
@@ -201,6 +203,8 @@ func AddTag(dbConn *sqlx.DB, transaction *sqlx.Tx, tag string) error {
 
 	return err
 }
+
+// TODO: Allow passing string and id for tag
 
 // RenameTag renames the tag oldTag to newTag in the DB.
 // Passing a transaction is optional.
@@ -219,6 +223,8 @@ func RenameTag(dbConn *sqlx.DB, transaction *sqlx.Tx, oldTag string, newTag stri
 	return err
 }
 
+// TODO: Allow passing string and id for tag
+
 // DeleteTag removes the tag tag from the DB.
 // Passing a transaction is optional.
 func DeleteTag(dbConn *sqlx.DB, transaction *sqlx.Tx, tag string) error {
@@ -233,6 +239,8 @@ func DeleteTag(dbConn *sqlx.DB, transaction *sqlx.Tx, tag string) error {
 
 	return err
 }
+
+// TODO: Allow passing string and id for tag
 
 // FindAmbiguousTagComponent finds the index (root = 0) of an ambiguous component.
 func FindAmbiguousTagComponent(dbConn *sqlx.DB, tag string) (int, string, error) {
@@ -282,6 +290,8 @@ func FindAmbiguousTagComponent(dbConn *sqlx.DB, tag string) (int, string, error)
 	return j, inputTagComponents[j], nil
 }
 
+// TODO: Allow passing string and id for tag
+
 // TryShortenTag shortens tag as much as possible, while keeping it unambiguous.
 // Components are removed from root to leaf.
 // A::B::C can be shortened to C if C does not appear in any other tag(e.g. X::C::Y).
@@ -304,6 +314,8 @@ func TryShortenTag(dbConn *sqlx.DB, tag string) (string, error) {
 
 	return tagComponents[len(tagComponents)-1], nil
 }
+
+// TODO: Allow passing string and id for tag
 
 // IsLeafAmbiguous checks if the leaf of the specified tag appears in any other tag.
 func IsLeafAmbiguous(dbConn *sqlx.DB, tag string) (bool, error) {

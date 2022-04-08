@@ -20,19 +20,21 @@
 
 package libbookmarks
 
+import "github.com/JonasMuehlmann/bntp.go/internal/helpers"
+
 // BookmarkFilter is used to filter bookmark retrieval.
 // Assigning nil to a field does not trigger filtering for that field.
 // Empty values("" or []T{}) filter for unset data (e.g. WHERE Column = NULL).
 type BookmarkFilter struct {
-	Title        *string
-	Url          *string
-	IsRead       *bool
-	IsCollection *bool
-	MaxAge       *int
-	Types        []string
-	Tags         []string
+	Title        helpers.Optional[string]
+	Url          helpers.Optional[string]
+	IsRead       helpers.Optional[bool]
+	IsCollection helpers.Optional[bool]
+	MaxAge       helpers.Optional[int]
+	Types        helpers.Optional[[]string]
+	Tags         helpers.Optional[[]string]
 }
 
 // BookmarkFilterInboxed is a BookmarkFilter configured to filter "Inboxed" bookmarks.
 // "Inboxed" bookmarks don't have a Type and are not tagged.
-var BookmarkFilterInboxed BookmarkFilter = BookmarkFilter{Types: []string{}, Tags: []string{}}
+var BookmarkFilterInboxed BookmarkFilter = BookmarkFilter{Types: helpers.Optional[[]string]{}, Tags: helpers.Optional[[]string]{}}
