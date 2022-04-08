@@ -261,6 +261,60 @@ func TestAddBookmark(t *testing.T) {
 	assert.Empty(t, logInterceptBuffer.String())
 }
 
+func TestAddBookmarkNoTitle(t *testing.T) {
+	logInterceptBuffer := strings.Builder{}
+	log.SetOutput(&logInterceptBuffer)
+
+	defer log.SetOutput(os.Stderr)
+
+	db, err := test.GetDB(t)
+	assert.NoError(t, err)
+
+	err = libbookmarks.AddType(db, nil, "Foo")
+	assert.NoError(t, err)
+
+	os.Args = []string{"", "bookmark", "--add", `{"url": "bar", "type": "1"}`}
+	subcommands.BookmarkMain(db, helpers.NOPExiter)
+
+	assert.Contains(t, logInterceptBuffer.String(), "Missing")
+}
+
+func TestAddBookmarkNoUrl(t *testing.T) {
+	logInterceptBuffer := strings.Builder{}
+	log.SetOutput(&logInterceptBuffer)
+
+	defer log.SetOutput(os.Stderr)
+
+	db, err := test.GetDB(t)
+	assert.NoError(t, err)
+
+	err = libbookmarks.AddType(db, nil, "Foo")
+	assert.NoError(t, err)
+
+	os.Args = []string{"", "bookmark", "--add", `{"title": "bar", "type": "1"}`}
+	subcommands.BookmarkMain(db, helpers.NOPExiter)
+
+	assert.Contains(t, logInterceptBuffer.String(), "Missing")
+}
+
+func TestAddBookmarkNoType(t *testing.T) {
+	logInterceptBuffer := strings.Builder{}
+	log.SetOutput(&logInterceptBuffer)
+
+	defer log.SetOutput(os.Stderr)
+
+	db, err := test.GetDB(t)
+	assert.NoError(t, err)
+
+	err = libbookmarks.AddType(db, nil, "Foo")
+	assert.NoError(t, err)
+
+	os.Args = []string{"", "bookmark", "--add", `{"title": "foo", "url": "bar"}`}
+	subcommands.BookmarkMain(db, helpers.NOPExiter)
+
+	assert.Empty(t, logInterceptBuffer.String())
+}
+
 // ******************************************************************//
 //                              --edit                              //
 // ******************************************************************//.
@@ -363,7 +417,7 @@ func TestEditUrl(t *testing.T) {
 	})
 	assert.NoError(t, err)
 
-	os.Args = []string{"", "bookmark", "--edit-title", "1", "foo"}
+	os.Args = []string{"", "bookmark", "--edit-url", "1", "foo"}
 	subcommands.BookmarkMain(db, helpers.NOPExiter)
 
 	assert.Empty(t, logInterceptBuffer.String())

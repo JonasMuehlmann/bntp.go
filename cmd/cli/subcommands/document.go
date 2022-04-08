@@ -22,7 +22,6 @@ package subcommands
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/JonasMuehlmann/bntp.go/internal/helpers"
 	"github.com/JonasMuehlmann/bntp.go/internal/libdocuments"
@@ -149,11 +148,7 @@ func DocumentMain(db *sqlx.DB, exiter func(int)) {
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
 		// TODO: Allow passing string and id for tag
-		tagsRaw, ok := arguments["TAGS"].([]string)
-		if !ok {
-			log.Println("Missing parameter TAGS")
-			exiter(1)
-		}
+		tagsRaw, _ := arguments["TAGS"].([]string)
 
 		hasTag, err := libdocuments.HasTags(documentPath, tagsRaw)
 		// REFACTOR: Use regular if err != nil {return err}
@@ -163,11 +158,7 @@ func DocumentMain(db *sqlx.DB, exiter func(int)) {
 		// ******************************************************************//
 	} else if isSet, ok := arguments["--find-docs-with-tags"]; ok && isSet.(bool) {
 		// TODO: Allow passing string and id for tag
-		tagsRaw, ok := arguments["TAGS"].([]string)
-		if !ok {
-			log.Println("Missing parameter TAGS")
-			exiter(1)
-		}
+		tagsRaw, _ := arguments["TAGS"].([]string)
 
 		documents, err := libdocuments.FindDocumentsWithTags(db, tagsRaw)
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
