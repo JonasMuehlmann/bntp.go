@@ -18,27 +18,37 @@
 // TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE
 // OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-package main
+package subcommands
 
 import (
 	"fmt"
-
-	"github.com/docopt/docopt-go"
-	_ "github.com/mattn/go-sqlite3"
 )
 
-func main() {
-	usage := `Bookmarkmanager.
+type ParameterConversionError struct {
+	Parameter  any
+	Value      any
+	TargetType string
+}
 
-Usage:
-  bookmarkmanager -h | --help
-  bookmarkmanager --version
+func (err ParameterConversionError) Error() string {
+	return fmt.Sprintf("Failed to convert parameter %v of value %v to type %v", err.Parameter, err.Value, err.TargetType)
+}
 
-Options:
-  -h --help     Show this screen.
-  --version     Show version.`
+type IncompleteCompoundParameterError struct {
+	Parameter     any
+	MissingFields []string
+}
 
-	arguments, _ := docopt.ParseDoc(usage)
+func (err IncompleteCompoundParameterError) Error() string {
+	return fmt.Sprintf("Compund parameter %v is missing value for field(s) %q", err.Parameter, err.MissingFields)
+}
 
-	fmt.Println(arguments)
+type InvalidParameterValueError struct {
+	Parameter     any
+	BadValue      any
+	AllowedValues []any
+}
+
+func (err InvalidParameterValueError) Error() string {
+	return fmt.Sprintf("Received invalid value %v in parameter %v, allowed values are %p", err.BadValue, err.Parameter, err.AllowedValues)
 }

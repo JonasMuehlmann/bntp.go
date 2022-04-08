@@ -20,16 +20,19 @@
 
 package libbookmarks
 
-import "database/sql"
+import (
+	"github.com/JonasMuehlmann/optional.go"
+)
 
 // Bookmark is a code side representation of DB bookmarks.
 type Bookmark struct {
-	Title        sql.NullString `db:"Title"`
-	Url          string         `db:"Url"`
-	TimeAdded    string         `db:"TimeAdded"`
-	Type         sql.NullString `db:"Type"`
+	Title optional.Optional[string] `json:"title" db:"Title"`
+	Url   string                    `json:"url" db:"Url"`
+	// REFACTOR: This should be a time.time
+	TimeAdded    string                    `json:"time_added" db:"TimeAdded"`
+	Type         optional.Optional[string] `json:"type" db:"Type"`
+	Id           int                       `json:"id" db:"Id"`
+	IsRead       bool                      `json:"is_read" db:"IsRead"`
+	IsCollection optional.Optional[bool]   `json:"is_collection" db:"IsCollection"`
 	Tags         []string
-	Id           int          `db:"Id"`
-	IsRead       bool         `db:"IsRead"`
-	IsCollection sql.NullBool `db:"IsCollection"`
 }

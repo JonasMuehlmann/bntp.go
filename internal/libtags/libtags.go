@@ -188,6 +188,8 @@ func ExportYML(dbConn *sqlx.DB, ymlPath string) error {
 	return nil
 }
 
+// TODO: Allow passing string and id for tag
+
 // AddTag adds a new tag to the DB.
 // Passing a transaction is optional.
 func AddTag(dbConn *sqlx.DB, transaction *sqlx.Tx, tag string) error {
@@ -201,6 +203,8 @@ func AddTag(dbConn *sqlx.DB, transaction *sqlx.Tx, tag string) error {
 
 	return err
 }
+
+// TODO: Allow passing string and id for tag
 
 // RenameTag renames the tag oldTag to newTag in the DB.
 // Passing a transaction is optional.
@@ -219,6 +223,8 @@ func RenameTag(dbConn *sqlx.DB, transaction *sqlx.Tx, oldTag string, newTag stri
 	return err
 }
 
+// TODO: Allow passing string and id for tag
+
 // DeleteTag removes the tag tag from the DB.
 // Passing a transaction is optional.
 func DeleteTag(dbConn *sqlx.DB, transaction *sqlx.Tx, tag string) error {
@@ -234,8 +240,10 @@ func DeleteTag(dbConn *sqlx.DB, transaction *sqlx.Tx, tag string) error {
 	return err
 }
 
+// TODO: Allow passing string and id for tag
+
 // FindAmbiguousTagComponent finds the index (root = 0) of an ambiguous component.
-func FindAmbiguousTagComponent(dbConn *sqlx.DB, tag string) (int, error) {
+func FindAmbiguousTagComponent(dbConn *sqlx.DB, tag string) (int, string, error) {
 	stmt := `
         SELECT
             Tag
@@ -253,7 +261,7 @@ func FindAmbiguousTagComponent(dbConn *sqlx.DB, tag string) (int, error) {
 
 	statement, err := dbConn.Preparex(stmt)
 	if err != nil {
-		return -1, err
+		return -1, "", err
 	}
 
 	defer statement.Close()
@@ -279,8 +287,10 @@ func FindAmbiguousTagComponent(dbConn *sqlx.DB, tag string) (int, error) {
 		j--
 	}
 
-	return j, nil
+	return j, inputTagComponents[j], nil
 }
+
+// TODO: Allow passing string and id for tag
 
 // TryShortenTag shortens tag as much as possible, while keeping it unambiguous.
 // Components are removed from root to leaf.
@@ -294,7 +304,7 @@ func TryShortenTag(dbConn *sqlx.DB, tag string) (string, error) {
 	}
 
 	if isAmbiguous {
-		i, err := FindAmbiguousTagComponent(dbConn, tag)
+		i, _, err := FindAmbiguousTagComponent(dbConn, tag)
 		if err != nil {
 			return "", err
 		}
@@ -305,23 +315,28 @@ func TryShortenTag(dbConn *sqlx.DB, tag string) (string, error) {
 	return tagComponents[len(tagComponents)-1], nil
 }
 
+// TODO: Allow passing string and id for tag
+
 // IsLeafAmbiguous checks if the leaf of the specified tag appears in any other tag.
 func IsLeafAmbiguous(dbConn *sqlx.DB, tag string) (bool, error) {
 	tags, err := ListTags(dbConn)
 	if err != nil {
 		return false, err
 	}
-	tagComponents := strings.Split(tag, "::")
 
+	tagComponents := strings.Split(tag, "::")
 	leaf := tagComponents[len(tagComponents)-1]
+	seenOnce := false
 
 	for _, tag := range tags {
 		curTagComponents := strings.Split(tag, "::")
 		curLeaf := curTagComponents[len(curTagComponents)-1]
 
-		if curLeaf == leaf {
+		if curLeaf == leaf && seenOnce {
 			return true, nil
 		}
+
+		seenOnce = true
 	}
 
 	return false, nil
