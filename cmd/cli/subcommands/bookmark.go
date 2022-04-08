@@ -23,10 +23,8 @@ package subcommands
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"strconv"
 
-	"github.com/JonasMuehlmann/bntp.go/internal/helpers"
 	"github.com/JonasMuehlmann/bntp.go/internal/libbookmarks"
 	"github.com/JonasMuehlmann/optional.go"
 	"github.com/docopt/docopt-go"
@@ -73,71 +71,105 @@ Options:
     --remove-tag            Remove a tag from a bookmark.
 `
 
-func BookmarkMain(db *sqlx.DB, exiter func(int)) {
+func BookmarkMain(db *sqlx.DB) error {
 	arguments, err := docopt.ParseDoc(usageBookmark)
-	helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+	if err != nil {
+		return err
+	}
 
 	// ******************************************************************//
 	if isSet, ok := arguments["--import"]; ok && isSet.(bool) {
 		source, err := arguments.String("FILE")
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return ParameterConversionError{"FILE", arguments["FILE"], "string"}
+		}
 
 		err = libbookmarks.ImportMinimalCSV(db, source)
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return err
+		}
 		// ******************************************************************//
 	} else if isSet, ok := arguments["--export"]; ok && isSet.(bool) {
 		source, err := arguments.String("FILE")
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return ParameterConversionError{"FILE", arguments["FILE"], "string"}
+		}
 
 		filter := libbookmarks.BookmarkFilter{}
 		if isSet, ok := arguments["--filter"]; ok && isSet.(bool) {
 			filterRaw, err := arguments.String("FILTER")
-			helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+			if err != nil {
+				return ParameterConversionError{"FILTER", arguments["FILTER"], "string"}
+			}
 
 			err = json.Unmarshal([]byte(filterRaw), &filter)
-			helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+			if err != nil {
+				return err
+			}
 		}
 
 		bookmarks, err := libbookmarks.GetBookmarks(db, filter)
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return err
+		}
 
 		err = libbookmarks.ExportCSV(bookmarks, source)
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return err
+		}
 		// ******************************************************************//
 	} else if isSet, ok := arguments["--list"]; ok && isSet.(bool) {
 		filter := libbookmarks.BookmarkFilter{}
 		if isSet, ok := arguments["--filter"]; ok && isSet.(bool) {
 			filterRaw, err := arguments.String("FILTER")
-			helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+			if err != nil {
+				return ParameterConversionError{"FILTER", arguments["FILTER"], "string"}
+			}
 
 			err = json.Unmarshal([]byte(filterRaw), &filter)
-			helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+			if err != nil {
+				return err
+			}
 		}
 
 		bookmarks, err := libbookmarks.GetBookmarks(db, filter)
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return err
+		}
 
 		// TODO: This export should be configurable
 		err = libbookmarks.ExportCSV(bookmarks, "")
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return err
+		}
 		// ******************************************************************//
 	} else if isSet, ok := arguments["--add-type"]; ok && isSet.(bool) {
 		type_, err := arguments.String("TYPE")
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return ParameterConversionError{"TYPE", arguments["TYPE"], "string"}
+		}
 
 		err = libbookmarks.AddType(db, nil, type_)
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return err
+		}
 		// ******************************************************************//
 	} else if isSet, ok := arguments["--remove-type"]; ok && isSet.(bool) {
 		type_, err := arguments.String("TYPE")
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return ParameterConversionError{"TYPE", arguments["TYPE"], "string"}
+		}
 
 		err = libbookmarks.RemoveType(db, nil, type_)
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return err
+		}
 		// ******************************************************************//
 	} else if isSet, ok := arguments["--list-types"]; ok && isSet.(bool) {
 		types, err := libbookmarks.ListTypes(db)
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return err
+		}
 
 		for _, type_ := range types {
 			fmt.Println(type_)
@@ -146,21 +178,28 @@ func BookmarkMain(db *sqlx.DB, exiter func(int)) {
 	} else if isSet, ok := arguments["--add"]; ok && isSet.(bool) {
 		var data map[string]string
 		dataRaw, err := arguments.String("DATA")
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return ParameterConversionError{"DATA", arguments["DATA"], "string"}
+		}
 
 		err = json.Unmarshal([]byte(dataRaw), &data)
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return err
+		}
 
+		var incompleteCompoundParameterError IncompleteCompoundParameterError
 		title, ok := data["title"]
 		if !ok {
-			log.Println("Missing parameter title in DATA")
-			exiter(1)
+			incompleteCompoundParameterError.MissingFields = append(incompleteCompoundParameterError.MissingFields, "title")
 		}
 
 		url, ok := data["url"]
 		if !ok {
-			log.Println("Missing parameter url in DATA")
-			exiter(1)
+			incompleteCompoundParameterError.MissingFields = append(incompleteCompoundParameterError.MissingFields, "url")
+		}
+
+		if len(incompleteCompoundParameterError.MissingFields) != 0 {
+			return incompleteCompoundParameterError
 		}
 
 		var type_ optional.Optional[int]
@@ -174,116 +213,186 @@ func BookmarkMain(db *sqlx.DB, exiter func(int)) {
 		type_.Wrappee = int(typeInt)
 
 		err = libbookmarks.AddBookmark(db, nil, title, url, type_)
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return err
+		}
 		// ******************************************************************//
 	} else if isSet, ok := arguments["--edit"]; ok && isSet.(bool) {
 		var data libbookmarks.Bookmark
 		dataRaw, err := arguments.String("NEW_DATA")
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return ParameterConversionError{"NEW_DATA", arguments["NEW_DATA"], "string"}
+		}
 
 		err = json.Unmarshal([]byte(dataRaw), &data)
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return err
+		}
 
 		err = libbookmarks.EditBookmark(db, nil, data)
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return err
+		}
 		// ******************************************************************//
 	} else if isSet, ok := arguments["--edit-is-read"]; ok && isSet.(bool) {
 		IDRaw, err := arguments.String("BOOKMARK_ID")
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return ParameterConversionError{"BOOKMARK_ID", arguments["BOOKMARK_ID"], "string"}
+		}
 
 		isReadRaw, err := arguments.String("IS_READ")
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return ParameterConversionError{"IS_READ", arguments["IS_READ"], "string"}
+		}
 
 		ID, err := strconv.Atoi(IDRaw)
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return err
+		}
 
 		isRead, err := strconv.ParseBool(isReadRaw)
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return err
+		}
 
 		err = libbookmarks.EditIsRead(db, nil, ID, isRead)
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return err
+		}
 		// ******************************************************************//
 	} else if isSet, ok := arguments["--edit-title"]; ok && isSet.(bool) {
 		IDRaw, err := arguments.String("BOOKMARK_ID")
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return ParameterConversionError{"BOOKMARK_ID", arguments["BOOKMARK_ID"], "string"}
+		}
 
 		title, err := arguments.String("TITLE")
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return ParameterConversionError{"TITLE", arguments["BOOKMARK_ID"], "string"}
+		}
 
 		ID, err := strconv.Atoi(IDRaw)
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return err
+		}
 
 		err = libbookmarks.EditTitle(db, nil, ID, title)
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return err
+		}
 		// ******************************************************************//
 	} else if isSet, ok := arguments["--edit-url"]; ok && isSet.(bool) {
 		IDRaw, err := arguments.String("BOOKMARK_ID")
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return ParameterConversionError{"BOOKMARK_ID", arguments["BOOKMARK_ID"], "string"}
+		}
 
 		url, err := arguments.String("URL")
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return ParameterConversionError{"URL", arguments["URL"], "string"}
+		}
 
 		ID, err := strconv.Atoi(IDRaw)
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return err
+		}
 
 		err = libbookmarks.EditUrl(db, nil, ID, url)
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return err
+		}
 		// ******************************************************************//
 	} else if isSet, ok := arguments["--edit-type"]; ok && isSet.(bool) {
 		IDRaw, err := arguments.String("BOOKMARK_ID")
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return ParameterConversionError{"BOOKMARK_ID", arguments["BOOKMARK_ID"], "string"}
+		}
 
 		type_, err := arguments.String("TYPE")
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return ParameterConversionError{"TYPE", arguments["TYPE"], "string"}
+		}
 
 		ID, err := strconv.Atoi(IDRaw)
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return err
+		}
 
 		err = libbookmarks.EditType(db, nil, ID, type_)
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return err
+		}
 		// ******************************************************************//
 	} else if isSet, ok := arguments["--edit-is-collection"]; ok && isSet.(bool) {
 		IDRaw, err := arguments.String("BOOKMARK_ID")
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return ParameterConversionError{"BOOKMARK_ID", arguments["BOOKMARK_ID"], "string"}
+		}
 
 		isCollectionRaw, err := arguments.String("IS_COLLECTION")
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return ParameterConversionError{"IS_COLLECTION", arguments["IS_COLLECTION"], "string"}
+		}
 
 		ID, err := strconv.Atoi(IDRaw)
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return err
+		}
 
 		isCollection, err := strconv.ParseBool(isCollectionRaw)
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return err
+		}
 
 		err = libbookmarks.EditIsCollection(db, nil, ID, isCollection)
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return err
+		}
 		// ******************************************************************//
 	} else if isSet, ok := arguments["--add-tag"]; ok && isSet.(bool) {
 		// TODO: Allow passing string and id for tag
 		tag, err := arguments.String("TAG")
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return ParameterConversionError{"TAG", arguments["TAG"], "string"}
+		}
 
 		IDRaw, err := arguments.String("BOOKMARK_ID")
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return ParameterConversionError{"BOOKMARK_ID", arguments["BOOKMARK_ID"], "string"}
+		}
 
 		ID, err := strconv.Atoi(IDRaw)
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return err
+		}
 
 		err = libbookmarks.AddTag(db, nil, ID, tag)
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return err
+		}
 		// ******************************************************************//
 	} else if isSet, ok := arguments["--remove-tag"]; ok && isSet.(bool) {
 		// TODO: Allow passing string and id for tag
 		tag, err := arguments.String("TAG")
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return ParameterConversionError{"TAG", arguments["TAG"], "string"}
+		}
 
 		IDRaw, err := arguments.String("BOOKMARK_ID")
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return ParameterConversionError{"BOOKMARK_ID", arguments["BOOKMARK_ID"], "string"}
+		}
 
 		ID, err := strconv.Atoi(IDRaw)
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return err
+		}
 
 		err = libbookmarks.RemoveTag(db, nil, ID, tag)
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return err
+		}
 	}
+
+	return nil
 }

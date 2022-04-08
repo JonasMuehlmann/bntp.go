@@ -21,13 +21,10 @@
 package subcommands_test
 
 import (
-	"log"
 	"os"
-	"strings"
 	"testing"
 
 	"github.com/JonasMuehlmann/bntp.go/cmd/cli/subcommands"
-	"github.com/JonasMuehlmann/bntp.go/internal/helpers"
 	"github.com/JonasMuehlmann/bntp.go/internal/libtags"
 	"github.com/JonasMuehlmann/bntp.go/test"
 	"github.com/stretchr/testify/assert"
@@ -37,11 +34,6 @@ import (
 //                             --import                             //
 // ******************************************************************//.
 func TestImport(t *testing.T) {
-	logInterceptBuffer := strings.Builder{}
-	log.SetOutput(&logInterceptBuffer)
-
-	defer log.SetOutput(os.Stderr)
-
 	db, err := test.GetDB(t)
 	assert.NoError(t, err)
 
@@ -58,23 +50,18 @@ tags:
 
 	os.Args = []string{"", "tag", "--import", file.Name()}
 
-	subcommands.TagMain(db, helpers.NOPExiter)
-	assert.Empty(t, logInterceptBuffer.String())
+	err = subcommands.TagMain(db)
+	assert.NoError(t, err)
 }
 
 func TestImportFileDoesNotExist(t *testing.T) {
-	logInterceptBuffer := strings.Builder{}
-	log.SetOutput(&logInterceptBuffer)
-
-	defer log.SetOutput(os.Stderr)
-
 	db, err := test.GetDB(t)
 	assert.NoError(t, err)
 
 	os.Args = []string{"", "tag", "--import", "foo"}
 
-	subcommands.TagMain(db, helpers.NOPExiter)
-	assert.Contains(t, logInterceptBuffer.String(), "no such file")
+	err = subcommands.TagMain(db)
+	assert.Error(t, err)
 }
 
 // ******************************************************************//
@@ -95,18 +82,13 @@ func TestExport(t *testing.T) {
 	err = libtags.AddTag(db, nil, "bar")
 	assert.NoError(t, err)
 
-	subcommands.TagMain(db, helpers.NOPExiter)
+	err = subcommands.TagMain(db)
 }
 
 // ******************************************************************//
 //                            --ambiguous                           //
 // ******************************************************************//.
 func TestAmbiguousNotAmbiguous(t *testing.T) {
-	logInterceptBuffer := strings.Builder{}
-	log.SetOutput(&logInterceptBuffer)
-
-	defer log.SetOutput(os.Stderr)
-
 	stdOutInterceptBuffer, reader, writer := test.InterceptStdout(t)
 	defer test.ResetStdout(t, reader, writer)
 
@@ -119,19 +101,14 @@ func TestAmbiguousNotAmbiguous(t *testing.T) {
 	err = libtags.AddTag(db, nil, tag)
 	assert.NoError(t, err)
 
-	subcommands.TagMain(db, helpers.NOPExiter)
+	err = subcommands.TagMain(db)
 	stdOutInterceptBuffer.Scan()
 
 	assert.Equal(t, "false", stdOutInterceptBuffer.Text())
-	assert.Empty(t, logInterceptBuffer.String())
+	assert.NoError(t, err)
 }
 
 func TestAmbiguousAmbiguous(t *testing.T) {
-	logInterceptBuffer := strings.Builder{}
-	log.SetOutput(&logInterceptBuffer)
-
-	defer log.SetOutput(os.Stderr)
-
 	stdOutInterceptBuffer, reader, writer := test.InterceptStdout(t)
 	defer test.ResetStdout(t, reader, writer)
 
@@ -148,22 +125,17 @@ func TestAmbiguousAmbiguous(t *testing.T) {
 	err = libtags.AddTag(db, nil, tag2)
 	assert.NoError(t, err)
 
-	subcommands.TagMain(db, helpers.NOPExiter)
+	err = subcommands.TagMain(db)
 	stdOutInterceptBuffer.Scan()
 
 	assert.Equal(t, "true", stdOutInterceptBuffer.Text())
-	assert.Empty(t, logInterceptBuffer.String())
+	assert.NoError(t, err)
 }
 
 // ******************************************************************//
 //                            --comonent                            //
 // ******************************************************************//.
 func TestAmbiguousComponent(t *testing.T) {
-	logInterceptBuffer := strings.Builder{}
-	log.SetOutput(&logInterceptBuffer)
-
-	defer log.SetOutput(os.Stderr)
-
 	stdOutInterceptBuffer, reader, writer := test.InterceptStdout(t)
 	defer test.ResetStdout(t, reader, writer)
 
@@ -180,76 +152,56 @@ func TestAmbiguousComponent(t *testing.T) {
 	err = libtags.AddTag(db, nil, tag2)
 	assert.NoError(t, err)
 
-	subcommands.TagMain(db, helpers.NOPExiter)
+	err = subcommands.TagMain(db)
 	stdOutInterceptBuffer.Scan()
 
 	assert.Equal(t, "1 bar", stdOutInterceptBuffer.Text())
-	assert.Empty(t, logInterceptBuffer.String())
+	assert.NoError(t, err)
 }
 
 // ******************************************************************//
 //                               --add                              //
 // ******************************************************************//.
 func TestAddTag(t *testing.T) {
-	logInterceptBuffer := strings.Builder{}
-	log.SetOutput(&logInterceptBuffer)
-
-	defer log.SetOutput(os.Stderr)
-
 	db, err := test.GetDB(t)
 	assert.NoError(t, err)
 
 	os.Args = []string{"", "tag", "--add", "foo"}
 
-	subcommands.TagMain(db, helpers.NOPExiter)
-	assert.Empty(t, logInterceptBuffer.String())
+	err = subcommands.TagMain(db)
+	assert.NoError(t, err)
 }
 
 // ******************************************************************//
 //                             --remove                             //
 // ******************************************************************//.
 func TestRemove(t *testing.T) {
-	logInterceptBuffer := strings.Builder{}
-	log.SetOutput(&logInterceptBuffer)
-
-	defer log.SetOutput(os.Stderr)
-
 	db, err := test.GetDB(t)
 	assert.NoError(t, err)
 
 	os.Args = []string{"", "tag", "--remove", "foo"}
 
-	subcommands.TagMain(db, helpers.NOPExiter)
-	assert.Empty(t, logInterceptBuffer.String())
+	err = subcommands.TagMain(db)
+	assert.NoError(t, err)
 }
 
 // ******************************************************************//
 //                             --rename                             //
 // ******************************************************************//.
 func TestRename(t *testing.T) {
-	logInterceptBuffer := strings.Builder{}
-	log.SetOutput(&logInterceptBuffer)
-
-	defer log.SetOutput(os.Stderr)
-
 	db, err := test.GetDB(t)
 	assert.NoError(t, err)
 
 	os.Args = []string{"", "tag", "--rename", "foo", "bar"}
 
-	subcommands.TagMain(db, helpers.NOPExiter)
-	assert.Empty(t, logInterceptBuffer.String())
+	err = subcommands.TagMain(db)
+	assert.NoError(t, err)
 }
 
 // ******************************************************************//
 //                             --shorten                            //
 // ******************************************************************//.
 func TestShorten(t *testing.T) {
-	logInterceptBuffer := strings.Builder{}
-	log.SetOutput(&logInterceptBuffer)
-
-	defer log.SetOutput(os.Stderr)
-
 	stdOutInterceptBuffer, reader, writer := test.InterceptStdout(t)
 	defer test.ResetStdout(t, reader, writer)
 
@@ -262,10 +214,10 @@ func TestShorten(t *testing.T) {
 	err = libtags.AddTag(db, nil, tag1)
 	assert.NoError(t, err)
 
-	subcommands.TagMain(db, helpers.NOPExiter)
+	err = subcommands.TagMain(db)
 	stdOutInterceptBuffer.Scan()
 
-	assert.Empty(t, logInterceptBuffer.String())
+	assert.NoError(t, err)
 	assert.Equal(t, "baz", stdOutInterceptBuffer.Text())
 }
 
@@ -273,11 +225,6 @@ func TestShorten(t *testing.T) {
 //                              --list                              //
 // ******************************************************************//.
 func TestList(t *testing.T) {
-	logInterceptBuffer := strings.Builder{}
-	log.SetOutput(&logInterceptBuffer)
-
-	defer log.SetOutput(os.Stderr)
-
 	stdOutInterceptBuffer, reader, writer := test.InterceptStdout(t)
 	defer test.ResetStdout(t, reader, writer)
 
@@ -294,15 +241,15 @@ func TestList(t *testing.T) {
 	err = libtags.AddTag(db, nil, tag2)
 	assert.NoError(t, err)
 
-	subcommands.TagMain(db, helpers.NOPExiter)
+	err = subcommands.TagMain(db)
 	stdOutInterceptBuffer.Scan()
 
-	assert.Empty(t, logInterceptBuffer.String())
+	assert.NoError(t, err)
 	assert.Equal(t, tag1, stdOutInterceptBuffer.Text())
 
 	stdOutInterceptBuffer.Scan()
 
-	assert.Empty(t, logInterceptBuffer.String())
+	assert.NoError(t, err)
 	assert.Equal(t, tag2, stdOutInterceptBuffer.Text())
 }
 
@@ -310,11 +257,6 @@ func TestList(t *testing.T) {
 //                           --list-short                           //
 // ******************************************************************//.
 func TestListShort(t *testing.T) {
-	logInterceptBuffer := strings.Builder{}
-	log.SetOutput(&logInterceptBuffer)
-
-	defer log.SetOutput(os.Stderr)
-
 	stdOutInterceptBuffer, reader, writer := test.InterceptStdout(t)
 	defer test.ResetStdout(t, reader, writer)
 
@@ -331,14 +273,14 @@ func TestListShort(t *testing.T) {
 	err = libtags.AddTag(db, nil, tag2)
 	assert.NoError(t, err)
 
-	subcommands.TagMain(db, helpers.NOPExiter)
+	err = subcommands.TagMain(db)
 	stdOutInterceptBuffer.Scan()
 
-	assert.Empty(t, logInterceptBuffer.String())
+	assert.NoError(t, err)
 	assert.Equal(t, "foo::baz", stdOutInterceptBuffer.Text())
 
 	stdOutInterceptBuffer.Scan()
 
-	assert.Empty(t, logInterceptBuffer.String())
+	assert.NoError(t, err)
 	assert.Equal(t, "bar::baz", stdOutInterceptBuffer.Text())
 }

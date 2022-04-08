@@ -23,7 +23,6 @@ package subcommands
 import (
 	"fmt"
 
-	"github.com/JonasMuehlmann/bntp.go/internal/helpers"
 	"github.com/JonasMuehlmann/bntp.go/internal/liblinks"
 	"github.com/docopt/docopt-go"
 	"github.com/jmoiron/sqlx"
@@ -45,42 +44,60 @@ Options:
     -L --list-back  List backlinks.
 `
 
-func LinkMain(db *sqlx.DB, exiter func(int)) {
+func LinkMain(db *sqlx.DB) error {
 	arguments, err := docopt.ParseDoc(usageLink)
-	helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+	if err != nil {
+		return err
+	}
 
 	// ******************************************************************//
 	if isSet, ok := arguments["--add"]; ok && isSet.(bool) {
 		// TODO: Allow passing string and id for doucment
 		source, err := arguments.String("SRC")
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return ParameterConversionError{"SRC", arguments["SRC"], "string"}
+		}
 
 		// TODO: Allow passing string and id for doucment
 		destination, err := arguments.String("DEST")
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return ParameterConversionError{"DEST", arguments["DEST"], "string"}
+		}
 
 		err = liblinks.AddLink(db, nil, source, destination)
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return err
+		}
 		// ******************************************************************//
 	} else if isSet, ok := arguments["--remove"]; ok && isSet.(bool) {
 		// TODO: Allow passing string and id for doucment
 		source, err := arguments.String("SRC")
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return ParameterConversionError{"SRC", arguments["SRC"], "string"}
+		}
 
 		// TODO: Allow passing string and id for doucment
 		destination, err := arguments.String("DEST")
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return ParameterConversionError{"DEST", arguments["DEST"], "string"}
+		}
 
 		err = liblinks.RemoveLink(db, nil, source, destination)
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return err
+		}
 		// ******************************************************************//
 	} else if isSet, ok := arguments["--list"]; ok && isSet.(bool) {
 		// TODO: Allow passing string and id for doucment
 		source, err := arguments.String("SRC")
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return ParameterConversionError{"SRC", arguments["SRC"], "string"}
+		}
 
 		links, err := liblinks.ListLinks(db, source)
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return err
+		}
 
 		for _, link := range links {
 			fmt.Println(link)
@@ -89,13 +106,19 @@ func LinkMain(db *sqlx.DB, exiter func(int)) {
 	} else if isSet, ok := arguments["--list-back"]; ok && isSet.(bool) {
 		// TODO: Allow passing string and id for doucment
 		destination, err := arguments.String("DEST")
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return ParameterConversionError{"DEST", arguments["DEST"], "string"}
+		}
 
 		backlinks, err := liblinks.ListBacklinks(db, destination)
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return err
+		}
 
 		for _, backlink := range backlinks {
 			fmt.Println(backlink)
 		}
 	}
+
+	return nil
 }

@@ -23,7 +23,6 @@ package subcommands
 import (
 	"fmt"
 
-	"github.com/JonasMuehlmann/bntp.go/internal/helpers"
 	"github.com/JonasMuehlmann/bntp.go/internal/libdocuments"
 	"github.com/docopt/docopt-go"
 	"github.com/jmoiron/sqlx"
@@ -68,65 +67,95 @@ Options:
     --remove-doc-type           Remove a type to give documents.
 `
 
-func DocumentMain(db *sqlx.DB, exiter func(int)) {
+func DocumentMain(db *sqlx.DB) error {
 	arguments, err := docopt.ParseDoc(usageDocument)
-	helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+	if err != nil {
+		return err
+	}
 
 	// ******************************************************************//
 	if isSet, ok := arguments["--add-tag"]; ok && isSet.(bool) {
 		// TODO: Allow passing string and id for document
 		documentPath, err := arguments.String("DOCUMENT_PATH")
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return ParameterConversionError{"DOCUMENT_PATH", arguments["DOCUMENT_PATH"], "string"}
+		}
 
 		// TODO: Allow passing string and id for tag
 		tag, err := arguments.String("TAG")
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return ParameterConversionError{"TAG", arguments["TAG"], "string"}
+		}
 
 		err = libdocuments.AddTagToFile(documentPath, tag)
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return err
+		}
 
 		// FIX: This returns an unclear error message: no rows in result set
 		err = libdocuments.AddTag(db, nil, documentPath, tag)
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return err
+		}
 		// ******************************************************************//
 	} else if isSet, ok := arguments["--remove-tag"]; ok && isSet.(bool) {
 		// TODO: Allow passing string and id for document
 		documentPath, err := arguments.String("DOCUMENT_PATH")
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return ParameterConversionError{"DOCUMENT_PATH", arguments["DOCUMENT_PATH"], "string"}
+		}
 
 		// TODO: Allow passing string and id for tag
 		tag, err := arguments.String("TAG")
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return ParameterConversionError{"TAG", arguments["TAG"], "string"}
+		}
 
 		err = libdocuments.RemoveTagFromFile(documentPath, tag)
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return err
+		}
 
 		err = libdocuments.RemoveTag(db, nil, documentPath, tag)
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return err
+		}
 		// ******************************************************************//
 	} else if isSet, ok := arguments["--rename-tag"]; ok && isSet.(bool) {
 		// TODO: Allow passing string and id for document
 		documentPath, err := arguments.String("DOCUMENT_PATH")
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return ParameterConversionError{"DOCUMENT_PATH", arguments["DOCUMENT_PATH"], "string"}
+		}
 
 		// TODO: Allow passing string and id for tag
 		oldTag, err := arguments.String("OLD_TAG")
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return ParameterConversionError{"OLD_TAG", arguments["OLD_TAG"], "string"}
+		}
 
 		// TODO: Allow passing string and id for tag
 		newTag, err := arguments.String("NEW_TAG")
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return ParameterConversionError{"NEW_TAG", arguments["NEW_TAG"], "string"}
+		}
 
 		err = libdocuments.RenameTagInFile(documentPath, oldTag, newTag)
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return err
+		}
 		// ******************************************************************//
 	} else if isSet, ok := arguments["--get-tags"]; ok && isSet.(bool) {
 		// TODO: Allow passing string and id for document
 		documentPath, err := arguments.String("DOCUMENT_PATH")
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return ParameterConversionError{"DOCUMENT_PATH", arguments["DOCUMENT_PATH"], "string"}
+		}
 
 		tags, err := libdocuments.GetTags(documentPath)
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return err
+		}
 
 		for _, tag := range tags {
 			fmt.Println(tag)
@@ -135,24 +164,31 @@ func DocumentMain(db *sqlx.DB, exiter func(int)) {
 	} else if isSet, ok := arguments["--find-tags-line"]; ok && isSet.(bool) {
 		// TODO: Allow passing string and id for document
 		documentPath, err := arguments.String("DOCUMENT_PATH")
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return ParameterConversionError{"DOCUMENT_PATH", arguments["DOCUMENT_PATH"], "string"}
+		}
 
 		index, line, err := libdocuments.FindTagsLine(documentPath)
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return err
+		}
 
 		fmt.Printf("%v %v\n", index, line)
 		// ******************************************************************//
 	} else if isSet, ok := arguments["--has-tags"]; ok && isSet.(bool) {
 		// TODO: Allow passing string and id for document
 		documentPath, err := arguments.String("DOCUMENT_PATH")
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return ParameterConversionError{"DOCUMENT_PATH", arguments["DOCUMENT_PATH"], "string"}
+		}
 
 		// TODO: Allow passing string and id for tag
 		tagsRaw, _ := arguments["TAGS"].([]string)
 
 		hasTag, err := libdocuments.HasTags(documentPath, tagsRaw)
-		// REFACTOR: Use regular if err != nil {return err}
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return err
+		}
 
 		fmt.Println(hasTag)
 		// ******************************************************************//
@@ -161,7 +197,9 @@ func DocumentMain(db *sqlx.DB, exiter func(int)) {
 		tagsRaw, _ := arguments["TAGS"].([]string)
 
 		documents, err := libdocuments.FindDocumentsWithTags(db, tagsRaw)
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return err
+		}
 
 		for _, document := range documents {
 			fmt.Println(document)
@@ -170,10 +208,14 @@ func DocumentMain(db *sqlx.DB, exiter func(int)) {
 	} else if isSet, ok := arguments["--find-links-lines"]; ok && isSet.(bool) {
 		// TODO: Allow passing string and id for document
 		documentPath, err := arguments.String("DOCUMENT_PATH")
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return ParameterConversionError{"DOCUMENT_PATH", arguments["DOCUMENT_PATH"], "string"}
+		}
 
 		start, end, links, err := libdocuments.FindLinksLines(documentPath)
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return err
+		}
 
 		fmt.Printf("%v %v\n", start, end)
 		for _, link := range links {
@@ -183,10 +225,14 @@ func DocumentMain(db *sqlx.DB, exiter func(int)) {
 	} else if isSet, ok := arguments["--find-backlinks-lines"]; ok && isSet.(bool) {
 		// TODO: Allow passing string and id for document
 		documentPath, err := arguments.String("DOCUMENT_PATH")
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return ParameterConversionError{"DOCUMENT_PATH", arguments["DOCUMENT_PATH"], "string"}
+		}
 
 		start, end, backlinks, err := libdocuments.FindBacklinksLines(documentPath)
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return err
+		}
 
 		fmt.Printf("%v %v\n", start, end)
 		for _, link := range backlinks {
@@ -196,106 +242,162 @@ func DocumentMain(db *sqlx.DB, exiter func(int)) {
 	} else if isSet, ok := arguments["--add-link"]; ok && isSet.(bool) {
 		// TODO: Allow passing string and id for document
 		documentPath, err := arguments.String("DOCUMENT_PATH")
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return ParameterConversionError{"DOCUMENT_PATH", arguments["DOCUMENT_PATH"], "string"}
+		}
 
 		link, err := arguments.String("LINK")
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return ParameterConversionError{"LINK", arguments["LINK"], "string"}
+		}
 
 		err = libdocuments.AddLink(documentPath, link)
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return err
+		}
 		// ******************************************************************//
 	} else if isSet, ok := arguments["--remove-link"]; ok && isSet.(bool) {
 		// TODO: Allow passing string and id for document
 		documentPath, err := arguments.String("DOCUMENT_PATH")
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return ParameterConversionError{"DOCUMENT_PATH", arguments["DOCUMENT_PATH"], "string"}
+		}
 
 		// TODO: Allow passing string and id for document
 		link, err := arguments.String("LINK")
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return ParameterConversionError{"LINK", arguments["LINK"], "string"}
+		}
 
 		err = libdocuments.RemoveLink(documentPath, link)
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return err
+		}
 		// ******************************************************************//
 	} else if isSet, ok := arguments["--add-backlink"]; ok && isSet.(bool) {
 		// TODO: Allow passing string and id for document
 		documentPath, err := arguments.String("DOCUMENT_PATH")
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return ParameterConversionError{"DOCUMENT_PATH", arguments["DOCUMENT_PATH"], "string"}
+		}
 
 		// TODO: Allow passing string and id for document
 		backlink, err := arguments.String("BACKLINK")
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return ParameterConversionError{"BACKLINK", arguments["BACKLINK"], "string"}
+		}
 
 		err = libdocuments.AddBacklink(documentPath, backlink)
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return err
+		}
 		// ******************************************************************//
 	} else if isSet, ok := arguments["--remove-backlink"]; ok && isSet.(bool) {
 		// TODO: Allow passing string and id for document
 		documentPath, err := arguments.String("DOCUMENT_PATH")
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return ParameterConversionError{"DOCUMENT_PATH", arguments["DOCUMENT_PATH"], "string"}
+		}
 
 		// TODO: Allow passing string and id for document
 		backlink, err := arguments.String("BACKLINK")
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return ParameterConversionError{"BACKLINK", arguments["BACKLINK"], "string"}
+		}
 
 		err = libdocuments.RemoveBacklink(documentPath, backlink)
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return err
+		}
 		// ******************************************************************//
 	} else if isSet, ok := arguments["--add-doc"]; ok && isSet.(bool) {
 		// TODO: Allow passing string and id for document
 		documentPath, err := arguments.String("DOCUMENT_PATH")
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return ParameterConversionError{"DOCUMENT_PATH", arguments["DOCUMENT_PATH"], "string"}
+		}
 
 		// TODO: Allow passing string and id for Type
 		type_, err := arguments.String("TYPE")
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return ParameterConversionError{"TYPE", arguments["TYPE"], "string"}
+		}
 
 		err = libdocuments.AddDocument(db, nil, documentPath, type_)
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return err
+		}
 		// ******************************************************************//
 	} else if isSet, ok := arguments["--remove-doc"]; ok && isSet.(bool) {
 		// TODO: Allow passing string and id for document
 		documentPath, err := arguments.String("DOCUMENT_PATH")
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return ParameterConversionError{"DOCUMENT_PATH", arguments["DOCUMENT_PATH"], "string"}
+		}
 
 		err = libdocuments.RemoveDocument(db, nil, documentPath)
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return err
+		}
 		// ******************************************************************//
 	} else if isSet, ok := arguments["--rename-doc"]; ok && isSet.(bool) {
 		// TODO: Allow passing string and id for document
 		oldPath, err := arguments.String("OLD_PATH")
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return ParameterConversionError{"OLD_PATH", arguments["OLD_PATH"], "string"}
+		}
 
 		newPath, err := arguments.String("NEW_PATH")
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return ParameterConversionError{"NEW_PATH", arguments["NEW_PATH"], "string"}
+		}
 
 		err = libdocuments.RenameDocument(db, nil, oldPath, newPath)
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return err
+		}
 		// ******************************************************************//
 	} else if isSet, ok := arguments["--change-doc-type"]; ok && isSet.(bool) {
 		// TODO: Allow passing string and id for document
 		documentPath, err := arguments.String("DOCUMENT_PATH")
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return ParameterConversionError{"DOCUMENT_PATH", arguments["DOCUMENT_PATH"], "string"}
+		}
 
 		// TODO: Allow passing string and id for Type
 		type_, err := arguments.String("TYPE")
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return ParameterConversionError{"TYPE", arguments["TYPE"], "string"}
+		}
 
 		err = libdocuments.ChangeDocumentType(db, nil, documentPath, type_)
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return err
+		}
 		// ******************************************************************//
 	} else if isSet, ok := arguments["--add-doc-type"]; ok && isSet.(bool) {
 		type_, err := arguments.String("TYPE")
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return ParameterConversionError{"TYPE", arguments["TYPE"], "string"}
+		}
 
 		err = libdocuments.AddType(db, nil, type_)
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return err
+		}
 		// ******************************************************************//
 	} else if isSet, ok := arguments["--remove-doc-type"]; ok && isSet.(bool) {
 		// TODO: Allow passing string and id for Type
 		type_, err := arguments.String("TYPE")
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return ParameterConversionError{"TYPE", arguments["TYPE"], "string"}
+		}
 
 		err = libdocuments.RemoveType(db, nil, type_)
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return err
+		}
 	}
+
+	return nil
 }

@@ -22,14 +22,11 @@ package subcommands_test
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"path"
-	"strings"
 	"testing"
 
 	"github.com/JonasMuehlmann/bntp.go/cmd/cli/subcommands"
-	"github.com/JonasMuehlmann/bntp.go/internal/helpers"
 	"github.com/JonasMuehlmann/bntp.go/internal/libdocuments"
 	"github.com/JonasMuehlmann/bntp.go/internal/libtags"
 	"github.com/JonasMuehlmann/bntp.go/test"
@@ -40,11 +37,6 @@ import (
 //                             --add-tag                            //
 // ******************************************************************//.
 func TestAddTagToDocument(t *testing.T) {
-	logInterceptBuffer := strings.Builder{}
-	log.SetOutput(&logInterceptBuffer)
-
-	defer log.SetOutput(os.Stderr)
-
 	db, err := test.GetDB(t)
 	assert.NoError(t, err)
 
@@ -69,20 +61,15 @@ func TestAddTagToDocument(t *testing.T) {
 	err = libdocuments.AddDocument(db, nil, document, docType)
 	assert.NoError(t, err)
 
-	subcommands.DocumentMain(db, helpers.NOPExiter)
+	err = subcommands.DocumentMain(db)
 
-	assert.Empty(t, logInterceptBuffer.String())
+	assert.NoError(t, err)
 }
 
 // ******************************************************************//
 //                           --remove-tag                           //
 // ******************************************************************//.
 func TestRemoveTagFromDocument(t *testing.T) {
-	logInterceptBuffer := strings.Builder{}
-	log.SetOutput(&logInterceptBuffer)
-
-	defer log.SetOutput(os.Stderr)
-
 	db, err := test.GetDB(t)
 	assert.NoError(t, err)
 
@@ -107,20 +94,15 @@ func TestRemoveTagFromDocument(t *testing.T) {
 	err = libdocuments.AddDocument(db, nil, document, docType)
 	assert.NoError(t, err)
 
-	subcommands.DocumentMain(db, helpers.NOPExiter)
+	err = subcommands.DocumentMain(db)
 
-	assert.Empty(t, logInterceptBuffer.String())
+	assert.NoError(t, err)
 }
 
 // ******************************************************************//
 //                           --rename-tag                           //
 // ******************************************************************//.
 func TestRenameTagInDocument(t *testing.T) {
-	logInterceptBuffer := strings.Builder{}
-	log.SetOutput(&logInterceptBuffer)
-
-	defer log.SetOutput(os.Stderr)
-
 	db, err := test.GetDB(t)
 	assert.NoError(t, err)
 
@@ -146,20 +128,15 @@ func TestRenameTagInDocument(t *testing.T) {
 	err = libdocuments.AddDocument(db, nil, document, docType)
 	assert.NoError(t, err)
 
-	subcommands.DocumentMain(db, helpers.NOPExiter)
+	err = subcommands.DocumentMain(db)
 
-	assert.Empty(t, logInterceptBuffer.String())
+	assert.NoError(t, err)
 }
 
 // ******************************************************************//
 //                            --get-tags                            //
 // ******************************************************************//.
 func TestGetTagsFromDocument(t *testing.T) {
-	logInterceptBuffer := strings.Builder{}
-	log.SetOutput(&logInterceptBuffer)
-
-	defer log.SetOutput(os.Stderr)
-
 	stdOutInterceptBuffer, reader, writer := test.InterceptStdout(t)
 	defer test.ResetStdout(t, reader, writer)
 
@@ -185,25 +162,20 @@ func TestGetTagsFromDocument(t *testing.T) {
 	err = libdocuments.AddDocument(db, nil, document, docType)
 	assert.NoError(t, err)
 
-	subcommands.DocumentMain(db, helpers.NOPExiter)
+	err = subcommands.DocumentMain(db)
 	stdOutInterceptBuffer.Scan()
 	assert.Equal(t, tag1, stdOutInterceptBuffer.Text())
 
 	stdOutInterceptBuffer.Scan()
 	assert.Equal(t, tag2, stdOutInterceptBuffer.Text())
 
-	assert.Empty(t, logInterceptBuffer.String())
+	assert.NoError(t, err)
 }
 
 // ******************************************************************//
 //                         --find-tags-line                         //
 // ******************************************************************//.
 func TestFindTagsLine(t *testing.T) {
-	logInterceptBuffer := strings.Builder{}
-	log.SetOutput(&logInterceptBuffer)
-
-	defer log.SetOutput(os.Stderr)
-
 	stdOutInterceptBuffer, reader, writer := test.InterceptStdout(t)
 	defer test.ResetStdout(t, reader, writer)
 
@@ -228,22 +200,17 @@ func TestFindTagsLine(t *testing.T) {
 	err = libdocuments.AddDocument(db, nil, document, docType)
 	assert.NoError(t, err)
 
-	subcommands.DocumentMain(db, helpers.NOPExiter)
+	err = subcommands.DocumentMain(db)
 	stdOutInterceptBuffer.Scan()
 
 	assert.Equal(t, "2 "+tag, stdOutInterceptBuffer.Text())
-	assert.Empty(t, logInterceptBuffer.String())
+	assert.NoError(t, err)
 }
 
 // ******************************************************************//
 //                            --has-tags                            //
 // ******************************************************************//.
 func TestHasTags(t *testing.T) {
-	logInterceptBuffer := strings.Builder{}
-	log.SetOutput(&logInterceptBuffer)
-
-	defer log.SetOutput(os.Stderr)
-
 	stdOutInterceptBuffer, reader, writer := test.InterceptStdout(t)
 	defer test.ResetStdout(t, reader, writer)
 
@@ -269,22 +236,17 @@ func TestHasTags(t *testing.T) {
 	err = libdocuments.AddDocument(db, nil, document, docType)
 	assert.NoError(t, err)
 
-	subcommands.DocumentMain(db, helpers.NOPExiter)
+	err = subcommands.DocumentMain(db)
 	stdOutInterceptBuffer.Scan()
 
 	assert.Equal(t, "true", stdOutInterceptBuffer.Text())
-	assert.Empty(t, logInterceptBuffer.String())
+	assert.NoError(t, err)
 }
 
 // ******************************************************************//
 //                         --find-docs-with-tags                    //
 // ******************************************************************//.
 func TestFindDocumentsWithTags(t *testing.T) {
-	logInterceptBuffer := strings.Builder{}
-	log.SetOutput(&logInterceptBuffer)
-
-	defer log.SetOutput(os.Stderr)
-
 	stdOutInterceptBuffer, reader, writer := test.InterceptStdout(t)
 	defer test.ResetStdout(t, reader, writer)
 
@@ -326,9 +288,9 @@ func TestFindDocumentsWithTags(t *testing.T) {
 	assert.NoError(t, err)
 
 	os.Args = []string{"", "document", "--find-docs-with-tags", tag1, tag2}
-	subcommands.DocumentMain(db, helpers.NOPExiter)
+	err = subcommands.DocumentMain(db)
 
-	assert.Empty(t, logInterceptBuffer.String())
+	assert.NoError(t, err)
 
 	stdOutInterceptBuffer.Scan()
 	assert.Equal(t, document1, stdOutInterceptBuffer.Text())
@@ -341,11 +303,6 @@ func TestFindDocumentsWithTags(t *testing.T) {
 //                         --find-links-line                        //
 // ******************************************************************//.
 func TestFindLinksLine(t *testing.T) {
-	logInterceptBuffer := strings.Builder{}
-	log.SetOutput(&logInterceptBuffer)
-
-	defer log.SetOutput(os.Stderr)
-
 	stdOutInterceptBuffer, reader, writer := test.InterceptStdout(t)
 	defer test.ResetStdout(t, reader, writer)
 
@@ -369,9 +326,9 @@ func TestFindLinksLine(t *testing.T) {
 	assert.NoError(t, err)
 
 	os.Args = []string{"", "document", "--find-links-lines", document}
-	subcommands.DocumentMain(db, helpers.NOPExiter)
+	err = subcommands.DocumentMain(db)
 
-	assert.Empty(t, logInterceptBuffer.String())
+	assert.NoError(t, err)
 
 	stdOutInterceptBuffer.Scan()
 	assert.Equal(t, "2 2", stdOutInterceptBuffer.Text())
@@ -384,11 +341,6 @@ func TestFindLinksLine(t *testing.T) {
 //                      --find-backlinks-lines                      //
 // ******************************************************************//.
 func TestFindBackLinksLine(t *testing.T) {
-	logInterceptBuffer := strings.Builder{}
-	log.SetOutput(&logInterceptBuffer)
-
-	defer log.SetOutput(os.Stderr)
-
 	stdOutInterceptBuffer, reader, writer := test.InterceptStdout(t)
 	defer test.ResetStdout(t, reader, writer)
 
@@ -413,7 +365,7 @@ func TestFindBackLinksLine(t *testing.T) {
 	err = libdocuments.AddDocument(db, nil, document, docType)
 	assert.NoError(t, err)
 
-	subcommands.DocumentMain(db, helpers.NOPExiter)
+	err = subcommands.DocumentMain(db)
 
 	stdOutInterceptBuffer.Scan()
 	assert.Equal(t, "2 2", stdOutInterceptBuffer.Text())
@@ -421,18 +373,13 @@ func TestFindBackLinksLine(t *testing.T) {
 	stdOutInterceptBuffer.Scan()
 	assert.Equal(t, link, stdOutInterceptBuffer.Text())
 
-	assert.Empty(t, logInterceptBuffer.String())
+	assert.NoError(t, err)
 }
 
 // ******************************************************************//
 //                            --add-link                            //
 // ******************************************************************//.
 func TestAddLinkToDocument(t *testing.T) {
-	logInterceptBuffer := strings.Builder{}
-	log.SetOutput(&logInterceptBuffer)
-
-	defer log.SetOutput(os.Stderr)
-
 	db, err := test.GetDB(t)
 	assert.NoError(t, err)
 
@@ -462,20 +409,15 @@ func TestAddLinkToDocument(t *testing.T) {
 	assert.NoError(t, err)
 
 	os.Args = []string{"", "document", "--add-link", sourcePath, sourcePath}
-	subcommands.DocumentMain(db, helpers.NOPExiter)
+	err = subcommands.DocumentMain(db)
 
-	assert.Empty(t, logInterceptBuffer.String())
+	assert.NoError(t, err)
 }
 
 // ******************************************************************//
 //                           --remove-link                          //
 // ******************************************************************//.
 func TestRemoveLinkToDocument(t *testing.T) {
-	logInterceptBuffer := strings.Builder{}
-	log.SetOutput(&logInterceptBuffer)
-
-	defer log.SetOutput(os.Stderr)
-
 	db, err := test.GetDB(t)
 	assert.NoError(t, err)
 
@@ -505,20 +447,15 @@ func TestRemoveLinkToDocument(t *testing.T) {
 	assert.NoError(t, err)
 
 	os.Args = []string{"", "document", "--remove-link", sourcePath, destPath}
-	subcommands.DocumentMain(db, helpers.NOPExiter)
+	err = subcommands.DocumentMain(db)
 
-	assert.Empty(t, logInterceptBuffer.String())
+	assert.NoError(t, err)
 }
 
 // ******************************************************************//
 //                            --add-backlink                         //
 // ******************************************************************//.
 func TestAddBacklinkToDocument(t *testing.T) {
-	logInterceptBuffer := strings.Builder{}
-	log.SetOutput(&logInterceptBuffer)
-
-	defer log.SetOutput(os.Stderr)
-
 	db, err := test.GetDB(t)
 	assert.NoError(t, err)
 
@@ -548,20 +485,15 @@ func TestAddBacklinkToDocument(t *testing.T) {
 	assert.NoError(t, err)
 
 	os.Args = []string{"", "document", "--add-backlink", sourcePath, sourcePath}
-	subcommands.DocumentMain(db, helpers.NOPExiter)
+	err = subcommands.DocumentMain(db)
 
-	assert.Empty(t, logInterceptBuffer.String())
+	assert.NoError(t, err)
 }
 
 // ******************************************************************//
 //                           --remove-backlink                       //
 // ******************************************************************//.
 func TestRemoveBacklinkToDocument(t *testing.T) {
-	logInterceptBuffer := strings.Builder{}
-	log.SetOutput(&logInterceptBuffer)
-
-	defer log.SetOutput(os.Stderr)
-
 	db, err := test.GetDB(t)
 	assert.NoError(t, err)
 
@@ -591,20 +523,15 @@ func TestRemoveBacklinkToDocument(t *testing.T) {
 	assert.NoError(t, err)
 
 	os.Args = []string{"", "document", "--remove-backlink", sourcePath, destPath}
-	subcommands.DocumentMain(db, helpers.NOPExiter)
+	err = subcommands.DocumentMain(db)
 
-	assert.Empty(t, logInterceptBuffer.String())
+	assert.NoError(t, err)
 }
 
 // ******************************************************************//
 //                             --add-doc                            //
 // ******************************************************************//.
 func TestAddDocument(t *testing.T) {
-	logInterceptBuffer := strings.Builder{}
-	log.SetOutput(&logInterceptBuffer)
-
-	defer log.SetOutput(os.Stderr)
-
 	db, err := test.GetDB(t)
 	assert.NoError(t, err)
 
@@ -618,20 +545,15 @@ func TestAddDocument(t *testing.T) {
 	assert.NoError(t, err)
 
 	os.Args = []string{"", "document", "--add-doc", docPath, docType}
-	subcommands.DocumentMain(db, helpers.NOPExiter)
+	err = subcommands.DocumentMain(db)
 
-	assert.Empty(t, logInterceptBuffer.String())
+	assert.NoError(t, err)
 }
 
 // ******************************************************************//
 //                           --remove-doc                           //
 // ******************************************************************//.
 func TestRemoveDocument(t *testing.T) {
-	logInterceptBuffer := strings.Builder{}
-	log.SetOutput(&logInterceptBuffer)
-
-	defer log.SetOutput(os.Stderr)
-
 	db, err := test.GetDB(t)
 	assert.NoError(t, err)
 
@@ -648,20 +570,15 @@ func TestRemoveDocument(t *testing.T) {
 	assert.NoError(t, err)
 
 	os.Args = []string{"", "document", "--remove-doc", docPath, docType}
-	subcommands.DocumentMain(db, helpers.NOPExiter)
+	err = subcommands.DocumentMain(db)
 
-	assert.Empty(t, logInterceptBuffer.String())
+	assert.NoError(t, err)
 }
 
 // ******************************************************************//
 //                           --rename-doc                           //
 // ******************************************************************//.
 func TestRenameDocument(t *testing.T) {
-	logInterceptBuffer := strings.Builder{}
-	log.SetOutput(&logInterceptBuffer)
-
-	defer log.SetOutput(os.Stderr)
-
 	db, err := test.GetDB(t)
 	assert.NoError(t, err)
 
@@ -678,20 +595,15 @@ func TestRenameDocument(t *testing.T) {
 	assert.NoError(t, err)
 
 	os.Args = []string{"", "document", "--rename-doc", docPath, "foo"}
-	subcommands.DocumentMain(db, helpers.NOPExiter)
+	err = subcommands.DocumentMain(db)
 
-	assert.Empty(t, logInterceptBuffer.String())
+	assert.NoError(t, err)
 }
 
 // ******************************************************************//
 //                         --change-doc-type                        //
 // ******************************************************************//.
 func TestChangeDocumentType(t *testing.T) {
-	logInterceptBuffer := strings.Builder{}
-	log.SetOutput(&logInterceptBuffer)
-
-	defer log.SetOutput(os.Stderr)
-
 	db, err := test.GetDB(t)
 	assert.NoError(t, err)
 
@@ -712,35 +624,25 @@ func TestChangeDocumentType(t *testing.T) {
 	assert.NoError(t, err)
 
 	os.Args = []string{"", "document", "--change-doc-type", docPath, newType}
-	subcommands.DocumentMain(db, helpers.NOPExiter)
+	err = subcommands.DocumentMain(db)
 
-	assert.Empty(t, logInterceptBuffer.String())
+	assert.NoError(t, err)
 }
 
 // ******************************************************************//
 //                          --add-doc-type                          //
 // ******************************************************************//.
 func TestAddDocumentType(t *testing.T) {
-	logInterceptBuffer := strings.Builder{}
-	log.SetOutput(&logInterceptBuffer)
-
-	defer log.SetOutput(os.Stderr)
-
 	db, err := test.GetDB(t)
 	assert.NoError(t, err)
 
 	os.Args = []string{"", "document", "--add-doc-type", "foo"}
-	subcommands.DocumentMain(db, helpers.NOPExiter)
+	err = subcommands.DocumentMain(db)
 
-	assert.Empty(t, logInterceptBuffer.String())
+	assert.NoError(t, err)
 }
 
 func TestRemoveDocumentType(t *testing.T) {
-	logInterceptBuffer := strings.Builder{}
-	log.SetOutput(&logInterceptBuffer)
-
-	defer log.SetOutput(os.Stderr)
-
 	db, err := test.GetDB(t)
 	assert.NoError(t, err)
 
@@ -749,7 +651,7 @@ func TestRemoveDocumentType(t *testing.T) {
 	assert.NoError(t, err)
 
 	os.Args = []string{"", "document", "--remove-doc-type", docType}
-	subcommands.DocumentMain(db, helpers.NOPExiter)
+	err = subcommands.DocumentMain(db)
 
-	assert.Empty(t, logInterceptBuffer.String())
+	assert.NoError(t, err)
 }

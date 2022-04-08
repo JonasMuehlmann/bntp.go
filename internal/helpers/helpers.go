@@ -21,8 +21,6 @@
 package helpers
 
 import (
-	"log"
-
 	"github.com/jmoiron/sqlx"
 )
 
@@ -303,15 +301,4 @@ func OnError(err error, handler func(args ...interface{})) {
 	if err != nil {
 		handler(err)
 	}
-}
-
-// MakeFatalLogger is a replacement for log.Fatal and allows for easier testing through dependency injection.
-func MakeFatalLogger(exiter func(int)) func(...interface{}) {
-	return func(args ...interface{}) {
-		log.Println(args...)
-		exiter(1)
-	}
-}
-
-func NOPExiter(code int) {
 }

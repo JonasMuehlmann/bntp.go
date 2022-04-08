@@ -71,20 +71,39 @@ func main() {
 		return
 	}
 
-	exiter := os.Exit
 	db, err := helpers.GetDefaultDB()
-	helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+	if err != nil {
+		log.Println(err)
+		return
+	}
 
 	switch subcommand {
 	case "bookmark":
-		subcommands.BookmarkMain(db, exiter)
+		err = subcommands.BookmarkMain(db)
+		if err != nil {
+			log.Println(err)
+			return
+		}
 	case "link":
-		subcommands.LinkMain(db, exiter)
+		err = subcommands.LinkMain(db)
+		if err != nil {
+			log.Println(err)
+			return
+		}
 	case "tag":
-		subcommands.TagMain(db, exiter)
+		err = subcommands.TagMain(db)
+		if err != nil {
+			log.Println(err)
+			return
+		}
 	case "document":
-		subcommands.DocumentMain(db, exiter)
+		err = subcommands.DocumentMain(db)
+		if err != nil {
+			log.Println(err)
+			return
+		}
 	default:
-		log.Panic("Invalid subcommand")
+		log.Println("Invalid subcommand")
+		return
 	}
 }

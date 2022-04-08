@@ -24,7 +24,6 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/JonasMuehlmann/bntp.go/internal/helpers"
 	"github.com/JonasMuehlmann/bntp.go/internal/libtags"
 	"github.com/docopt/docopt-go"
 	"github.com/jmoiron/sqlx"
@@ -53,84 +52,122 @@ Options:
     -L --list-short     List all tags, shortened.
 `
 
-func TagMain(db *sqlx.DB, exiter func(int)) {
+func TagMain(db *sqlx.DB) error {
 	arguments, err := docopt.ParseDoc(usageTag)
-	helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+	if err != nil {
+		return err
+	}
 
 	// ******************************************************************//
 	if isSet, ok := arguments["--import"]; ok && isSet.(bool) {
 		path, err := arguments.String("PATH")
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return ParameterConversionError{"PATH", arguments["PATH"], "string"}
+		}
 
 		err = libtags.ImportYML(db, path)
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return err
+		}
 		// ******************************************************************//
 	} else if isSet, ok := arguments["--export"]; ok && isSet.(bool) {
 		path, err := arguments.String("PATH")
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return ParameterConversionError{"PATH", arguments["PATH"], "string"}
+		}
 
 		err = libtags.ExportYML(db, path)
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return err
+		}
 		// ******************************************************************//
 	} else if isSet, ok := arguments["--ambiguous"]; ok && isSet.(bool) {
 		// TODO: Allow passing string and id for tag
 		tag, err := arguments.String("TAG")
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return ParameterConversionError{"TAG", arguments["TAG"], "string"}
+		}
 
 		isAmbiguous, err := libtags.IsLeafAmbiguous(db, tag)
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return err
+		}
 
 		fmt.Println(strconv.FormatBool(isAmbiguous))
 		// ******************************************************************//
 	} else if isSet, ok := arguments["--component"]; ok && isSet.(bool) {
 		// TODO: Allow passing string and id for tag
 		tag, err := arguments.String("TAG")
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return ParameterConversionError{"TAG", arguments["TAG"], "string"}
+		}
 
 		index, component, err := libtags.FindAmbiguousTagComponent(db, tag)
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return err
+		}
 
 		fmt.Println(index, component)
 		// ******************************************************************//
 	} else if isSet, ok := arguments["--add"]; ok && isSet.(bool) {
 		tag, err := arguments.String("TAG")
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return ParameterConversionError{"TAG", arguments["TAG"], "string"}
+		}
 
 		err = libtags.AddTag(db, nil, tag)
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return err
+		}
 		// ******************************************************************//
 	} else if isSet, ok := arguments["--remove"]; ok && isSet.(bool) {
 		// TODO: Allow passing string and id for tag
 		tag, err := arguments.String("TAG")
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return ParameterConversionError{"TAG", arguments["TAG"], "string"}
+		}
 
 		err = libtags.DeleteTag(db, nil, tag)
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return err
+		}
 		// ******************************************************************//
 	} else if isSet, ok := arguments["--rename"]; ok && isSet.(bool) {
 		// TODO: Allow passing string and id for tag
 		oldName, err := arguments.String("OLD")
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return ParameterConversionError{"OLD", arguments["OLD"], "string"}
+		}
 
 		newName, err := arguments.String("NEW")
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return ParameterConversionError{"NEW", arguments["NEW"], "string"}
+		}
 
 		err = libtags.RenameTag(db, nil, oldName, newName)
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return err
+		}
 		// ******************************************************************//
 	} else if isSet, ok := arguments["--shorten"]; ok && isSet.(bool) {
 		// TODO: Allow passing string and id for tag
 		tag, err := arguments.String("TAG")
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return ParameterConversionError{"TAG", arguments["TAG"], "string"}
+		}
 
 		shortened, err := libtags.TryShortenTag(db, tag)
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return err
+		}
 
 		fmt.Println(shortened)
 		// ******************************************************************//
 	} else if isSet, ok := arguments["--list"]; ok && isSet.(bool) {
 		tags, err := libtags.ListTags(db)
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return err
+		}
 
 		for _, tag := range tags {
 			fmt.Println(tag)
@@ -138,10 +175,14 @@ func TagMain(db *sqlx.DB, exiter func(int)) {
 		// ******************************************************************//
 	} else if isSet, ok := arguments["--list-short"]; ok && isSet.(bool) {
 		tags, err := libtags.ListTagsShortened(db)
-		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
+		if err != nil {
+			return err
+		}
 
 		for _, tag := range tags {
 			fmt.Println(tag)
 		}
 	}
+
+	return nil
 }

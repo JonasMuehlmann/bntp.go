@@ -21,13 +21,10 @@
 package subcommands_test
 
 import (
-	"log"
 	"os"
-	"strings"
 	"testing"
 
 	"github.com/JonasMuehlmann/bntp.go/cmd/cli/subcommands"
-	"github.com/JonasMuehlmann/bntp.go/internal/helpers"
 	"github.com/JonasMuehlmann/bntp.go/internal/libdocuments"
 	"github.com/JonasMuehlmann/bntp.go/internal/liblinks"
 	"github.com/JonasMuehlmann/bntp.go/test"
@@ -38,11 +35,6 @@ import (
 //                               --add                              //
 // ******************************************************************//.
 func TestAddLink(t *testing.T) {
-	logInterceptBuffer := strings.Builder{}
-	log.SetOutput(&logInterceptBuffer)
-
-	defer log.SetOutput(os.Stderr)
-
 	db, err := test.GetDB(t)
 	assert.NoError(t, err)
 
@@ -57,19 +49,14 @@ func TestAddLink(t *testing.T) {
 	err = libdocuments.AddDocument(db, nil, "bar", "type")
 	assert.NoError(t, err)
 
-	subcommands.LinkMain(db, helpers.NOPExiter)
-	assert.Empty(t, logInterceptBuffer.String())
+	err = subcommands.LinkMain(db)
+	assert.NoError(t, err)
 }
 
 // ******************************************************************//
 //                             --remove                             //
 // ******************************************************************//.
 func TestRemoveLink(t *testing.T) {
-	logInterceptBuffer := strings.Builder{}
-	log.SetOutput(&logInterceptBuffer)
-
-	defer log.SetOutput(os.Stderr)
-
 	db, err := test.GetDB(t)
 	assert.NoError(t, err)
 
@@ -84,19 +71,14 @@ func TestRemoveLink(t *testing.T) {
 	err = libdocuments.AddDocument(db, nil, "bar", "type")
 	assert.NoError(t, err)
 
-	subcommands.LinkMain(db, helpers.NOPExiter)
-	assert.Empty(t, logInterceptBuffer.String())
+	err = subcommands.LinkMain(db)
+	assert.NoError(t, err)
 }
 
 // ******************************************************************//
 //                              --list                              //
 // ******************************************************************//.
 func TestListLink(t *testing.T) {
-	logInterceptBuffer := strings.Builder{}
-	log.SetOutput(&logInterceptBuffer)
-
-	defer log.SetOutput(os.Stderr)
-
 	stdOutInterceptBuffer, reader, writer := test.InterceptStdout(t)
 	defer test.ResetStdout(t, reader, writer)
 
@@ -117,10 +99,10 @@ func TestListLink(t *testing.T) {
 	err = liblinks.AddLink(db, nil, "foo", "bar")
 	assert.NoError(t, err)
 
-	subcommands.LinkMain(db, helpers.NOPExiter)
+	err = subcommands.LinkMain(db)
 	stdOutInterceptBuffer.Scan()
 
-	assert.Empty(t, logInterceptBuffer.String())
+	assert.NoError(t, err)
 	assert.Equal(t, "bar", stdOutInterceptBuffer.Text())
 }
 
@@ -128,11 +110,6 @@ func TestListLink(t *testing.T) {
 //                            --list-back                           //
 // ******************************************************************//.
 func TestListBacklinks(t *testing.T) {
-	logInterceptBuffer := strings.Builder{}
-	log.SetOutput(&logInterceptBuffer)
-
-	defer log.SetOutput(os.Stderr)
-
 	stdOutInterceptBuffer, reader, writer := test.InterceptStdout(t)
 	defer test.ResetStdout(t, reader, writer)
 
@@ -153,9 +130,9 @@ func TestListBacklinks(t *testing.T) {
 	err = liblinks.AddLink(db, nil, "foo", "bar")
 	assert.NoError(t, err)
 
-	subcommands.LinkMain(db, helpers.NOPExiter)
+	err = subcommands.LinkMain(db)
 	stdOutInterceptBuffer.Scan()
 
-	assert.Empty(t, logInterceptBuffer.String())
+	assert.NoError(t, err)
 	assert.Equal(t, "foo", stdOutInterceptBuffer.Text())
 }

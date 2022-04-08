@@ -22,14 +22,11 @@ package subcommands_test
 
 import (
 	"encoding/json"
-	"log"
 	"os"
 	"path"
-	"strings"
 	"testing"
 
 	"github.com/JonasMuehlmann/bntp.go/cmd/cli/subcommands"
-	"github.com/JonasMuehlmann/bntp.go/internal/helpers"
 	"github.com/JonasMuehlmann/bntp.go/internal/libbookmarks"
 	"github.com/JonasMuehlmann/bntp.go/internal/libtags"
 	"github.com/JonasMuehlmann/bntp.go/test"
@@ -41,11 +38,6 @@ import (
 //                             --import                             //
 // ******************************************************************//.
 func TestImportBookmarks(t *testing.T) {
-	logInterceptBuffer := strings.Builder{}
-	log.SetOutput(&logInterceptBuffer)
-
-	defer log.SetOutput(os.Stderr)
-
 	db, err := test.GetDB(t)
 	assert.NoError(t, err)
 
@@ -54,20 +46,15 @@ func TestImportBookmarks(t *testing.T) {
 	file.WriteString("Title;Url\nfoo;bar")
 
 	os.Args = []string{"", "bookmark", "--import", path.Join(test.TestDataTempDir, t.Name())}
-	subcommands.BookmarkMain(db, helpers.NOPExiter)
+	err = subcommands.BookmarkMain(db)
 
-	assert.Empty(t, logInterceptBuffer.String())
+	assert.NoError(t, err)
 }
 
 // ******************************************************************//
 //                             --export                             //
 // ******************************************************************//.
 func TestExportBookmarskUnfiltered(t *testing.T) {
-	logInterceptBuffer := strings.Builder{}
-	log.SetOutput(&logInterceptBuffer)
-
-	defer log.SetOutput(os.Stderr)
-
 	db, err := test.GetDB(t)
 	assert.NoError(t, err)
 
@@ -75,17 +62,12 @@ func TestExportBookmarskUnfiltered(t *testing.T) {
 	assert.NoError(t, err)
 
 	os.Args = []string{"", "bookmark", "--export", path.Join(test.TestDataTempDir, t.Name())}
-	subcommands.BookmarkMain(db, helpers.NOPExiter)
+	err = subcommands.BookmarkMain(db)
 
-	assert.Empty(t, logInterceptBuffer.String())
+	assert.NoError(t, err)
 }
 
 func TestExportBookmarksFiltered(t *testing.T) {
-	logInterceptBuffer := strings.Builder{}
-	log.SetOutput(&logInterceptBuffer)
-
-	defer log.SetOutput(os.Stderr)
-
 	db, err := test.GetDB(t)
 	assert.NoError(t, err)
 
@@ -100,19 +82,14 @@ func TestExportBookmarksFiltered(t *testing.T) {
 	os.Args = []string{"", "bookmark", "--export", path.Join(test.TestDataTempDir, t.Name()), "--filter", string(filterSerialized)}
 	assert.NoError(t, err)
 
-	subcommands.BookmarkMain(db, helpers.NOPExiter)
-	assert.Empty(t, logInterceptBuffer.String())
+	err = subcommands.BookmarkMain(db)
+	assert.NoError(t, err)
 }
 
 // ******************************************************************//
 //                              --list                              //
 // ******************************************************************//.
 func TestListBookmarksUnfiltered(t *testing.T) {
-	logInterceptBuffer := strings.Builder{}
-	log.SetOutput(&logInterceptBuffer)
-
-	defer log.SetOutput(os.Stderr)
-
 	stdOutInterceptBuffer, reader, writer := test.InterceptStdout(t)
 	defer test.ResetStdout(t, reader, writer)
 
@@ -126,22 +103,17 @@ func TestListBookmarksUnfiltered(t *testing.T) {
 	assert.NoError(t, err)
 
 	os.Args = []string{"", "bookmark", "--list"}
-	subcommands.BookmarkMain(db, helpers.NOPExiter)
+	err = subcommands.BookmarkMain(db)
 
 	stdOutInterceptBuffer.Scan()
 	stdOutInterceptBuffer.Scan()
 	assert.Contains(t, stdOutInterceptBuffer.Text(), "Foo")
 	assert.Contains(t, stdOutInterceptBuffer.Text(), "bar")
 
-	assert.Empty(t, logInterceptBuffer.String())
+	assert.NoError(t, err)
 }
 
 func TestListBookmarksFiltered(t *testing.T) {
-	logInterceptBuffer := strings.Builder{}
-	log.SetOutput(&logInterceptBuffer)
-
-	defer log.SetOutput(os.Stderr)
-
 	stdOutInterceptBuffer, reader, writer := test.InterceptStdout(t)
 	defer test.ResetStdout(t, reader, writer)
 
@@ -159,43 +131,33 @@ func TestListBookmarksFiltered(t *testing.T) {
 	assert.NoError(t, err)
 
 	os.Args = []string{"", "bookmark", "--list", "--filter", string(filterSerialized)}
-	subcommands.BookmarkMain(db, helpers.NOPExiter)
+	err = subcommands.BookmarkMain(db)
 
 	stdOutInterceptBuffer.Scan()
 	stdOutInterceptBuffer.Scan()
 	assert.Contains(t, stdOutInterceptBuffer.Text(), "Foo")
 	assert.Contains(t, stdOutInterceptBuffer.Text(), "bar")
 
-	assert.Empty(t, logInterceptBuffer.String())
+	assert.NoError(t, err)
 }
 
 // ******************************************************************//
 //                            --add-type                            //
 // ******************************************************************//.
 func TestAddType(t *testing.T) {
-	logInterceptBuffer := strings.Builder{}
-	log.SetOutput(&logInterceptBuffer)
-
-	defer log.SetOutput(os.Stderr)
-
 	db, err := test.GetDB(t)
 	assert.NoError(t, err)
 
 	os.Args = []string{"", "bookmark", "--add-type", "foo"}
-	subcommands.BookmarkMain(db, helpers.NOPExiter)
+	err = subcommands.BookmarkMain(db)
 
-	assert.Empty(t, logInterceptBuffer.String())
+	assert.NoError(t, err)
 }
 
 // ******************************************************************//
 //                           --remove-type                          //
 // ******************************************************************//.
 func TestRemoveType(t *testing.T) {
-	logInterceptBuffer := strings.Builder{}
-	log.SetOutput(&logInterceptBuffer)
-
-	defer log.SetOutput(os.Stderr)
-
 	db, err := test.GetDB(t)
 	assert.NoError(t, err)
 
@@ -203,20 +165,15 @@ func TestRemoveType(t *testing.T) {
 	assert.NoError(t, err)
 
 	os.Args = []string{"", "bookmark", "--remove-type", "foo"}
-	subcommands.BookmarkMain(db, helpers.NOPExiter)
+	err = subcommands.BookmarkMain(db)
 
-	assert.Empty(t, logInterceptBuffer.String())
+	assert.NoError(t, err)
 }
 
 // ******************************************************************//
 //                           --list-types                           //
 // ******************************************************************//.
 func TestListTypes(t *testing.T) {
-	logInterceptBuffer := strings.Builder{}
-	log.SetOutput(&logInterceptBuffer)
-
-	defer log.SetOutput(os.Stderr)
-
 	stdOutInterceptBuffer, reader, writer := test.InterceptStdout(t)
 	defer test.ResetStdout(t, reader, writer)
 
@@ -230,7 +187,7 @@ func TestListTypes(t *testing.T) {
 	assert.NoError(t, err)
 
 	os.Args = []string{"", "bookmark", "--list-types"}
-	subcommands.BookmarkMain(db, helpers.NOPExiter)
+	err = subcommands.BookmarkMain(db)
 
 	stdOutInterceptBuffer.Scan()
 	assert.Equal(t, "Foo", stdOutInterceptBuffer.Text())
@@ -238,18 +195,13 @@ func TestListTypes(t *testing.T) {
 	stdOutInterceptBuffer.Scan()
 	assert.Equal(t, "Bar", stdOutInterceptBuffer.Text())
 
-	assert.Empty(t, logInterceptBuffer.String())
+	assert.NoError(t, err)
 }
 
 // ******************************************************************//
 //                               --add                              //
 // ******************************************************************//.
 func TestAddBookmark(t *testing.T) {
-	logInterceptBuffer := strings.Builder{}
-	log.SetOutput(&logInterceptBuffer)
-
-	defer log.SetOutput(os.Stderr)
-
 	db, err := test.GetDB(t)
 	assert.NoError(t, err)
 
@@ -257,17 +209,12 @@ func TestAddBookmark(t *testing.T) {
 	assert.NoError(t, err)
 
 	os.Args = []string{"", "bookmark", "--add", `{"title": "foo", "url": "bar", "type": "1"}`}
-	subcommands.BookmarkMain(db, helpers.NOPExiter)
+	err = subcommands.BookmarkMain(db)
 
-	assert.Empty(t, logInterceptBuffer.String())
+	assert.NoError(t, err)
 }
 
 func TestAddBookmarkNoTitle(t *testing.T) {
-	logInterceptBuffer := strings.Builder{}
-	log.SetOutput(&logInterceptBuffer)
-
-	defer log.SetOutput(os.Stderr)
-
 	db, err := test.GetDB(t)
 	assert.NoError(t, err)
 
@@ -275,17 +222,12 @@ func TestAddBookmarkNoTitle(t *testing.T) {
 	assert.NoError(t, err)
 
 	os.Args = []string{"", "bookmark", "--add", `{"url": "bar", "type": "1"}`}
-	subcommands.BookmarkMain(db, helpers.NOPExiter)
+	err = subcommands.BookmarkMain(db)
 
-	assert.Contains(t, logInterceptBuffer.String(), "Missing")
+	assert.ErrorAs(t, err, &subcommands.IncompleteCompoundParameterError{})
 }
 
 func TestAddBookmarkNoUrl(t *testing.T) {
-	logInterceptBuffer := strings.Builder{}
-	log.SetOutput(&logInterceptBuffer)
-
-	defer log.SetOutput(os.Stderr)
-
 	db, err := test.GetDB(t)
 	assert.NoError(t, err)
 
@@ -293,17 +235,12 @@ func TestAddBookmarkNoUrl(t *testing.T) {
 	assert.NoError(t, err)
 
 	os.Args = []string{"", "bookmark", "--add", `{"title": "bar", "type": "1"}`}
-	subcommands.BookmarkMain(db, helpers.NOPExiter)
+	err = subcommands.BookmarkMain(db)
 
-	assert.Contains(t, logInterceptBuffer.String(), "Missing")
+	assert.ErrorAs(t, err, &subcommands.IncompleteCompoundParameterError{})
 }
 
 func TestAddBookmarkNoType(t *testing.T) {
-	logInterceptBuffer := strings.Builder{}
-	log.SetOutput(&logInterceptBuffer)
-
-	defer log.SetOutput(os.Stderr)
-
 	db, err := test.GetDB(t)
 	assert.NoError(t, err)
 
@@ -311,20 +248,15 @@ func TestAddBookmarkNoType(t *testing.T) {
 	assert.NoError(t, err)
 
 	os.Args = []string{"", "bookmark", "--add", `{"title": "foo", "url": "bar"}`}
-	subcommands.BookmarkMain(db, helpers.NOPExiter)
+	err = subcommands.BookmarkMain(db)
 
-	assert.Empty(t, logInterceptBuffer.String())
+	assert.NoError(t, err)
 }
 
 // ******************************************************************//
 //                              --edit                              //
 // ******************************************************************//.
 func TestEditBookmark(t *testing.T) {
-	logInterceptBuffer := strings.Builder{}
-	log.SetOutput(&logInterceptBuffer)
-
-	defer log.SetOutput(os.Stderr)
-
 	db, err := test.GetDB(t)
 	assert.NoError(t, err)
 
@@ -338,20 +270,15 @@ func TestEditBookmark(t *testing.T) {
 	assert.NoError(t, err)
 
 	os.Args = []string{"", "bookmark", "--edit", `{"title": "foo", "url": "bar", "type": "1", "Id": 1}`}
-	subcommands.BookmarkMain(db, helpers.NOPExiter)
+	err = subcommands.BookmarkMain(db)
 
-	assert.Empty(t, logInterceptBuffer.String())
+	assert.NoError(t, err)
 }
 
 // ******************************************************************//
 //                          --edit-is-read                          //
 // ******************************************************************//.
 func TestEditIsRead(t *testing.T) {
-	logInterceptBuffer := strings.Builder{}
-	log.SetOutput(&logInterceptBuffer)
-
-	defer log.SetOutput(os.Stderr)
-
 	db, err := test.GetDB(t)
 	assert.NoError(t, err)
 
@@ -365,20 +292,15 @@ func TestEditIsRead(t *testing.T) {
 	assert.NoError(t, err)
 
 	os.Args = []string{"", "bookmark", "--edit-is-read", "1", "true"}
-	subcommands.BookmarkMain(db, helpers.NOPExiter)
+	err = subcommands.BookmarkMain(db)
 
-	assert.Empty(t, logInterceptBuffer.String())
+	assert.NoError(t, err)
 }
 
 // ******************************************************************//
 //                          --edit-title                            //
 // ******************************************************************//.
 func TestEditTitle(t *testing.T) {
-	logInterceptBuffer := strings.Builder{}
-	log.SetOutput(&logInterceptBuffer)
-
-	defer log.SetOutput(os.Stderr)
-
 	db, err := test.GetDB(t)
 	assert.NoError(t, err)
 
@@ -392,20 +314,15 @@ func TestEditTitle(t *testing.T) {
 	assert.NoError(t, err)
 
 	os.Args = []string{"", "bookmark", "--edit-title", "1", "foo"}
-	subcommands.BookmarkMain(db, helpers.NOPExiter)
+	err = subcommands.BookmarkMain(db)
 
-	assert.Empty(t, logInterceptBuffer.String())
+	assert.NoError(t, err)
 }
 
 // ******************************************************************//
 //                            --edit-url                            //
 // ******************************************************************//.
 func TestEditUrl(t *testing.T) {
-	logInterceptBuffer := strings.Builder{}
-	log.SetOutput(&logInterceptBuffer)
-
-	defer log.SetOutput(os.Stderr)
-
 	db, err := test.GetDB(t)
 	assert.NoError(t, err)
 
@@ -419,20 +336,15 @@ func TestEditUrl(t *testing.T) {
 	assert.NoError(t, err)
 
 	os.Args = []string{"", "bookmark", "--edit-url", "1", "foo"}
-	subcommands.BookmarkMain(db, helpers.NOPExiter)
+	err = subcommands.BookmarkMain(db)
 
-	assert.Empty(t, logInterceptBuffer.String())
+	assert.NoError(t, err)
 }
 
 // ******************************************************************//
 //                            --edit-type                           //
 // ******************************************************************//.
 func TestEditType(t *testing.T) {
-	logInterceptBuffer := strings.Builder{}
-	log.SetOutput(&logInterceptBuffer)
-
-	defer log.SetOutput(os.Stderr)
-
 	db, err := test.GetDB(t)
 	assert.NoError(t, err)
 
@@ -446,20 +358,15 @@ func TestEditType(t *testing.T) {
 	assert.NoError(t, err)
 
 	os.Args = []string{"", "bookmark", "--edit-type", "1", "Foo"}
-	subcommands.BookmarkMain(db, helpers.NOPExiter)
+	err = subcommands.BookmarkMain(db)
 
-	assert.Empty(t, logInterceptBuffer.String())
+	assert.NoError(t, err)
 }
 
 // ******************************************************************//
 //                       --edit-is-collection                       //
 // ******************************************************************//.
 func TestEditIsCollection(t *testing.T) {
-	logInterceptBuffer := strings.Builder{}
-	log.SetOutput(&logInterceptBuffer)
-
-	defer log.SetOutput(os.Stderr)
-
 	db, err := test.GetDB(t)
 	assert.NoError(t, err)
 
@@ -473,20 +380,15 @@ func TestEditIsCollection(t *testing.T) {
 	assert.NoError(t, err)
 
 	os.Args = []string{"", "bookmark", "--edit-is-collection", "1", "true"}
-	subcommands.BookmarkMain(db, helpers.NOPExiter)
+	err = subcommands.BookmarkMain(db)
 
-	assert.Empty(t, logInterceptBuffer.String())
+	assert.NoError(t, err)
 }
 
 // ******************************************************************//
 //                             --add-tag                            //
 // ******************************************************************//.
 func TestAddTagToBookmark(t *testing.T) {
-	logInterceptBuffer := strings.Builder{}
-	log.SetOutput(&logInterceptBuffer)
-
-	defer log.SetOutput(os.Stderr)
-
 	db, err := test.GetDB(t)
 	assert.NoError(t, err)
 
@@ -503,20 +405,15 @@ func TestAddTagToBookmark(t *testing.T) {
 	assert.NoError(t, err)
 
 	os.Args = []string{"", "bookmark", "--add-tag", "1", "Foo"}
-	subcommands.BookmarkMain(db, helpers.NOPExiter)
+	err = subcommands.BookmarkMain(db)
 
-	assert.Empty(t, logInterceptBuffer.String())
+	assert.NoError(t, err)
 }
 
 // ******************************************************************//
 //                           --remove-tag                           //
 // ******************************************************************//.
 func TestRemoveTagFromBookmark(t *testing.T) {
-	logInterceptBuffer := strings.Builder{}
-	log.SetOutput(&logInterceptBuffer)
-
-	defer log.SetOutput(os.Stderr)
-
 	db, err := test.GetDB(t)
 	assert.NoError(t, err)
 
@@ -536,7 +433,7 @@ func TestRemoveTagFromBookmark(t *testing.T) {
 	assert.NoError(t, err)
 
 	os.Args = []string{"", "bookmark", "--remove-tag", "1", "Foo"}
-	subcommands.BookmarkMain(db, helpers.NOPExiter)
+	err = subcommands.BookmarkMain(db)
 
-	assert.Empty(t, logInterceptBuffer.String())
+	assert.NoError(t, err)
 }
