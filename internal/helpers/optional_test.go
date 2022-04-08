@@ -21,6 +21,17 @@ func TestUnMarshallFromWhole(t *testing.T) {
 	assert.Equal(t, true, optional.HasValue)
 }
 
+func TestUnMarshallFromWholeNoValue(t *testing.T) {
+	marshaled := []byte(`{"wrapee": 123, "has_value": false}`)
+
+	var optional helpers.Optional[int]
+
+	err := json.Unmarshal(marshaled, &optional)
+	assert.NoError(t, err)
+	assert.Equal(t, 123, optional.Wrappee)
+	assert.Equal(t, false, optional.HasValue)
+}
+
 func TestUnMarshallFromWrappee(t *testing.T) {
 	targetStruct := struct {
 		Foo        string                `json:"foo"`

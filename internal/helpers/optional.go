@@ -80,7 +80,7 @@ func (optional *Optional[T]) UnmarshalJSON(input []byte) error {
 			return err
 		}
 
-		optional.HasValue = true
+		optional.HasValue = alias.HasValue
 		optional.Wrappee = alias.Wrappee
 
 		return nil
