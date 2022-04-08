@@ -258,6 +258,7 @@ func BookmarkMain(db *sqlx.DB, exiter func(int)) {
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 		// ******************************************************************//
 	} else if isSet, ok := arguments["--add-tag"]; ok && isSet.(bool) {
+		// TODO: Allow passing string and id for tag
 		tag, err := arguments.String("TAG")
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
@@ -271,6 +272,7 @@ func BookmarkMain(db *sqlx.DB, exiter func(int)) {
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 		// ******************************************************************//
 	} else if isSet, ok := arguments["--remove-tag"]; ok && isSet.(bool) {
+		// TODO: Allow passing string and id for tag
 		tag, err := arguments.String("TAG")
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 

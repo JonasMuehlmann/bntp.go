@@ -51,9 +51,11 @@ func LinkMain(db *sqlx.DB, exiter func(int)) {
 
 	// ******************************************************************//
 	if isSet, ok := arguments["--add"]; ok && isSet.(bool) {
+		// TODO: Allow passing string and id for doucment
 		source, err := arguments.String("SRC")
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
+		// TODO: Allow passing string and id for doucment
 		destination, err := arguments.String("DEST")
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
@@ -61,9 +63,11 @@ func LinkMain(db *sqlx.DB, exiter func(int)) {
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 		// ******************************************************************//
 	} else if isSet, ok := arguments["--remove"]; ok && isSet.(bool) {
+		// TODO: Allow passing string and id for doucment
 		source, err := arguments.String("SRC")
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
+		// TODO: Allow passing string and id for doucment
 		destination, err := arguments.String("DEST")
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
@@ -71,6 +75,7 @@ func LinkMain(db *sqlx.DB, exiter func(int)) {
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 		// ******************************************************************//
 	} else if isSet, ok := arguments["--list"]; ok && isSet.(bool) {
+		// TODO: Allow passing string and id for doucment
 		source, err := arguments.String("SRC")
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
@@ -82,6 +87,7 @@ func LinkMain(db *sqlx.DB, exiter func(int)) {
 		}
 		// ******************************************************************//
 	} else if isSet, ok := arguments["--list-back"]; ok && isSet.(bool) {
+		// TODO: Allow passing string and id for doucment
 		destination, err := arguments.String("DEST")
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 

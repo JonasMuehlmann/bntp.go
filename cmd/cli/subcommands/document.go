@@ -75,9 +75,11 @@ func DocumentMain(db *sqlx.DB, exiter func(int)) {
 
 	// ******************************************************************//
 	if isSet, ok := arguments["--add-tag"]; ok && isSet.(bool) {
+		// TODO: Allow passing string and id for document
 		documentPath, err := arguments.String("DOCUMENT_PATH")
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
+		// TODO: Allow passing string and id for tag
 		tag, err := arguments.String("TAG")
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
@@ -89,9 +91,11 @@ func DocumentMain(db *sqlx.DB, exiter func(int)) {
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 		// ******************************************************************//
 	} else if isSet, ok := arguments["--remove-tag"]; ok && isSet.(bool) {
+		// TODO: Allow passing string and id for document
 		documentPath, err := arguments.String("DOCUMENT_PATH")
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
+		// TODO: Allow passing string and id for tag
 		tag, err := arguments.String("TAG")
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
@@ -102,12 +106,15 @@ func DocumentMain(db *sqlx.DB, exiter func(int)) {
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 		// ******************************************************************//
 	} else if isSet, ok := arguments["--rename-tag"]; ok && isSet.(bool) {
+		// TODO: Allow passing string and id for document
 		documentPath, err := arguments.String("DOCUMENT_PATH")
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
+		// TODO: Allow passing string and id for tag
 		oldTag, err := arguments.String("OLD_TAG")
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
+		// TODO: Allow passing string and id for tag
 		newTag, err := arguments.String("NEW_TAG")
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
@@ -115,6 +122,7 @@ func DocumentMain(db *sqlx.DB, exiter func(int)) {
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 		// ******************************************************************//
 	} else if isSet, ok := arguments["--get-tags"]; ok && isSet.(bool) {
+		// TODO: Allow passing string and id for document
 		documentPath, err := arguments.String("DOCUMENT_PATH")
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
@@ -126,6 +134,7 @@ func DocumentMain(db *sqlx.DB, exiter func(int)) {
 		}
 		// ******************************************************************//
 	} else if isSet, ok := arguments["--find-tags-line"]; ok && isSet.(bool) {
+		// TODO: Allow passing string and id for document
 		documentPath, err := arguments.String("DOCUMENT_PATH")
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
@@ -135,9 +144,11 @@ func DocumentMain(db *sqlx.DB, exiter func(int)) {
 		fmt.Printf("%v %v\n", index, line)
 		// ******************************************************************//
 	} else if isSet, ok := arguments["--has-tags"]; ok && isSet.(bool) {
+		// TODO: Allow passing string and id for document
 		documentPath, err := arguments.String("DOCUMENT_PATH")
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
+		// TODO: Allow passing string and id for tag
 		tagsRaw, ok := arguments["TAGS"].([]string)
 		if !ok {
 			log.Println("Missing parameter TAGS")
@@ -151,6 +162,7 @@ func DocumentMain(db *sqlx.DB, exiter func(int)) {
 		fmt.Println(hasTag)
 		// ******************************************************************//
 	} else if isSet, ok := arguments["--find-docs-with-tags"]; ok && isSet.(bool) {
+		// TODO: Allow passing string and id for tag
 		tagsRaw, ok := arguments["TAGS"].([]string)
 		if !ok {
 			log.Println("Missing parameter TAGS")
@@ -165,6 +177,7 @@ func DocumentMain(db *sqlx.DB, exiter func(int)) {
 		}
 		// ******************************************************************//
 	} else if isSet, ok := arguments["--find-links-lines"]; ok && isSet.(bool) {
+		// TODO: Allow passing string and id for document
 		documentPath, err := arguments.String("DOCUMENT_PATH")
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
@@ -177,6 +190,7 @@ func DocumentMain(db *sqlx.DB, exiter func(int)) {
 		}
 		// ******************************************************************//
 	} else if isSet, ok := arguments["--find-backlinks-lines"]; ok && isSet.(bool) {
+		// TODO: Allow passing string and id for document
 		documentPath, err := arguments.String("DOCUMENT_PATH")
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
@@ -189,6 +203,7 @@ func DocumentMain(db *sqlx.DB, exiter func(int)) {
 		}
 		// ******************************************************************//
 	} else if isSet, ok := arguments["--add-link"]; ok && isSet.(bool) {
+		// TODO: Allow passing string and id for document
 		documentPath, err := arguments.String("DOCUMENT_PATH")
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
@@ -199,9 +214,11 @@ func DocumentMain(db *sqlx.DB, exiter func(int)) {
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 		// ******************************************************************//
 	} else if isSet, ok := arguments["--remove-link"]; ok && isSet.(bool) {
+		// TODO: Allow passing string and id for document
 		documentPath, err := arguments.String("DOCUMENT_PATH")
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
+		// TODO: Allow passing string and id for document
 		link, err := arguments.String("LINK")
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
@@ -209,9 +226,11 @@ func DocumentMain(db *sqlx.DB, exiter func(int)) {
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 		// ******************************************************************//
 	} else if isSet, ok := arguments["--add-backlink"]; ok && isSet.(bool) {
+		// TODO: Allow passing string and id for document
 		documentPath, err := arguments.String("DOCUMENT_PATH")
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
+		// TODO: Allow passing string and id for document
 		backlink, err := arguments.String("BACKLINK")
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
@@ -219,9 +238,11 @@ func DocumentMain(db *sqlx.DB, exiter func(int)) {
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 		// ******************************************************************//
 	} else if isSet, ok := arguments["--remove-backlink"]; ok && isSet.(bool) {
+		// TODO: Allow passing string and id for document
 		documentPath, err := arguments.String("DOCUMENT_PATH")
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
+		// TODO: Allow passing string and id for document
 		backlink, err := arguments.String("BACKLINK")
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
@@ -229,9 +250,11 @@ func DocumentMain(db *sqlx.DB, exiter func(int)) {
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 		// ******************************************************************//
 	} else if isSet, ok := arguments["--add-doc"]; ok && isSet.(bool) {
+		// TODO: Allow passing string and id for document
 		documentPath, err := arguments.String("DOCUMENT_PATH")
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
+		// TODO: Allow passing string and id for Type
 		type_, err := arguments.String("TYPE")
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
@@ -239,6 +262,7 @@ func DocumentMain(db *sqlx.DB, exiter func(int)) {
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 		// ******************************************************************//
 	} else if isSet, ok := arguments["--remove-doc"]; ok && isSet.(bool) {
+		// TODO: Allow passing string and id for document
 		documentPath, err := arguments.String("DOCUMENT_PATH")
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
@@ -246,6 +270,7 @@ func DocumentMain(db *sqlx.DB, exiter func(int)) {
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 		// ******************************************************************//
 	} else if isSet, ok := arguments["--rename-doc"]; ok && isSet.(bool) {
+		// TODO: Allow passing string and id for document
 		oldPath, err := arguments.String("OLD_PATH")
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
@@ -256,9 +281,11 @@ func DocumentMain(db *sqlx.DB, exiter func(int)) {
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 		// ******************************************************************//
 	} else if isSet, ok := arguments["--change-doc-type"]; ok && isSet.(bool) {
+		// TODO: Allow passing string and id for document
 		documentPath, err := arguments.String("DOCUMENT_PATH")
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
+		// TODO: Allow passing string and id for Type
 		type_, err := arguments.String("TYPE")
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
@@ -273,6 +300,7 @@ func DocumentMain(db *sqlx.DB, exiter func(int)) {
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 		// ******************************************************************//
 	} else if isSet, ok := arguments["--remove-doc-type"]; ok && isSet.(bool) {
+		// TODO: Allow passing string and id for Type
 		type_, err := arguments.String("TYPE")
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 

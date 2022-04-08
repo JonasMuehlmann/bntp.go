@@ -73,6 +73,7 @@ func TagMain(db *sqlx.DB, exiter func(int)) {
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 		// ******************************************************************//
 	} else if isSet, ok := arguments["--ambiguous"]; ok && isSet.(bool) {
+		// TODO: Allow passing string and id for tag
 		tag, err := arguments.String("TAG")
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
@@ -82,6 +83,7 @@ func TagMain(db *sqlx.DB, exiter func(int)) {
 		fmt.Println(strconv.FormatBool(isAmbiguous))
 		// ******************************************************************//
 	} else if isSet, ok := arguments["--component"]; ok && isSet.(bool) {
+		// TODO: Allow passing string and id for tag
 		tag, err := arguments.String("TAG")
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
@@ -98,6 +100,7 @@ func TagMain(db *sqlx.DB, exiter func(int)) {
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 		// ******************************************************************//
 	} else if isSet, ok := arguments["--remove"]; ok && isSet.(bool) {
+		// TODO: Allow passing string and id for tag
 		tag, err := arguments.String("TAG")
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
@@ -105,6 +108,7 @@ func TagMain(db *sqlx.DB, exiter func(int)) {
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 		// ******************************************************************//
 	} else if isSet, ok := arguments["--rename"]; ok && isSet.(bool) {
+		// TODO: Allow passing string and id for tag
 		oldName, err := arguments.String("OLD")
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
@@ -115,6 +119,7 @@ func TagMain(db *sqlx.DB, exiter func(int)) {
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 		// ******************************************************************//
 	} else if isSet, ok := arguments["--shorten"]; ok && isSet.(bool) {
+		// TODO: Allow passing string and id for tag
 		tag, err := arguments.String("TAG")
 		helpers.OnError(err, helpers.MakeFatalLogger(exiter))
 
