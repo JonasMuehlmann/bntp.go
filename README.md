@@ -6,6 +6,12 @@ Libraries and CLIs for my personal all-in-one productivity system including comp
 Neovim integration available at https://github.com/JonasMuehlmann/bntp.nvim
 Suggestions and ideas are welcome.
 
+## Installation
+
+```go get github.com/JonasMuehlmann/bntp.go```
+
+Documentation available at https://pkg.go.dev/github.com/JonasMuehlmann/bntp.go.
+
 # Why?
 
 Being a huge productivity nerd and life long learner, I value having efficient tools and workflows but have not found any one tool, which satisfied my needs.
