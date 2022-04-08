@@ -25,7 +25,7 @@ import (
 )
 
 type ParameterConversionError struct {
-	Parameter  string
+	Parameter  any
 	Value      any
 	TargetType string
 }
@@ -35,10 +35,20 @@ func (err ParameterConversionError) Error() string {
 }
 
 type IncompleteCompoundParameterError struct {
-	Parameter     string
+	Parameter     any
 	MissingFields []string
 }
 
 func (err IncompleteCompoundParameterError) Error() string {
 	return fmt.Sprintf("Compund parameter %v is missing value for field(s) %q", err.Parameter, err.MissingFields)
+}
+
+type InvalidParameterValueError struct {
+	Parameter     any
+	BadValue      any
+	AllowedValues []any
+}
+
+func (err InvalidParameterValueError) Error() string {
+	return fmt.Sprintf("Received invalid value %v in parameter %v, allowed values are %p", err.BadValue, err.Parameter, err.AllowedValues)
 }

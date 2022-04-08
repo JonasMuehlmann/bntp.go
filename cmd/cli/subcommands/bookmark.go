@@ -24,6 +24,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/JonasMuehlmann/bntp.go/internal/libbookmarks"
 	"github.com/JonasMuehlmann/optional.go"
@@ -35,7 +36,7 @@ var usageBookmark string = `bntp bookmark - Interact with bookmarks.
 
 Usage:
     bntp bookmark -h | --help
-    bntp bookmark -l [--filter FILTER]
+    bntp bookmark -l [--filter FILTER] [--format FORMAT]
     bntp bookmark --import FILE
     bntp bookmark --export FILE [--filter FILTER]
     bntp bookmark (--add-type | --remove-type) TYPE
@@ -55,7 +56,8 @@ Options:
     -i --import             Import bookmarks.
     -e --export             Export bookmarks.
     -l --list               List bookmarks.
-    --filter                A filter to apply when searching for bookmarks.
+    --filter=FILTER         A filter to apply when searching for bookmarks.
+    --format=FORLAT         A format to return data in [default: csv]
     --add-type              Add a bookmark type.
     --remove-type           Remove a bookmark type.
     --list-types            List the bookmark types.
@@ -70,6 +72,8 @@ Options:
     --add-tag               Add a tag to a bookmark.
     --remove-tag            Remove a tag from a bookmark.
 `
+
+var AllowedFormatValues = []any{"csv"}
 
 func BookmarkMain(db *sqlx.DB) error {
 	arguments, err := docopt.ParseDoc(usageBookmark)
@@ -96,10 +100,10 @@ func BookmarkMain(db *sqlx.DB) error {
 		}
 
 		filter := libbookmarks.BookmarkFilter{}
-		if isSet, ok := arguments["--filter"]; ok && isSet.(bool) {
-			filterRaw, err := arguments.String("FILTER")
+		if value, ok := arguments["--filter"]; ok && value != nil {
+			filterRaw, err := arguments.String("--filter")
 			if err != nil {
-				return ParameterConversionError{"FILTER", arguments["FILTER"], "string"}
+				return ParameterConversionError{"--filter", arguments["--filter"], "string"}
 			}
 
 			err = json.Unmarshal([]byte(filterRaw), &filter)
@@ -120,10 +124,10 @@ func BookmarkMain(db *sqlx.DB) error {
 		// ******************************************************************//
 	} else if isSet, ok := arguments["--list"]; ok && isSet.(bool) {
 		filter := libbookmarks.BookmarkFilter{}
-		if isSet, ok := arguments["--filter"]; ok && isSet.(bool) {
-			filterRaw, err := arguments.String("FILTER")
+		if value, ok := arguments["--filter"]; ok && value != nil {
+			filterRaw, err := arguments.String("--filter")
 			if err != nil {
-				return ParameterConversionError{"FILTER", arguments["FILTER"], "string"}
+				return ParameterConversionError{"--filter", arguments["--filter"], "string"}
 			}
 
 			err = json.Unmarshal([]byte(filterRaw), &filter)
@@ -137,8 +141,21 @@ func BookmarkMain(db *sqlx.DB) error {
 			return err
 		}
 
-		// TODO: This export should be configurable
-		err = libbookmarks.ExportCSV(bookmarks, "")
+		var exportFormat string
+		if _, ok := arguments["--format"]; ok {
+			exportFormat, err = arguments.String("--format")
+			if err != nil {
+				return ParameterConversionError{"--format", arguments["--format"], "string"}
+			}
+		}
+
+		switch strings.ToLower(exportFormat) {
+		case "csv":
+			err = libbookmarks.ExportCSV(bookmarks, "")
+		default:
+			return InvalidParameterValueError{arguments["FORMAT"], arguments["FORMAT"], AllowedFormatValues}
+		}
+
 		if err != nil {
 			return err
 		}
