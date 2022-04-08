@@ -26,8 +26,9 @@ import (
 
 // Bookmark is a code side representation of DB bookmarks.
 type Bookmark struct {
-	Title        helpers.Optional[string] `json:"title" db:"Title"`
-	Url          string                   `json:"url" db:"Url"`
+	Title helpers.Optional[string] `json:"title" db:"Title"`
+	Url   string                   `json:"url" db:"Url"`
+	// REFACTOR: This should be a time.time
 	TimeAdded    string                   `json:"time_added" db:"TimeAdded"`
 	Type         helpers.Optional[string] `json:"type" db:"Type"`
 	Id           int                      `json:"id" db:"Id"`

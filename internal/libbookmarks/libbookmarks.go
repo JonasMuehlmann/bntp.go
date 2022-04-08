@@ -449,22 +449,32 @@ func RemoveBookmark(dbConn *sqlx.DB, transaction *sqlx.Tx, ID int) error {
 }
 
 func EditBookmark(dbConn *sqlx.DB, transaction *sqlx.Tx, newData Bookmark) error {
+	// TODO: Handle change of tags
 	stmt := `
         UPDATE
             Bookmark
         SET
-            Title = :Title,
-            Url = :Url
-            TimeAdded = :TimeAdded
-            Type = :Type
-            Id = :Id
-            IsRead = :IsRead
-            IsCollection = :IsCollection
+            Title = ?,
+            Url = ?,
+            TimeAdded = ?,
+            BookmarkTypeId = ?,
+            IsRead = ?,
+            IsCollection = ?
         WHERE
             Id = ?;
     `
 
-	_, _, err := helpers.SqlExecuteNamed(dbConn, transaction, stmt, newData)
+	var typeID helpers.Optional[int]
+	if newData.Type.HasValue {
+		typeIDUnwrapped, err := helpers.GetIdFromBookmarkType(dbConn, transaction, newData.Type.Wrappee)
+		if err != nil {
+			return err
+		}
+
+		typeID.Wrappee = typeIDUnwrapped
+	}
+
+	_, _, err := helpers.SqlExecute(dbConn, transaction, stmt, newData.Title, newData.Url, newData.TimeAdded, typeID, newData.IsRead, newData.IsCollection, newData.Id)
 
 	return err
 }

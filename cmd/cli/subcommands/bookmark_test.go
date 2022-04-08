@@ -277,7 +277,7 @@ func TestEditBookmark(t *testing.T) {
 	assert.NoError(t, err)
 
 	err = libbookmarks.AddBookmark(db, nil, "foo", "bar", helpers.Optional[int]{
-		Wrappee: 1,
+		Wrappee:  1,
 		HasValue: true,
 	})
 	assert.NoError(t, err)
@@ -304,7 +304,7 @@ func TestEditIsRead(t *testing.T) {
 	assert.NoError(t, err)
 
 	err = libbookmarks.AddBookmark(db, nil, "foo", "bar", helpers.Optional[int]{
-		Wrappee: 1,
+		Wrappee:  1,
 		HasValue: true,
 	})
 	assert.NoError(t, err)
@@ -331,7 +331,7 @@ func TestEditTitle(t *testing.T) {
 	assert.NoError(t, err)
 
 	err = libbookmarks.AddBookmark(db, nil, "foo", "bar", helpers.Optional[int]{
-		Wrappee: 1,
+		Wrappee:  1,
 		HasValue: true,
 	})
 	assert.NoError(t, err)
@@ -358,7 +358,7 @@ func TestEditUrl(t *testing.T) {
 	assert.NoError(t, err)
 
 	err = libbookmarks.AddBookmark(db, nil, "foo", "bar", helpers.Optional[int]{
-		Wrappee: 1,
+		Wrappee:  1,
 		HasValue: true,
 	})
 	assert.NoError(t, err)
@@ -385,7 +385,7 @@ func TestEditType(t *testing.T) {
 	assert.NoError(t, err)
 
 	err = libbookmarks.AddBookmark(db, nil, "foo", "bar", helpers.Optional[int]{
-		Wrappee: 1,
+		Wrappee:  1,
 		HasValue: true,
 	})
 	assert.NoError(t, err)
@@ -412,7 +412,7 @@ func TestEditIsCollection(t *testing.T) {
 	assert.NoError(t, err)
 
 	err = libbookmarks.AddBookmark(db, nil, "foo", "bar", helpers.Optional[int]{
-		Wrappee: 1,
+		Wrappee:  1,
 		HasValue: true,
 	})
 	assert.NoError(t, err)
@@ -439,7 +439,7 @@ func TestAddTagToBookmark(t *testing.T) {
 	assert.NoError(t, err)
 
 	err = libbookmarks.AddBookmark(db, nil, "foo", "bar", helpers.Optional[int]{
-		Wrappee: 1,
+		Wrappee:  1,
 		HasValue: true,
 	})
 	assert.NoError(t, err)
@@ -469,7 +469,7 @@ func TestRemoveTagFromBookmark(t *testing.T) {
 	assert.NoError(t, err)
 
 	err = libbookmarks.AddBookmark(db, nil, "foo", "bar", helpers.Optional[int]{
-		Wrappee: 1,
+		Wrappee:  1,
 		HasValue: true,
 	})
 	assert.NoError(t, err)
