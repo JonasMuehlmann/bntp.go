@@ -83,6 +83,7 @@ func ImportMinimalCSV(dbConn *sqlx.DB, csvPath string) error {
 		return err
 	}
 
+	// REFACTOR: deserializing the CSV and importing the bookmarks should be split
 	for _, bookmark := range bookmarks[1:] {
 		err := AddBookmark(dbConn, transaction, bookmark[titleColumn], bookmark[linkColumn], optional.Optional[int]{HasValue: false})
 

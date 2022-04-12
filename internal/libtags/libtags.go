@@ -40,6 +40,7 @@ func ImportYML(dbConn *sqlx.DB, ymlPath string) error {
 		return err
 	}
 
+	// TODO: Simplify and document
 	var data interface{}
 
 	err = yaml.Unmarshal(file, &data)
@@ -66,9 +67,13 @@ func ImportYML(dbConn *sqlx.DB, ymlPath string) error {
 		return errors.New("Could not parse YML tag file")
 	}
 
+	// REFACTOR: YAML parsing and import should be split
 	paths := make(chan []string, 200)
 
-	bFSTagPaths(topLevelTags, paths, nil)
+	err = bFSTagPaths(topLevelTags, paths, nil)
+	if err != nil {
+		return err
+	}
 
 	close(paths)
 
@@ -78,7 +83,10 @@ func ImportYML(dbConn *sqlx.DB, ymlPath string) error {
 	}
 
 	for path := range paths {
-		AddTag(dbConn, transaction, strings.Join(path, "::"))
+		err = AddTag(dbConn, transaction, strings.Join(path, "::"))
+		if err != nil {
+			return err
+		}
 	}
 
 	err = transaction.Commit()
@@ -95,7 +103,6 @@ func bFSTagPaths(node interface{}, paths chan []string, curPath []string) error 
 	case []interface{}:
 		for _, curNode := range node.([]interface{}) {
 			func(node interface{}) {
-				// func(node interface{}) {
 				// Starting path
 				if curPath == nil {
 					bFSTagPaths(node, paths, make([]string, 0, 10))
@@ -108,6 +115,7 @@ func bFSTagPaths(node interface{}, paths chan []string, curPath []string) error 
 				}
 			}(curNode)
 		}
+
 		// Reached a parent node, add it's component to the current tag path
 		// and pass children to BFS
 	case map[string]interface{}:
@@ -115,6 +123,7 @@ func bFSTagPaths(node interface{}, paths chan []string, curPath []string) error 
 			curPath = append(curPath, key)
 			bFSTagPaths(value, paths, curPath)
 		}
+
 		// Reached leaf node, add it's component to the current tag path
 		// and the current path to the final paths list
 	case string:
@@ -137,21 +146,22 @@ func ExportYML(dbConn *sqlx.DB, ymlPath string) error {
 	tagHierarchy := tagNode{"tags": tagNode{}}
 
 	for _, tag := range tags {
-		tagComponents := strings.Split(tag, "::")
-
 		curNode := tagHierarchy["tags"]
 
+		tagComponents := strings.Split(tag, "::")
 		for _, component := range tagComponents {
+			// component is not inserted yet, insert it, so we can add it's children later
 			_, ok := curNode[component]
-
 			if !ok {
 				curNode[component] = tagNode{}
 			}
 
+			// component is added, descend to child
 			curNode = curNode[component]
 		}
 	}
 
+	// TODO: The following code should be extracted to a separate function (split building YML structure and writing it)
 	// 0664 UNIX Permission code
 	file, err := os.OpenFile(ymlPath, os.O_CREATE|os.O_WRONLY, 0o664)
 	if err != nil {
@@ -243,7 +253,7 @@ func DeleteTag(dbConn *sqlx.DB, transaction *sqlx.Tx, tag string) error {
 // TODO: Allow passing string and id for tag
 
 // FindAmbiguousTagComponent finds the index (root = 0) of an ambiguous component.
-func FindAmbiguousTagComponent(dbConn *sqlx.DB, tag string) (int, string, error) {
+func FindAmbiguousTagComponent(dbConn *sqlx.DB, tag string) (ambiguousIndex int, ambiguousComponent string, err error) {
 	stmt := `
         SELECT
             Tag
@@ -255,7 +265,7 @@ func FindAmbiguousTagComponent(dbConn *sqlx.DB, tag string) (int, string, error)
             Tag != ?;
     `
 	inputTagComponents := strings.Split(tag, "::")
-	leaf := inputTagComponents[len(inputTagComponents)-1]
+	inputLeaf := inputTagComponents[len(inputTagComponents)-1]
 
 	var ambiguousTag string
 
@@ -266,28 +276,31 @@ func FindAmbiguousTagComponent(dbConn *sqlx.DB, tag string) (int, string, error)
 
 	defer statement.Close()
 
-	_ = statement.Get(&ambiguousTag, leaf, tag)
+	_ = statement.Get(&ambiguousTag, inputLeaf, tag)
 
 	ambiguousTagComponents := strings.Split(ambiguousTag, "::")
 
 	i := len(ambiguousTagComponents) - 1
 
+	// REFACTOR: This could probably be simplified with goaoi
 	// Find where input tag's leaf appears in ambiguous tag
 	for ; i > 0; i-- {
-		if ambiguousTagComponents[i] == leaf {
+		if ambiguousTagComponents[i] == inputLeaf {
 			break
 		}
 	}
 
 	// Find index of first differing tag component (traversal from leaf to root)
-	j := len(inputTagComponents) - 1
+	ambiguousIndex = len(inputTagComponents) - 1
 
-	for i > 0 && j > 0 && ambiguousTagComponents[i] == inputTagComponents[j] {
+	for i > 0 && ambiguousIndex > 0 && ambiguousTagComponents[i] == inputTagComponents[ambiguousIndex] {
 		i--
-		j--
+		ambiguousIndex--
 	}
 
-	return j, inputTagComponents[j], nil
+	ambiguousComponent = inputTagComponents[ambiguousIndex]
+
+	return
 }
 
 // TODO: Allow passing string and id for tag
@@ -303,16 +316,16 @@ func TryShortenTag(dbConn *sqlx.DB, tag string) (string, error) {
 		return "", err
 	}
 
-	if isAmbiguous {
-		i, _, err := FindAmbiguousTagComponent(dbConn, tag)
-		if err != nil {
-			return "", err
-		}
-
-		return strings.Join(tagComponents[i:], "::"), nil
+	if !isAmbiguous {
+		return tagComponents[len(tagComponents)-1], nil
 	}
 
-	return tagComponents[len(tagComponents)-1], nil
+	i, _, err := FindAmbiguousTagComponent(dbConn, tag)
+	if err != nil {
+		return "", err
+	}
+
+	return strings.Join(tagComponents[i:], "::"), nil
 }
 
 // TODO: Allow passing string and id for tag

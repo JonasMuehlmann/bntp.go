@@ -51,7 +51,7 @@ func AddLink(dbConn *sqlx.DB, transaction *sqlx.Tx, source string, destination s
 	}
 
 	if sourceId == -1 {
-		return errors.New("Could not retrieve DestinationId")
+		return errors.New("Could not retrieve SourceId")
 	}
 
 	destinationId, err := helpers.GetIdFromDocument(dbConn, transaction, destination)
@@ -87,7 +87,7 @@ func RemoveLink(dbConn *sqlx.DB, transaction *sqlx.Tx, source string, destinatio
 	}
 
 	if sourceId == -1 {
-		return errors.New("Could not retrieve DestinationId")
+		return errors.New("Could not retrieve SourceId")
 	}
 
 	destinationId, err := helpers.GetIdFromDocument(dbConn, transaction, destination)

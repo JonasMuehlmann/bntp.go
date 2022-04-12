@@ -194,6 +194,7 @@ func RemoveTagFromFile(documentPath string, tag string) error {
 		return err
 	}
 
+	// PERF: This does unnecessary work
 	tags = strings.Replace(tags, tag, "", -1)
 	tags = strings.Replace(tags, ",,", ",", -1)
 
@@ -223,7 +224,7 @@ func RenameTagInFile(documentPath string, oldTag string, newTag string) error {
 	}
 
 	if newTag == "" {
-		return errors.New("Can't rename tp empty Tag")
+		return errors.New("Can't rename to empty Tag")
 	}
 
 	tagsLineNumber, tags, err := FindTagsLine(documentPath)
@@ -271,7 +272,7 @@ func GetTags(documentPath string) ([]string, error) {
 
 // FindTagsLine finds the line in documentPath which contains it's tags.
 // It returns the 0 based line lumber of the tags line as well as the line itself.
-func FindTagsLine(documentPath string) (int, string, error) {
+func FindTagsLine(documentPath string) (lineNumber int, tagsLine string, err error) {
 	file, err := os.OpenFile(documentPath, os.O_RDONLY, 0o644)
 	if err != nil {
 		return 0, "", err
@@ -283,6 +284,8 @@ func FindTagsLine(documentPath string) (int, string, error) {
 
 	i := 0
 
+	// NOTE: Are the named parameters handled correctly?
+	// REFACTOR: This could probably be simplified with goaoi
 	for scanner.Scan() {
 		if scanner.Text() == "# Tags" {
 			scanner.Scan()
@@ -308,6 +311,7 @@ func HasTags(documentPath string, tags []string) (bool, error) {
 		return false, err
 	}
 
+	// REFACTOR: This could probably be simplified with goaoi
 	for _, tag := range tags {
 		hasTag := false
 
@@ -401,7 +405,7 @@ func FindDocumentsWithTags(dbConn *sqlx.DB, tags []string) ([]string, error) {
 
 // FindLinksLines finds the lines in documentPath in which links to other documents are listed.
 // It returns the range of line numbers containing links as well as the lines themselves.
-func FindLinksLines(documentPath string) (int, int, []string, error) {
+func FindLinksLines(documentPath string) (lineNumberFirstLink int, lineNumberLastLink int, linksLines []string, err error) {
 	file, err := os.ReadFile(documentPath)
 	if err != nil {
 		return 0, 0, nil, err
@@ -409,13 +413,14 @@ func FindLinksLines(documentPath string) (int, int, []string, error) {
 
 	lines := strings.Split(string(file), "\n")
 
-	lineNumberFirstLink := -1
-	lineNumberLastLink := -1
+	lineNumberFirstLink = -1
+	lineNumberLastLink = -1
 	links := make([]string, 0, 10)
 
 	var line string
 	i := 0
 
+	// REFACTOR: This could probably be simplified with goaoi
 	for _, line = range lines {
 		if line == "# Links" {
 			lineNumberFirstLink = i + 1
@@ -449,7 +454,7 @@ func FindLinksLines(documentPath string) (int, int, []string, error) {
 
 // FindBacklinksLines finds the lines in documentPath in which backlinks to other documents are listed.
 // It returns the range of line numbers containing backlinks as well as the lines themselves.
-func FindBacklinksLines(documentPath string) (int, int, []string, error) {
+func FindBacklinksLines(documentPath string) (lineNumberFirstBacklink int, lineNumberLastBacklink int, backlinksLines []string, err error) {
 	file, err := os.ReadFile(documentPath)
 	if err != nil {
 		return 0, 0, nil, err
@@ -457,13 +462,14 @@ func FindBacklinksLines(documentPath string) (int, int, []string, error) {
 
 	lines := strings.Split(string(file), "\n")
 
-	lineNumberFirstBacklink := -1
-	lineNumberLastBacklink := -1
+	lineNumberFirstBacklink = -1
+	lineNumberLastBacklink = -1
 	backlinks := make([]string, 0, 10)
 
 	var line string
 	i := 0
 
+	// REFACTOR: This could probably be simplified with goaoi
 	for _, line = range lines {
 		if line == "# Backlinks" {
 			lineNumberFirstBacklink = i + 1
@@ -530,6 +536,7 @@ func RemoveLink(documentPathSource string, documentPathDestination string) error
 
 	iLinkToDelete := -1
 
+	// REFACTOR: This could probably be simplified with goaoi
 	for i, link := range linksOrig {
 		if strings.Contains(link, documentPathDestination) {
 			iLinkToDelete = i + lineNumberFirstLink
@@ -591,6 +598,7 @@ func RemoveBacklink(documentPathDestination string, documentPathSource string) e
 
 	iBacklinkToDelete := -1
 
+	// REFACTOR: This could probably be simplified with goaoi
 	for i, link := range backlinksOrig {
 		if strings.Contains(link, documentPathSource) {
 			iBacklinkToDelete = i + lineNumberFirstBacklink
