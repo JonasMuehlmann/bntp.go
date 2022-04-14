@@ -23,6 +23,7 @@ package libbookmarks
 
 import (
 	"errors"
+	"strings"
 
 	"github.com/JonasMuehlmann/bntp.go/internal/helpers"
 	"github.com/JonasMuehlmann/optional.go"
@@ -272,11 +273,13 @@ func ListTypes(dbConn *sqlx.DB) ([]string, error) {
 	return types, nil
 }
 
-// TODO: Allow passing string and id for type_
-
 // AddBookmark adds a new bookmark to the DB.
 // Passing a transaction is optional.
-func AddBookmark(dbConn *sqlx.DB, transaction *sqlx.Tx, title string, url string, type_ optional.Optional[int]) error {
+func AddBookmark(dbConn *sqlx.DB, transaction *sqlx.Tx, bookmark Bookmark) error {
+	if strings.TrimSpace(bookmark.Url) == "" {
+		return errors.New("Can't add bookmark without url")
+	}
+
 	stmt := `
         INSERT INTO
             Bookmark(
@@ -292,29 +295,31 @@ func AddBookmark(dbConn *sqlx.DB, transaction *sqlx.Tx, title string, url string
             ?
         );
     `
-	if title == "" || url == "" {
-		return errors.New("Entry is missing a column")
-	}
-
 	var statement *sqlx.Stmt
 
 	var err error
 
 	if transaction != nil {
 		statement, err = transaction.Preparex(stmt)
-
 		if err != nil {
 			return err
 		}
 	} else {
 		statement, err = dbConn.Preparex(stmt)
-
 		if err != nil {
 			return err
 		}
 	}
 
-	_, err = statement.Exec(title, url, time.Now().Format("2006-01-02"), type_)
+	// TODO: Handle importing tags
+	var bookmarkTypeId int
+	if bookmark.Type.HasValue {
+		bookmarkTypeId, err = helpers.GetIdFromBookmarkType(dbConn, transaction, bookmark.Type.Wrappee)
+		_, err = statement.Exec(bookmark.Title, bookmark.Url, bookmark.TimeAdded, bookmarkTypeId)
+	} else {
+		_, err = statement.Exec(bookmark.Title, bookmark.Url, bookmark.TimeAdded, nil)
+	}
+
 	if err != nil {
 		return err
 	}

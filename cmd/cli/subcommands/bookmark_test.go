@@ -43,7 +43,7 @@ func TestImportBookmarks(t *testing.T) {
 
 	file, err := test.CreateTestTempFile(t.Name())
 
-	file.WriteString("Title;Url\nfoo;bar")
+	file.WriteString("Title,Url\nfoo,bar")
 
 	os.Args = []string{"", "bookmark", "--import", path.Join(test.TestDataTempDir, t.Name())}
 	err = subcommands.BookmarkMain(db)
