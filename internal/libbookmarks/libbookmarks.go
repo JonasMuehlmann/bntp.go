@@ -22,70 +22,43 @@
 package libbookmarks
 
 import (
-	"encoding/csv"
 	"errors"
-	"os"
-	"reflect"
-	"strconv"
-	"strings"
-	"time"
 
 	"github.com/JonasMuehlmann/bntp.go/internal/helpers"
 	"github.com/JonasMuehlmann/optional.go"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/mattn/go-sqlite3"
+
+	"github.com/gocarina/gocsv"
 )
 
-// ImportMinimalCSV reads a csv file at csvPath and imports it into the bookmark DB.
-// The csv file is expected to have the columns "Text" and "Url" ONLY.
-func ImportMinimalCSV(dbConn *sqlx.DB, csvPath string) error {
-	file, err := os.Open(csvPath)
+func DeserializeBookmarks(serializedBookmarkList string) (bookmarkList []Bookmark, err error) {
+	bookmarkList = make([]Bookmark, 0, 100)
+
+	err = gocsv.UnmarshalString(serializedBookmarkList, &bookmarkList)
 	if err != nil {
-		return err
+		err = helpers.DeserializationError{Inner: err}
+
+		return
 	}
 
-	defer file.Close()
+	if len(bookmarkList) == 0 {
+		err = helpers.IneffectiveOperationError{Inner: errors.New("Empty bookmark list")}
 
-	reader := csv.NewReader(file)
-	reader.Comma = ';'
-
-	bookmarks, err := reader.ReadAll()
-	if err != nil {
-		return err
+		return
 	}
 
-	if len(bookmarks) < 2 {
-		return errors.New("CSV does not contain at least one entry")
-	}
+	return
+}
 
-	header := bookmarks[0]
-
-	if len(header) != 2 {
-		return errors.New("CSV Header does not have correct number of fields. It should have 2.")
-	}
-
-	if !(header[0] == "Title" || header[1] == "Title") || !(header[0] == "Url" || header[1] == "Url") || header[0] == header[1] {
-		return errors.New("CSV Header does not have necessary fields 'Title' and 'Url.'")
-	}
-
-	var titleColumn, linkColumn int
-
-	if header[0] == "Title" {
-		titleColumn = 0
-		linkColumn = 1
-	} else {
-		titleColumn = 1
-		linkColumn = 0
-	}
-
+func ImportBookmarks(dbConn *sqlx.DB, bookmarkList []Bookmark) error {
 	transaction, err := dbConn.Beginx()
 	if err != nil {
 		return err
 	}
 
-	// REFACTOR: deserializing the CSV and importing the bookmarks should be split
-	for _, bookmark := range bookmarks[1:] {
-		err := AddBookmark(dbConn, transaction, bookmark[titleColumn], bookmark[linkColumn], optional.Optional[int]{HasValue: false})
+	for _, bookmark := range bookmarkList {
+		err := AddBookmark(nil, transaction, bookmark)
 
 		if err != nil {
 			return err
@@ -101,74 +74,20 @@ func ImportMinimalCSV(dbConn *sqlx.DB, csvPath string) error {
 	return nil
 }
 
-// TODO: Split conversion and export of bookmarks
+func SerializeBookmarks(bookmarkList []Bookmark) (serializedBookmarks string, err error) {
+	if len(bookmarkList) == 0 {
+		err = helpers.IneffectiveOperationError{Inner: errors.New("Empty bookmark list")}
 
-// ExportCSV exports an array of bookmarks to a CSV file at csvPath.
-func ExportCSV(bookmarks []Bookmark, csvPath string) error {
-	var writer *csv.Writer
-
-	if len(bookmarks) == 0 {
-		return errors.New("No bookmarks to export")
+		return
 	}
 
-	if csvPath != "" { // 0664 UNIX Permission code
-		file, err := os.OpenFile(csvPath, os.O_CREATE|os.O_WRONLY, 0o664)
-		if err != nil {
-			return err
-		}
+	serializedBookmarks, err = gocsv.MarshalString(bookmarkList)
 
-		defer file.Close()
+	return
+}
 
-		writer = csv.NewWriter(file)
-	} else { // 0664 UNIX Permission code
-		writer = csv.NewWriter(os.Stdout)
-	}
-
-	writer.Comma = ';'
-
-	csvHeader := make([]string, 0, 10)
-
-	tempBookmark := &Bookmark{}
-	bookmarkReflected := reflect.ValueOf(tempBookmark).Elem()
-
-	for i := 0; i < bookmarkReflected.NumField(); i++ {
-		csvHeader = append(csvHeader, bookmarkReflected.Type().Field(i).Name)
-	}
-
-	err := writer.Write(csvHeader)
-	if err != nil {
-		return err
-	}
-
-	rowsBuffer := make([][]string, len(bookmarks))
-
-	for i, bookmark := range bookmarks {
-		var isCollectionOut string
-
-		if bookmark.IsCollection.HasValue {
-			isCollectionOut = strconv.FormatBool(bookmark.IsCollection.Wrappee)
-		} else {
-			isCollectionOut = "NULL"
-		}
-
-		rowsBuffer[i] = []string{
-			bookmark.Title.Wrappee,
-			bookmark.Url,
-			bookmark.TimeAdded,
-			bookmark.Type.Wrappee,
-			strings.Join(bookmark.Tags, ","),
-			strconv.Itoa(bookmark.Id),
-			strconv.FormatBool(bookmark.IsRead),
-			isCollectionOut,
-		}
-	}
-
-	err = writer.WriteAll(rowsBuffer)
-	if err != nil {
-		return err
-	}
-
-	return nil
+func ExportBookmarks(dbConn *sqlx.DB) (bookmarkList []Bookmark, err error) {
+	return GetBookmarks(dbConn, BookmarkFilter{})
 }
 
 // GetBookmarks returns all bookmarks stored in the DB which satisfy the given filter.

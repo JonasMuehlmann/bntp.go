@@ -23,11 +23,11 @@ package subcommands
 import (
 	"encoding/json"
 	"fmt"
+	"os"
 	"strconv"
 	"strings"
 
 	"github.com/JonasMuehlmann/bntp.go/internal/libbookmarks"
-	"github.com/JonasMuehlmann/optional.go"
 	"github.com/docopt/docopt-go"
 	"github.com/jmoiron/sqlx"
 )
@@ -88,13 +88,20 @@ func BookmarkMain(db *sqlx.DB) error {
 			return ParameterConversionError{"FILE", arguments["FILE"], "string"}
 		}
 
-		err = libbookmarks.ImportMinimalCSV(db, source)
+		serializedBookmarks, err := os.ReadFile(source)
+
+		deserializedBookmarks, err := libbookmarks.DeserializeBookmarks(string(serializedBookmarks))
+		if err != nil {
+			return err
+		}
+
+		err = libbookmarks.ImportBookmarks(db, deserializedBookmarks)
 		if err != nil {
 			return err
 		}
 		// ******************************************************************//
 	} else if isSet, ok := arguments["--export"]; ok && isSet.(bool) {
-		source, err := arguments.String("FILE")
+		destination, err := arguments.String("FILE")
 		if err != nil {
 			return ParameterConversionError{"FILE", arguments["FILE"], "string"}
 		}
@@ -112,15 +119,18 @@ func BookmarkMain(db *sqlx.DB) error {
 			}
 		}
 
-		bookmarks, err := libbookmarks.GetBookmarks(db, filter)
+		bookmarks, err := libbookmarks.ExportBookmarks(db)
 		if err != nil {
 			return err
 		}
 
-		err = libbookmarks.ExportCSV(bookmarks, source)
+		serializedBookmarks, err := libbookmarks.SerializeBookmarks(bookmarks)
 		if err != nil {
 			return err
 		}
+
+		os.WriteFile(destination, []byte(serializedBookmarks), 0644)
+
 		// ******************************************************************//
 	} else if isSet, ok := arguments["--list"]; ok && isSet.(bool) {
 		filter := libbookmarks.BookmarkFilter{}
@@ -151,7 +161,12 @@ func BookmarkMain(db *sqlx.DB) error {
 
 		switch strings.ToLower(exportFormat) {
 		case "csv":
-			err = libbookmarks.ExportCSV(bookmarks, "")
+			serializedBookmarks, err := libbookmarks.SerializeBookmarks(bookmarks)
+			if err != nil {
+				return err
+			}
+
+			fmt.Println(serializedBookmarks)
 		default:
 			return InvalidParameterValueError{arguments["FORMAT"], arguments["FORMAT"], AllowedFormatValues}
 		}
@@ -193,43 +208,22 @@ func BookmarkMain(db *sqlx.DB) error {
 		}
 		// ******************************************************************//
 	} else if isSet, ok := arguments["--add"]; ok && isSet.(bool) {
-		var data map[string]string
+		var newBookmark libbookmarks.Bookmark
 		dataRaw, err := arguments.String("DATA")
 		if err != nil {
 			return ParameterConversionError{"DATA", arguments["DATA"], "string"}
 		}
 
-		err = json.Unmarshal([]byte(dataRaw), &data)
+		err = json.Unmarshal([]byte(dataRaw), &newBookmark)
 		if err != nil {
 			return err
 		}
 
-		var incompleteCompoundParameterError IncompleteCompoundParameterError
-		title, ok := data["title"]
-		if !ok {
-			incompleteCompoundParameterError.MissingFields = append(incompleteCompoundParameterError.MissingFields, "title")
+		if newBookmark.Url == "" {
+			return IncompleteCompoundParameterError{MissingFields: []string{"Url"}}
 		}
 
-		url, ok := data["url"]
-		if !ok {
-			incompleteCompoundParameterError.MissingFields = append(incompleteCompoundParameterError.MissingFields, "url")
-		}
-
-		if len(incompleteCompoundParameterError.MissingFields) != 0 {
-			return incompleteCompoundParameterError
-		}
-
-		var type_ optional.Optional[int]
-		typeRaw, ok := data["type"]
-		if !ok {
-			type_.HasValue = false
-		}
-
-		typeInt, err := strconv.ParseInt(typeRaw, 10, 32)
-
-		type_.Wrappee = int(typeInt)
-
-		err = libbookmarks.AddBookmark(db, nil, title, url, type_)
+		err = libbookmarks.AddBookmark(db, nil, newBookmark)
 		if err != nil {
 			return err
 		}

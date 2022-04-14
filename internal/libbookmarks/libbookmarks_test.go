@@ -1,7 +1,8 @@
 package libbookmarks_test
 
 import (
-	"path/filepath"
+	"encoding/csv"
+	"io"
 	"testing"
 
 	"github.com/JonasMuehlmann/bntp.go/internal/helpers"
@@ -9,188 +10,76 @@ import (
 	"github.com/JonasMuehlmann/bntp.go/internal/libtags"
 	"github.com/JonasMuehlmann/bntp.go/test"
 	"github.com/JonasMuehlmann/optional.go"
+	"github.com/gocarina/gocsv"
 	"github.com/stretchr/testify/assert"
 )
 
-// ######################
-// # ImportMinimalCSV() #
-// ######################.
-func TestImportMinimalCSVEmpty(t *testing.T) {
-	db, err := test.GetDB(t)
-	assert.NoError(t, err)
-
-	file, err := test.CreateTestTempFile(t.Name())
-	assert.NoError(t, err)
-
+// ##########################
+// # DeserializeBookmarks() #
+// ##########################.
+func TestDeserializeBookmarksEmpty(t *testing.T) {
 	csv := ""
-	_, err = file.WriteString(csv)
-	assert.NoError(t, err)
-
-	err = libbookmarks.ImportMinimalCSV(db, filepath.Join(test.TestDataTempDir, t.Name()))
-	assert.Error(t, err)
+	_, err := libbookmarks.DeserializeBookmarks(csv)
+	assert.ErrorAs(t, err, &helpers.DeserializationError{})
 }
 
-func TestImportMinimalCSVNoHeaderButData(t *testing.T) {
-	db, err := test.GetDB(t)
-	assert.NoError(t, err)
-
-	file, err := test.CreateTestTempFile(t.Name())
-	assert.NoError(t, err)
-
-	csv := "Foo;Bar"
-	_, err = file.WriteString(csv)
-	assert.NoError(t, err)
-
-	err = libbookmarks.ImportMinimalCSV(db, filepath.Join(test.TestDataTempDir, t.Name()))
-	assert.Error(t, err)
-}
-
-func TestImportMinimalCSVHeaderNoTitle(t *testing.T) {
-	db, err := test.GetDB(t)
-	assert.NoError(t, err)
-
-	file, err := test.CreateTestTempFile(t.Name())
-	assert.NoError(t, err)
-
-	csv := "dss;Title"
-	_, err = file.WriteString(csv)
-	assert.NoError(t, err)
-
-	err = libbookmarks.ImportMinimalCSV(db, filepath.Join(test.TestDataTempDir, t.Name()))
-	assert.Error(t, err)
-}
-
-func TestImportMinimalCSVHeaderNoUrl(t *testing.T) {
-	db, err := test.GetDB(t)
-	assert.NoError(t, err)
-
-	file, err := test.CreateTestTempFile(t.Name())
-	assert.NoError(t, err)
-
-	csv := "dss;Url"
-	_, err = file.WriteString(csv)
-	assert.NoError(t, err)
-
-	err = libbookmarks.ImportMinimalCSV(db, filepath.Join(test.TestDataTempDir, t.Name()))
-	assert.Error(t, err)
-}
-
-func TestImportMinimalCSVOnlyHeader(t *testing.T) {
-	db, err := test.GetDB(t)
-	assert.NoError(t, err)
-
-	file, err := test.CreateTestTempFile(t.Name())
-	assert.NoError(t, err)
-
+func TestDeserializeBookmarksOnlyHeader(t *testing.T) {
 	csv := "Url;Title"
-	_, err = file.WriteString(csv)
-	assert.NoError(t, err)
-
-	err = libbookmarks.ImportMinimalCSV(db, filepath.Join(test.TestDataTempDir, t.Name()))
-	assert.Error(t, err)
+	_, err := libbookmarks.DeserializeBookmarks(csv)
+	assert.ErrorAs(t, err, &helpers.IneffectiveOperationError{})
 }
 
-func TestImportMinimalCSVOneEntry(t *testing.T) {
-	db, err := test.GetDB(t)
-	assert.NoError(t, err)
+func TestDeserializeBookmarksOneEntry(t *testing.T) {
+	gocsv.SetCSVReader(func(in io.Reader) gocsv.CSVReader {
+		r := csv.NewReader(in)
+		r.Comma = ';'
 
-	file, err := test.CreateTestTempFile(t.Name())
-	assert.NoError(t, err)
+		return r
+	})
 
 	csv := `Url;Title
 Foo;Bar`
-	_, err = file.WriteString(csv)
+	bookmarkList, err := libbookmarks.DeserializeBookmarks(csv)
 	assert.NoError(t, err)
-
-	err = libbookmarks.ImportMinimalCSV(db, filepath.Join(test.TestDataTempDir, t.Name()))
-	assert.NoError(t, err)
+	assert.Len(t, bookmarkList, 1)
+	assert.Equal(t, libbookmarks.Bookmark{Url: "Foo", Title: optional.Make("Bar")}, bookmarkList[0])
 }
 
-func TestImportMinimalCSVManyEntries(t *testing.T) {
-	db, err := test.GetDB(t)
-	assert.NoError(t, err)
-
-	file, err := test.CreateTestTempFile(t.Name())
-	assert.NoError(t, err)
-
+func TestDeserializeBookmarksManyEntries(t *testing.T) {
 	csv := `Url;Title
 Foo;Bar
 Foo2;Bar2
-Foo3;Bar3`
-	_, err = file.WriteString(csv)
+`
+	bookmarkList, err := libbookmarks.DeserializeBookmarks(csv)
 	assert.NoError(t, err)
-
-	err = libbookmarks.ImportMinimalCSV(db, filepath.Join(test.TestDataTempDir, t.Name()))
-	assert.NoError(t, err)
+	assert.Len(t, bookmarkList, 2)
+	assert.Equal(t, libbookmarks.Bookmark{Url: "Foo", Title: optional.Make("Bar")}, bookmarkList[0])
+	assert.Equal(t, libbookmarks.Bookmark{Url: "Foo2", Title: optional.Make("Bar2")}, bookmarkList[1])
 }
 
-func TestImportMinimalCSVEntryWithIncompleteUrl(t *testing.T) {
-	db, err := test.GetDB(t)
-	assert.NoError(t, err)
-
-	file, err := test.CreateTestTempFile(t.Name())
-	assert.NoError(t, err)
-
-	csv := `Url;Title
-Foo;Bar
-Foo2;Bar2
-;Bar3`
-	_, err = file.WriteString(csv)
-	assert.NoError(t, err)
-
-	err = libbookmarks.ImportMinimalCSV(db, filepath.Join(test.TestDataTempDir, t.Name()))
-	assert.Error(t, err)
+// ########################
+// # SerializeBookmarks() #
+// ########################.
+func TestSerializeBookmarksEmpty(t *testing.T) {
+	_, err := libbookmarks.SerializeBookmarks([]libbookmarks.Bookmark{})
+	assert.ErrorAs(t, err, &helpers.IneffectiveOperationError{})
 }
 
-func TestImportMinimalCSVEntryWithIncompleteTitle(t *testing.T) {
-	db, err := test.GetDB(t)
-	assert.NoError(t, err)
+func TestSerializeBookmarks(t *testing.T) {
+	bookmarks := []libbookmarks.Bookmark{
+		{Title: optional.Make("Foo"), Url: "Bar"},
+		{Title: optional.Make("Foo1"), Url: "Bar1"},
+	}
 
-	file, err := test.CreateTestTempFile(t.Name())
-	assert.NoError(t, err)
+	serializedBookmarks, err := libbookmarks.SerializeBookmarks(bookmarks)
+	assert.Contains(t, serializedBookmarks, "Title")
+	assert.Contains(t, serializedBookmarks, "Url")
 
-	csv := `Url;Title
-Foo;Bar
-Foo2;Bar2
-Foo3;`
-	_, err = file.WriteString(csv)
-	assert.NoError(t, err)
+	assert.Contains(t, serializedBookmarks, "Foo")
+	assert.Contains(t, serializedBookmarks, "Foo1")
 
-	err = libbookmarks.ImportMinimalCSV(db, filepath.Join(test.TestDataTempDir, t.Name()))
-	assert.Error(t, err)
-}
-
-// ###############
-// # ExportCSV() #
-// ###############.
-func TestExportCSVEmpty(t *testing.T) {
-	db, err := test.GetDB(t)
-	assert.NoError(t, err)
-
-	bookmarks, err := libbookmarks.GetBookmarks(db, libbookmarks.BookmarkFilter{})
-	assert.NoError(t, err)
-
-	err = libbookmarks.ExportCSV(bookmarks, filepath.Join(test.TestDataTempDir, t.Name()))
-	assert.Error(t, err)
-}
-
-func TestExportCSV(t *testing.T) {
-	db, err := test.GetDB(t)
-	assert.NoError(t, err)
-
-	err = libbookmarks.AddBookmark(db, nil, "Foo", "Bar", optional.Optional[int]{HasValue: false})
-	assert.NoError(t, err)
-
-	err = libbookmarks.AddBookmark(db, nil, "Foo2", "Bar2", optional.Optional[int]{HasValue: false})
-	assert.NoError(t, err)
-
-	err = libbookmarks.AddBookmark(db, nil, "Foo3", "Bar3", optional.Optional[int]{HasValue: false})
-	assert.NoError(t, err)
-
-	bookmarks, err := libbookmarks.GetBookmarks(db, libbookmarks.BookmarkFilter{})
-	assert.NoError(t, err)
-
-	err = libbookmarks.ExportCSV(bookmarks, filepath.Join(test.TestDataTempDir, t.Name()))
+	assert.Contains(t, serializedBookmarks, "Bar")
+	assert.Contains(t, serializedBookmarks, "Bar1")
 	assert.NoError(t, err)
 }
 

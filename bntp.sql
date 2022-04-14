@@ -17,10 +17,10 @@ CREATE TABLE Bookmark
     Id           INTEGER not null
         primary key,
     IsRead       INTEGER default 0,
-    Title        TEXT, 
+    Title        TEXT,
     Url          TEXT    not null
         unique,
-    TimeAdded    TEXT    not null,
+    TimeAdded    TIMESTAMP not null,
     BookmarkTypeId
         references BookmarkType (Id),
     IsCollection INTEGER
