@@ -22,6 +22,7 @@ package subcommands
 
 import (
 	"fmt"
+	"os"
 	"strconv"
 
 	"github.com/JonasMuehlmann/bntp.go/internal/libtags"
@@ -65,7 +66,12 @@ func TagMain(db *sqlx.DB) error {
 			return ParameterConversionError{"PATH", arguments["PATH"], "string"}
 		}
 
-		err = libtags.ImportYML(db, path)
+		serializedTagHierarchy, err := os.ReadFile(path)
+		if err != nil {
+			return err
+		}
+		tagHierarchy, err := libtags.DeserializeTagHierarchy(string(serializedTagHierarchy))
+		err = libtags.ImportTagHierarchy(db, tagHierarchy)
 		if err != nil {
 			return err
 		}
@@ -76,7 +82,23 @@ func TagMain(db *sqlx.DB) error {
 			return ParameterConversionError{"PATH", arguments["PATH"], "string"}
 		}
 
-		err = libtags.ExportYML(db, path)
+		tagHierarchy, err := libtags.ExportTagHierarchy(db)
+		if err != nil {
+			return err
+		}
+		serializedTagHierarchy, err := libtags.SerializeTagHierarchy(tagHierarchy)
+		if err != nil {
+			return err
+		}
+		// 0664 UNIX Permission code
+		file, err := os.OpenFile(path, os.O_CREATE|os.O_WRONLY, 0o664)
+		if err != nil {
+			return err
+		}
+
+		defer file.Close()
+
+		_, err = file.WriteString(serializedTagHierarchy)
 		if err != nil {
 			return err
 		}

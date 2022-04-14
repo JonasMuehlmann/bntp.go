@@ -1,13 +1,13 @@
 package libtags_test
 
 import (
-	"os"
-	"path/filepath"
 	"testing"
 
+	"github.com/JonasMuehlmann/bntp.go/internal/helpers"
 	"github.com/JonasMuehlmann/bntp.go/internal/libtags"
 	"github.com/JonasMuehlmann/bntp.go/test"
 	"github.com/stretchr/testify/assert"
+	"golang.org/x/exp/maps"
 )
 
 // ############
@@ -244,92 +244,58 @@ func TestListTagsShortenedManyTagsAmbiguousComponent(t *testing.T) {
 	assert.Equal(t, []string{"Y::C", "B::C"}, tags)
 }
 
-// ###############
-// # ImportYML() #
-// ###############.
-func TestImportYMLNoTagsKey(t *testing.T) {
-	db, err := test.GetDB(t)
-	assert.NoError(t, err)
-
-	file, err := test.CreateTestTempFile(t.Name())
-	assert.NoError(t, err)
-
+// #############################
+// # DeserializeTagHierarchy() #
+// #############################.
+func TestDeserializeTagHierarchyNoTagsKey(t *testing.T) {
 	yml := `
 foo:
 - bar
 - baz
     `
-	_, err = file.WriteString(yml)
-	assert.NoError(t, err)
-
-	err = libtags.ImportYML(db, filepath.Join(test.TestDataTempDir, t.Name()))
-	assert.Error(t, err)
+	_, err := libtags.DeserializeTagHierarchy(yml)
+	assert.ErrorAs(t, err, &helpers.DeserializationError{})
 }
 
-func TestImportYMLNoTags(t *testing.T) {
-	db, err := test.GetDB(t)
-	assert.NoError(t, err)
-
-	file, err := test.CreateTestTempFile(t.Name())
-	assert.NoError(t, err)
-
+func TestDeserializeTagHierarchyNoTags(t *testing.T) {
 	yml := `
 tags:
     `
-	_, err = file.WriteString(yml)
-	assert.NoError(t, err)
-
-	err = libtags.ImportYML(db, filepath.Join(test.TestDataTempDir, t.Name()))
-	assert.Error(t, err)
+	_, err := libtags.DeserializeTagHierarchy(yml)
+	assert.ErrorAs(t, err, &helpers.IneffectiveOperationError{})
 }
 
-func TestImportYMLOnlyTopLevel(t *testing.T) {
-	db, err := test.GetDB(t)
-	assert.NoError(t, err)
-
-	file, err := test.CreateTestTempFile(t.Name())
-	assert.NoError(t, err)
-
+func TestDeserializeTagHierarchyOnlyTopLevel(t *testing.T) {
 	yml := `
 tags:
 - foo
 - bar
 - baz
     `
-	_, err = file.WriteString(yml)
+	tagHierarchy, err := libtags.DeserializeTagHierarchy(yml)
 	assert.NoError(t, err)
 
-	err = libtags.ImportYML(db, filepath.Join(test.TestDataTempDir, t.Name()))
-	assert.NoError(t, err)
+	assert.Equal(t, []string{"tags"}, maps.Keys(tagHierarchy))
+	assert.Subset(t, maps.Keys(tagHierarchy["tags"]), []string{"foo", "bar", "baz"})
 }
 
-func TestImportYMLOnePath(t *testing.T) {
-	db, err := test.GetDB(t)
-	assert.NoError(t, err)
-
-	file, err := test.CreateTestTempFile(t.Name())
-	assert.NoError(t, err)
-
+func TestDeserializeTagHierarchyOnePath(t *testing.T) {
 	yml := `
 tags:
 - foo:
     - bar:
         - baz
     `
-	_, err = file.WriteString(yml)
+	tagHierarchy, err := libtags.DeserializeTagHierarchy(yml)
 	assert.NoError(t, err)
 
-	err = libtags.ImportYML(db, filepath.Join(test.TestDataTempDir, t.Name()))
-	assert.NoError(t, err)
+	assert.Equal(t, []string{"tags"}, maps.Keys(tagHierarchy))
+	assert.Equal(t, []string{"foo"}, maps.Keys(tagHierarchy["tags"]))
+	assert.Equal(t, []string{"bar"}, maps.Keys(tagHierarchy["tags"]["foo"]))
+	assert.Equal(t, []string{"baz"}, maps.Keys(tagHierarchy["tags"]["foo"]["bar"]))
 }
 
-func TestImportYMLTwoPaths(t *testing.T) {
-	db, err := test.GetDB(t)
-	assert.NoError(t, err)
-
-	file, err := test.CreateTestTempFile(t.Name())
-	assert.NoError(t, err)
-
+func TestDeserializeTagHierarchyTwoPaths(t *testing.T) {
 	yml := `
 tags:
 - foo:
@@ -339,77 +305,97 @@ tags:
     - bar2:
         - baz2
     `
-	_, err = file.WriteString(yml)
+	tagHierarchy, err := libtags.DeserializeTagHierarchy(yml)
 	assert.NoError(t, err)
 
-	err = libtags.ImportYML(db, filepath.Join(test.TestDataTempDir, t.Name()))
-	assert.NoError(t, err)
+	assert.Equal(t, []string{"tags"}, maps.Keys(tagHierarchy))
+	assert.Subset(t, maps.Keys(tagHierarchy["tags"]), []string{"foo", "foo2"})
+	assert.Equal(t, []string{"bar"}, maps.Keys(tagHierarchy["tags"]["foo"]))
+	assert.Equal(t, []string{"baz"}, maps.Keys(tagHierarchy["tags"]["foo"]["bar"]))
+
+	assert.Equal(t, []string{"bar2"}, maps.Keys(tagHierarchy["tags"]["foo2"]))
+	assert.Equal(t, []string{"baz2"}, maps.Keys(tagHierarchy["tags"]["foo2"]["bar2"]))
 }
 
-// ###############
-// # ExportYML() #
-// ###############.
-func TestExportYMLNoTags(t *testing.T) {
-	db, err := test.GetDB(t)
-	assert.NoError(t, err)
-
-	err = libtags.ExportYML(db, filepath.Join(test.TestDataTempDir, t.Name()))
-	assert.NoError(t, err)
+// ###########################
+// # SerializeTagHierarchy() #
+// ###########################.
+func TestSerializeTagHierarchyNoTags(t *testing.T) {
+	_, err := libtags.SerializeTagHierarchy(libtags.TagNode{})
+	assert.ErrorAs(t, err, &helpers.SerializationError{})
 }
 
-func TestExportYMLOnlyTopLevel(t *testing.T) {
-	db, err := test.GetDB(t)
-	assert.NoError(t, err)
-
-	file, err := os.Create(filepath.Join(test.TestDataTempDir, t.Name()+"In"))
-	assert.NoError(t, err)
-
-	yml := `tags:
-- foo
+func TestSerializeTagHierarchyOnlyTopLevel(t *testing.T) {
+	input := `
+tags:
 - bar
-- baz`
-	_, err = file.WriteString(yml)
-	assert.NoError(t, err)
+- baz
+- foo
+    `
 
-	err = libtags.ImportYML(db, filepath.Join(test.TestDataTempDir, t.Name()+"In"))
+	data := libtags.TagNode{
+		"tags": libtags.TagNode{
+			"bar": nil,
+			"baz": nil,
+			"foo": nil,
+		},
+	}
+
+	output, err := libtags.SerializeTagHierarchy(data)
 	assert.NoError(t, err)
+	assert.YAMLEq(t, input, output)
 }
 
-func TestExportYMLOnePath(t *testing.T) {
-	db, err := test.GetDB(t)
-	assert.NoError(t, err)
-
-	file, err := os.Create(filepath.Join(test.TestDataTempDir, t.Name()+"In"))
-	assert.NoError(t, err)
-
-	yml := `tags:
+func TestSerializeTagHierarchyOnePath(t *testing.T) {
+	input := `
+tags:
 - foo:
     - bar:
-        - baz`
-	_, err = file.WriteString(yml)
-	assert.NoError(t, err)
+        - baz
+    `
 
-	err = libtags.ImportYML(db, filepath.Join(test.TestDataTempDir, t.Name()+"In"))
+	data := libtags.TagNode{
+		"tags": libtags.TagNode{
+			"foo": libtags.TagNode{
+				"bar": libtags.TagNode{
+					"baz": nil,
+				},
+			},
+		},
+	}
+
+	output, err := libtags.SerializeTagHierarchy(data)
 	assert.NoError(t, err)
+	assert.YAMLEq(t, input, output)
 }
 
-func TestExportYMLTwoPaths(t *testing.T) {
-	db, err := test.GetDB(t)
-	assert.NoError(t, err)
-
-	file, err := os.Create(filepath.Join(test.TestDataTempDir, t.Name()+"In"))
-	assert.NoError(t, err)
-
-	yml := `tags:
+func TestSerializeTagHierarchyTwoPaths(t *testing.T) {
+	input := `
+tags:
 - foo:
     - bar:
         - baz
 - foo2:
     - bar2:
-        - baz2`
-	_, err = file.WriteString(yml)
-	assert.NoError(t, err)
+        - baz2
+    `
 
-	err = libtags.ImportYML(db, filepath.Join(test.TestDataTempDir, t.Name()+"In"))
+	data := libtags.TagNode{
+		"tags": libtags.TagNode{
+			"foo": libtags.TagNode{
+				"bar": libtags.TagNode{
+					"baz": nil,
+				},
+			},
+			"foo2": libtags.TagNode{
+				"bar2": libtags.TagNode{
+					"baz2": nil,
+				},
+			},
+		},
+	}
+
+	output, err := libtags.SerializeTagHierarchy(data)
 	assert.NoError(t, err)
+	assert.YAMLEq(t, input, output)
 }

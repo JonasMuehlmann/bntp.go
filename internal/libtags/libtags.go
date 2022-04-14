@@ -23,127 +23,55 @@ package libtags
 
 import (
 	"errors"
-	"os"
 	"regexp"
 	"strings"
 
 	"github.com/JonasMuehlmann/bntp.go/internal/helpers"
+	"github.com/JonasMuehlmann/goaoi"
 	"github.com/jmoiron/sqlx"
+	"golang.org/x/exp/maps"
 	"gopkg.in/yaml.v3"
 )
 
-// ImportYML reads a YML file at ymlPath  and imports it's tag structure into the db.
-// The top level tag of the file is expected to be "tags".
-func ImportYML(dbConn *sqlx.DB, ymlPath string) error {
-	file, err := os.ReadFile(ymlPath)
-	if err != nil {
-		return err
-	}
+type TagNode map[string]TagNode
 
-	// TODO: Simplify and document
-	var data interface{}
-
-	err = yaml.Unmarshal(file, &data)
-	if err != nil {
-		return err
-	}
-
-	var topLevelTags []interface{}
-
-	switch data.(type) {
-	case map[string]interface{}:
-		if val, ok := data.(map[string]interface{})["tags"]; ok {
-			topLevelTags, ok = val.([]interface{})
-
-			if !ok {
-				return errors.New("Top level tag does not have children")
-			}
-		} else {
-			return errors.New("Could not recognize top level tag(should be 'tags'")
-		}
-	case []interface{}:
-		topLevelTags = data.([]interface{})
-	default:
-		return errors.New("Could not parse YML tag file")
-	}
-
-	// REFACTOR: YAML parsing and import should be split
-	paths := make(chan []string, 200)
-
-	err = bFSTagPaths(topLevelTags, paths, nil)
-	if err != nil {
-		return err
-	}
-
-	close(paths)
-
-	transaction, err := dbConn.Beginx()
-	if err != nil {
-		return err
-	}
-
-	for path := range paths {
-		err = AddTag(dbConn, transaction, strings.Join(path, "::"))
-		if err != nil {
-			return err
-		}
-	}
-
-	err = transaction.Commit()
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func bFSTagPaths(node interface{}, paths chan []string, curPath []string) error {
+func bFSTagPaths(node any, paths *[][]string, curPath *[]string) error {
 	switch node.(type) {
-	// Iterate over child nodes and BFS them in parallel
-	case []interface{}:
-		for _, curNode := range node.([]interface{}) {
-			func(node interface{}) {
+	// Iterate over child nodes and BFS them
+	case []any:
+		for _, curNode := range node.([]any) {
+			func(node any) {
 				// Starting path
 				if curPath == nil {
-					bFSTagPaths(node, paths, make([]string, 0, 10))
+					newPath := make([]string, 0, 10)
+					bFSTagPaths(node, paths, &newPath)
 					// Continuing path
 				} else {
-					newPath := make([]string, len(curPath), 10)
-					copy(newPath, curPath)
-
-					bFSTagPaths(node, paths, newPath)
+					bFSTagPaths(node, paths, curPath)
 				}
 			}(curNode)
 		}
 
 		// Reached a parent node, add it's component to the current tag path
 		// and pass children to BFS
-	case map[string]interface{}:
-		for key, value := range node.(map[string]interface{}) {
-			curPath = append(curPath, key)
+	case map[string]any:
+		for key, value := range node.(map[string]any) {
+			*curPath = append(*curPath, key)
 			bFSTagPaths(value, paths, curPath)
 		}
 
 		// Reached leaf node, add it's component to the current tag path
 		// and the current path to the final paths list
 	case string:
-		curPath = append(curPath, node.(string))
-		paths <- curPath
+		*curPath = append(*curPath, node.(string))
+		*paths = append(*paths, *curPath)
 	}
 
 	return nil
 }
 
-type tagNode map[string]tagNode
-
-// ExportYML exports the DB's available into a YML encoded hierarchy at ymlPath.
-func ExportYML(dbConn *sqlx.DB, ymlPath string) error {
-	tags, err := ListTags(dbConn)
-	if err != nil {
-		return err
-	}
-
-	tagHierarchy := tagNode{"tags": tagNode{}}
+func buildInternalTagHierarchy(tags []string) (tagHierarchy TagNode, err error) {
+	tagHierarchy = TagNode{"tags": TagNode{}}
 
 	for _, tag := range tags {
 		curNode := tagHierarchy["tags"]
@@ -153,49 +81,143 @@ func ExportYML(dbConn *sqlx.DB, ymlPath string) error {
 			// component is not inserted yet, insert it, so we can add it's children later
 			_, ok := curNode[component]
 			if !ok {
-				curNode[component] = tagNode{}
+				curNode[component] = TagNode{}
 			}
 
-			// component is added, descend to child
+			// component is added, process children in next iteration
 			curNode = curNode[component]
 		}
 	}
 
-	// TODO: The following code should be extracted to a separate function (split building YML structure and writing it)
-	// 0664 UNIX Permission code
-	file, err := os.OpenFile(ymlPath, os.O_CREATE|os.O_WRONLY, 0o664)
+	return
+}
+
+func DeserializeTagHierarchy(serializedTagHierarchy string) (tagHierarchy TagNode, err error) {
+	var data map[string]any
+
+	err = yaml.Unmarshal([]byte(serializedTagHierarchy), &data)
 	if err != nil {
-		return err
+		err = helpers.DeserializationError{Inner: err}
+
+		return
 	}
 
-	defer file.Close()
+	if _, ok := data["tags"]; !ok {
+		err = helpers.DeserializationError{Inner: errors.New(`Top level tag should be "tags"`)}
 
-	yamlFile, err := yaml.Marshal(tagHierarchy)
-	if err != nil {
-		return err
+		return
 	}
 
-	fileString := string(yamlFile)
-	// TODO: Refactor using bufio and non regex string functions
-	// NOTE: This is awful, but I can't seem to get it to work properly any other way
-	regexEmptyMap := regexp.MustCompile(`: \{\}`)
-	fileString = regexEmptyMap.ReplaceAllString(fileString, "")
+	paths := make([][]string, 0, 200)
 
-	regexListItems := regexp.MustCompile(`(  )(\w)`)
-	fileString = regexListItems.ReplaceAllString(fileString, "- $2")
-
-	regexIndentation := regexp.MustCompile(`  `)
-	fileString = regexIndentation.ReplaceAllString(fileString, " ")
-
-	regexIndentation2 := regexp.MustCompile(`( )(-)`)
-	fileString = regexIndentation2.ReplaceAllString(fileString, "$2")
-
-	_, err = file.Write([]byte(fileString))
+	// NOTE: This is terribly bad code but the unmarshalling logic is a PITA and I can't be bothered to fix this
+	err = bFSTagPaths(data["tags"], &paths, nil)
 	if err != nil {
-		return err
+		err = helpers.DeserializationError{Inner: err}
+
+		return
+	}
+
+	if len(paths) == 0 {
+		err = helpers.IneffectiveOperationError{Inner: errors.New("Empty tag hierarchy")}
+
+		return
+	}
+
+	tags := make([]string, 0, len(paths))
+	goaoi.ForeachSliceUnsafe(paths, func(path []string) { tags = append(tags, strings.Join(path, "::")) })
+
+	tagHierarchy, err = buildInternalTagHierarchy(tags)
+
+	return
+}
+
+func ImportTagHierarchy(dbConn *sqlx.DB, tagHierarchy TagNode) error {
+	paths := make([][]string, 0, 200)
+
+	err := bFSTagPaths(tagHierarchy["tags"], &paths, nil)
+	if err != nil {
+		if errors.As(err, &helpers.IneffectiveOperationError{}) {
+			return helpers.IneffectiveOperationError{Inner: err}
+		}
+
+		return helpers.ImportError{Inner: err}
+	}
+
+	transaction, err := dbConn.Beginx()
+	if err != nil {
+		return helpers.ImportError{Inner: err}
+	}
+
+	for _, path := range paths {
+		err = AddTag(dbConn, transaction, strings.Join(path, "::"))
+		if err != nil {
+			transaction.Rollback()
+
+			return helpers.ImportError{Inner: err}
+		}
+	}
+
+	err = transaction.Commit()
+	if err != nil {
+		return helpers.ImportError{Inner: err}
 	}
 
 	return nil
+}
+
+func SerializeTagHierarchy(tagHierarchy TagNode) (serializedTagHierarchy string, err error) {
+	rootTag, okRootTag := tagHierarchy["tags"]
+	if !okRootTag {
+		err = helpers.SerializationError{Inner: errors.New("Trying to serialize tag hierarchy without root tag")}
+
+		return
+	}
+
+	topLevelTags := maps.Keys(rootTag)
+	if len(topLevelTags) == 0 {
+		err = helpers.IneffectiveOperationError{Inner: errors.New("Tag hierarchy has no top level tags")}
+
+		return
+	}
+
+	rawYAML, err := yaml.Marshal(tagHierarchy)
+	if err != nil {
+		err = helpers.SerializationError{Inner: err}
+
+		return
+	}
+
+	serializedTagHierarchy = string(rawYAML)
+
+	// TODO: Refactor using bufio and non regex string functions
+	// NOTE: This is awful, but I can't seem to get it to work properly any other way
+	regexEmptyMap := regexp.MustCompile(`: \{\}`)
+	serializedTagHierarchy = regexEmptyMap.ReplaceAllString(serializedTagHierarchy, "")
+
+	regexListItems := regexp.MustCompile(`(  )(\w)`)
+	serializedTagHierarchy = regexListItems.ReplaceAllString(serializedTagHierarchy, "- $2")
+
+	regexIndentation := regexp.MustCompile(`  `)
+	serializedTagHierarchy = regexIndentation.ReplaceAllString(serializedTagHierarchy, " ")
+
+	regexIndentation2 := regexp.MustCompile(`( )(-)`)
+	serializedTagHierarchy = regexIndentation2.ReplaceAllString(serializedTagHierarchy, "$2")
+
+	return
+}
+
+func ExportTagHierarchy(dbConn *sqlx.DB) (tagHierarchy TagNode, err error) {
+	tags, err := ListTags(dbConn)
+	if err != nil {
+		err = helpers.ExportError{Inner: err}
+
+		return
+	}
+
+	tagHierarchy, err = buildInternalTagHierarchy(tags)
+
+	return
 }
 
 // TODO: Allow passing string and id for tag
