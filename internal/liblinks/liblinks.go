@@ -128,7 +128,7 @@ func ListLinks(dbConn *sqlx.DB, source string) ([]string, error) {
 		return nil, errors.New("Could not retrieve DestinationId")
 	}
 
-	linksBuffer := []string{}
+	linksBuffer := make([]string, 0, 10)
 
 	statementLinks, err := dbConn.Preparex(stmt)
 	if err != nil {
@@ -169,7 +169,7 @@ func ListBacklinks(dbConn *sqlx.DB, destination string) ([]string, error) {
 		return nil, errors.New("Could not retrieve DestinationId")
 	}
 
-	backlinksBuffer := []string{}
+	backlinksBuffer := make([]string, 0, 10)
 
 	statementLinks, err := dbConn.Preparex(stmt)
 	if err != nil {

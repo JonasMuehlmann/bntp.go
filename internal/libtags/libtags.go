@@ -387,7 +387,7 @@ func ListTags(dbConn *sqlx.DB) ([]string, error) {
             Tag;
     `
 
-	tagsBuffer := []string{}
+	tagsBuffer := make([]string, 0, 50)
 
 	err := dbConn.Select(&tagsBuffer, stmt)
 	if err != nil {

@@ -121,7 +121,7 @@ func GetBookmarks(dbConn *sqlx.DB, filter BookmarkFilter) ([]Bookmark, error) {
             BookmarkContext.BookmarkId = ?;
     `
 
-	bookmarksBuffer := []Bookmark{}
+	bookmarksBuffer := make([]Bookmark, 0, 200)
 
 	err := dbConn.Select(&bookmarksBuffer, stmtBookmarks)
 
@@ -130,7 +130,7 @@ func GetBookmarks(dbConn *sqlx.DB, filter BookmarkFilter) ([]Bookmark, error) {
 	}
 
 	for _, bookmark := range bookmarksBuffer {
-		bookmark.Tags = []string{}
+		bookmark.Tags = make([]string, 0, 5)
 
 		err = dbConn.Select(&bookmark.Tags, stmtTags, bookmark.Id)
 
