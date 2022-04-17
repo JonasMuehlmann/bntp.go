@@ -13,7 +13,13 @@ var (
 	rootCmd = &cobra.Command{
 		Use:   "bntp.go",
 		Short: "A brief description of your application",
-		Long:  `A longeer description`,
+		Long:  `A longer description`,
+		Run: func(cmd *cobra.Command, args []string) {
+			if len(args) == 0 {
+				cmd.Help()
+				os.Exit(0)
+			}
+		},
 		// Uncomment the following line if your bare application
 		// has an action associated with it:
 		//
