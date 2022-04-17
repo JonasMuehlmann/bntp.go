@@ -3,3 +3,4 @@
 __debug_bin
 coverage.out
 test/bntp.sql
+bntp_test.db
