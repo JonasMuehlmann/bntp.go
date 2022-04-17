@@ -1,60 +1,55 @@
 PRAGMA foreign_keys = ON;
 
-CREATE TABLE Tag
+CREATE TABLE tags
 (
-    Id  INTEGER PRIMARY KEY NOT NULL,
-    Tag TEXT                NOT NULL UNIQUE
+    id  INTEGER PRIMARY KEY NOT NULL,
+    tag TEXT                NOT NULL UNIQUE
 );
-CREATE TABLE BookmarkType
+CREATE TABLE bookmark_types
 (
-    Id   INTEGER not null
-        primary key,
-    Type TEXT    not null
-        unique
+    id   INTEGER PRIMARY KEY NOT NULL ,
+    Type TEXT    NOT NULL UNIQUE
 );
-CREATE TABLE Bookmark
+CREATE TABLE bookmarks
 (
-    Id           INTEGER not null
-        primary key,
-    IsRead       INTEGER default 0,
-    Title        TEXT unique,
-    Url          TEXT    not null
-        unique,
-    TimeAdded    TIMESTAMP not null,
-    BookmarkTypeId
-        references BookmarkType (Id),
-    IsCollection INTEGER
+    id               INTEGER   PRIMARY KEY NOT NULL,
+    is_read          INTEGER   DEFAULT 0,
+    title            TEXT      UNIQUE,
+    url              TEXT      NOT NULL UNIQUE,
+    time_added       TIMESTAMP NOT NULL,
+    bookmark_type_id INTEGER   REFERENCES bookmark_types(id),
+    is_collection    INTEGER   DEFAULT 0
 );
-CREATE TABLE DocumentType
+CREATE TABLE document_types
 (
-    Id INTEGER PRIMARY KEY,
-    DocumentType Text NOT NULL
+    id            INTEGER PRIMARY KEY NOT NULL,
+    document_type Text    NOT NULL UNIQUE
 );
-CREATE TABLE Document
+CREATE TABLE documents
 (
-    Id   INTEGER PRIMARY KEY,
-    Path Text NOT NULL UNIQUE,
-    DocumentTypeId REFERENCES DocumentType(Id) NOT NULL
+    id               INTEGER PRIMARY KEY NOT NULL,
+    path             Text    NOT NULL UNIQUE,
+    document_type_id INTEGER REFERENCES document_types(id) NOT NULL
 );
-CREATE TABLE Link
+CREATE TABLE links
 (
-    Id           INTEGER PRIMARY KEY,
-    SourceId REFERENCES Document(Id) NOT NULL,
-    DestinationId REFERENCES Document(Id) NOT NULL,
-    UNIQUE(SourceId, DestinationId),
-    CHECK(SourceId != DestinationId)
+    source_id      INTEGER REFERENCES documents(id) NOT NULL,
+    destination_id INTEGER REFERENCES documents(id) NOT NULL,
+
+    PRIMARY KEY(source_id, destination_id),
+    CHECK(source_id != destination_id)
 );
-CREATE TABLE BookmarkContext
+CREATE TABLE bookmark_contexts
 (
-    Id PRIMARY KEY,
-    BookmarkId REFERENCES Bookmark(Id) NOT NULL,
-    TagId REFERENCES Tag(Id) NOT NULL,
-    UNIQUE(TagId, BookmarkId)
+    bookmark_id INTEGER REFERENCES bookmarks(id) NOT NULL,
+    tag_id      INTEGER REFERENCES tags(id)      NOT NULL,
+
+    PRIMARY KEY(tag_id, bookmark_id)
 );
-CREATE TABLE DocumentContext
+CREATE TABLE document_contexts
 (
-    Id PRIMARY KEY,
-    DocumentId REFERENCES Document (Id)NOT NULL,
-    TagId REFERENCES  Tag(Id) NOT NULL,
-    UNIQUE(TagId, DocumentId)
+    document_id INTEGER REFERENCES documents(id) NOT NULL,
+    tag_id      INTEGER REFERENCES  tags(id)     NOT NULL,
+
+    PRIMARY KEY(tag_id, document_id)
 );
