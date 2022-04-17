@@ -329,7 +329,7 @@ func TestAddTagToBookmark(t *testing.T) {
 	err = libbookmarks.AddBookmark(db, nil, libbookmarks.Bookmark{Title: optional.Make("Foo"), Url: "Bar", Type: optional.Optional[string]{}})
 	assert.NoError(t, err)
 
-	bookmarkId, err := helpers.GetIdFromBookmark(db, nil, "Bar")
+	bookmarkId, err := helpers.GetIdFromBookmark(db, nil, "Foo")
 	assert.NoError(t, err)
 
 	err = libbookmarks.AddTag(db, nil, bookmarkId, "Foo")
@@ -346,7 +346,7 @@ func TestAddTagToBookmarkTransaction(t *testing.T) {
 	err = libbookmarks.AddBookmark(db, nil, libbookmarks.Bookmark{Title: optional.Make("Foo"), Url: "Bar", Type: optional.Optional[string]{}})
 	assert.NoError(t, err)
 
-	bookmarkId, err := helpers.GetIdFromBookmark(db, nil, "Bar")
+	bookmarkId, err := helpers.GetIdFromBookmark(db, nil, "Foo")
 	assert.NoError(t, err)
 
 	transaction, err := db.Beginx()
@@ -397,7 +397,7 @@ func TestRemoveTagFromBookmark(t *testing.T) {
 	err = libbookmarks.AddBookmark(db, nil, libbookmarks.Bookmark{Title: optional.Make("Foo"), Url: "Bar", Type: optional.Optional[string]{}})
 	assert.NoError(t, err)
 
-	bookmarkId, err := helpers.GetIdFromBookmark(db, nil, "Bar")
+	bookmarkId, err := helpers.GetIdFromBookmark(db, nil, "Foo")
 	assert.NoError(t, err)
 
 	err = libbookmarks.AddTag(db, nil, bookmarkId, "Foo")
@@ -442,7 +442,7 @@ func TestEditIsRead(t *testing.T) {
 	err = libbookmarks.AddBookmark(db, nil, libbookmarks.Bookmark{Title: optional.Make("Foo"), Url: "Bar", Type: optional.Optional[string]{}})
 	assert.NoError(t, err)
 
-	bookmarkId, err := helpers.GetIdFromBookmark(db, nil, "Bar")
+	bookmarkId, err := helpers.GetIdFromBookmark(db, nil, "Foo")
 	assert.NoError(t, err)
 
 	err = libbookmarks.EditIsRead(db, nil, bookmarkId, true)
@@ -456,7 +456,7 @@ func TestEditIsCollection(t *testing.T) {
 	err = libbookmarks.AddBookmark(db, nil, libbookmarks.Bookmark{Title: optional.Make("Foo"), Url: "Bar", Type: optional.Optional[string]{}})
 	assert.NoError(t, err)
 
-	bookmarkId, err := helpers.GetIdFromBookmark(db, nil, "Bar")
+	bookmarkId, err := helpers.GetIdFromBookmark(db, nil, "Foo")
 	assert.NoError(t, err)
 
 	err = libbookmarks.EditIsCollection(db, nil, bookmarkId, true)
@@ -470,7 +470,7 @@ func TestEditTitle(t *testing.T) {
 	err = libbookmarks.AddBookmark(db, nil, libbookmarks.Bookmark{Title: optional.Make("Foo"), Url: "Bar", Type: optional.Optional[string]{}})
 	assert.NoError(t, err)
 
-	bookmarkId, err := helpers.GetIdFromBookmark(db, nil, "Bar")
+	bookmarkId, err := helpers.GetIdFromBookmark(db, nil, "Foo")
 	assert.NoError(t, err)
 
 	err = libbookmarks.EditTitle(db, nil, bookmarkId, "Bar")
@@ -484,7 +484,7 @@ func TestEditUrl(t *testing.T) {
 	err = libbookmarks.AddBookmark(db, nil, libbookmarks.Bookmark{Title: optional.Make("Foo"), Url: "Bar", Type: optional.Optional[string]{}})
 	assert.NoError(t, err)
 
-	bookmarkId, err := helpers.GetIdFromBookmark(db, nil, "Bar")
+	bookmarkId, err := helpers.GetIdFromBookmark(db, nil, "Foo")
 	assert.NoError(t, err)
 
 	err = libbookmarks.EditUrl(db, nil, bookmarkId, "Bar")
@@ -504,7 +504,7 @@ func TestEditType(t *testing.T) {
 	err = libbookmarks.AddBookmark(db, nil, libbookmarks.Bookmark{Title: optional.Make("Foo"), Url: "Bar", Type: optional.Optional[string]{}})
 	assert.NoError(t, err)
 
-	bookmarkId, err := helpers.GetIdFromBookmark(db, nil, "Bar")
+	bookmarkId, err := helpers.GetIdFromBookmark(db, nil, "Foo")
 	assert.NoError(t, err)
 
 	err = libbookmarks.EditType(db, nil, bookmarkId, "Baz")

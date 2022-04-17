@@ -17,7 +17,7 @@ CREATE TABLE Bookmark
     Id           INTEGER not null
         primary key,
     IsRead       INTEGER default 0,
-    Title        TEXT,
+    Title        TEXT unique,
     Url          TEXT    not null
         unique,
     TimeAdded    TIMESTAMP not null,

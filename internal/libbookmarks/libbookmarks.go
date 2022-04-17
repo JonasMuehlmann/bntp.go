@@ -110,6 +110,7 @@ func GetBookmarks(dbConn *sqlx.DB, filter BookmarkFilter) ([]Bookmark, error) {
 
 	stmtBookmarks = ApplyBookmarkFilters(stmtBookmarks, filter)
 
+	// REFACTOR: Extract function
 	stmtTags := `
         SELECT
             Tag.Tag
@@ -142,12 +143,11 @@ func GetBookmarks(dbConn *sqlx.DB, filter BookmarkFilter) ([]Bookmark, error) {
 	return bookmarksBuffer, nil
 }
 
-// TODO: Allow passing string and id for type_
-
 // AddType makes a new BookmarkType available for use in the DB.
 // Passing a transaction is optional.
 func AddType(dbConn *sqlx.DB, transaction *sqlx.Tx, type_ string) error {
 	if type_ == "" {
+		// REFACTOR: Extract AddingEmptyItemError
 		return errors.New("Can't add empty tag")
 	}
 
@@ -164,6 +164,7 @@ func AddType(dbConn *sqlx.DB, transaction *sqlx.Tx, type_ string) error {
 
 	var err error
 
+	// REFACTOR: Simplify with helpers
 	if transaction != nil {
 		statement, err = transaction.Preparex(stmt)
 
@@ -192,49 +193,38 @@ func AddType(dbConn *sqlx.DB, transaction *sqlx.Tx, type_ string) error {
 	return nil
 }
 
-// TODO: Allow passing string and id for type_
-
 // RemoveType removes an available BookmarkType from the DB.
 // Passing a transaction is optional.
-func RemoveType(dbConn *sqlx.DB, transaction *sqlx.Tx, type_ string) error {
-	stmt := `
+func RemoveType(dbConn *sqlx.DB, transaction *sqlx.Tx, type_ helpers.NameOrId) error {
+	stmtName := `
         DELETE FROM
             BookmarkType
         WHERE
             Type = ?;
     `
-	var statement *sqlx.Stmt
-
-	var err error
-
-	if transaction != nil {
-		statement, err = transaction.Preparex(stmt)
-
-		if err != nil {
-			return err
-		}
-	} else {
-		statement, err = dbConn.Preparex(stmt)
-
-		if err != nil {
-			return err
-		}
-	}
-
-	result, err := statement.Exec(type_)
+	stmtID := `
+        DELETE FROM
+            BookmarkType
+        WHERE
+            Id = ?;
+    `
+	command, err := helpers.GetCommandFromIdentifier(type_, stmtName, stmtID)
 	if err != nil {
 		return err
 	}
 
-	numAffectedRows, err := result.RowsAffected()
-	if numAffectedRows == 0 || err != nil {
-		return errors.New("Type to be deleted does not exist")
-	}
-
-	err = statement.Close()
-
+	statement, err := helpers.GetStatement(dbConn, transaction, command)
 	if err != nil {
 		return err
+	}
+
+	numAffectedRows, _, err := helpers.SqlExecuteStatement(statement, type_)
+	if err != nil {
+		return err
+	}
+
+	if numAffectedRows == 0 {
+		return helpers.IneffectiveOperationError{errors.New("Type to delete does not exist")}
 	}
 
 	return nil
@@ -249,6 +239,7 @@ func ListTypes(dbConn *sqlx.DB) ([]string, error) {
             BookmarkType;
     `
 
+	// TODO: Benchmark to see if this is worth it
 	stmtNumTypes := `
         SELECT
             Count(*)
@@ -299,6 +290,7 @@ func AddBookmark(dbConn *sqlx.DB, transaction *sqlx.Tx, bookmark Bookmark) error
 
 	var err error
 
+	// REFACTOR: Simplify with helpers
 	if transaction != nil {
 		statement, err = transaction.Preparex(stmt)
 		if err != nil {
@@ -333,49 +325,39 @@ func AddBookmark(dbConn *sqlx.DB, transaction *sqlx.Tx, bookmark Bookmark) error
 	return nil
 }
 
-func RemoveBookmark(dbConn *sqlx.DB, transaction *sqlx.Tx, ID int) error {
-	stmt := `
+func RemoveBookmark(dbConn *sqlx.DB, transaction *sqlx.Tx, bookmark helpers.NameOrId) error {
+	stmtName := `
+        DELETE FROM
+            Bookmark
+        WHERE
+            Title = ?;
+    `
+	stmtID := `
         DELETE FROM
             Bookmark
         WHERE
             ID = ?;
     `
-	var statement *sqlx.Stmt
-
-	var err error
-
-	if transaction != nil {
-		statement, err = transaction.Preparex(stmt)
-
-		if err != nil {
-			return err
-		}
-	} else {
-		statement, err = dbConn.Preparex(stmt)
-
-		if err != nil {
-			return err
-		}
-	}
-
-	result, err := statement.Exec(ID)
+	command, err := helpers.GetCommandFromIdentifier(bookmark, stmtName, stmtID)
 	if err != nil {
 		return err
 	}
 
-	numAffectedRows, err := result.RowsAffected()
-	if numAffectedRows == 0 || err != nil {
-		return errors.New("Bookmark to be deleted does not exist")
-	}
-
-	err = statement.Close()
-
+	statement, err := helpers.GetStatement(dbConn, transaction, command)
 	if err != nil {
 		return err
+	}
+
+	numAffectedRows, _, err := helpers.SqlExecuteStatement(statement, bookmark)
+	if err != nil {
+		return err
+	}
+
+	if numAffectedRows == 0 {
+		return helpers.IneffectiveOperationError{errors.New("Bookmark to delete does not exist")}
 	}
 
 	return nil
-
 }
 
 func EditBookmark(dbConn *sqlx.DB, transaction *sqlx.Tx, newData Bookmark) error {
@@ -411,8 +393,8 @@ func EditBookmark(dbConn *sqlx.DB, transaction *sqlx.Tx, newData Bookmark) error
 
 // editBookmarkField sets column to newVal for the bookmark with the specified id.
 // Passing a transaction is optional.
-func editBookmarkField(dbConn *sqlx.DB, transaction *sqlx.Tx, id int, column string, newVal interface{}) error {
-	stmt := `
+func editBookmarkField(dbConn *sqlx.DB, transaction *sqlx.Tx, identifier helpers.NameOrId, column string, newVal interface{}) error {
+	stmtID := `
         UPDATE
             Bookmark
         SET
@@ -421,34 +403,58 @@ func editBookmarkField(dbConn *sqlx.DB, transaction *sqlx.Tx, id int, column str
             Id = ?;
     `
 
-	_, _, err := helpers.SqlExecute(dbConn, transaction, stmt, newVal, id)
+	stmtName := `
+        UPDATE
+            Bookmark
+        SET
+            ` + column + ` = ?
+        WHERE
+            Title = ?;
+    `
 
-	return err
+	command, err := helpers.GetCommandFromIdentifier(identifier, stmtName, stmtID)
+	if err != nil {
+		return err
+	}
+
+	statement, err := helpers.GetStatement(dbConn, transaction, command)
+	if err != nil {
+		return err
+	}
+
+	numAffectedRows, _, err := helpers.SqlExecuteStatement(statement, identifier, newVal)
+	if err != nil {
+		return err
+	}
+
+	if numAffectedRows == 0 {
+		return helpers.IneffectiveOperationError{errors.New("Bookmark to edit does not exist")}
+	}
+
+	return nil
 }
 
 // EditIsRead sets IsRead to true for the bookmark with the specified id.
 // Passing a transaction is optional.
-func EditIsRead(dbConn *sqlx.DB, transaction *sqlx.Tx, id int, isRead bool) error {
+func EditIsRead(dbConn *sqlx.DB, transaction *sqlx.Tx, id helpers.NameOrId, isRead bool) error {
 	return editBookmarkField(dbConn, transaction, id, "IsRead", isRead)
 }
 
 // EditTitle sets Title to newTile for the bookmark with the specified id.
 // Passing a transaction is optional.
-func EditTitle(dbConn *sqlx.DB, transaction *sqlx.Tx, id int, newTitle string) error {
+func EditTitle(dbConn *sqlx.DB, transaction *sqlx.Tx, id helpers.NameOrId, newTitle string) error {
 	return editBookmarkField(dbConn, transaction, id, "Title", newTitle)
 }
 
 // EditUrl sets Url to newUrl for the bookmark with the specified id.
 // Passing a transaction is optional.
-func EditUrl(dbConn *sqlx.DB, transaction *sqlx.Tx, id int, newUrl string) error {
+func EditUrl(dbConn *sqlx.DB, transaction *sqlx.Tx, id helpers.NameOrId, newUrl string) error {
 	return editBookmarkField(dbConn, transaction, id, "Url", newUrl)
 }
 
-// TODO: Allow passing string and id for type_
-
 // EditType sets Type to newType for the bookmark with the specified id.
 // Passing a transaction is optional.
-func EditType(dbConn *sqlx.DB, transaction *sqlx.Tx, id int, newType string) error {
+func EditType(dbConn *sqlx.DB, transaction *sqlx.Tx, id helpers.NameOrId, newType string) error {
 	typeId, err := helpers.GetIdFromType(dbConn, transaction, newType)
 	if err != nil {
 		return err
@@ -458,13 +464,13 @@ func EditType(dbConn *sqlx.DB, transaction *sqlx.Tx, id int, newType string) err
 
 // EditIsCollection sets isCollection to isCollection for the bookmark with the specified id.
 // Passing a transaction is optional.
-func EditIsCollection(dbConn *sqlx.DB, transaction *sqlx.Tx, id int, isCollection bool) error {
+func EditIsCollection(dbConn *sqlx.DB, transaction *sqlx.Tx, id helpers.NameOrId, isCollection bool) error {
 	return editBookmarkField(dbConn, transaction, id, "IsCollection", isCollection)
 }
 
 // AddTag adds a tag newTag to the bookmark with bookmarkId.
 // Passing a transaction is optional.
-func AddTag(dbConn *sqlx.DB, transaction *sqlx.Tx, bookmarkId int, newTag string) error {
+func AddTag(dbConn *sqlx.DB, transaction *sqlx.Tx, bookmark helpers.NameOrId, newTag helpers.NameOrId) error {
 	stmt := `
         INSERT INTO
             BookmarkContext(BookmarkId, TagId)
@@ -477,6 +483,7 @@ func AddTag(dbConn *sqlx.DB, transaction *sqlx.Tx, bookmarkId int, newTag string
 	var statementContext *sqlx.Stmt
 	var err error
 
+	// REFACTOR: Simplify with helpers
 	if transaction != nil {
 		statementContext, err = transaction.Preparex(stmt)
 
@@ -491,7 +498,28 @@ func AddTag(dbConn *sqlx.DB, transaction *sqlx.Tx, bookmarkId int, newTag string
 		}
 	}
 
-	tagId, err := helpers.GetIdFromTag(dbConn, transaction, newTag)
+	var tagId int
+	var bookmarkId int
+	switch newTag.(type) {
+	case string:
+		tagId, err = helpers.GetIdFromTag(dbConn, transaction, newTag.(string))
+	case int:
+		tagId = newTag.(int)
+	default:
+		err = helpers.InvalidIdentifierError{newTag}
+	}
+	if err != nil {
+		return err
+	}
+
+	switch bookmark.(type) {
+	case string:
+		bookmarkId, err = helpers.GetIdFromBookmark(dbConn, transaction, bookmark.(string))
+	case int:
+		bookmarkId = bookmark.(int)
+	default:
+		err = helpers.InvalidIdentifierError{bookmark}
+	}
 	if err != nil {
 		return err
 	}
@@ -515,11 +543,9 @@ func AddTag(dbConn *sqlx.DB, transaction *sqlx.Tx, bookmarkId int, newTag string
 	return nil
 }
 
-// TODO: Allow passing string and id for tag_
-
 // RemoveTag removes a tag tag_ from the bookmark with bookmarkId.
 // Passing a transaction is optional.
-func RemoveTag(dbConn *sqlx.DB, transaction *sqlx.Tx, bookmarkId int, tag_ string) error {
+func RemoveTag(dbConn *sqlx.DB, transaction *sqlx.Tx, bookmark helpers.NameOrId, tag helpers.NameOrId) error {
 	stmt := `
         DELETE FROM
             BookmarkContext
@@ -530,28 +556,35 @@ func RemoveTag(dbConn *sqlx.DB, transaction *sqlx.Tx, bookmarkId int, tag_ strin
     );
     `
 
-	var statement *sqlx.Stmt
 	var err error
 
-	if transaction != nil {
-		statement, err = transaction.Preparex(stmt)
-
-		if err != nil {
-			return err
-		}
-	} else {
-		statement, err = dbConn.Preparex(stmt)
-
-		if err != nil {
-			return err
-		}
-	}
-
-	tagId, err := helpers.GetIdFromTag(dbConn, transaction, tag_)
+	statement, err := helpers.GetStatement(dbConn, transaction, stmt)
 	if err != nil {
 		return err
 	}
 
+	var tagId int
+	var bookmarkId int
+	switch tag.(type) {
+	case string:
+		tagId, err = helpers.GetIdFromTag(dbConn, transaction, tag.(string))
+	case int:
+		tagId = tag.(int)
+	default:
+		err = helpers.InvalidIdentifierError{tag}
+	}
+	if err != nil {
+		return err
+	}
+
+	switch bookmark.(type) {
+	case string:
+		bookmarkId, err = helpers.GetIdFromBookmark(dbConn, transaction, bookmark.(string))
+	case int:
+		bookmarkId = bookmark.(int)
+	default:
+		err = helpers.InvalidIdentifierError{bookmark}
+	}
 	_, err = statement.Exec(bookmarkId, tagId)
 	if err != nil {
 		return err

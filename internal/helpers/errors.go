@@ -22,6 +22,15 @@ package helpers
 
 import "fmt"
 
+// InvalidIdentifierError indicates that an identifier is not one of the allowed types.
+type InvalidIdentifierError struct {
+	BadIdentifier any
+}
+
+func (err InvalidIdentifierError) Error() string {
+	return fmt.Sprintf("Identifier of type %t is invalid, should be string or int", err.BadIdentifier)
+}
+
 // DeserializationError indicates that a deserialization failed because of the reason Inner.
 // Fitting conditions for this error are, for example, when input data had an invalid structure.
 type DeserializationError struct {

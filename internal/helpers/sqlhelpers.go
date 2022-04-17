@@ -24,6 +24,50 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
+func GetCommandFromIdentifier(identifier NameOrId, statementName string, statementID string) (string, error) {
+	switch identifier.(type) {
+	case string:
+		return statementName, nil
+	case int:
+		return statementID, nil
+	default:
+		return "", InvalidIdentifierError{BadIdentifier: identifier}
+	}
+}
+
+func GetStatement(dbConn *sqlx.DB, transaction *sqlx.Tx, command string) (statement *sqlx.Stmt, err error) {
+	if transaction != nil {
+		statement, err = transaction.Preparex(command)
+	} else {
+		statement, err = dbConn.Preparex(command)
+	}
+	return
+}
+
+// SqlExecute is a wrapper used to run a prepared statement stmt with the specified args.
+func SqlExecuteStatement(statement *sqlx.Stmt, args ...interface{}) (numAffectedRows int64, lastInsertedId int64, err error) {
+	res, err := statement.Exec(args...)
+	if err != nil {
+		return 0, 0, err
+	}
+
+	err = statement.Close()
+	if err != nil {
+		return
+	}
+
+	numAffectedRows, err = res.RowsAffected()
+	if err != nil {
+		return
+	}
+	lastInsertedId, err = res.LastInsertId()
+	if err != nil {
+		return
+	}
+
+	return lastInsertedId, numAffectedRows, nil
+}
+
 // SqlExecute is a wrapper used to run a prepared statement stmt with the specified args.
 func SqlExecute(dbConn *sqlx.DB, transaction *sqlx.Tx, stmt string, args ...interface{}) (int64, int64, error) {
 	var statement *sqlx.Stmt

@@ -98,7 +98,7 @@ func TestListBookmarksUnfiltered(t *testing.T) {
 	err = libbookmarks.AddBookmark(db, nil, libbookmarks.Bookmark{Title: optional.Make("Foo"), Url: "bar"})
 	assert.NoError(t, err)
 
-	err = libbookmarks.AddBookmark(db, nil, libbookmarks.Bookmark{Title: optional.Make("Foo"), Url: "abc"})
+	err = libbookmarks.AddBookmark(db, nil, libbookmarks.Bookmark{Title: optional.Make("Bar"), Url: "abc"})
 	assert.NoError(t, err)
 
 	os.Args = []string{"", "bookmark", "--list"}

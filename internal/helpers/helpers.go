@@ -24,6 +24,8 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
+type NameOrId any
+
 func GetIdFromDocumentType(dbConn *sqlx.DB, transaction *sqlx.Tx, type_ string) (int, error) {
 	stmt := `
         SELECT
@@ -112,14 +114,14 @@ func GetIdFromBookmarkType(dbConn *sqlx.DB, transaction *sqlx.Tx, type_ string) 
 	return typeId, nil
 }
 
-func GetIdFromBookmark(dbConn *sqlx.DB, transaction *sqlx.Tx, url string) (int, error) {
+func GetIdFromBookmark(dbConn *sqlx.DB, transaction *sqlx.Tx, title string) (int, error) {
 	stmt := `
         SELECT
             Id
         FROM
             Bookmark
         WHERE
-            Url = ?;
+            Title = ?;
     `
 
 	var statement *sqlx.Stmt
@@ -145,7 +147,7 @@ func GetIdFromBookmark(dbConn *sqlx.DB, transaction *sqlx.Tx, url string) (int, 
 
 	bookmarkId := -1
 
-	_ = statement.Get(&bookmarkId, url)
+	_ = statement.Get(&bookmarkId, title)
 
 	err = statement.Close()
 
