@@ -7,6 +7,6 @@ for db in "${DBS[@]}"; do
     mkdir -p $new_dir
 
     sqlboiler --output $new_dir $db
-    xargs sed -i $new_dir/* 's/t.Parallel()//'
+    xargs sed -i 's/t.Parallel()//' $new_dir/*
     go test -v $new_dir
 done
