@@ -6,7 +6,7 @@ go install github.com/volatiletech/sqlboiler/v4/drivers/sqlboiler-mysql@latest
 go install github.com/volatiletech/sqlboiler/v4/drivers/sqlboiler-mssql@latest
 go install github.com/volatiletech/sqlboiler/v4/drivers/sqlboiler-sqlite3@latest
 
-DBS=("sqlite3" "psql" "mssql" "mysql")
+DBS=("sqlite3" "mysql" "psql" "mssql")
 
 for db in "${DBS[@]}"; do
     new_dir=./models/$db
