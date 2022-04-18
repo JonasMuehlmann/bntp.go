@@ -38,6 +38,8 @@ jobs:
          
         sudo -u postgres psql -c 'create database bntp_test;'
         sudo -u postgres psql -d bntp_test -a -f schema/bntp_postgres.sql
+        cat /var/lib/postgres/data/pg_hba.conf
+        sudo sed -i 's/ident/trus/g' /var/lib/postgres/data/pg_hba.conf
         
         sqlite3 bntp_test.db < schema/bntp_sqlite.sql
         
