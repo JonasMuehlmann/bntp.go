@@ -32,7 +32,7 @@ jobs:
         sqlcmd -S localhost,1433 -U SA -P "jdksjds6dsads8a97d!" -d bntp_test -i "schema/bntp_sqlserver.sql"
         
         mysql -u root -proot -e "CREATE DATABASE bntp_test"
-        mysql -u root -proot < schema/bntp_mysql.sql
+        mysql -u root -proot -D bnt_test < schema/bntp_mysql.sql
          
         sudo -u postgres psql -c 'create database bntp_test;'
         sudo -u postgre psql 0d bntp_test -a -f schema/bntp_postgres.sql
