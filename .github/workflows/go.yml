@@ -18,12 +18,29 @@ jobs:
       with:
         go-version: 1.18
 
-    - name: Update SQLboiler
+    - name: Set up databases
       run:  |
+        sudo systemctl start postgresql.service
+        sudo systemctl start mysql.service
+        sudo docker pull mcr.microsoft.com/mssql/server:2019-latest
+        
+        sudo docker run -e "ACCEPT_EULA=Y" -e "SA_PASSWORD=jdksjds6dsads8a97d!" \
+        -p 1433:1433 --name sql1 --hostname sql1 \
+        -d mcr.microsoft.com/mssql/server:2019-latest
+        
+        sqlcmd -S localhost,1433 -U SA -P "jdksjds6dsads8a97d!" -q "CREATE DATABASE bntp_test"    
+        sqlcmd -S localhost,1433 -U SA -P "jdksjds6dsads8a97d!" -i "schema/bntp_sqlserver.sql"
+        
+        mysql -u root -proot -e "CREATE DATABASE bntp_test"
+        mysql -u root -proot < schema/bntp_mysql.sql
+         
+        sudo -u postgres psql -c 'create database bntp_test;'
+        sudo -u postgre psql 0d bntp_test -a -f schema/bntp_postgres.sql
+        
         sqlite3 bntp_test.db < bntp.sql
-        sqlboiler --add-soft-deletes --wipe sqlite3
-        ls -1 ./models | xargs sed -i 's/t.Parallel()//'
-        go test -v ./models
+        
+    - name: Update SQLboiler
+      run:  ./create_db_models.sh
     - uses: stefanzweifel/git-auto-commit-action@v4
       with:
         file_pattern: ./models/*
