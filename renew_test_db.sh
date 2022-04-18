@@ -1,4 +1,4 @@
 #!/usr/bin/env sh
 
 rm test/data/bntp_test.db
-sqlite3 test/data/bntp_test.db <bntp.sql
+sqlite3 test/data/bntp_test.db <bntp_sqlite.sql.sql

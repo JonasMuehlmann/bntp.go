@@ -15,7 +15,7 @@ import (
 
 var TestDataTempDir = filepath.Join(os.TempDir(), "bntp_tests")
 
-//go:embed bntp.sql
+//go:embed bntp_sqlite.sql.sql
 var sqlSchema string
 
 // GetDB opens a copy of the test DB in memory.
