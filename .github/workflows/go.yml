@@ -40,7 +40,9 @@ jobs:
         sqlite3 bntp_test.db < schema/bntp_sqlite.sql
         
     - name: Update SQLboiler
-      run:  ./create_db_models.sh
+      run:  |
+        go mod tidy
+        ./create_db_models.sh
     - uses: stefanzweifel/git-auto-commit-action@v4
       with:
         file_pattern: ./models/*
