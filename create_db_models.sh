@@ -15,6 +15,6 @@ for db in "${DBS[@]}"; do
     sqlboiler --output $new_dir $db
     sed -i 's/t.Parallel()//' $new_dir/*
     # Only needed for $b=sqlite3
-    cp bntp_sqlite.db $new_dir
+    cp bntp_test.db $new_dir
     go test -v $new_dir
 done
