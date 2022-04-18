@@ -38,9 +38,11 @@ jobs:
          
         sudo -u postgres psql -c 'create database bntp_test;'
         sudo -u postgres psql -d bntp_test -a -f schema/bntp_postgres.sql
-        sudo cat $(sudo -u postgres psql -c 'show hba_file' 2> /dev/null | grep pg_hba)
+
         sudo sed -i 's/peer/trust/g' $(sudo -u postgres psql -c 'show hba_file' 2> /dev/null | grep pg_hba)
-        
+        sudo sed -i 's/scram-sha-256/trust/g' $(sudo -u postgres psql -c 'show hba_file' 2> /dev/null | grep pg_hba)
+        sudo cat $(sudo -u postgres psql -c 'show hba_file' 2> /dev/null | grep pg_hba)
+         
         sqlite3 bntp_test.db < schema/bntp_sqlite.sql
         
     - name: Update SQLboiler
