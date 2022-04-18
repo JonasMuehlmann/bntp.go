@@ -1,4 +1,5 @@
-#!/usr/bin/env basj
+#!/usr/bin/env bash
+
 DBS=("sqlite3" "psql" "mssql" "mysql")
 
 for db in "${DBS[@]}"; do
