@@ -22,6 +22,9 @@ for db in "${DBS[@]}"; do
     fi
     if [[ $db == "mssql" ]]; then
         cp schema/bntp_sqlserver.sql tables_schema.sql
+        cp schema/bntp_sqlserver.sql $new_dir/tables_schema.sql
     fi
+    go mod tidy
+    go get -t github.com/JonasMuehlmann/bntp.go/$new_dir
     go test -v $new_dir
 done
