@@ -17,9 +17,9 @@ for db in "${DBS[@]}"; do
     if [[ $db == "sqlite3" ]]; then
         cp bntp_test.db $new_dir
     fi
-    if [[ $db == "mysql" ]]; then
-        sed -i 's/ssl-mode/ssl/' $new_dir/*
-    fi
+    # if [[ $db == "mysql" ]]; then
+    #     sed -i 's/ssl-mode/ssl/' $new_dir/*
+    # fi
     if [[ $db == "mssql" ]]; then
         cp schema/bntp_sqlserver.sql tables_schema.sql
         cp schema/bntp_sqlserver.sql $new_dir/tables_schema.sql
