@@ -4,7 +4,7 @@ go install github.com/volatiletech/sqlboiler/v4@latest
 go install github.com/volatiletech/sqlboiler/v4/drivers/sqlboiler-psql@latest
 go install github.com/volatiletech/sqlboiler/v4/drivers/sqlboiler-mysql@latest
 go install github.com/volatiletech/sqlboiler/v4/drivers/sqlboiler-mssql@latest
-go install github.com/volatiletech/sqlboiler/v4/drivers/sqlboiler-sqlite@latest
+go install github.com/volatiletech/sqlboiler/v4/drivers/sqlboiler-sqlite3@latest
 
 DBS=("sqlite3" "psql" "mssql" "mysql")
 
