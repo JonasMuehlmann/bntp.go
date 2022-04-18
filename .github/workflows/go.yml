@@ -37,7 +37,7 @@ jobs:
         sudo -u postgres psql -c 'create database bntp_test;'
         sudo -u postgres psql -d bntp_test -a -f schema/bntp_postgres.sql
         
-        sqlite3 bntp_test.db < bntp.sql
+        sqlite3 bntp_test.db < bntp_sqlite.sql
         
     - name: Update SQLboiler
       run:  ./create_db_models.sh
