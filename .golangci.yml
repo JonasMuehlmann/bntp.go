@@ -280,7 +280,7 @@ linters-settings:
 
   gofumpt:
     # Select the Go version to target. The default is `1.15`.
-    lang-version: "1.15"
+    lang-version: "1.18"
 
     # Choose whether or not to use the extra rules that are disabled
     # by default
@@ -388,7 +388,7 @@ linters-settings:
 
   gosimple:
     # Select the Go version to target. The default is '1.13'.
-    go: "1.15"
+    go: "1.18"
     # https://staticcheck.io/docs/options#checks
     checks: [ "all" ]
 
@@ -538,13 +538,13 @@ linters-settings:
 
   staticcheck:
     # Select the Go version to target. The default is '1.13'.
-    go: "1.15"
+    go: "1.18"
     # https://staticcheck.io/docs/options#checks
     checks: [ "all" ]
 
   stylecheck:
     # Select the Go version to target. The default is '1.13'.
-    go: "1.15"
+    go: "1.18"
     # https://staticcheck.io/docs/options#checks
     checks: [ "all", "-ST1000", "-ST1003", "-ST1016", "-ST1020", "-ST1021", "-ST1022" ]
     # https://staticcheck.io/docs/options#dot_import_whitelist
@@ -599,7 +599,7 @@ linters-settings:
 
   unused:
     # Select the Go version to target. The default is '1.13'.
-    go: "1.15"
+    go: "1.18"
 
   whitespace:
     multi-if: false   # Enforces newlines (or comments) after every multi-line if statement
@@ -655,7 +655,8 @@ linters:
   #   - megacheck
   #   - govet
   enable-all: true
-  # disable:
+  disable:
+    - typecheck
   #   - maligned
   #   - prealloc
   # presets:
@@ -670,7 +671,7 @@ issues:
   # it can be disabled by `exclude-use-default: false`. To list all
   # excluded by default patterns execute `golangci-lint run --help`
   exclude:
-    - abcdef
+  - "undeclared name:"
 
   # Excluding configuration per-path, per-linter, per-text and per-source
   exclude-rules:
@@ -730,8 +731,6 @@ issues:
   # Show only new issues created after git revision `REV`
   new-from-rev: REV
 
-  # Show only new issues created in git patch with set file path.
-  new-from-patch: path/to/patch/file
 
   # Fix found issues (if it's supported by the linter)
   fix: true
