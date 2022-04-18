@@ -29,15 +29,15 @@ jobs:
         -d mcr.microsoft.com/mssql/server:2019-latest
         
         sqlcmd -S localhost,1433 -U SA -P "jdksjds6dsads8a97d!" -q "CREATE DATABASE bntp_test"    
-        sqlcmd -S localhost,1433 -U SA -P "jdksjds6dsads8a97d!" -i "schema/bntp_sqlserver.sql"
+        sqlcmd -S localhost,1433 -U SA -P "jdksjds6dsads8a97d!" -d bntp_test -i "schema/bntp_sqlserver.sql"
         
         mysql -u root -proot -e "CREATE DATABASE bntp_test"
-        mysql -u root -proot < schema/bntp_mysql.sql
+        mysql -u root -proot -D bntp_test < schema/bntp_mysql.sql
          
         sudo -u postgres psql -c 'create database bntp_test;'
-        sudo -u postgre psql 0d bntp_test -a -f schema/bntp_postgres.sql
+        sudo -u postgres psql -d bntp_test -a -f schema/bntp_postgres.sql
         
-        sqlite3 bntp_test.db < bntp.sql
+        sqlite3 bntp_test.db < schema/bntp_sqlite.sql
         
     - name: Update SQLboiler
       run:  ./create_db_models.sh
