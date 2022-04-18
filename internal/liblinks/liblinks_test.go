@@ -11,7 +11,7 @@ import (
 
 // #############
 // # AddLink() #
-// #############
+// #############.
 func TestAddLink(t *testing.T) {
 	db, err := test.GetDB(t)
 	assert.NoError(t, err)
@@ -81,7 +81,7 @@ func TestAddLinkSelfReference(t *testing.T) {
 
 // ################
 // # RemoveLink() #
-// ################
+// ################.
 func TestRemoveLink(t *testing.T) {
 	db, err := test.GetDB(t)
 	assert.NoError(t, err)
@@ -146,7 +146,7 @@ func TestRemoveLinkNoneExist(t *testing.T) {
 
 // ###############
 // # ListLinks() #
-// ###############
+// ###############.
 func TestListLinksNoneExist(t *testing.T) {
 	db, err := test.GetDB(t)
 	assert.NoError(t, err)
@@ -213,7 +213,7 @@ func TestListLinksMany(t *testing.T) {
 
 // ###############
 // # ListLinks() #
-// ###############
+// ###############.
 func TestListBacklinksNoneExist(t *testing.T) {
 	db, err := test.GetDB(t)
 	assert.NoError(t, err)

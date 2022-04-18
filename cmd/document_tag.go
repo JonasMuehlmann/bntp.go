@@ -6,7 +6,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var tagCmd = &cobra.Command{
+var documentTagCmd = &cobra.Command{
 	Use:   "tag",
 	Short: "A brief description of your command",
 	Long:  `A longer description`,
@@ -18,7 +18,7 @@ var tagCmd = &cobra.Command{
 	},
 }
 
-var addCmd = &cobra.Command{
+var documentTagAddCmd = &cobra.Command{
 	Use:   "add",
 	Short: "A brief description of your command",
 	Long:  `A longer description`,
@@ -30,19 +30,7 @@ var addCmd = &cobra.Command{
 	},
 }
 
-var ambiguousCmd = &cobra.Command{
-	Use:   "ambiguous",
-	Short: "A brief description of your command",
-	Long:  `A longer description`,
-	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) == 0 {
-			cmd.Help()
-			os.Exit(0)
-		}
-	},
-}
-
-var editCmd = &cobra.Command{
+var documentTagEditCmd = &cobra.Command{
 	Use:   "edit",
 	Short: "A brief description of your command",
 	Long:  `A longer description`,
@@ -54,8 +42,8 @@ var editCmd = &cobra.Command{
 	},
 }
 
-var exportCmd = &cobra.Command{
-	Use:   "export",
+var documentTagFindWithCmd = &cobra.Command{
+	Use:   "findWith",
 	Short: "A brief description of your command",
 	Long:  `A longer description`,
 	Run: func(cmd *cobra.Command, args []string) {
@@ -66,8 +54,8 @@ var exportCmd = &cobra.Command{
 	},
 }
 
-var importCmd = &cobra.Command{
-	Use:   "import",
+var documentTagHasCmd = &cobra.Command{
+	Use:   "has",
 	Short: "A brief description of your command",
 	Long:  `A longer description`,
 	Run: func(cmd *cobra.Command, args []string) {
@@ -78,7 +66,7 @@ var importCmd = &cobra.Command{
 	},
 }
 
-var listCmd = &cobra.Command{
+var documentTagListCmd = &cobra.Command{
 	Use:   "list",
 	Short: "A brief description of your command",
 	Long:  `A longer description`,
@@ -90,7 +78,7 @@ var listCmd = &cobra.Command{
 	},
 }
 
-var removeCmd = &cobra.Command{
+var documentTagRemoveCmd = &cobra.Command{
 	Use:   "remove",
 	Short: "A brief description of your command",
 	Long:  `A longer description`,
@@ -100,29 +88,4 @@ var removeCmd = &cobra.Command{
 			os.Exit(0)
 		}
 	},
-}
-
-var shortCmd = &cobra.Command{
-	Use:   "short",
-	Short: "A brief description of your command",
-	Long:  `A longer description`,
-	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) == 0 {
-			cmd.Help()
-			os.Exit(0)
-		}
-	},
-}
-
-func init() {
-	RootCmd.AddCommand(tagCmd)
-
-	tagCmd.AddCommand(shortCmd)
-	tagCmd.AddCommand(removeCmd)
-	tagCmd.AddCommand(listCmd)
-	tagCmd.AddCommand(importCmd)
-	tagCmd.AddCommand(exportCmd)
-	tagCmd.AddCommand(editCmd)
-	tagCmd.AddCommand(ambiguousCmd)
-	tagCmd.AddCommand(addCmd)
 }

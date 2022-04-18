@@ -10,26 +10,22 @@ import (
 
 var (
 	cfgFile string
-	rootCmd = &cobra.Command{
+	RootCmd = &cobra.Command{
 		Use:   "bntp.go",
-		Short: "A brief description of your application",
-		Long:  `A longer description`,
+		Short: "bntp.go - the all in one productivity system.",
 		Run: func(cmd *cobra.Command, args []string) {
 			if len(args) == 0 {
 				cmd.Help()
 				os.Exit(0)
 			}
 		},
-		// Uncomment the following line if your bare application
-		// has an action associated with it:
-		//
 	}
 )
 
 // Execute adds all child commands to the root command and sets flags appropriately.
-// This is called by main.main(). It only needs to happen once to the rootCmd.
+// This is called by main.main(). It only needs to happen once to the RootCmd.
 func Execute() {
-	err := rootCmd.Execute()
+	err := RootCmd.Execute()
 	if err != nil {
 		os.Exit(1)
 	}
@@ -38,9 +34,9 @@ func Execute() {
 func init() {
 	cobra.OnInitialize(initConfig)
 
-	// Cobra also supports local flags, which will only run
-	// when this action is called directly.
-	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	// TODO: Mark quiet and verbose flags as mutually exclusive when the next cobra version gets released.
+	RootCmd.PersistentFlags().BoolP("quiet", "q", false, "Disable all logging")
+	RootCmd.PersistentFlags().BoolP("verbose", "v", false, "Enable full logging")
 }
 
 // initConfig reads in config file and ENV variables if set.

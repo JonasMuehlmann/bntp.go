@@ -85,7 +85,6 @@ func ImportMinimalCSV(dbConn *sqlx.DB, csvPath string) error {
 
 	for _, bookmark := range bookmarks[1:] {
 		err := AddBookmark(dbConn, transaction, bookmark[titleColumn], bookmark[linkColumn], optional.Optional[int]{HasValue: false})
-
 		if err != nil {
 			return err
 		}
@@ -203,7 +202,6 @@ func GetBookmarks(dbConn *sqlx.DB, filter BookmarkFilter) ([]Bookmark, error) {
 	bookmarksBuffer := []Bookmark{}
 
 	err := dbConn.Select(&bookmarksBuffer, stmtBookmarks)
-
 	if err != nil {
 		return nil, err
 	}
@@ -450,7 +448,6 @@ func RemoveBookmark(dbConn *sqlx.DB, transaction *sqlx.Tx, ID int) error {
 	}
 
 	return nil
-
 }
 
 func EditBookmark(dbConn *sqlx.DB, transaction *sqlx.Tx, newData Bookmark) error {
