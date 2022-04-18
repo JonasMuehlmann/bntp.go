@@ -179,8 +179,8 @@ type bookmarkL struct{}
 
 var (
 	bookmarkAllColumns            = []string{"id", "is_read", "title", "url", "time_added", "bookmark_type_id", "is_collection"}
-	bookmarkColumnsWithoutDefault = []string{"id", "title", "url", "bookmark_type_id"}
-	bookmarkColumnsWithDefault    = []string{"is_read", "time_added", "is_collection"}
+	bookmarkColumnsWithoutDefault = []string{"id", "title", "url", "time_added", "bookmark_type_id"}
+	bookmarkColumnsWithDefault    = []string{"is_read", "is_collection"}
 	bookmarkPrimaryKeyColumns     = []string{"id"}
 	bookmarkGeneratedColumns      = []string{}
 )
