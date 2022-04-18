@@ -24,6 +24,7 @@ import (
 	"io/ioutil"
 	"log"
 	"path"
+	"regexp"
 	"strings"
 )
 
@@ -34,9 +35,10 @@ const (
 )
 
 const (
-	FORMAT_MYSQL     = "mysql"
-	FORMAT_POSTGRES  = "postgres"
-	FORMAT_SQLSERVER = "sqlserver"
+	FORMAT_MYSQL          = "mysql"
+	FORMAT_POSTGRES       = "postgres"
+	FORMAT_SQLSERVER      = "sqlserver"
+	FORMAT_SQLSERVER_TEST = "sqlserver_test"
 )
 
 type Converter func(string) string
@@ -44,9 +46,10 @@ type Converter func(string) string
 var (
 	Formats    = []string{FORMAT_MYSQL, FORMAT_POSTGRES, FORMAT_SQLSERVER}
 	Converters = map[string]Converter{
-		FORMAT_MYSQL:     ToMysql,
-		FORMAT_POSTGRES:  ToPostgrees,
-		FORMAT_SQLSERVER: ToSqlServer,
+		FORMAT_MYSQL:          ToMysql,
+		FORMAT_POSTGRES:       ToPostgrees,
+		FORMAT_SQLSERVER:      ToSqlServer,
+		FORMAT_SQLSERVER_TEST: ToSqlServerTest,
 	}
 )
 
@@ -97,6 +100,20 @@ func ToSqlServer(mainSchema string) string {
 	schema = strings.Replace(schema, "PRAGMA foreign_keys = ON;", "", -1)
 	schema = strings.Replace(schema, "PRIMARY KEY NOT NULL", "PRIMARY KEY", -1)
 	schema = strings.ReplaceAll(schema, "TEXT", "VARCHAR(255)")
+	schema = strings.ReplaceAll(schema, "TIMESTAMP", "DATETIME")
+
+	return schema
+}
+
+func ToSqlServerTest(mainSchema string) string {
+	schema := mainSchema
+
+	schema = strings.Replace(schema, "PRAGMA foreign_keys = ON;", "", -1)
+	schema = strings.Replace(schema, "PRIMARY KEY NOT NULL", "PRIMARY KEY", -1)
+	schema = strings.ReplaceAll(schema, "TEXT", "VARCHAR(255)")
+	schema = strings.ReplaceAll(schema, "TIMESTAMP", "DATETIME")
+	removeForeignKeys := regexp.MustCompile(`REFERENCES\s+\w+\(\w+\)`)
+	schema = removeForeignKeys.ReplaceAllString(schema, "")
 
 	return schema
 }

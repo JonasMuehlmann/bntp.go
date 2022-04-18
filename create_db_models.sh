@@ -21,8 +21,8 @@ for db in "${DBS[@]}"; do
     #     sed -i 's/ssl-mode/ssl/' $new_dir/*
     # fi
     if [[ $db == "mssql" ]]; then
-        cp schema/bntp_sqlserver.sql tables_schema.sql
-        cp schema/bntp_sqlserver.sql $new_dir/tables_schema.sql
+        cp schema/bntp_sqlserver_test.sql tables_schema.sql
+        cp schema/bntp_sqlserver_test.sql $new_dir/tables_schema.sql
     fi
     go mod tidy
     go get -t github.com/JonasMuehlmann/bntp.go/$new_dir
