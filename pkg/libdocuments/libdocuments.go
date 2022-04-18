@@ -27,7 +27,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/JonasMuehlmann/bntp.go/internal/helpers"
+	"github.com/JonasMuehlmann/bntp.go/pkg/helpers"
 	"github.com/jmoiron/sqlx"
 )
 

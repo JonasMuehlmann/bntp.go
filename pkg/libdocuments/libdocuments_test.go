@@ -5,8 +5,8 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/JonasMuehlmann/bntp.go/internal/libdocuments"
-	"github.com/JonasMuehlmann/bntp.go/internal/libtags"
+	"github.com/JonasMuehlmann/bntp.go/pkg/libdocuments"
+	"github.com/JonasMuehlmann/bntp.go/pkg/libtags"
 	"github.com/JonasMuehlmann/bntp.go/test"
 	"github.com/stretchr/testify/assert"
 )

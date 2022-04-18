@@ -30,7 +30,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/JonasMuehlmann/bntp.go/internal/helpers"
+	"github.com/JonasMuehlmann/bntp.go/pkg/helpers"
 	"github.com/JonasMuehlmann/optional.go"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/mattn/go-sqlite3"
