@@ -48,7 +48,6 @@ jobs:
         
     - name: Update SQLboiler
       run:  |
-        go mod tidy
         ./create_db_models.sh
     - uses: stefanzweifel/git-auto-commit-action@v4
       with:
