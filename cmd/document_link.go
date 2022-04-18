@@ -8,7 +8,7 @@ import (
 
 var documentLinkCmd = &cobra.Command{
 	Use:   "link",
-	Short: "A brief description of your command",
+	Short: "Manage links between bntp documents",
 	Long:  `A longer description`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) == 0 {
@@ -19,9 +19,10 @@ var documentLinkCmd = &cobra.Command{
 }
 
 var documentLinkEditCmd = &cobra.Command{
-	Use:   "edit",
-	Short: "A brief description of your command",
+	Use:   "edit OLD_NAME NEW_NAME",
+	Short: "Change a link between bntp documents",
 	Long:  `A longer description`,
+	Args:  cobra.ExactArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) == 0 {
 			cmd.Help()
@@ -31,9 +32,10 @@ var documentLinkEditCmd = &cobra.Command{
 }
 
 var documentLinkRemoveCmd = &cobra.Command{
-	Use:   "remove",
-	Short: "A brief description of your command",
+	Use:   "remove LINK...",
+	Short: "Remove links from a bntp documents",
 	Long:  `A longer description`,
+	Args:  cobra.ArbitraryArgs,
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) == 0 {
 			cmd.Help()
@@ -43,9 +45,10 @@ var documentLinkRemoveCmd = &cobra.Command{
 }
 
 var documentLinkAddCmd = &cobra.Command{
-	Use:   "add",
-	Short: "A brief description of your command",
+	Use:   "add LINK...",
+	Short: "Add links to a bntp document",
 	Long:  `A longer description`,
+	Args:  cobra.ArbitraryArgs,
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) == 0 {
 			cmd.Help()
@@ -56,8 +59,9 @@ var documentLinkAddCmd = &cobra.Command{
 
 var documentLinkListCmd = &cobra.Command{
 	Use:   "list",
-	Short: "A brief description of your command",
+	Short: "List links from/to a bntp document",
 	Long:  `A longer description`,
+	Args:  cobra.NoArgs,
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) == 0 {
 			cmd.Help()

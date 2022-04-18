@@ -8,7 +8,7 @@ import (
 
 var tagCmd = &cobra.Command{
 	Use:   "tag",
-	Short: "A brief description of your command",
+	Short: "Manage tags available for bntp entities",
 	Long:  `A longer description`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) == 0 {
@@ -18,10 +18,11 @@ var tagCmd = &cobra.Command{
 	},
 }
 
-var addCmd = &cobra.Command{
-	Use:   "add",
-	Short: "A brief description of your command",
+var tagAddCmd = &cobra.Command{
+	Use:   "add TAG...",
+	Short: "Add new bntp tags",
 	Long:  `A longer description`,
+	Args:  cobra.ArbitraryArgs,
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) == 0 {
 			cmd.Help()
@@ -30,10 +31,12 @@ var addCmd = &cobra.Command{
 	},
 }
 
-var ambiguousCmd = &cobra.Command{
-	Use:   "ambiguous",
-	Short: "A brief description of your command",
+// TODO: If ambiguous, return ambiguous component
+var tagAmbiguousCmd = &cobra.Command{
+	Use:   "ambiguous TAG...",
+	Short: "Check if bntp tag's leafs are ambiguous",
 	Long:  `A longer description`,
+	Args:  cobra.ArbitraryArgs,
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) == 0 {
 			cmd.Help()
@@ -42,10 +45,11 @@ var ambiguousCmd = &cobra.Command{
 	},
 }
 
-var editCmd = &cobra.Command{
-	Use:   "edit",
-	Short: "A brief description of your command",
+var tagEditCmd = &cobra.Command{
+	Use:   "edit OLD_NAME NEW_NAME",
+	Short: "Change a bntp tag",
 	Long:  `A longer description`,
+	Args:  cobra.ExactArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) == 0 {
 			cmd.Help()
@@ -54,10 +58,11 @@ var editCmd = &cobra.Command{
 	},
 }
 
-var exportCmd = &cobra.Command{
-	Use:   "export",
-	Short: "A brief description of your command",
+var tagExportCmd = &cobra.Command{
+	Use:   "export FILE",
+	Short: "Export bntp tags",
 	Long:  `A longer description`,
+	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) == 0 {
 			cmd.Help()
@@ -66,10 +71,11 @@ var exportCmd = &cobra.Command{
 	},
 }
 
-var importCmd = &cobra.Command{
-	Use:   "import",
-	Short: "A brief description of your command",
+var tagImportCmd = &cobra.Command{
+	Use:   "import FILE",
+	Short: "Import bntp tags",
 	Long:  `A longer description`,
+	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) == 0 {
 			cmd.Help()
@@ -78,10 +84,11 @@ var importCmd = &cobra.Command{
 	},
 }
 
-var listCmd = &cobra.Command{
+var tagListCmd = &cobra.Command{
 	Use:   "list",
-	Short: "A brief description of your command",
+	Short: "List bntp tags",
 	Long:  `A longer description`,
+	Args:  cobra.NoArgs,
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) == 0 {
 			cmd.Help()
@@ -90,10 +97,11 @@ var listCmd = &cobra.Command{
 	},
 }
 
-var removeCmd = &cobra.Command{
-	Use:   "remove",
-	Short: "A brief description of your command",
+var tagRemoveCmd = &cobra.Command{
+	Use:   "remove TAG...",
+	Short: "Remove bntp tags",
 	Long:  `A longer description`,
+	Args:  cobra.ArbitraryArgs,
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) == 0 {
 			cmd.Help()
@@ -102,10 +110,11 @@ var removeCmd = &cobra.Command{
 	},
 }
 
-var shortCmd = &cobra.Command{
-	Use:   "short",
-	Short: "A brief description of your command",
+var tagShortCmd = &cobra.Command{
+	Use:   "short TAG...",
+	Short: "Return shortened bntp tags",
 	Long:  `A longer description`,
+	Args:  cobra.ArbitraryArgs,
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) == 0 {
 			cmd.Help()
@@ -117,12 +126,14 @@ var shortCmd = &cobra.Command{
 func init() {
 	RootCmd.AddCommand(tagCmd)
 
-	tagCmd.AddCommand(shortCmd)
-	tagCmd.AddCommand(removeCmd)
-	tagCmd.AddCommand(listCmd)
-	tagCmd.AddCommand(importCmd)
-	tagCmd.AddCommand(exportCmd)
-	tagCmd.AddCommand(editCmd)
-	tagCmd.AddCommand(ambiguousCmd)
-	tagCmd.AddCommand(addCmd)
+	tagCmd.AddCommand(tagShortCmd)
+	tagCmd.AddCommand(tagRemoveCmd)
+	tagCmd.AddCommand(tagListCmd)
+	tagCmd.AddCommand(tagImportCmd)
+	tagCmd.AddCommand(tagExportCmd)
+	tagCmd.AddCommand(tagEditCmd)
+	tagCmd.AddCommand(tagAmbiguousCmd)
+	tagCmd.AddCommand(tagAddCmd)
+
+	tagListCmd.Flags().BoolP("short", "s", false, "Whetever to list shortened tags instead of fully qualified ones")
 }

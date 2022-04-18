@@ -4,11 +4,12 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
+	"golang.org/x/exp/slices"
 )
 
 var documentCmd = &cobra.Command{
 	Use:   "document",
-	Short: "A brief description of your command",
+	Short: "Manage bntp documents",
 	Long:  `A longer description`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) == 0 {
@@ -19,9 +20,10 @@ var documentCmd = &cobra.Command{
 }
 
 var documentAddCmd = &cobra.Command{
-	Use:   "add",
-	Short: "A brief description of your command",
+	Use:   "add FILE...",
+	Short: "Add bntp documents",
 	Long:  `A longer description`,
+	Args:  cobra.ArbitraryArgs,
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) == 0 {
 			cmd.Help()
@@ -31,9 +33,10 @@ var documentAddCmd = &cobra.Command{
 }
 
 var documentEditCmd = &cobra.Command{
-	Use:   "edit",
-	Short: "A brief description of your command",
+	Use:   "edit OLD_NAME NEW_NAME",
+	Short: "Edit a bntp document",
 	Long:  `A longer description`,
+	Args:  cobra.ExactArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) == 0 {
 			cmd.Help()
@@ -44,8 +47,9 @@ var documentEditCmd = &cobra.Command{
 
 var documentListCmd = &cobra.Command{
 	Use:   "list",
-	Short: "A brief description of your command",
+	Short: "List bntp documents",
 	Long:  `A longer description`,
+	Args:  cobra.NoArgs,
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) == 0 {
 			cmd.Help()
@@ -55,9 +59,10 @@ var documentListCmd = &cobra.Command{
 }
 
 var documentRemoveCmd = &cobra.Command{
-	Use:   "remove",
-	Short: "A brief description of your command",
+	Use:   "remove FILE...",
+	Short: "Remove bntp documents",
 	Long:  `A longer description`,
+	Args:  cobra.ArbitraryArgs,
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) == 0 {
 			cmd.Help()
@@ -92,4 +97,14 @@ func init() {
 	documentLinkCmd.AddCommand(documentLinkEditCmd)
 	documentLinkCmd.AddCommand(documentLinkRemoveCmd)
 	documentLinkCmd.AddCommand(documentLinkListCmd)
+
+	for _, subcommand := range documentCmd.Commands() {
+		if !slices.Contains([]*cobra.Command{documentAddCmd, documentListCmd, documentRemoveCmd}, subcommand) {
+			subcommand.PersistentFlags().StringP("document", "d", "", "The document to work with")
+		}
+	}
+
+	documentLinkListCmd.Flags().BoolP("back", "b", false, "Whetever to list backlinks instead of links")
+	documentTagHasCmd.Flags().BoolP("or", "o", false, "Whetever to require any instead of all tags to match")
+	documentTagFindWithCmd.Flags().BoolP("or", "o", false, "Whetever to require any instead of all tags to match")
 }

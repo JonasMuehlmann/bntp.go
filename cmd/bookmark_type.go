@@ -8,7 +8,7 @@ import (
 
 var bookmarkTypeCmd = &cobra.Command{
 	Use:   "type",
-	Short: "A brief description of your command",
+	Short: "Manage types of bntp bookmarks",
 	Long:  `A longer description`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) == 0 {
@@ -19,9 +19,10 @@ var bookmarkTypeCmd = &cobra.Command{
 }
 
 var bookmarkTypeAddCmd = &cobra.Command{
-	Use:   "add",
-	Short: "A brief description of your command",
+	Use:   "add TYPE...",
+	Short: "Add bntp bookmark types",
 	Long:  `A longer description`,
+	Args:  cobra.ArbitraryArgs,
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) == 0 {
 			cmd.Help()
@@ -31,9 +32,10 @@ var bookmarkTypeAddCmd = &cobra.Command{
 }
 
 var bookmarkTypeEditCmd = &cobra.Command{
-	Use:   "edit",
-	Short: "A brief description of your command",
+	Use:   "edit OLD_NAME NEW_NAME",
+	Short: "Change a bntp bookmark type",
 	Long:  `A longer description`,
+	Args:  cobra.ExactArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) == 0 {
 			cmd.Help()
@@ -43,9 +45,10 @@ var bookmarkTypeEditCmd = &cobra.Command{
 }
 
 var bookmarkTypeRemoveCmd = &cobra.Command{
-	Use:   "remove",
-	Short: "A brief description of your command",
+	Use:   "remove TYPE...",
+	Short: "Remove bntp bookmark types",
 	Long:  `A longer description`,
+	Args:  cobra.ArbitraryArgs,
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) == 0 {
 			cmd.Help()

@@ -8,7 +8,7 @@ import (
 
 var documentTagCmd = &cobra.Command{
 	Use:   "tag",
-	Short: "A brief description of your command",
+	Short: "Manage tags of bntp documents",
 	Long:  `A longer description`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) == 0 {
@@ -19,9 +19,10 @@ var documentTagCmd = &cobra.Command{
 }
 
 var documentTagAddCmd = &cobra.Command{
-	Use:   "add",
-	Short: "A brief description of your command",
+	Use:   "add TAG...",
+	Short: "Add tags to a bntp document",
 	Long:  `A longer description`,
+	Args:  cobra.ArbitraryArgs,
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) == 0 {
 			cmd.Help()
@@ -31,9 +32,10 @@ var documentTagAddCmd = &cobra.Command{
 }
 
 var documentTagEditCmd = &cobra.Command{
-	Use:   "edit",
-	Short: "A brief description of your command",
+	Use:   "edit OLD_NAME NEW_NAME",
+	Short: "Change a tag in a bntp document",
 	Long:  `A longer description`,
+	Args:  cobra.ExactArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) == 0 {
 			cmd.Help()
@@ -43,9 +45,10 @@ var documentTagEditCmd = &cobra.Command{
 }
 
 var documentTagFindWithCmd = &cobra.Command{
-	Use:   "findWith",
-	Short: "A brief description of your command",
+	Use:   "find-with TAG...",
+	Short: "Find bntp documents with specific tags",
 	Long:  `A longer description`,
+	Args:  cobra.ArbitraryArgs,
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) == 0 {
 			cmd.Help()
@@ -55,9 +58,10 @@ var documentTagFindWithCmd = &cobra.Command{
 }
 
 var documentTagHasCmd = &cobra.Command{
-	Use:   "has",
-	Short: "A brief description of your command",
+	Use:   "has TAG...",
+	Short: "Check if a bntp document has specific tags",
 	Long:  `A longer description`,
+	Args:  cobra.ArbitraryArgs,
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) == 0 {
 			cmd.Help()
@@ -68,8 +72,9 @@ var documentTagHasCmd = &cobra.Command{
 
 var documentTagListCmd = &cobra.Command{
 	Use:   "list",
-	Short: "A brief description of your command",
+	Short: "List the tags of a bntp document",
 	Long:  `A longer description`,
+	Args:  cobra.NoArgs,
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) == 0 {
 			cmd.Help()
@@ -79,9 +84,10 @@ var documentTagListCmd = &cobra.Command{
 }
 
 var documentTagRemoveCmd = &cobra.Command{
-	Use:   "remove",
-	Short: "A brief description of your command",
+	Use:   "remove TAG...",
+	Short: "Remove a tag from a bntp document",
 	Long:  `A longer description`,
+	Args:  cobra.ArbitraryArgs,
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) == 0 {
 			cmd.Help()

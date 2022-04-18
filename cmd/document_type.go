@@ -8,7 +8,7 @@ import (
 
 var documentTypeCmd = &cobra.Command{
 	Use:   "type",
-	Short: "A brief description of your command",
+	Short: "Manage types of bntp documents",
 	Long:  `A longer description`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) == 0 {
@@ -19,9 +19,10 @@ var documentTypeCmd = &cobra.Command{
 }
 
 var documentTypeAddCmd = &cobra.Command{
-	Use:   "add",
-	Short: "A brief description of your command",
+	Use:   "add TYPE...",
+	Short: "Add new bntp document types",
 	Long:  `A longer description`,
+	Args:  cobra.ArbitraryArgs,
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) == 0 {
 			cmd.Help()
@@ -31,9 +32,10 @@ var documentTypeAddCmd = &cobra.Command{
 }
 
 var documentTypeEditCmd = &cobra.Command{
-	Use:   "edit",
-	Short: "A brief description of your command",
+	Use:   "edit OLD_NAME NEW_NAME",
+	Short: "Change a bntp document type",
 	Long:  `A longer description`,
+	Args:  cobra.ExactArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) == 0 {
 			cmd.Help()
@@ -43,9 +45,10 @@ var documentTypeEditCmd = &cobra.Command{
 }
 
 var documentTypeRemoveCmd = &cobra.Command{
-	Use:   "remove",
-	Short: "A brief description of your command",
+	Use:   "remove TYPE...",
+	Short: "Remove bntp document types",
 	Long:  `A longer description`,
+	Args:  cobra.ArbitraryArgs,
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) == 0 {
 			cmd.Help()

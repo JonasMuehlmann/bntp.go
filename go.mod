@@ -14,6 +14,7 @@ require (
 	github.com/volatiletech/randomize v0.0.1
 	github.com/volatiletech/sqlboiler/v4 v4.10.2
 	github.com/volatiletech/strmangle v0.0.3
+	golang.org/x/exp v0.0.0-20220414153411-bcd21879b8fd
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
 	modernc.org/sqlite v1.14.5
 )

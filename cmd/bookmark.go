@@ -4,11 +4,12 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
+	"golang.org/x/exp/slices"
 )
 
 var bookmarkCmd = &cobra.Command{
 	Use:   "bookmark",
-	Short: "A brief description of your command",
+	Short: "Manage bntp bookmarks",
 	Long:  `A longer description`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) == 0 {
@@ -19,9 +20,10 @@ var bookmarkCmd = &cobra.Command{
 }
 
 var bookmarkAddCmd = &cobra.Command{
-	Use:   "add",
-	Short: "A brief description of your command",
+	Use:   "add DATA",
+	Short: "Add a bntp bookmark",
 	Long:  `A longer description`,
+	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) == 0 {
 			cmd.Help()
@@ -31,9 +33,10 @@ var bookmarkAddCmd = &cobra.Command{
 }
 
 var bookmarkEditCmd = &cobra.Command{
-	Use:   "edit",
-	Short: "A brief description of your command",
+	Use:   "edit NEW_DATA",
+	Short: "Edit a bntp bookmark",
 	Long:  `A longer description`,
+	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) == 0 {
 			cmd.Help()
@@ -43,9 +46,10 @@ var bookmarkEditCmd = &cobra.Command{
 }
 
 var bookmarkExportCmd = &cobra.Command{
-	Use:   "export",
-	Short: "A brief description of your command",
+	Use:   "export PATH",
+	Short: "Export bntp bookmarks",
 	Long:  `A longer description`,
+	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) == 0 {
 			cmd.Help()
@@ -55,9 +59,10 @@ var bookmarkExportCmd = &cobra.Command{
 }
 
 var bookmarkImportCmd = &cobra.Command{
-	Use:   "import",
-	Short: "A brief description of your command",
+	Use:   "import PATH",
+	Short: "Import bntp bookmarks",
 	Long:  `A longer description`,
+	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) == 0 {
 			cmd.Help()
@@ -68,8 +73,9 @@ var bookmarkImportCmd = &cobra.Command{
 
 var bookmarkListCmd = &cobra.Command{
 	Use:   "list",
-	Short: "A brief description of your command",
+	Short: "List bntp bookmarks",
 	Long:  `A longer description`,
+	Args:  cobra.NoArgs,
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) == 0 {
 			cmd.Help()
@@ -79,9 +85,10 @@ var bookmarkListCmd = &cobra.Command{
 }
 
 var bookmarkRemoveCmd = &cobra.Command{
-	Use:   "remove",
-	Short: "A brief description of your command",
+	Use:   "remove BOOKMARK...",
+	Short: "Remove a bntp bookmark",
 	Long:  `A longer description`,
+	Args:  cobra.ArbitraryArgs,
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) == 0 {
 			cmd.Help()
@@ -109,4 +116,10 @@ func init() {
 	bookmarkTypeCmd.AddCommand(bookmarkTypeAddCmd)
 	bookmarkTypeCmd.AddCommand(bookmarkTypeEditCmd)
 	bookmarkTypeCmd.AddCommand(bookmarkTypeRemoveCmd)
+
+	for _, subcommand := range bookmarkCmd.Commands() {
+		if !slices.Contains([]*cobra.Command{bookmarkAddCmd, bookmarkListCmd, bookmarkRemoveCmd, bookmarkExportCmd, bookmarkImportCmd}, subcommand) {
+			subcommand.PersistentFlags().StringP("bookmark", "b", "", "The bookmark to work with")
+		}
+	}
 }
