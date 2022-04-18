@@ -15,8 +15,8 @@ sslmode = "false"
 dbname = "bntp_test"
 host   = "localhost"
 user   = "postgres"
-pass   = "admin"
-schema = "test"
+schema = "public"
+sslmode = "disable"
 
 [mssql]
 dbname  = "bntp_test"
