@@ -20,7 +20,7 @@ schema = "test"
 
 [mssql]
 dbname  = "bntp_test"
-host    = "localhost"
+host    = "sql1"
 user    = "SA"
 pass    = "jdksjds6dsads8a97d!"
 sslmode = "disable"
