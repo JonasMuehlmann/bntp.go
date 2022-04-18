@@ -14,7 +14,11 @@ for db in "${DBS[@]}"; do
 
     sqlboiler --output $new_dir $db
     sed -i 's/t.Parallel()//' $new_dir/*
-    # Only needed for $b=sqlite3
-    cp bntp_test.db $new_dir
+    if [[ $db == "sqlite3" ]]; then
+        cp bntp_test.db $new_dir
+    fi
+    if [[ $db == "mysql" ]]; then
+        sed -i 's/ssl-mode/ssl/' $new_dir/*
+    fi
     go test -v $new_dir
 done
