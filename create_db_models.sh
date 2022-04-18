@@ -20,5 +20,8 @@ for db in "${DBS[@]}"; do
     if [[ $db == "mysql" ]]; then
         sed -i 's/ssl-mode/ssl/' $new_dir/*
     fi
+    if [[ $db == "mssql" ]]; then
+        cp schema/bntp_sqlserver.sql tables_schema.sql
+    fi
     go test -v $new_dir
 done
