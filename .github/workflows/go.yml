@@ -28,7 +28,7 @@ jobs:
         -p 1433:1433 --name sql1 --hostname sql1 \
         -d mcr.microsoft.com/mssql/server:2019-latest
         
-        sqlcmd -H sql1 -U SA -P 'jdksjds6dsads8a97d!' -q "CREATE DATABASE bntp_test"    
+        sqlcmd -H sql1 -U SA -P 'jdksjds6dsads8a97d!' -Q "CREATE DATABASE bntp_test"    
         sqlcmd -H sql1 -U SA -P 'jdksjds6dsads8a97d!' -d bntp_test -i "schema/bntp_sqlserver.sql"
         
         mysql -u root -proot -e "CREATE DATABASE bntp_test"
