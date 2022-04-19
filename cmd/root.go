@@ -21,10 +21,12 @@
 package cmd
 
 import (
+	"log"
 	"os"
 
 	"github.com/JonasMuehlmann/bntp.go/internal/config"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 var RootCmd = &cobra.Command{
@@ -49,9 +51,18 @@ func Execute() {
 
 func init() {
 	// TODO: Mark quiet and verbose flags as mutually exclusive when the next cobra version gets released.
-	RootCmd.PersistentFlags().BoolP("quiet", "q", false, "Disable all logging")
-	RootCmd.PersistentFlags().BoolP("verbose", "v", false, "Enable full logging")
+	RootCmd.PersistentFlags().BoolP(config.QUIET, config.QUIET[0:1], false, "Disable all logging")
+	RootCmd.PersistentFlags().BoolP(config.VERBOSE, config.VERBOSE[0:1], false, "Enable full logging")
 	RootCmd.PersistentFlags().StringVarP(&config.ConfigPath, "config", "c", "", "The config file to use instead of ones found in search paths")
 
-	cobra.OnInitialize(config.InitConfig)
+	cobra.OnInitialize(config.InitConfig, bindFlagsToConfig)
+}
+
+func bindFlagsToConfig() {
+	for _, setting := range []string{config.QUIET, config.VERBOSE} {
+		err := viper.BindPFlag(setting, RootCmd.Flags().Lookup(setting))
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
 }

@@ -39,12 +39,21 @@ var (
 	}
 )
 
+const (
+	QUIET   = "quiet"
+	VERBOSE = "verbose"
+)
+
 func InitConfig() {
 	if ConfigPath != "" {
 		viper.SetConfigFile(ConfigPath)
 	} else {
 		goaoi.ForeachSliceUnsafe(ConfigSearchPaths, viper.AddConfigPath)
 	}
+
+	// ***********************    Set defaults    ***********************//
+	viper.SetDefault(QUIET, false)
+	viper.SetDefault(VERBOSE, false)
 
 	viper.SetEnvPrefix("BNTP")
 	viper.SetConfigName(ConfigFileBaseName)
