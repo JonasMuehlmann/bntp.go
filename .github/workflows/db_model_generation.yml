@@ -22,6 +22,7 @@ jobs:
       id: changed-files-specific
       uses: tj-actions/changed-files@v18.7
       with:
+          since_last_remote_commit: true
           files: |
            create_db_models.sh
            sqlboiler.toml
