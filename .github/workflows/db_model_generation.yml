@@ -62,4 +62,4 @@ jobs:
       run: ./create_db_models.sh
     - uses: stefanzweifel/git-auto-commit-action@v4
       with:
-        file_pattern: ./models/*
+        file_pattern: ./models/* ./schema/*
