@@ -4,18 +4,9 @@ name: Generate db models
 on:
   push:
     branches: '*'
-    paths:
-     - create_db_models.sh
-     - sqlboiler.toml
-     - 'tools/schema_converter/*'
-     - 'schema/*'
   pull_request:
     branches:  '*'
-    paths:
-     - create_db_models.sh
-     - sqlboiler.toml
-     - 'tools/schema_converter/*'
-     - 'schema/*'
+
 
 
 jobs:
@@ -24,13 +15,27 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0  # OR "2" -> To retrieve the preceding commit.
+       
+    - name: Check if models need to be regenerated
+      id: changed-files-specific
+      uses: tj-actions/changed-files@v18.7
+      with:
+          files: |
+           create_db_models.sh
+           sqlboiler.toml
+           tools/schema_converter/*
+           schema/*
 
     - name: Set up Go
+      if: steps.changed-files-specific.outputs.any_changed == 'true'
       uses: actions/setup-go@v2
       with:
         go-version: 1.18
 
     - name: Set up databases
+      if: steps.changed-files-specific.outputs.any_changed == 'true'
       run:  |
         # Convert schemas
          go run ./tools/schema_converter
@@ -64,6 +69,7 @@ jobs:
         sqlite3 bntp_test.db < schema/bntp_sqlite.sql
         
     - name: Update SQLboiler models
+      if: steps.changed-files-specific.outputs.any_changed == 'true'
       run: ./create_db_models.sh
     - uses: stefanzweifel/git-auto-commit-action@v4
       with:
