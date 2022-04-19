@@ -18,40 +18,40 @@
 // TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE
 // OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-package cmd
+package config
 
 import (
+	"fmt"
 	"os"
 
-	"github.com/JonasMuehlmann/bntp.go/internal/config"
-	"github.com/spf13/cobra"
+	"github.com/JonasMuehlmann/goaoi"
+	"github.com/spf13/viper"
 )
 
-var RootCmd = &cobra.Command{
-	Use:   "bntp.go",
-	Short: "bntp.go - the all in one productivity system.",
-	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) == 0 {
-			cmd.Help()
-			os.Exit(0)
-		}
-	},
-}
-
-// Execute adds all child commands to the root command and sets flags appropriately.
-// This is called by main.main(). It only needs to happen once to the RootCmd.
-func Execute() {
-	err := RootCmd.Execute()
-	if err != nil {
-		os.Exit(1)
+var (
+	ConfigPath         string
+	ConfigFileBaseName = "bntp_config"
+	ConfigSearchPaths  = []string{
+		".",
+		"$HOME/.config/bntp/",
+		"$HOME/.config/",
+		"$HOME/",
 	}
-}
+)
 
-func init() {
-	// TODO: Mark quiet and verbose flags as mutually exclusive when the next cobra version gets released.
-	RootCmd.PersistentFlags().BoolP("quiet", "q", false, "Disable all logging")
-	RootCmd.PersistentFlags().BoolP("verbose", "v", false, "Enable full logging")
-	RootCmd.PersistentFlags().StringVarP(&config.ConfigPath, "config", "c", "", "The config file to use instead of ones found in search paths")
+func InitConfig() {
+	if ConfigPath != "" {
+		viper.SetConfigFile(ConfigPath)
+	} else {
+		goaoi.ForeachSliceUnsafe(ConfigSearchPaths, viper.AddConfigPath)
+	}
 
-	cobra.OnInitialize(config.InitConfig)
+	viper.SetEnvPrefix("BNTP")
+	viper.SetConfigName(ConfigFileBaseName)
+	viper.AutomaticEnv() // read in environment variables that match
+
+	// If a config file is found, read it in.
+	if err := viper.ReadInConfig(); err == nil {
+		fmt.Fprintln(os.Stderr, "Using config file:", viper.ConfigFileUsed())
+	}
 }

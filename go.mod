@@ -3,6 +3,7 @@ module github.com/JonasMuehlmann/bntp.go
 go 1.18
 
 require (
+	github.com/JonasMuehlmann/goaoi v1.1.1
 	github.com/denisenkom/go-mssqldb v0.10.0
 	github.com/friendsofgo/errors v0.9.2
 	github.com/go-sql-driver/mysql v1.5.0
