@@ -20,7 +20,7 @@ jobs:
 
     - name: Build
       run: |
-        cp bntp.sql test/bntp.sql
+        cp schema/bntp_sqlite.sql test/bntp.sql
         go build -v ./...
 
 
