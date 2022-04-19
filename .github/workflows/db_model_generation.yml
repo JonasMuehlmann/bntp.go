@@ -1,10 +1,15 @@
-name: Generate db modeels
+name: Generate db models
 
 on:
   push:
     branches: [ main, unstable ]
   pull_request:
     branches: [ main, unstable ]
+    paths:
+     - create_db_models.sh
+     - sqlboiler.toml
+     - 'tools/schema_converter/*'
+     - 'schema/*'
 
 jobs:
 
@@ -20,6 +25,9 @@ jobs:
 
     - name: Set up databases
       run:  |
+        # Convert schemas
+         go run ./tools/schema_converter
+         
         # Install/start databases
         sudo systemctl start postgresql.service
         sudo systemctl start mysql.service
