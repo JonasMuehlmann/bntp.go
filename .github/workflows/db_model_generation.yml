@@ -3,9 +3,9 @@ name: Generate db models
 
 on:
   push:
-    branches: '*'
+    branches: [main]
   pull_request:
-    branches:  '*'
+    branches:  [main]
 
 
 
