@@ -4,6 +4,11 @@ name: Generate db models
 on:
   push:
     branches: [ main, unstable ]
+    paths:
+     - create_db_models.sh
+     - sqlboiler.toml
+     - 'tools/schema_converter/*'
+     - 'schema/*'
   pull_request:
     branches: [ main, unstable ]
     paths:
