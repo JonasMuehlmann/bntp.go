@@ -23,11 +23,10 @@ import (
 
 // BookmarkContext is an object representing the database table.
 type BookmarkContext struct {
-	BookmarkID int `boil:"bookmark_id" json:"bookmark_id" toml:"bookmark_id" yaml:"bookmark_id"`
-	TagID      int `boil:"tag_id" json:"tag_id" toml:"tag_id" yaml:"tag_id"`
-
-	R *bookmarkContextR `boil:"-" json:"-" toml:"-" yaml:"-"`
-	L bookmarkContextL  `boil:"-" json:"-" toml:"-" yaml:"-"`
+	L          bookmarkContextL  `boil:"-" json:"-" toml:"-" yaml:"-"`
+	R          *bookmarkContextR `boil:"-" json:"-" toml:"-" yaml:"-"`
+	BookmarkID int               `boil:"bookmark_id" json:"bookmark_id" toml:"bookmark_id" yaml:"bookmark_id"`
+	TagID      int               `boil:"tag_id" json:"tag_id" toml:"tag_id" yaml:"tag_id"`
 }
 
 var BookmarkContextColumns = struct {

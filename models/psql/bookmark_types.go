@@ -23,11 +23,10 @@ import (
 
 // BookmarkType is an object representing the database table.
 type BookmarkType struct {
-	ID   int    `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Type string `boil:"type" json:"type" toml:"type" yaml:"type"`
-
-	R *bookmarkTypeR `boil:"-" json:"-" toml:"-" yaml:"-"`
-	L bookmarkTypeL  `boil:"-" json:"-" toml:"-" yaml:"-"`
+	L    bookmarkTypeL  `boil:"-" json:"-" toml:"-" yaml:"-"`
+	R    *bookmarkTypeR `boil:"-" json:"-" toml:"-" yaml:"-"`
+	Type string         `boil:"type" json:"type" toml:"type" yaml:"type"`
+	ID   int            `boil:"id" json:"id" toml:"id" yaml:"id"`
 }
 
 var BookmarkTypeColumns = struct {

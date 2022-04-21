@@ -24,18 +24,17 @@ import (
 
 // Bookmark is an object representing the database table.
 type Bookmark struct {
-	ID             int64       `boil:"id" json:"id" toml:"id" yaml:"id"`
-	IsRead         null.Int64  `boil:"is_read" json:"is_read,omitempty" toml:"is_read" yaml:"is_read,omitempty"`
-	Title          null.String `boil:"title" json:"title,omitempty" toml:"title" yaml:"title,omitempty"`
-	URL            string      `boil:"url" json:"url" toml:"url" yaml:"url"`
-	BookmarkTypeID null.Int64  `boil:"bookmark_type_id" json:"bookmark_type_id,omitempty" toml:"bookmark_type_id" yaml:"bookmark_type_id,omitempty"`
-	IsCollection   null.Int64  `boil:"is_collection" json:"is_collection,omitempty" toml:"is_collection" yaml:"is_collection,omitempty"`
+	L              bookmarkL   `boil:"-" json:"-" toml:"-" yaml:"-"`
+	R              *bookmarkR  `boil:"-" json:"-" toml:"-" yaml:"-"`
 	CreatedAt      string      `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
 	UpdatedAt      string      `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
+	URL            string      `boil:"url" json:"url" toml:"url" yaml:"url"`
+	Title          null.String `boil:"title" json:"title,omitempty" toml:"title" yaml:"title,omitempty"`
 	DeletedAt      null.String `boil:"deleted_at" json:"deleted_at,omitempty" toml:"deleted_at" yaml:"deleted_at,omitempty"`
-
-	R *bookmarkR `boil:"-" json:"-" toml:"-" yaml:"-"`
-	L bookmarkL  `boil:"-" json:"-" toml:"-" yaml:"-"`
+	IsCollection   null.Int64  `boil:"is_collection" json:"is_collection,omitempty" toml:"is_collection" yaml:"is_collection,omitempty"`
+	IsRead         null.Int64  `boil:"is_read" json:"is_read,omitempty" toml:"is_read" yaml:"is_read,omitempty"`
+	BookmarkTypeID null.Int64  `boil:"bookmark_type_id" json:"bookmark_type_id,omitempty" toml:"bookmark_type_id" yaml:"bookmark_type_id,omitempty"`
+	ID             int64       `boil:"id" json:"id" toml:"id" yaml:"id"`
 }
 
 var BookmarkColumns = struct {

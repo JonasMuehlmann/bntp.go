@@ -28,11 +28,11 @@ import "github.com/JonasMuehlmann/optional.go"
 type BookmarkFilter struct {
 	Title        optional.Optional[string]
 	Url          optional.Optional[string]
-	IsRead       optional.Optional[bool]
-	IsCollection optional.Optional[bool]
-	MaxAge       optional.Optional[int]
 	Types        optional.Optional[[]string]
 	Tags         optional.Optional[[]string]
+	MaxAge       optional.Optional[int]
+	IsRead       optional.Optional[bool]
+	IsCollection optional.Optional[bool]
 }
 
 // BookmarkFilterInboxed is a BookmarkFilter configured to filter "Inboxed" bookmarks.
