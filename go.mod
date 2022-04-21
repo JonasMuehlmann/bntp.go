@@ -6,8 +6,6 @@ require (
 	github.com/JonasMuehlmann/goaoi v1.2.0
 	github.com/denisenkom/go-mssqldb v0.10.0
 	github.com/friendsofgo/errors v0.9.2
-	github.com/go-playground/locales v0.14.0
-	github.com/go-playground/universal-translator v0.18.0
 	github.com/go-playground/validator/v10 v10.10.1
 	github.com/go-sql-driver/mysql v1.5.0
 	github.com/jmoiron/sqlx v1.3.4
@@ -31,6 +29,8 @@ require (
 
 require (
 	github.com/fsnotify/fsnotify v1.5.1 // indirect
+	github.com/go-playground/locales v0.14.0 // indirect
+	github.com/go-playground/universal-translator v0.18.0 // indirect
 	github.com/gocarina/gocsv v0.0.0-20220310154401-d4df709ca055 // indirect
 	github.com/gofrs/uuid v3.2.0+incompatible // indirect
 	github.com/golang-sql/civil v0.0.0-20190719163853-cb61b32ac6fe // indirect
