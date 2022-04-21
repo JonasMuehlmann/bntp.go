@@ -3,17 +3,22 @@ module github.com/JonasMuehlmann/bntp.go
 go 1.18
 
 require (
-	github.com/JonasMuehlmann/goaoi v1.1.1
+	github.com/JonasMuehlmann/goaoi v1.2.0
 	github.com/denisenkom/go-mssqldb v0.10.0
 	github.com/friendsofgo/errors v0.9.2
+	github.com/go-playground/locales v0.14.0
+	github.com/go-playground/universal-translator v0.18.0
+	github.com/go-playground/validator/v10 v10.10.1
 	github.com/go-sql-driver/mysql v1.5.0
 	github.com/jmoiron/sqlx v1.3.4
 	github.com/kat-co/vala v0.0.0-20170210184112-42e1d8b61f12
 	github.com/lib/pq v1.2.1-0.20191011153232-f91d3411e481
 	github.com/mattn/go-sqlite3 v1.14.12
 	github.com/pkg/errors v0.9.1
+	github.com/sirupsen/logrus v1.8.1
 	github.com/spf13/cobra v1.4.0
 	github.com/spf13/viper v1.11.0
+	github.com/stoewer/go-strcase v1.2.0
 	github.com/stretchr/testify v1.7.1
 	github.com/volatiletech/null/v8 v8.1.2
 	github.com/volatiletech/randomize v0.0.1
@@ -33,6 +38,7 @@ require (
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
 	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51 // indirect
+	github.com/leodido/go-urn v1.2.1 // indirect
 	github.com/magiconair/properties v1.8.6 // indirect
 	github.com/mattn/go-isatty v0.0.14 // indirect
 	github.com/mitchellh/mapstructure v1.4.3 // indirect

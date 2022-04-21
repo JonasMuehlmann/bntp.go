@@ -1,8 +1,6 @@
-/*
-Copyright © 2022 NAME HERE <EMAIL ADDRESS>
-
-*/
 package main
+
+//go:generate go run ./tools/generate_config_key_constants.go
 
 import "github.com/JonasMuehlmann/bntp.go/cmd"
 
