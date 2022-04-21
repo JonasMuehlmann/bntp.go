@@ -1,6 +1,10 @@
 wipe = true
 add-soft-delete = true
 
+[auto-columns]
+created = "createdAt"
+updated = "updatedAt"
+
 [sqlite3]
 dbname = "bntp_test.db"
 
