@@ -18,7 +18,6 @@ CREATE TABLE bookmarks
     is_read          INTEGER   DEFAULT 0,
     title            VARCHAR(255)      UNIQUE,
     url              VARCHAR(255)      NOT NULL UNIQUE,
-    time_added       DATETIME NOT NULL,
     bookmark_type_id INTEGER   ,
     is_collection    INTEGER   DEFAULT 0
 );
