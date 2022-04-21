@@ -19,7 +19,10 @@ CREATE TABLE bookmarks
     title            VARCHAR(255)      UNIQUE,
     url              VARCHAR(255)      NOT NULL UNIQUE,
     bookmark_type_id INTEGER   ,
-    is_collection    INTEGER   DEFAULT 0
+    is_collection    INTEGER   DEFAULT 0,
+    created_at       DATETIME NOT NULL,
+    updated_at       DATETIME NOT NULL,
+    deleted_at       DATETIME
 );
 
 CREATE TABLE document_types
@@ -32,7 +35,10 @@ CREATE TABLE documents
 (
     id               INTEGER PRIMARY KEY,
     path             VARCHAR(255)    NOT NULL UNIQUE,
-    document_type_id INTEGER NOT NULL 
+    document_type_id INTEGER NOT NULL ,
+    created_at       DATETIME NOT NULL,
+    updated_at       DATETIME NOT NULL,
+    deleted_at       DATETIME
 );
 
 CREATE TABLE links

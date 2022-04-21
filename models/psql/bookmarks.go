@@ -30,6 +30,9 @@ type Bookmark struct {
 	URL            string      `boil:"url" json:"url" toml:"url" yaml:"url"`
 	BookmarkTypeID null.Int    `boil:"bookmark_type_id" json:"bookmark_type_id,omitempty" toml:"bookmark_type_id" yaml:"bookmark_type_id,omitempty"`
 	IsCollection   null.Int    `boil:"is_collection" json:"is_collection,omitempty" toml:"is_collection" yaml:"is_collection,omitempty"`
+	CreatedAt      time.Time   `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	UpdatedAt      time.Time   `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
+	DeletedAt      null.Time   `boil:"deleted_at" json:"deleted_at,omitempty" toml:"deleted_at" yaml:"deleted_at,omitempty"`
 
 	R *bookmarkR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L bookmarkL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -42,6 +45,9 @@ var BookmarkColumns = struct {
 	URL            string
 	BookmarkTypeID string
 	IsCollection   string
+	CreatedAt      string
+	UpdatedAt      string
+	DeletedAt      string
 }{
 	ID:             "id",
 	IsRead:         "is_read",
@@ -49,6 +55,9 @@ var BookmarkColumns = struct {
 	URL:            "url",
 	BookmarkTypeID: "bookmark_type_id",
 	IsCollection:   "is_collection",
+	CreatedAt:      "created_at",
+	UpdatedAt:      "updated_at",
+	DeletedAt:      "deleted_at",
 }
 
 var BookmarkTableColumns = struct {
@@ -58,6 +67,9 @@ var BookmarkTableColumns = struct {
 	URL            string
 	BookmarkTypeID string
 	IsCollection   string
+	CreatedAt      string
+	UpdatedAt      string
+	DeletedAt      string
 }{
 	ID:             "bookmarks.id",
 	IsRead:         "bookmarks.is_read",
@@ -65,6 +77,9 @@ var BookmarkTableColumns = struct {
 	URL:            "bookmarks.url",
 	BookmarkTypeID: "bookmarks.bookmark_type_id",
 	IsCollection:   "bookmarks.is_collection",
+	CreatedAt:      "bookmarks.created_at",
+	UpdatedAt:      "bookmarks.updated_at",
+	DeletedAt:      "bookmarks.deleted_at",
 }
 
 // Generated where
@@ -117,6 +132,51 @@ func (w whereHelpernull_String) GTE(x null.String) qm.QueryMod {
 func (w whereHelpernull_String) IsNull() qm.QueryMod    { return qmhelper.WhereIsNull(w.field) }
 func (w whereHelpernull_String) IsNotNull() qm.QueryMod { return qmhelper.WhereIsNotNull(w.field) }
 
+type whereHelpertime_Time struct{ field string }
+
+func (w whereHelpertime_Time) EQ(x time.Time) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.EQ, x)
+}
+func (w whereHelpertime_Time) NEQ(x time.Time) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.NEQ, x)
+}
+func (w whereHelpertime_Time) LT(x time.Time) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.LT, x)
+}
+func (w whereHelpertime_Time) LTE(x time.Time) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.LTE, x)
+}
+func (w whereHelpertime_Time) GT(x time.Time) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.GT, x)
+}
+func (w whereHelpertime_Time) GTE(x time.Time) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.GTE, x)
+}
+
+type whereHelpernull_Time struct{ field string }
+
+func (w whereHelpernull_Time) EQ(x null.Time) qm.QueryMod {
+	return qmhelper.WhereNullEQ(w.field, false, x)
+}
+func (w whereHelpernull_Time) NEQ(x null.Time) qm.QueryMod {
+	return qmhelper.WhereNullEQ(w.field, true, x)
+}
+func (w whereHelpernull_Time) LT(x null.Time) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.LT, x)
+}
+func (w whereHelpernull_Time) LTE(x null.Time) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.LTE, x)
+}
+func (w whereHelpernull_Time) GT(x null.Time) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.GT, x)
+}
+func (w whereHelpernull_Time) GTE(x null.Time) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.GTE, x)
+}
+
+func (w whereHelpernull_Time) IsNull() qm.QueryMod    { return qmhelper.WhereIsNull(w.field) }
+func (w whereHelpernull_Time) IsNotNull() qm.QueryMod { return qmhelper.WhereIsNotNull(w.field) }
+
 var BookmarkWhere = struct {
 	ID             whereHelperint
 	IsRead         whereHelpernull_Int
@@ -124,6 +184,9 @@ var BookmarkWhere = struct {
 	URL            whereHelperstring
 	BookmarkTypeID whereHelpernull_Int
 	IsCollection   whereHelpernull_Int
+	CreatedAt      whereHelpertime_Time
+	UpdatedAt      whereHelpertime_Time
+	DeletedAt      whereHelpernull_Time
 }{
 	ID:             whereHelperint{field: "\"bookmarks\".\"id\""},
 	IsRead:         whereHelpernull_Int{field: "\"bookmarks\".\"is_read\""},
@@ -131,6 +194,9 @@ var BookmarkWhere = struct {
 	URL:            whereHelperstring{field: "\"bookmarks\".\"url\""},
 	BookmarkTypeID: whereHelpernull_Int{field: "\"bookmarks\".\"bookmark_type_id\""},
 	IsCollection:   whereHelpernull_Int{field: "\"bookmarks\".\"is_collection\""},
+	CreatedAt:      whereHelpertime_Time{field: "\"bookmarks\".\"created_at\""},
+	UpdatedAt:      whereHelpertime_Time{field: "\"bookmarks\".\"updated_at\""},
+	DeletedAt:      whereHelpernull_Time{field: "\"bookmarks\".\"deleted_at\""},
 }
 
 // BookmarkRels is where relationship names are stored.
@@ -157,9 +223,9 @@ func (*bookmarkR) NewStruct() *bookmarkR {
 type bookmarkL struct{}
 
 var (
-	bookmarkAllColumns            = []string{"id", "is_read", "title", "url", "bookmark_type_id", "is_collection"}
-	bookmarkColumnsWithoutDefault = []string{"id", "url"}
-	bookmarkColumnsWithDefault    = []string{"is_read", "title", "bookmark_type_id", "is_collection"}
+	bookmarkAllColumns            = []string{"id", "is_read", "title", "url", "bookmark_type_id", "is_collection", "created_at", "updated_at", "deleted_at"}
+	bookmarkColumnsWithoutDefault = []string{"id", "url", "created_at", "updated_at"}
+	bookmarkColumnsWithDefault    = []string{"is_read", "title", "bookmark_type_id", "is_collection", "deleted_at"}
 	bookmarkPrimaryKeyColumns     = []string{"id"}
 	bookmarkGeneratedColumns      = []string{}
 )

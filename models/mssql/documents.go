@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
+	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -23,9 +24,12 @@ import (
 
 // Document is an object representing the database table.
 type Document struct {
-	ID             int    `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Path           string `boil:"path" json:"path" toml:"path" yaml:"path"`
-	DocumentTypeID int    `boil:"document_type_id" json:"document_type_id" toml:"document_type_id" yaml:"document_type_id"`
+	ID             int       `boil:"id" json:"id" toml:"id" yaml:"id"`
+	Path           string    `boil:"path" json:"path" toml:"path" yaml:"path"`
+	DocumentTypeID int       `boil:"document_type_id" json:"document_type_id" toml:"document_type_id" yaml:"document_type_id"`
+	CreatedAt      time.Time `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	UpdatedAt      time.Time `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
+	DeletedAt      null.Time `boil:"deleted_at" json:"deleted_at,omitempty" toml:"deleted_at" yaml:"deleted_at,omitempty"`
 
 	R *documentR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L documentL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -35,20 +39,32 @@ var DocumentColumns = struct {
 	ID             string
 	Path           string
 	DocumentTypeID string
+	CreatedAt      string
+	UpdatedAt      string
+	DeletedAt      string
 }{
 	ID:             "id",
 	Path:           "path",
 	DocumentTypeID: "document_type_id",
+	CreatedAt:      "created_at",
+	UpdatedAt:      "updated_at",
+	DeletedAt:      "deleted_at",
 }
 
 var DocumentTableColumns = struct {
 	ID             string
 	Path           string
 	DocumentTypeID string
+	CreatedAt      string
+	UpdatedAt      string
+	DeletedAt      string
 }{
 	ID:             "documents.id",
 	Path:           "documents.path",
 	DocumentTypeID: "documents.document_type_id",
+	CreatedAt:      "documents.created_at",
+	UpdatedAt:      "documents.updated_at",
+	DeletedAt:      "documents.deleted_at",
 }
 
 // Generated where
@@ -57,10 +73,16 @@ var DocumentWhere = struct {
 	ID             whereHelperint
 	Path           whereHelperstring
 	DocumentTypeID whereHelperint
+	CreatedAt      whereHelpertime_Time
+	UpdatedAt      whereHelpertime_Time
+	DeletedAt      whereHelpernull_Time
 }{
 	ID:             whereHelperint{field: "[dbo].[documents].[id]"},
 	Path:           whereHelperstring{field: "[dbo].[documents].[path]"},
 	DocumentTypeID: whereHelperint{field: "[dbo].[documents].[document_type_id]"},
+	CreatedAt:      whereHelpertime_Time{field: "[dbo].[documents].[created_at]"},
+	UpdatedAt:      whereHelpertime_Time{field: "[dbo].[documents].[updated_at]"},
+	DeletedAt:      whereHelpernull_Time{field: "[dbo].[documents].[deleted_at]"},
 }
 
 // DocumentRels is where relationship names are stored.
@@ -93,8 +115,8 @@ func (*documentR) NewStruct() *documentR {
 type documentL struct{}
 
 var (
-	documentAllColumns            = []string{"id", "path", "document_type_id"}
-	documentColumnsWithoutDefault = []string{"id", "path", "document_type_id"}
+	documentAllColumns            = []string{"id", "path", "document_type_id", "created_at", "updated_at", "deleted_at"}
+	documentColumnsWithoutDefault = []string{"id", "path", "document_type_id", "created_at", "updated_at", "deleted_at"}
 	documentColumnsWithDefault    = []string{}
 	documentPrimaryKeyColumns     = []string{"id"}
 	documentGeneratedColumns      = []string{}
@@ -693,7 +715,7 @@ func (documentL) LoadSourceDocuments(ctx context.Context, e boil.ContextExecutor
 	}
 
 	query := NewQuery(
-		qm.Select("[dbo].[documents].[id], [dbo].[documents].[path], [dbo].[documents].[document_type_id], [a].[destination_id]"),
+		qm.Select("[dbo].[documents].[id], [dbo].[documents].[path], [dbo].[documents].[document_type_id], [dbo].[documents].[created_at], [dbo].[documents].[updated_at], [dbo].[documents].[deleted_at], [a].[destination_id]"),
 		qm.From("[dbo].[documents]"),
 		qm.InnerJoin("[dbo].[links] as [a] on [dbo].[documents].[id] = [a].[source_id]"),
 		qm.WhereIn("[a].[destination_id] in ?", args...),
@@ -714,7 +736,7 @@ func (documentL) LoadSourceDocuments(ctx context.Context, e boil.ContextExecutor
 		one := new(Document)
 		var localJoinCol int
 
-		err = results.Scan(&one.ID, &one.Path, &one.DocumentTypeID, &localJoinCol)
+		err = results.Scan(&one.ID, &one.Path, &one.DocumentTypeID, &one.CreatedAt, &one.UpdatedAt, &one.DeletedAt, &localJoinCol)
 		if err != nil {
 			return errors.Wrap(err, "failed to scan eager loaded results for documents")
 		}
@@ -808,7 +830,7 @@ func (documentL) LoadDestinationDocuments(ctx context.Context, e boil.ContextExe
 	}
 
 	query := NewQuery(
-		qm.Select("[dbo].[documents].[id], [dbo].[documents].[path], [dbo].[documents].[document_type_id], [a].[source_id]"),
+		qm.Select("[dbo].[documents].[id], [dbo].[documents].[path], [dbo].[documents].[document_type_id], [dbo].[documents].[created_at], [dbo].[documents].[updated_at], [dbo].[documents].[deleted_at], [a].[source_id]"),
 		qm.From("[dbo].[documents]"),
 		qm.InnerJoin("[dbo].[links] as [a] on [dbo].[documents].[id] = [a].[destination_id]"),
 		qm.WhereIn("[a].[source_id] in ?", args...),
@@ -829,7 +851,7 @@ func (documentL) LoadDestinationDocuments(ctx context.Context, e boil.ContextExe
 		one := new(Document)
 		var localJoinCol int
 
-		err = results.Scan(&one.ID, &one.Path, &one.DocumentTypeID, &localJoinCol)
+		err = results.Scan(&one.ID, &one.Path, &one.DocumentTypeID, &one.CreatedAt, &one.UpdatedAt, &one.DeletedAt, &localJoinCol)
 		if err != nil {
 			return errors.Wrap(err, "failed to scan eager loaded results for documents")
 		}

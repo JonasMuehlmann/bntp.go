@@ -1613,7 +1613,7 @@ func testDocumentsSelect(t *testing.T) {
 }
 
 var (
-	documentDBTypes = map[string]string{`ID`: `int`, `Path`: `varchar`, `DocumentTypeID`: `int`}
+	documentDBTypes = map[string]string{`ID`: `int`, `Path`: `varchar`, `DocumentTypeID`: `int`, `CreatedAt`: `datetime`, `UpdatedAt`: `datetime`, `DeletedAt`: `datetime`}
 	_               = bytes.MinRead
 )
 

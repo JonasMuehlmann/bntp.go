@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
+	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -23,9 +24,12 @@ import (
 
 // Document is an object representing the database table.
 type Document struct {
-	ID             int    `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Path           string `boil:"path" json:"path" toml:"path" yaml:"path"`
-	DocumentTypeID int    `boil:"document_type_id" json:"document_type_id" toml:"document_type_id" yaml:"document_type_id"`
+	ID             int       `boil:"id" json:"id" toml:"id" yaml:"id"`
+	Path           string    `boil:"path" json:"path" toml:"path" yaml:"path"`
+	DocumentTypeID int       `boil:"document_type_id" json:"document_type_id" toml:"document_type_id" yaml:"document_type_id"`
+	CreatedAt      time.Time `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	UpdatedAt      time.Time `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
+	DeletedAt      null.Time `boil:"deleted_at" json:"deleted_at,omitempty" toml:"deleted_at" yaml:"deleted_at,omitempty"`
 
 	R *documentR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L documentL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -35,20 +39,32 @@ var DocumentColumns = struct {
 	ID             string
 	Path           string
 	DocumentTypeID string
+	CreatedAt      string
+	UpdatedAt      string
+	DeletedAt      string
 }{
 	ID:             "id",
 	Path:           "path",
 	DocumentTypeID: "document_type_id",
+	CreatedAt:      "created_at",
+	UpdatedAt:      "updated_at",
+	DeletedAt:      "deleted_at",
 }
 
 var DocumentTableColumns = struct {
 	ID             string
 	Path           string
 	DocumentTypeID string
+	CreatedAt      string
+	UpdatedAt      string
+	DeletedAt      string
 }{
 	ID:             "documents.id",
 	Path:           "documents.path",
 	DocumentTypeID: "documents.document_type_id",
+	CreatedAt:      "documents.created_at",
+	UpdatedAt:      "documents.updated_at",
+	DeletedAt:      "documents.deleted_at",
 }
 
 // Generated where
@@ -57,10 +73,16 @@ var DocumentWhere = struct {
 	ID             whereHelperint
 	Path           whereHelperstring
 	DocumentTypeID whereHelperint
+	CreatedAt      whereHelpertime_Time
+	UpdatedAt      whereHelpertime_Time
+	DeletedAt      whereHelpernull_Time
 }{
 	ID:             whereHelperint{field: "`documents`.`id`"},
 	Path:           whereHelperstring{field: "`documents`.`path`"},
 	DocumentTypeID: whereHelperint{field: "`documents`.`document_type_id`"},
+	CreatedAt:      whereHelpertime_Time{field: "`documents`.`created_at`"},
+	UpdatedAt:      whereHelpertime_Time{field: "`documents`.`updated_at`"},
+	DeletedAt:      whereHelpernull_Time{field: "`documents`.`deleted_at`"},
 }
 
 // DocumentRels is where relationship names are stored.
@@ -80,8 +102,8 @@ func (*documentR) NewStruct() *documentR {
 type documentL struct{}
 
 var (
-	documentAllColumns            = []string{"id", "path", "document_type_id"}
-	documentColumnsWithoutDefault = []string{"id", "path", "document_type_id"}
+	documentAllColumns            = []string{"id", "path", "document_type_id", "created_at", "updated_at", "deleted_at"}
+	documentColumnsWithoutDefault = []string{"id", "path", "document_type_id", "created_at", "updated_at", "deleted_at"}
 	documentColumnsWithDefault    = []string{}
 	documentPrimaryKeyColumns     = []string{"id"}
 	documentGeneratedColumns      = []string{}
