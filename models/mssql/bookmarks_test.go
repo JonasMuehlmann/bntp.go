@@ -1040,7 +1040,7 @@ func testBookmarksSelect(t *testing.T) {
 }
 
 var (
-	bookmarkDBTypes = map[string]string{`ID`: `int`, `IsRead`: `int`, `Title`: `varchar`, `URL`: `varchar`, `BookmarkTypeID`: `int`, `IsCollection`: `int`}
+	bookmarkDBTypes = map[string]string{`ID`: `int`, `IsRead`: `int`, `Title`: `varchar`, `URL`: `varchar`, `BookmarkTypeID`: `int`, `IsCollection`: `int`, `CreatedAt`: `datetime`, `UpdatedAt`: `datetime`, `DeletedAt`: `datetime`}
 	_               = bytes.MinRead
 )
 

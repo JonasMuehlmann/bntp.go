@@ -435,7 +435,7 @@ func (tagL) LoadBookmarks(ctx context.Context, e boil.ContextExecutor, singular 
 	}
 
 	query := NewQuery(
-		qm.Select("[dbo].[bookmarks].[id], [dbo].[bookmarks].[is_read], [dbo].[bookmarks].[title], [dbo].[bookmarks].[url], [dbo].[bookmarks].[bookmark_type_id], [dbo].[bookmarks].[is_collection], [a].[tag_id]"),
+		qm.Select("[dbo].[bookmarks].[id], [dbo].[bookmarks].[is_read], [dbo].[bookmarks].[title], [dbo].[bookmarks].[url], [dbo].[bookmarks].[bookmark_type_id], [dbo].[bookmarks].[is_collection], [dbo].[bookmarks].[created_at], [dbo].[bookmarks].[updated_at], [dbo].[bookmarks].[deleted_at], [a].[tag_id]"),
 		qm.From("[dbo].[bookmarks]"),
 		qm.InnerJoin("[dbo].[bookmark_contexts] as [a] on [dbo].[bookmarks].[id] = [a].[bookmark_id]"),
 		qm.WhereIn("[a].[tag_id] in ?", args...),
@@ -456,7 +456,7 @@ func (tagL) LoadBookmarks(ctx context.Context, e boil.ContextExecutor, singular 
 		one := new(Bookmark)
 		var localJoinCol int
 
-		err = results.Scan(&one.ID, &one.IsRead, &one.Title, &one.URL, &one.BookmarkTypeID, &one.IsCollection, &localJoinCol)
+		err = results.Scan(&one.ID, &one.IsRead, &one.Title, &one.URL, &one.BookmarkTypeID, &one.IsCollection, &one.CreatedAt, &one.UpdatedAt, &one.DeletedAt, &localJoinCol)
 		if err != nil {
 			return errors.Wrap(err, "failed to scan eager loaded results for bookmarks")
 		}
@@ -550,7 +550,7 @@ func (tagL) LoadDocuments(ctx context.Context, e boil.ContextExecutor, singular 
 	}
 
 	query := NewQuery(
-		qm.Select("[dbo].[documents].[id], [dbo].[documents].[path], [dbo].[documents].[document_type_id], [a].[tag_id]"),
+		qm.Select("[dbo].[documents].[id], [dbo].[documents].[path], [dbo].[documents].[document_type_id], [dbo].[documents].[created_at], [dbo].[documents].[updated_at], [dbo].[documents].[deleted_at], [a].[tag_id]"),
 		qm.From("[dbo].[documents]"),
 		qm.InnerJoin("[dbo].[document_contexts] as [a] on [dbo].[documents].[id] = [a].[document_id]"),
 		qm.WhereIn("[a].[tag_id] in ?", args...),
@@ -571,7 +571,7 @@ func (tagL) LoadDocuments(ctx context.Context, e boil.ContextExecutor, singular 
 		one := new(Document)
 		var localJoinCol int
 
-		err = results.Scan(&one.ID, &one.Path, &one.DocumentTypeID, &localJoinCol)
+		err = results.Scan(&one.ID, &one.Path, &one.DocumentTypeID, &one.CreatedAt, &one.UpdatedAt, &one.DeletedAt, &localJoinCol)
 		if err != nil {
 			return errors.Wrap(err, "failed to scan eager loaded results for documents")
 		}
