@@ -435,7 +435,7 @@ func (tagL) LoadBookmarks(ctx context.Context, e boil.ContextExecutor, singular 
 	}
 
 	query := NewQuery(
-		qm.Select("[dbo].[bookmarks].[id], [dbo].[bookmarks].[is_read], [dbo].[bookmarks].[title], [dbo].[bookmarks].[url], [dbo].[bookmarks].[time_added], [dbo].[bookmarks].[bookmark_type_id], [dbo].[bookmarks].[is_collection], [a].[tag_id]"),
+		qm.Select("[dbo].[bookmarks].[id], [dbo].[bookmarks].[is_read], [dbo].[bookmarks].[title], [dbo].[bookmarks].[url], [dbo].[bookmarks].[bookmark_type_id], [dbo].[bookmarks].[is_collection], [a].[tag_id]"),
 		qm.From("[dbo].[bookmarks]"),
 		qm.InnerJoin("[dbo].[bookmark_contexts] as [a] on [dbo].[bookmarks].[id] = [a].[bookmark_id]"),
 		qm.WhereIn("[a].[tag_id] in ?", args...),
@@ -456,7 +456,7 @@ func (tagL) LoadBookmarks(ctx context.Context, e boil.ContextExecutor, singular 
 		one := new(Bookmark)
 		var localJoinCol int
 
-		err = results.Scan(&one.ID, &one.IsRead, &one.Title, &one.URL, &one.TimeAdded, &one.BookmarkTypeID, &one.IsCollection, &localJoinCol)
+		err = results.Scan(&one.ID, &one.IsRead, &one.Title, &one.URL, &one.BookmarkTypeID, &one.IsCollection, &localJoinCol)
 		if err != nil {
 			return errors.Wrap(err, "failed to scan eager loaded results for bookmarks")
 		}

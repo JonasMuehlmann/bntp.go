@@ -28,7 +28,6 @@ type Bookmark struct {
 	IsRead         null.Int    `boil:"is_read" json:"is_read,omitempty" toml:"is_read" yaml:"is_read,omitempty"`
 	Title          null.String `boil:"title" json:"title,omitempty" toml:"title" yaml:"title,omitempty"`
 	URL            string      `boil:"url" json:"url" toml:"url" yaml:"url"`
-	TimeAdded      time.Time   `boil:"time_added" json:"time_added" toml:"time_added" yaml:"time_added"`
 	BookmarkTypeID null.Int    `boil:"bookmark_type_id" json:"bookmark_type_id,omitempty" toml:"bookmark_type_id" yaml:"bookmark_type_id,omitempty"`
 	IsCollection   null.Int    `boil:"is_collection" json:"is_collection,omitempty" toml:"is_collection" yaml:"is_collection,omitempty"`
 
@@ -41,7 +40,6 @@ var BookmarkColumns = struct {
 	IsRead         string
 	Title          string
 	URL            string
-	TimeAdded      string
 	BookmarkTypeID string
 	IsCollection   string
 }{
@@ -49,7 +47,6 @@ var BookmarkColumns = struct {
 	IsRead:         "is_read",
 	Title:          "title",
 	URL:            "url",
-	TimeAdded:      "time_added",
 	BookmarkTypeID: "bookmark_type_id",
 	IsCollection:   "is_collection",
 }
@@ -59,7 +56,6 @@ var BookmarkTableColumns = struct {
 	IsRead         string
 	Title          string
 	URL            string
-	TimeAdded      string
 	BookmarkTypeID string
 	IsCollection   string
 }{
@@ -67,7 +63,6 @@ var BookmarkTableColumns = struct {
 	IsRead:         "bookmarks.is_read",
 	Title:          "bookmarks.title",
 	URL:            "bookmarks.url",
-	TimeAdded:      "bookmarks.time_added",
 	BookmarkTypeID: "bookmarks.bookmark_type_id",
 	IsCollection:   "bookmarks.is_collection",
 }
@@ -122,33 +117,11 @@ func (w whereHelpernull_String) GTE(x null.String) qm.QueryMod {
 func (w whereHelpernull_String) IsNull() qm.QueryMod    { return qmhelper.WhereIsNull(w.field) }
 func (w whereHelpernull_String) IsNotNull() qm.QueryMod { return qmhelper.WhereIsNotNull(w.field) }
 
-type whereHelpertime_Time struct{ field string }
-
-func (w whereHelpertime_Time) EQ(x time.Time) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.EQ, x)
-}
-func (w whereHelpertime_Time) NEQ(x time.Time) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.NEQ, x)
-}
-func (w whereHelpertime_Time) LT(x time.Time) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.LT, x)
-}
-func (w whereHelpertime_Time) LTE(x time.Time) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.LTE, x)
-}
-func (w whereHelpertime_Time) GT(x time.Time) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.GT, x)
-}
-func (w whereHelpertime_Time) GTE(x time.Time) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.GTE, x)
-}
-
 var BookmarkWhere = struct {
 	ID             whereHelperint
 	IsRead         whereHelpernull_Int
 	Title          whereHelpernull_String
 	URL            whereHelperstring
-	TimeAdded      whereHelpertime_Time
 	BookmarkTypeID whereHelpernull_Int
 	IsCollection   whereHelpernull_Int
 }{
@@ -156,7 +129,6 @@ var BookmarkWhere = struct {
 	IsRead:         whereHelpernull_Int{field: "[dbo].[bookmarks].[is_read]"},
 	Title:          whereHelpernull_String{field: "[dbo].[bookmarks].[title]"},
 	URL:            whereHelperstring{field: "[dbo].[bookmarks].[url]"},
-	TimeAdded:      whereHelpertime_Time{field: "[dbo].[bookmarks].[time_added]"},
 	BookmarkTypeID: whereHelpernull_Int{field: "[dbo].[bookmarks].[bookmark_type_id]"},
 	IsCollection:   whereHelpernull_Int{field: "[dbo].[bookmarks].[is_collection]"},
 }
@@ -185,8 +157,8 @@ func (*bookmarkR) NewStruct() *bookmarkR {
 type bookmarkL struct{}
 
 var (
-	bookmarkAllColumns            = []string{"id", "is_read", "title", "url", "time_added", "bookmark_type_id", "is_collection"}
-	bookmarkColumnsWithoutDefault = []string{"id", "title", "url", "time_added", "bookmark_type_id"}
+	bookmarkAllColumns            = []string{"id", "is_read", "title", "url", "bookmark_type_id", "is_collection"}
+	bookmarkColumnsWithoutDefault = []string{"id", "title", "url", "bookmark_type_id"}
 	bookmarkColumnsWithDefault    = []string{"is_read", "is_collection"}
 	bookmarkPrimaryKeyColumns     = []string{"id"}
 	bookmarkGeneratedColumns      = []string{}

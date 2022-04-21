@@ -28,7 +28,6 @@ type Bookmark struct {
 	IsRead         null.Int64  `boil:"is_read" json:"is_read,omitempty" toml:"is_read" yaml:"is_read,omitempty"`
 	Title          null.String `boil:"title" json:"title,omitempty" toml:"title" yaml:"title,omitempty"`
 	URL            string      `boil:"url" json:"url" toml:"url" yaml:"url"`
-	TimeAdded      string      `boil:"time_added" json:"time_added" toml:"time_added" yaml:"time_added"`
 	BookmarkTypeID null.Int64  `boil:"bookmark_type_id" json:"bookmark_type_id,omitempty" toml:"bookmark_type_id" yaml:"bookmark_type_id,omitempty"`
 	IsCollection   null.Int64  `boil:"is_collection" json:"is_collection,omitempty" toml:"is_collection" yaml:"is_collection,omitempty"`
 
@@ -41,7 +40,6 @@ var BookmarkColumns = struct {
 	IsRead         string
 	Title          string
 	URL            string
-	TimeAdded      string
 	BookmarkTypeID string
 	IsCollection   string
 }{
@@ -49,7 +47,6 @@ var BookmarkColumns = struct {
 	IsRead:         "is_read",
 	Title:          "title",
 	URL:            "url",
-	TimeAdded:      "time_added",
 	BookmarkTypeID: "bookmark_type_id",
 	IsCollection:   "is_collection",
 }
@@ -59,7 +56,6 @@ var BookmarkTableColumns = struct {
 	IsRead         string
 	Title          string
 	URL            string
-	TimeAdded      string
 	BookmarkTypeID string
 	IsCollection   string
 }{
@@ -67,7 +63,6 @@ var BookmarkTableColumns = struct {
 	IsRead:         "bookmarks.is_read",
 	Title:          "bookmarks.title",
 	URL:            "bookmarks.url",
-	TimeAdded:      "bookmarks.time_added",
 	BookmarkTypeID: "bookmarks.bookmark_type_id",
 	IsCollection:   "bookmarks.is_collection",
 }
@@ -127,7 +122,6 @@ var BookmarkWhere = struct {
 	IsRead         whereHelpernull_Int64
 	Title          whereHelpernull_String
 	URL            whereHelperstring
-	TimeAdded      whereHelperstring
 	BookmarkTypeID whereHelpernull_Int64
 	IsCollection   whereHelpernull_Int64
 }{
@@ -135,7 +129,6 @@ var BookmarkWhere = struct {
 	IsRead:         whereHelpernull_Int64{field: "\"bookmarks\".\"is_read\""},
 	Title:          whereHelpernull_String{field: "\"bookmarks\".\"title\""},
 	URL:            whereHelperstring{field: "\"bookmarks\".\"url\""},
-	TimeAdded:      whereHelperstring{field: "\"bookmarks\".\"time_added\""},
 	BookmarkTypeID: whereHelpernull_Int64{field: "\"bookmarks\".\"bookmark_type_id\""},
 	IsCollection:   whereHelpernull_Int64{field: "\"bookmarks\".\"is_collection\""},
 }
@@ -164,8 +157,8 @@ func (*bookmarkR) NewStruct() *bookmarkR {
 type bookmarkL struct{}
 
 var (
-	bookmarkAllColumns            = []string{"id", "is_read", "title", "url", "time_added", "bookmark_type_id", "is_collection"}
-	bookmarkColumnsWithoutDefault = []string{"url", "time_added"}
+	bookmarkAllColumns            = []string{"id", "is_read", "title", "url", "bookmark_type_id", "is_collection"}
+	bookmarkColumnsWithoutDefault = []string{"url"}
 	bookmarkColumnsWithDefault    = []string{"id", "is_read", "title", "bookmark_type_id", "is_collection"}
 	bookmarkPrimaryKeyColumns     = []string{"id"}
 	bookmarkGeneratedColumns      = []string{"id"}
