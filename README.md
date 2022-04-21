@@ -11,6 +11,7 @@ Suggestions and ideas are welcome.
 ```go get github.com/JonasMuehlmann/bntp.go```
 
 Documentation available at https://pkg.go.dev/github.com/JonasMuehlmann/bntp.go.
+The CLI is documented at docs/cli_help/
 
 # Why?
 
