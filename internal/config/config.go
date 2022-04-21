@@ -21,46 +21,32 @@
 package config
 
 import (
-	"fmt"
-	"os"
-
-	"github.com/JonasMuehlmann/goaoi"
-	"github.com/spf13/viper"
+	"github.com/go-playground/validator/v10"
+	"github.com/sirupsen/logrus"
 )
 
-var (
-	ConfigPath         string
-	ConfigFileBaseName = "bntp_config"
-	ConfigSearchPaths  = []string{
-		".",
-		"$HOME/.config/bntp/",
-		"$HOME/.config/",
-		"$HOME/",
-	}
-)
+var ConfigValidator = validator.New()
 
 const (
-	QUIET   = "quiet"
-	VERBOSE = "verbose"
+	VALIDATOR_LOGRUS_LOG_LEVEL = "logrus_log_level"
 )
 
-func InitConfig() {
-	if ConfigPath != "" {
-		viper.SetConfigFile(ConfigPath)
-	} else {
-		goaoi.ForeachSliceUnsafe(ConfigSearchPaths, viper.AddConfigPath)
+// TODO: Add test to validate that The field name, tag "name" and "mapstructure" match.
+type Config struct {
+	LogFile         string `name:"log_file" mapstructure:"log_file" validate:"required,file"`
+	ConsoleLogLevel string `name:"console_log_level" mapstructure:"console_log_level" validate:"required,logrus_log_level"`
+	FileLogLevel    string `name:"file_log_level" mapstructure:"file_log_level" validate:"required,logrus_log_level"`
+}
+
+func init() {
+	err := ConfigValidator.RegisterValidation(VALIDATOR_LOGRUS_LOG_LEVEL, validateLogLevel)
+	if err != nil {
+		panic(err)
 	}
+}
 
-	// ***********************    Set defaults    ***********************//
-	viper.SetDefault(QUIET, false)
-	viper.SetDefault(VERBOSE, false)
+func validateLogLevel(field validator.FieldLevel) bool {
+	_, err := logrus.ParseLevel(field.Field().String())
 
-	viper.SetEnvPrefix("BNTP")
-	viper.SetConfigName(ConfigFileBaseName)
-	viper.AutomaticEnv() // read in environment variables that match
-
-	// If a config file is found, read it in.
-	if err := viper.ReadInConfig(); err == nil {
-		fmt.Fprintln(os.Stderr, "Using config file:", viper.ConfigFileUsed())
-	}
+	return err == nil
 }

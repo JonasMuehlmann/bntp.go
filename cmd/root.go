@@ -21,12 +21,14 @@
 package cmd
 
 import (
-	"log"
+	"fmt"
 	"os"
 
 	"github.com/JonasMuehlmann/bntp.go/internal/config"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"github.com/stoewer/go-strcase"
 )
 
 var RootCmd = &cobra.Command{
@@ -40,8 +42,6 @@ var RootCmd = &cobra.Command{
 	},
 }
 
-// Execute adds all child commands to the root command and sets flags appropriately.
-// This is called by main.main(). It only needs to happen once to the RootCmd.
 func Execute() {
 	err := RootCmd.Execute()
 	if err != nil {
@@ -50,17 +50,26 @@ func Execute() {
 }
 
 func init() {
-	// TODO: Mark quiet and verbose flags as mutually exclusive when the next cobra version gets released.
-	RootCmd.PersistentFlags().BoolP(config.QUIET, config.QUIET[0:1], false, "Disable all logging")
-	RootCmd.PersistentFlags().BoolP(config.VERBOSE, config.VERBOSE[0:1], false, "Enable full logging")
-	RootCmd.PersistentFlags().StringVarP(&config.ConfigPath, "config", "c", "", "The config file to use instead of ones found in search paths")
+	RootCmd.PersistentFlags().StringVarP(&config.PassedConfigPath, "config", "c", "", "The config file to use instead of ones found in search paths")
+
+	RootCmd.PersistentFlags().String(
+		strcase.KebabCase(config.CONSOLE_LOG_LEVEL),
+		config.DefaultSettings[config.CONSOLE_LOG_LEVEL].(log.Level).String(),
+		fmt.Sprintf("The minimum log level to display on the console (Allowed values: %v)", log.AllLevels),
+	)
+
+	RootCmd.PersistentFlags().String(
+		strcase.KebabCase(config.FILE_LOG_LEVEL),
+		config.DefaultSettings[config.FILE_LOG_LEVEL].(log.Level).String(),
+		fmt.Sprintf("The minimum log level to log to the log files (Allowed values: %v)", log.AllLevels),
+	)
 
 	cobra.OnInitialize(config.InitConfig, bindFlagsToConfig)
 }
 
 func bindFlagsToConfig() {
-	for _, setting := range []string{config.QUIET, config.VERBOSE} {
-		err := viper.BindPFlag(setting, RootCmd.Flags().Lookup(setting))
+	for _, setting := range []string{config.CONSOLE_LOG_LEVEL, config.FILE_LOG_LEVEL} {
+		err := viper.BindPFlag(setting, RootCmd.Flags().Lookup(strcase.KebabCase(setting)))
 		if err != nil {
 			log.Fatal(err)
 		}
