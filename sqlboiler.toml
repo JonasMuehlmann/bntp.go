@@ -1,5 +1,5 @@
-wipe = true
 add-soft-delete = true
+wipe = true
 
 [auto-columns]
 created = "createdAt"
