@@ -80,6 +80,8 @@ jobs:
          go install golang.org/x/tools/go/analysis/passes/fieldalignment/cmd/fieldalignment@latest
          cp schema/bntp_sqlite.sql test/bntp.sql
          go generate ./...
+         fieldalignment -fix ./pkg/... ./repository/... ./domain/... || true
+
     - uses: stefanzweifel/git-auto-commit-action@v4
       with:
         file_pattern: ./internal/**
