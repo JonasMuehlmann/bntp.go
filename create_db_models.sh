@@ -33,19 +33,18 @@ REPOSITORIES=(libbookmarks libdocuments liblinks libtags)
 
 # Users won't need these tests anymore
 rm ./models/**/*_test.go
-    for db in "${DBS[@]}"; do
-        repo_dir=repository/$db
-        mkdir -p  "$repo_dir"
-        # Not sure if these are mandatory, but keeping the mcan't hurt
-        cp -t "$repo_dir/" ./models/$db/{boil_queries,boil_types,boil_table_names,boil_view_names,*_upsert}.go
-        # Strip prefix lib
-        tmp=${repo#lib}
-        # Strip suffix s
-        tmp=${tmp%s}
-        mv ./models/$db/*$tmp*.go "$repo_dir/"
+for db in "${DBS[@]}"; do
+    repo_dir=repository/$db
+    mkdir -p "$repo_dir"
+    # Not sure if these are mandatory, but keeping the mcan't hurt
+    cp -t "$repo_dir/" ./models/$db/{boil_queries,boil_types,boil_table_names,boil_view_names,*_upsert}.go
+    # Strip prefix lib
+    tmp=${repo#lib}
+    # Strip suffix s
+    tmp=${tmp%s}
+    mv ./models/$db/*$tmp*.go "$repo_dir/"
 
-        sed -i "s/package models/ package repository/g" "$repo_dir/"*.go
-    done
+    sed -i "s/package models/ package repository/g" "$repo_dir/"*.go
 done
 
 # Remove temp dir of generation
