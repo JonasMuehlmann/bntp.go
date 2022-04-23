@@ -24,15 +24,15 @@ import (
 
 // Bookmark is an object representing the database table.
 type Bookmark struct {
-	ID             int64       `boil:"id" json:"id" toml:"id" yaml:"id"`
-	IsRead         int64       `boil:"is_read" json:"is_read" toml:"is_read" yaml:"is_read"`
+	ID             int         `boil:"id" json:"id" toml:"id" yaml:"id"`
+	IsRead         int         `boil:"is_read" json:"is_read" toml:"is_read" yaml:"is_read"`
 	Title          null.String `boil:"title" json:"title,omitempty" toml:"title" yaml:"title,omitempty"`
 	URL            string      `boil:"url" json:"url" toml:"url" yaml:"url"`
-	BookmarkTypeID null.Int64  `boil:"bookmark_type_id" json:"bookmark_type_id,omitempty" toml:"bookmark_type_id" yaml:"bookmark_type_id,omitempty"`
-	IsCollection   int64       `boil:"is_collection" json:"is_collection" toml:"is_collection" yaml:"is_collection"`
-	CreatedAt      string      `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
-	UpdatedAt      string      `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
-	DeletedAt      null.String `boil:"deleted_at" json:"deleted_at,omitempty" toml:"deleted_at" yaml:"deleted_at,omitempty"`
+	BookmarkTypeID null.Int    `boil:"bookmark_type_id" json:"bookmark_type_id,omitempty" toml:"bookmark_type_id" yaml:"bookmark_type_id,omitempty"`
+	IsCollection   int         `boil:"is_collection" json:"is_collection" toml:"is_collection" yaml:"is_collection"`
+	CreatedAt      time.Time   `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	UpdatedAt      time.Time   `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
+	DeletedAt      null.Time   `boil:"deleted_at" json:"deleted_at,omitempty" toml:"deleted_at" yaml:"deleted_at,omitempty"`
 
 	R *bookmarkR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L bookmarkL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -108,50 +108,95 @@ func (w whereHelpernull_String) GTE(x null.String) qm.QueryMod {
 func (w whereHelpernull_String) IsNull() qm.QueryMod    { return qmhelper.WhereIsNull(w.field) }
 func (w whereHelpernull_String) IsNotNull() qm.QueryMod { return qmhelper.WhereIsNotNull(w.field) }
 
-type whereHelpernull_Int64 struct{ field string }
+type whereHelpernull_Int struct{ field string }
 
-func (w whereHelpernull_Int64) EQ(x null.Int64) qm.QueryMod {
+func (w whereHelpernull_Int) EQ(x null.Int) qm.QueryMod {
 	return qmhelper.WhereNullEQ(w.field, false, x)
 }
-func (w whereHelpernull_Int64) NEQ(x null.Int64) qm.QueryMod {
+func (w whereHelpernull_Int) NEQ(x null.Int) qm.QueryMod {
 	return qmhelper.WhereNullEQ(w.field, true, x)
 }
-func (w whereHelpernull_Int64) LT(x null.Int64) qm.QueryMod {
+func (w whereHelpernull_Int) LT(x null.Int) qm.QueryMod {
 	return qmhelper.Where(w.field, qmhelper.LT, x)
 }
-func (w whereHelpernull_Int64) LTE(x null.Int64) qm.QueryMod {
+func (w whereHelpernull_Int) LTE(x null.Int) qm.QueryMod {
 	return qmhelper.Where(w.field, qmhelper.LTE, x)
 }
-func (w whereHelpernull_Int64) GT(x null.Int64) qm.QueryMod {
+func (w whereHelpernull_Int) GT(x null.Int) qm.QueryMod {
 	return qmhelper.Where(w.field, qmhelper.GT, x)
 }
-func (w whereHelpernull_Int64) GTE(x null.Int64) qm.QueryMod {
+func (w whereHelpernull_Int) GTE(x null.Int) qm.QueryMod {
 	return qmhelper.Where(w.field, qmhelper.GTE, x)
 }
 
-func (w whereHelpernull_Int64) IsNull() qm.QueryMod    { return qmhelper.WhereIsNull(w.field) }
-func (w whereHelpernull_Int64) IsNotNull() qm.QueryMod { return qmhelper.WhereIsNotNull(w.field) }
+func (w whereHelpernull_Int) IsNull() qm.QueryMod    { return qmhelper.WhereIsNull(w.field) }
+func (w whereHelpernull_Int) IsNotNull() qm.QueryMod { return qmhelper.WhereIsNotNull(w.field) }
+
+type whereHelpertime_Time struct{ field string }
+
+func (w whereHelpertime_Time) EQ(x time.Time) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.EQ, x)
+}
+func (w whereHelpertime_Time) NEQ(x time.Time) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.NEQ, x)
+}
+func (w whereHelpertime_Time) LT(x time.Time) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.LT, x)
+}
+func (w whereHelpertime_Time) LTE(x time.Time) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.LTE, x)
+}
+func (w whereHelpertime_Time) GT(x time.Time) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.GT, x)
+}
+func (w whereHelpertime_Time) GTE(x time.Time) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.GTE, x)
+}
+
+type whereHelpernull_Time struct{ field string }
+
+func (w whereHelpernull_Time) EQ(x null.Time) qm.QueryMod {
+	return qmhelper.WhereNullEQ(w.field, false, x)
+}
+func (w whereHelpernull_Time) NEQ(x null.Time) qm.QueryMod {
+	return qmhelper.WhereNullEQ(w.field, true, x)
+}
+func (w whereHelpernull_Time) LT(x null.Time) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.LT, x)
+}
+func (w whereHelpernull_Time) LTE(x null.Time) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.LTE, x)
+}
+func (w whereHelpernull_Time) GT(x null.Time) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.GT, x)
+}
+func (w whereHelpernull_Time) GTE(x null.Time) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.GTE, x)
+}
+
+func (w whereHelpernull_Time) IsNull() qm.QueryMod    { return qmhelper.WhereIsNull(w.field) }
+func (w whereHelpernull_Time) IsNotNull() qm.QueryMod { return qmhelper.WhereIsNotNull(w.field) }
 
 var BookmarkWhere = struct {
-	ID             whereHelperint64
-	IsRead         whereHelperint64
+	ID             whereHelperint
+	IsRead         whereHelperint
 	Title          whereHelpernull_String
 	URL            whereHelperstring
-	BookmarkTypeID whereHelpernull_Int64
-	IsCollection   whereHelperint64
-	CreatedAt      whereHelperstring
-	UpdatedAt      whereHelperstring
-	DeletedAt      whereHelpernull_String
+	BookmarkTypeID whereHelpernull_Int
+	IsCollection   whereHelperint
+	CreatedAt      whereHelpertime_Time
+	UpdatedAt      whereHelpertime_Time
+	DeletedAt      whereHelpernull_Time
 }{
-	ID:             whereHelperint64{field: "\"bookmarks\".\"id\""},
-	IsRead:         whereHelperint64{field: "\"bookmarks\".\"is_read\""},
+	ID:             whereHelperint{field: "\"bookmarks\".\"id\""},
+	IsRead:         whereHelperint{field: "\"bookmarks\".\"is_read\""},
 	Title:          whereHelpernull_String{field: "\"bookmarks\".\"title\""},
 	URL:            whereHelperstring{field: "\"bookmarks\".\"url\""},
-	BookmarkTypeID: whereHelpernull_Int64{field: "\"bookmarks\".\"bookmark_type_id\""},
-	IsCollection:   whereHelperint64{field: "\"bookmarks\".\"is_collection\""},
-	CreatedAt:      whereHelperstring{field: "\"bookmarks\".\"created_at\""},
-	UpdatedAt:      whereHelperstring{field: "\"bookmarks\".\"updated_at\""},
-	DeletedAt:      whereHelpernull_String{field: "\"bookmarks\".\"deleted_at\""},
+	BookmarkTypeID: whereHelpernull_Int{field: "\"bookmarks\".\"bookmark_type_id\""},
+	IsCollection:   whereHelperint{field: "\"bookmarks\".\"is_collection\""},
+	CreatedAt:      whereHelpertime_Time{field: "\"bookmarks\".\"created_at\""},
+	UpdatedAt:      whereHelpertime_Time{field: "\"bookmarks\".\"updated_at\""},
+	DeletedAt:      whereHelpernull_Time{field: "\"bookmarks\".\"deleted_at\""},
 }
 
 // BookmarkRels is where relationship names are stored.
@@ -179,10 +224,10 @@ type bookmarkL struct{}
 
 var (
 	bookmarkAllColumns            = []string{"id", "is_read", "title", "url", "bookmark_type_id", "is_collection", "created_at", "updated_at", "deleted_at"}
-	bookmarkColumnsWithoutDefault = []string{"url", "created_at", "updated_at"}
-	bookmarkColumnsWithDefault    = []string{"id", "is_read", "title", "bookmark_type_id", "is_collection", "deleted_at"}
+	bookmarkColumnsWithoutDefault = []string{"id", "url", "created_at", "updated_at"}
+	bookmarkColumnsWithDefault    = []string{"is_read", "title", "bookmark_type_id", "is_collection", "deleted_at"}
 	bookmarkPrimaryKeyColumns     = []string{"id"}
-	bookmarkGeneratedColumns      = []string{"id"}
+	bookmarkGeneratedColumns      = []string{}
 )
 
 type (
@@ -653,10 +698,10 @@ func (bookmarkL) LoadTags(ctx context.Context, e boil.ContextExecutor, singular 
 
 	var resultSlice []*Tag
 
-	var localJoinCols []int64
+	var localJoinCols []int
 	for results.Next() {
 		one := new(Tag)
-		var localJoinCol int64
+		var localJoinCol int
 
 		err = results.Scan(&one.ID, &one.Tag, &localJoinCol)
 		if err != nil {
@@ -725,8 +770,8 @@ func (o *Bookmark) SetBookmarkType(ctx context.Context, exec boil.ContextExecuto
 
 	updateQuery := fmt.Sprintf(
 		"UPDATE \"bookmarks\" SET %s WHERE %s",
-		strmangle.SetParamNames("\"", "\"", 0, []string{"bookmark_type_id"}),
-		strmangle.WhereClause("\"", "\"", 0, bookmarkPrimaryKeyColumns),
+		strmangle.SetParamNames("\"", "\"", 1, []string{"bookmark_type_id"}),
+		strmangle.WhereClause("\"", "\"", 2, bookmarkPrimaryKeyColumns),
 	)
 	values := []interface{}{related.ID, o.ID}
 
@@ -807,7 +852,7 @@ func (o *Bookmark) AddTags(ctx context.Context, exec boil.ContextExecutor, inser
 	}
 
 	for _, rel := range related {
-		query := "insert into \"bookmark_contexts\" (\"bookmark_id\", \"tag_id\") values (?, ?)"
+		query := "insert into \"bookmark_contexts\" (\"bookmark_id\", \"tag_id\") values ($1, $2)"
 		values := []interface{}{o.ID, rel.ID}
 
 		if boil.IsDebug(ctx) {
@@ -847,7 +892,7 @@ func (o *Bookmark) AddTags(ctx context.Context, exec boil.ContextExecutor, inser
 // Replaces o.R.Tags with related.
 // Sets related.R.Bookmarks's Tags accordingly.
 func (o *Bookmark) SetTags(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Tag) error {
-	query := "delete from \"bookmark_contexts\" where \"bookmark_id\" = ?"
+	query := "delete from \"bookmark_contexts\" where \"bookmark_id\" = $1"
 	values := []interface{}{o.ID}
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
@@ -877,7 +922,7 @@ func (o *Bookmark) RemoveTags(ctx context.Context, exec boil.ContextExecutor, re
 
 	var err error
 	query := fmt.Sprintf(
-		"delete from \"bookmark_contexts\" where \"bookmark_id\" = ? and \"tag_id\" in (%s)",
+		"delete from \"bookmark_contexts\" where \"bookmark_id\" = $1 and \"tag_id\" in (%s)",
 		strmangle.Placeholders(dialect.UseIndexPlaceholders, len(related), 2, 1),
 	)
 	values := []interface{}{o.ID}
@@ -950,7 +995,7 @@ func Bookmarks(mods ...qm.QueryMod) bookmarkQuery {
 
 // FindBookmark retrieves a single record by ID with an executor.
 // If selectCols is empty Find will return all columns.
-func FindBookmark(ctx context.Context, exec boil.ContextExecutor, iD int64, selectCols ...string) (*Bookmark, error) {
+func FindBookmark(ctx context.Context, exec boil.ContextExecutor, iD int, selectCols ...string) (*Bookmark, error) {
 	bookmarkObj := &Bookmark{}
 
 	sel := "*"
@@ -958,7 +1003,7 @@ func FindBookmark(ctx context.Context, exec boil.ContextExecutor, iD int64, sele
 		sel = strings.Join(strmangle.IdentQuoteSlice(dialect.LQ, dialect.RQ, selectCols), ",")
 	}
 	query := fmt.Sprintf(
-		"select %s from \"bookmarks\" where \"id\"=?", sel,
+		"select %s from \"bookmarks\" where \"id\"=$1", sel,
 	)
 
 	q := queries.Raw(query, iD)
@@ -1005,7 +1050,6 @@ func (o *Bookmark) Insert(ctx context.Context, exec boil.ContextExecutor, column
 			bookmarkColumnsWithoutDefault,
 			nzDefaults,
 		)
-		wl = strmangle.SetComplement(wl, bookmarkGeneratedColumns)
 
 		cache.valueMapping, err = queries.BindMapping(bookmarkType, bookmarkMapping, wl)
 		if err != nil {
@@ -1076,7 +1120,6 @@ func (o *Bookmark) Update(ctx context.Context, exec boil.ContextExecutor, column
 			bookmarkAllColumns,
 			bookmarkPrimaryKeyColumns,
 		)
-		wl = strmangle.SetComplement(wl, bookmarkGeneratedColumns)
 
 		if !columns.IsWhitelist() {
 			wl = strmangle.SetComplement(wl, []string{"created_at"})
@@ -1086,8 +1129,8 @@ func (o *Bookmark) Update(ctx context.Context, exec boil.ContextExecutor, column
 		}
 
 		cache.query = fmt.Sprintf("UPDATE \"bookmarks\" SET %s WHERE %s",
-			strmangle.SetParamNames("\"", "\"", 0, wl),
-			strmangle.WhereClause("\"", "\"", 0, bookmarkPrimaryKeyColumns),
+			strmangle.SetParamNames("\"", "\"", 1, wl),
+			strmangle.WhereClause("\"", "\"", len(wl)+1, bookmarkPrimaryKeyColumns),
 		)
 		cache.valueMapping, err = queries.BindMapping(bookmarkType, bookmarkMapping, append(wl, bookmarkPrimaryKeyColumns...))
 		if err != nil {
@@ -1167,8 +1210,8 @@ func (o BookmarkSlice) UpdateAll(ctx context.Context, exec boil.ContextExecutor,
 	}
 
 	sql := fmt.Sprintf("UPDATE \"bookmarks\" SET %s WHERE %s",
-		strmangle.SetParamNames("\"", "\"", 0, colNames),
-		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), 0, bookmarkPrimaryKeyColumns, len(o)))
+		strmangle.SetParamNames("\"", "\"", 1, colNames),
+		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), len(colNames)+1, bookmarkPrimaryKeyColumns, len(o)))
 
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
@@ -1241,6 +1284,7 @@ func (o *Bookmark) Upsert(ctx context.Context, exec boil.ContextExecutor, update
 			bookmarkColumnsWithoutDefault,
 			nzDefaults,
 		)
+
 		update := updateColumns.UpdateColumnSet(
 			bookmarkAllColumns,
 			bookmarkPrimaryKeyColumns,
@@ -1255,7 +1299,7 @@ func (o *Bookmark) Upsert(ctx context.Context, exec boil.ContextExecutor, update
 			conflict = make([]string, len(bookmarkPrimaryKeyColumns))
 			copy(conflict, bookmarkPrimaryKeyColumns)
 		}
-		cache.query = buildUpsertQuerySQLite(dialect, "\"bookmarks\"", updateOnConflict, ret, update, conflict, insert)
+		cache.query = buildUpsertQueryPostgres(dialect, "\"bookmarks\"", updateOnConflict, ret, update, conflict, insert)
 
 		cache.valueMapping, err = queries.BindMapping(bookmarkType, bookmarkMapping, insert)
 		if err != nil {
@@ -1314,7 +1358,7 @@ func (o *Bookmark) Delete(ctx context.Context, exec boil.ContextExecutor) (int64
 	}
 
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), bookmarkPrimaryKeyMapping)
-	sql := "DELETE FROM \"bookmarks\" WHERE \"id\"=?"
+	sql := "DELETE FROM \"bookmarks\" WHERE \"id\"=$1"
 
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
@@ -1380,7 +1424,7 @@ func (o BookmarkSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor)
 	}
 
 	sql := "DELETE FROM \"bookmarks\" WHERE " +
-		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), 0, bookmarkPrimaryKeyColumns, len(o))
+		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), 1, bookmarkPrimaryKeyColumns, len(o))
 
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
@@ -1435,7 +1479,7 @@ func (o *BookmarkSlice) ReloadAll(ctx context.Context, exec boil.ContextExecutor
 	}
 
 	sql := "SELECT \"bookmarks\".* FROM \"bookmarks\" WHERE " +
-		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), 0, bookmarkPrimaryKeyColumns, len(*o))
+		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), 1, bookmarkPrimaryKeyColumns, len(*o))
 
 	q := queries.Raw(sql, args...)
 
@@ -1450,9 +1494,9 @@ func (o *BookmarkSlice) ReloadAll(ctx context.Context, exec boil.ContextExecutor
 }
 
 // BookmarkExists checks if the Bookmark row exists.
-func BookmarkExists(ctx context.Context, exec boil.ContextExecutor, iD int64) (bool, error) {
+func BookmarkExists(ctx context.Context, exec boil.ContextExecutor, iD int) (bool, error) {
 	var exists bool
-	sql := "select exists(select 1 from \"bookmarks\" where \"id\"=? limit 1)"
+	sql := "select exists(select 1 from \"bookmarks\" where \"id\"=$1 limit 1)"
 
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
