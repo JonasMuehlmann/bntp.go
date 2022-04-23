@@ -29,11 +29,11 @@ import (
 type Document struct {
 	CreatedAt           time.Time                    `json:"created_at" toml:"created_at" yaml:"created_at"`
 	UpdatedAt           time.Time                    `json:"updated_at" toml:"updated_at" yaml:"updated_at"`
-	Path                string                       `json:"path" toml:"path" yaml:"path"`
 	DeletedAt           optional.Optional[time.Time] `json:"deleted_at,omitempty" toml:"deleted_at" yaml:"deleted_at,omitempty"`
+	Path                string                       `json:"path" toml:"path" yaml:"path"`
 	DocumentType        optional.Optional[string]    `json:"document_type" toml:"document_type" yaml:"document_type"`
-	ID                  int64                        `json:"id" toml:"id" yaml:"id"`
 	Tags                []*Tag                       `json:"Tags" toml:"Tags" yaml:"Tags"`
 	LinkedDocuments     []*Document                  `json:"linked_documents" toml:"linked_documents" yaml:"linked_documents"`
 	BacklinkedDocuments []*Document                  `json:"backlinked_documents" toml:"backlinked_documents" yaml:"backlinked_documents"`
+	ID                  int64                        `json:"id" toml:"id" yaml:"id"`
 }
