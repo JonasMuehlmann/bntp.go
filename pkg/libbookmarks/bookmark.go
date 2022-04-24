@@ -26,13 +26,12 @@ import (
 
 // Bookmark is a code side representation of DB bookmarks.
 type Bookmark struct {
-	Title optional.Optional[string] `json:"title" db:"Title"`
-	Url   string                    `json:"url" db:"Url"`
-	// REFACTOR: This should be a time.time
+	Url          string                    `json:"url" db:"Url"`
 	TimeAdded    string                    `json:"time_added" db:"TimeAdded"`
+	Title        optional.Optional[string] `json:"title" db:"Title"`
 	Type         optional.Optional[string] `json:"type" db:"Type"`
-	Id           int                       `json:"id" db:"Id"`
-	IsRead       bool                      `json:"is_read" db:"IsRead"`
-	IsCollection optional.Optional[bool]   `json:"is_collection" db:"IsCollection"`
 	Tags         []string
+	Id           int                     `json:"id" db:"Id"`
+	IsCollection optional.Optional[bool] `json:"is_collection" db:"IsCollection"`
+	IsRead       bool                    `json:"is_read" db:"IsRead"`
 }
