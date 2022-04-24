@@ -29,12 +29,12 @@ import (
 type Bookmark struct {
 	CreatedAt    time.Time                    `json:"created_at" toml:"created_at" yaml:"created_at"`
 	UpdatedAt    time.Time                    `json:"updated_at" toml:"updated_at" yaml:"updated_at"`
+	DeletedAt    optional.Optional[time.Time] `json:"deleted_at,omitempty" toml:"deleted_at" yaml:"deleted_at,omitempty"`
 	URL          string                       `json:"url" toml:"url" yaml:"url"`
 	Title        optional.Optional[string]    `json:"title,omitempty" toml:"title" yaml:"title,omitempty"`
-	DeletedAt    optional.Optional[time.Time] `json:"deleted_at,omitempty" toml:"deleted_at" yaml:"deleted_at,omitempty"`
+	Tags         []*Tag                       `json:"tags" toml:"tags" yaml:"tags"`
+	ID           int64                        `json:"id" toml:"id" yaml:"id"`
 	IsCollection bool                         `json:"is_collection,omitempty" toml:"is_collection" yaml:"is_collection,omitempty"`
 	IsRead       bool                         `json:"is_read,omitempty" toml:"is_read" yaml:"is_read,omitempty"`
 	BookmarkType bool                         `json:"bookmark_type,omitempty" toml:"bookmark_type" yaml:"bookmark_type,omitempty"`
-	ID           int64                        `json:"id" toml:"id" yaml:"id"`
-	Tags         []*Tag                       `json:"tags" toml:"tags" yaml:"tags"`
 }
