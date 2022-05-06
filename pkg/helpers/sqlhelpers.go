@@ -109,7 +109,7 @@ func SqlExecuteNamed(dbConn *sqlx.DB, transaction *sqlx.Tx, stmt string, struct_
 }
 
 func GetDefaultDB() (*sqlx.DB, error) {
-	db, err := sqlx.Open("sqlite3", "~/Documents/bntp/bookmarks.db?_foreign_keys=1")
+	db, err := sqlx.Open("sqlite3", "~/Documents/pkg/bookmarks.db?_foreign_keys=1")
 	if err != nil {
 		return nil, err
 	}

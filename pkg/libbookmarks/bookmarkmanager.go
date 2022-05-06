@@ -23,10 +23,13 @@ package libbookmarks
 import (
 	"context"
 
+	"github.com/JonasMuehlmann/bntp.go/domain"
+	bntp "github.com/JonasMuehlmann/bntp.go/pkg"
 	sqlite_repo "github.com/JonasMuehlmann/bntp.go/pkg/libbookmarks/repository/sqlite3"
 )
 
-type BookmarkManager interface {
+type IBookmarkManager interface {
+	// TODO: Generate from repo definition?
 	New(...any) (BookmarkManager, error)
 
 	Add(context.Context, []sqlite_repo.Bookmark) (numAffectedRecords int, newID int, err error)
@@ -48,6 +51,7 @@ type BookmarkManager interface {
 }
 
 type BookmarkTagManager interface {
+	// TODO: Generate from repo definition?
 	New(...any) (BookmarkTagManager, error)
 
 	AddTag(context.Context, string) error
@@ -61,8 +65,10 @@ type BookmarkTagManager interface {
 	RemoveTagWhere(context.Context, string, BookmarkFilter) error
 }
 
+// TODO: Generate from struct
 type BookmarkField int
 
+// TODO: Generate from struct fields
 const (
 	ID BookmarkField = iota
 	IsRead
@@ -75,57 +81,17 @@ const (
 	DeletedAt
 )
 
+// TODO: Generate from structs
 type BookmarkUpdateOperation func(any) any
 
-type BookmarkHook func(context.Context, sqlite_repo.Bookmark) error
+// TODO: Generate from structs
+type BookmarkHook func(context.Context, domain.Bookmark) error
 
-type HookPoint int
+// TODO: Add test to compare with constants.
+// TODO: Allow sipping certain hooks
+// TODO: Write test to check if all domain types are handled here
 
-// TODO: Generate from constants
-type Hooks[TEntityHook any] struct {
-	BeforeAddHook TEntityHook
-	AfterAddHook  TEntityHook
-
-	BeforeSelectHook TEntityHook
-	AfterSelectHook  TEntityHook
-
-	BeforeUpdateHook TEntityHook
-	AfterUpdateHook  TEntityHook
-
-	BeforeDeleteHook TEntityHook
-	AfterDeleteHook  TEntityHook
-
-	BeforeUpsertHook TEntityHook
-	AfterUpsertHook  TEntityHook
-
-	BeforeAnyHook TEntityHook
-	AfterAnyHook  TEntityHook
+type BookmarkManager struct {
+	Hooks bntp.Hooks[BookmarkHook]
+	Repo  BookmarkRpository
 }
-
-// TODO: Do I need to do anything to support caching?
-
-// TODO: Allow composing through e.g. BeforeAddHook | AfterAddHook
-const (
-	BeforeAddHook HookPoint = iota
-	AfterAddHook
-
-	BeforeSelectHook
-	AfterSelectHook
-
-	BeforeUpdateHook
-	AfterUpdateHook
-
-	BeforeDeleteHook
-	AfterDeleteHook
-
-	BeforeUpsertHook
-	AfterUpsertHook
-
-	BeforeAnyHook
-	AfterAnyHook
-
-	AfterError
-	AfterDeadline
-	AfterTimeout
-	AfterCancel
-)
