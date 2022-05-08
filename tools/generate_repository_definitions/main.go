@@ -22,8 +22,9 @@ package main
 
 import (
 	"os"
-	"strings"
 	"text/template"
+
+	"github.com/JonasMuehlmann/bntp.go/tools"
 )
 
 type Entity struct {
@@ -43,16 +44,16 @@ func main() {
 	}
 
 	tmpl, err := template.New("repository").Funcs(template.FuncMap{
-		"UppercaseBeginning": UppercaseBeginning,
-		"LowercaseBeginning": LowercaseBeginning,
-		"Pluralize":          Pluralize,
+		"UppercaseBeginning": tools.UppercaseBeginning,
+		"LowercaseBeginning": tools.LowercaseBeginning,
+		"Pluralize":          tools.Pluralize,
 	}).Parse(string(tmplRaw))
 	if err != nil {
 		panic(err)
 	}
 
 	for _, entity := range entities {
-		outFile, err := os.Create("repository/" + LowercaseBeginning(entity.EntityName) + "_repository.go")
+		outFile, err := os.Create("repository/" + tools.LowercaseBeginning(entity.EntityName) + "_repository.go")
 		if err != nil {
 			panic(err)
 		}
@@ -62,16 +63,4 @@ func main() {
 			panic(err)
 		}
 	}
-}
-
-func UppercaseBeginning(str string) string {
-	return strings.ToUpper(str[:1]) + str[1:]
-}
-
-func LowercaseBeginning(str string) string {
-	return strings.ToLower(str[:1]) + str[1:]
-}
-
-func Pluralize(str string) string {
-	return str + "s"
 }
