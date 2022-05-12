@@ -25,31 +25,41 @@ package domain
 
 type Tag struct {
     
+    ID int64 `json:"id" toml:"id" yaml:"id"`
+    ParentPath []*Tag `json:"parentPath" toml:"parentPath" yaml:"parentPath"`
     Tag string `json:"tag" toml:"tag" yaml:"tag"`
-    Subtags []Tag `json:"subtags" toml:"subtags" yaml:"subtags"`
+    Subtags []*Tag `json:"subtags" toml:"subtags" yaml:"subtags"`
 }
 
 type TagField string
 
 var TagFields = struct {
+    ID  TagField
+    ParentPath  TagField
     Tag  TagField
     Subtags  TagField
     
 }{
+    ID: "id",
+    ParentPath: "parentPath",
     Tag: "tag",
     Subtags: "subtags",
     
 }
 
 type TagFilter struct {
+    ID optional.Optional[FilterOperation[int64]]
+    ParentPath optional.Optional[FilterOperation[[]*Tag]]
     Tag optional.Optional[FilterOperation[string]]
-    Subtags optional.Optional[FilterOperation[[]Tag]]
+    Subtags optional.Optional[FilterOperation[[]*Tag]]
     
 }
 
 type TagUpdater struct {
+    ID optional.Optional[UpdateOperation[int64]]
+    ParentPath optional.Optional[UpdateOperation[[]*Tag]]
     Tag optional.Optional[UpdateOperation[string]]
-    Subtags optional.Optional[UpdateOperation[[]Tag]]
+    Subtags optional.Optional[UpdateOperation[[]*Tag]]
     
 }
 
