@@ -6,9 +6,24 @@ CREATE TABLE tags
     tag TEXT                NOT NULL UNIQUE
 );
 
+CREATE TABLE child_tags
+(
+    id            INTEGER PRIMARY KEY NOT NULL,
+    parent_tag_id INTEGER REFERENCES tags(id),
+    child_tag_id  INTEGER REFERENCES tags(id)
+);
+
+CREATE TABLE tag_parent_paths
+(
+    id            INTEGER PRIMARY KEY NOT NULL,
+    parent_tag_id INTEGER REFERENCES tags(id),
+    child_tag_id  INTEGER REFERENCES tags(id),
+    distance      INTEGER
+);
+
 CREATE TABLE bookmark_types
 (
-    id   INTEGER PRIMARY KEY NOT NULL ,
+    id   INTEGER PRIMARY KEY NOT NULL,
     Type TEXT    NOT NULL UNIQUE
 );
 
