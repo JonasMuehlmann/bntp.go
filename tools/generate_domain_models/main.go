@@ -30,8 +30,10 @@ import (
 )
 
 type Tag struct {
-	Tag     string `json:"tag" toml:"tag" yaml:"tag"`
-	Subtags []Tag  `json:"subtags" toml:"subtags" yaml:"subtags"`
+	ID         int64  `json:"id" toml:"id" yaml:"id"`
+	ParentPath []*Tag `json:"parentPath" toml:"parentPath" yaml:"parentPath"`
+	Tag        string `json:"tag" toml:"tag" yaml:"tag"`
+	Subtags    []*Tag `json:"subtags" toml:"subtags" yaml:"subtags"`
 }
 
 type Bookmark struct {
