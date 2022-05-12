@@ -44,7 +44,7 @@ type Bookmark struct {
 	ID           int64                        `json:"id" toml:"id" yaml:"id"`
 	IsCollection bool                         `json:"is_collection,omitempty" toml:"is_collection" yaml:"is_collection,omitempty"`
 	IsRead       bool                         `json:"is_read,omitempty" toml:"is_read" yaml:"is_read,omitempty"`
-	BookmarkType bool                         `json:"bookmark_type,omitempty" toml:"bookmark_type" yaml:"bookmark_type,omitempty"`
+	BookmarkType optional.Optional[string]    `json:"bookmark_type,omitempty" toml:"bookmark_type" yaml:"bookmark_type,omitempty"`
 }
 
 type Document struct {
@@ -70,11 +70,7 @@ func main() {
 			panic(err)
 		}
 
-		tmpl, err := template.New("domain").Funcs(template.FuncMap{
-			"UppercaseBeginning": tools.UppercaseBeginning,
-			"LowercaseBeginning": tools.LowercaseBeginning,
-			"Pluralize":          tools.Pluralize,
-		}).Parse(string(tmplRaw))
+		tmpl, err := template.New("domain").Funcs(tools.FullFuncMap).Parse(string(tmplRaw))
 		if err != nil {
 			panic(err)
 		}

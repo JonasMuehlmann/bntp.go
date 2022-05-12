@@ -23,6 +23,7 @@ package tools
 import (
 	"reflect"
 	"strings"
+	"text/template"
 )
 
 func UppercaseBeginning(str string) string {
@@ -69,4 +70,10 @@ func NewStructModel(target any) Struct {
 	}
 
 	return entityStruct
+}
+
+var FullFuncMap = template.FuncMap{
+	"UppercaseBeginning": UppercaseBeginning,
+	"LowercaseBeginning": LowercaseBeginning,
+	"Pluralize":          Pluralize,
 }

@@ -27,34 +27,55 @@ import (
 	"github.com/JonasMuehlmann/bntp.go/tools"
 )
 
-type Entity struct {
-	EntityName string
+type Entities struct {
+	Document string
+	Bookmark string
+	Tag      string
 }
 
-var entities = []Entity{
-	{"Document"},
-	{"Bookmark"},
-	{"Tag"},
+var entities = Entities{
+	Document: "Document",
+	Bookmark: "Bookmark",
+	Tag:      "Tag",
+}
+
+type Database struct {
+	DatabaseName string
+}
+
+var databases = []Database{
+	{"mssql"},
+	{"mysql"},
+	{"psql"},
+	{"sqlite3"},
+}
+
+type Configuration struct {
+	Entities     Entities
+	DatabaseName string
 }
 
 func main() {
-	tmplRaw, err := os.ReadFile("templates/repository.go.tpl")
-	if err != nil {
-		panic(err)
-	}
-
-	tmpl, err := template.New("repository").Funcs(tools.FullFuncMap).Parse(string(tmplRaw))
-	if err != nil {
-		panic(err)
-	}
-
-	for _, entity := range entities {
-		outFile, err := os.Create("repository/" + tools.LowercaseBeginning(entity.EntityName) + "_repository.go")
+	for _, database := range databases {
+		tmplRaw, err := os.ReadFile("templates/sql_repositories/model_converter.go.tpl")
 		if err != nil {
 			panic(err)
 		}
 
-		err = tmpl.Execute(outFile, entity)
+		tmpl, err := template.New(tools.LowercaseBeginning(database.DatabaseName) + "_model_converter").Funcs(tools.FullFuncMap).Parse(string(tmplRaw))
+		if err != nil {
+			panic(err)
+		}
+
+		outFile, err := os.Create("repository/" + database.DatabaseName + "/model_converter.go")
+		if err != nil {
+			panic(err)
+		}
+
+		err = tmpl.Execute(outFile, Configuration{
+			Entities:     entities,
+			DatabaseName: database.DatabaseName,
+		})
 		if err != nil {
 			panic(err)
 		}

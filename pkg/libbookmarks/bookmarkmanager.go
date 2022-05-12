@@ -25,11 +25,13 @@ import (
 
 	"github.com/JonasMuehlmann/bntp.go/domain"
 	bntp "github.com/JonasMuehlmann/bntp.go/pkg"
+	"github.com/JonasMuehlmann/bntp.go/repository"
 )
 
 // TODO: Allow skipping certain hooks
 type BookmarkManager struct {
-	hooks bntp.Hooks[Bookmark]
+	hooks      bntp.Hooks[Bookmark]
+	repository repository.BookmarkRepository
 }
 
 func (m *BookmarkManager) New(...any) (BookmarkManager, error) {
