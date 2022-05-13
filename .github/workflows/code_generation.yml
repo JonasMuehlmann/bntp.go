@@ -78,10 +78,14 @@ jobs:
     - name: Run code generator
       run: |
          go install golang.org/x/tools/go/analysis/passes/fieldalignment/cmd/fieldalignment@latest
+         go install golang.org/x/tools/cmd/goimports@latest
+         go install golang.org/x/tools/cmd/gofmt@latest
+         
          cp schema/bntp_sqlite.sql test/bntp.sql
          go generate ./...
-         fieldalignment -fix ./pkg/... ./repository/... ./domain/... || true
+         
          goimports -w ./..
+         fieldalignment -fix ./pkg/... ./repository/... ./domain/... || true
          gofmt -w ./..
          
     - uses: stefanzweifel/git-auto-commit-action@v4
