@@ -77,16 +77,16 @@ jobs:
 
     - name: Run code generator
       run: |
-         # Enable ** glob
-         shopt -s globstar
-         
          go install golang.org/x/tools/go/analysis/passes/fieldalignment/cmd/fieldalignment@latest
+         go install golang.org/x/tools/cmd/goimports@latest
+         
          cp schema/bntp_sqlite.sql test/bntp.sql
          go generate ./...
+         
+         goimports -w ./..
          fieldalignment -fix ./pkg/... ./repository/... ./domain/... || true
-         goimports -w ./...
-         gofmt -w ./...
-
+         gofmt -w ./..
+         
     - uses: stefanzweifel/git-auto-commit-action@v4
       with:
         file_pattern: ./internal/** ./pkg/** ./repository/** ./domain/**
