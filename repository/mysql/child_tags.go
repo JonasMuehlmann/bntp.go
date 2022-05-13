@@ -14,7 +14,6 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
-	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -24,30 +23,25 @@ import (
 
 // ChildTag is an object representing the database table.
 type ChildTag struct {
-	ID          int      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	ParentTagID null.Int `boil:"parent_tag_id" json:"parent_tag_id,omitempty" toml:"parent_tag_id" yaml:"parent_tag_id,omitempty"`
-	ChildTagID  null.Int `boil:"child_tag_id" json:"child_tag_id,omitempty" toml:"child_tag_id" yaml:"child_tag_id,omitempty"`
+	ParentTagID int `boil:"parent_tag_id" json:"parent_tag_id" toml:"parent_tag_id" yaml:"parent_tag_id"`
+	ChildTagID  int `boil:"child_tag_id" json:"child_tag_id" toml:"child_tag_id" yaml:"child_tag_id"`
 
 	R *childTagR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L childTagL  `boil:"-" json:"-" toml:"-" yaml:"-"`
 }
 
 var ChildTagColumns = struct {
-	ID          string
 	ParentTagID string
 	ChildTagID  string
 }{
-	ID:          "id",
 	ParentTagID: "parent_tag_id",
 	ChildTagID:  "child_tag_id",
 }
 
 var ChildTagTableColumns = struct {
-	ID          string
 	ParentTagID string
 	ChildTagID  string
 }{
-	ID:          "child_tags.id",
 	ParentTagID: "child_tags.parent_tag_id",
 	ChildTagID:  "child_tags.child_tag_id",
 }
@@ -55,13 +49,11 @@ var ChildTagTableColumns = struct {
 // Generated where
 
 var ChildTagWhere = struct {
-	ID          whereHelperint
-	ParentTagID whereHelpernull_Int
-	ChildTagID  whereHelpernull_Int
+	ParentTagID whereHelperint
+	ChildTagID  whereHelperint
 }{
-	ID:          whereHelperint{field: "`child_tags`.`id`"},
-	ParentTagID: whereHelpernull_Int{field: "`child_tags`.`parent_tag_id`"},
-	ChildTagID:  whereHelpernull_Int{field: "`child_tags`.`child_tag_id`"},
+	ParentTagID: whereHelperint{field: "`child_tags`.`parent_tag_id`"},
+	ChildTagID:  whereHelperint{field: "`child_tags`.`child_tag_id`"},
 }
 
 // ChildTagRels is where relationship names are stored.
@@ -81,10 +73,10 @@ func (*childTagR) NewStruct() *childTagR {
 type childTagL struct{}
 
 var (
-	childTagAllColumns            = []string{"id", "parent_tag_id", "child_tag_id"}
-	childTagColumnsWithoutDefault = []string{"id", "parent_tag_id", "child_tag_id"}
+	childTagAllColumns            = []string{"parent_tag_id", "child_tag_id"}
+	childTagColumnsWithoutDefault = []string{"parent_tag_id", "child_tag_id"}
 	childTagColumnsWithDefault    = []string{}
-	childTagPrimaryKeyColumns     = []string{"id"}
+	childTagPrimaryKeyColumns     = []string{"parent_tag_id", "child_tag_id"}
 	childTagGeneratedColumns      = []string{}
 )
 
@@ -379,7 +371,7 @@ func ChildTags(mods ...qm.QueryMod) childTagQuery {
 
 // FindChildTag retrieves a single record by ID with an executor.
 // If selectCols is empty Find will return all columns.
-func FindChildTag(ctx context.Context, exec boil.ContextExecutor, iD int, selectCols ...string) (*ChildTag, error) {
+func FindChildTag(ctx context.Context, exec boil.ContextExecutor, parentTagID int, childTagID int, selectCols ...string) (*ChildTag, error) {
 	childTagObj := &ChildTag{}
 
 	sel := "*"
@@ -387,10 +379,10 @@ func FindChildTag(ctx context.Context, exec boil.ContextExecutor, iD int, select
 		sel = strings.Join(strmangle.IdentQuoteSlice(dialect.LQ, dialect.RQ, selectCols), ",")
 	}
 	query := fmt.Sprintf(
-		"select %s from `child_tags` where `id`=?", sel,
+		"select %s from `child_tags` where `parent_tag_id`=? AND `child_tag_id`=?", sel,
 	)
 
-	q := queries.Raw(query, iD)
+	q := queries.Raw(query, parentTagID, childTagID)
 
 	err := q.Bind(ctx, exec, childTagObj)
 	if err != nil {
@@ -479,7 +471,8 @@ func (o *ChildTag) Insert(ctx context.Context, exec boil.ContextExecutor, column
 	}
 
 	identifierCols = []interface{}{
-		o.ID,
+		o.ParentTagID,
+		o.ChildTagID,
 	}
 
 	if boil.IsDebug(ctx) {
@@ -630,9 +623,7 @@ func (o ChildTagSlice) UpdateAll(ctx context.Context, exec boil.ContextExecutor,
 	return rowsAff, nil
 }
 
-var mySQLChildTagUniqueColumns = []string{
-	"id",
-}
+var mySQLChildTagUniqueColumns = []string{}
 
 // Upsert attempts an insert using an executor, and does an update or ignore on conflict.
 // See boil.Columns documentation for how to properly use updateColumns and insertColumns.
@@ -780,7 +771,7 @@ func (o *ChildTag) Delete(ctx context.Context, exec boil.ContextExecutor) (int64
 	}
 
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), childTagPrimaryKeyMapping)
-	sql := "DELETE FROM `child_tags` WHERE `id`=?"
+	sql := "DELETE FROM `child_tags` WHERE `parent_tag_id`=? AND `child_tag_id`=?"
 
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
@@ -877,7 +868,7 @@ func (o ChildTagSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor)
 // Reload refetches the object from the database
 // using the primary keys with an executor.
 func (o *ChildTag) Reload(ctx context.Context, exec boil.ContextExecutor) error {
-	ret, err := FindChildTag(ctx, exec, o.ID)
+	ret, err := FindChildTag(ctx, exec, o.ParentTagID, o.ChildTagID)
 	if err != nil {
 		return err
 	}
@@ -916,16 +907,16 @@ func (o *ChildTagSlice) ReloadAll(ctx context.Context, exec boil.ContextExecutor
 }
 
 // ChildTagExists checks if the ChildTag row exists.
-func ChildTagExists(ctx context.Context, exec boil.ContextExecutor, iD int) (bool, error) {
+func ChildTagExists(ctx context.Context, exec boil.ContextExecutor, parentTagID int, childTagID int) (bool, error) {
 	var exists bool
-	sql := "select exists(select 1 from `child_tags` where `id`=? limit 1)"
+	sql := "select exists(select 1 from `child_tags` where `parent_tag_id`=? AND `child_tag_id`=? limit 1)"
 
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
 		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, iD)
+		fmt.Fprintln(writer, parentTagID, childTagID)
 	}
-	row := exec.QueryRowContext(ctx, sql, iD)
+	row := exec.QueryRowContext(ctx, sql, parentTagID, childTagID)
 
 	err := row.Scan(&exists)
 	if err != nil {

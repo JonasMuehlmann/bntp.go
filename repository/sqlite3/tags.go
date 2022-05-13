@@ -59,28 +59,28 @@ var TagWhere = struct {
 // TagRels is where relationship names are stored.
 var TagRels = struct {
 	Bookmarks               string
-	ChildTagChildTags       string
-	ParentTagChildTags      string
+	ParentTagTags           string
+	ChildTagTags            string
 	Documents               string
-	ChildTagTagParentPaths  string
 	ParentTagTagParentPaths string
+	TagParentPaths          string
 }{
 	Bookmarks:               "Bookmarks",
-	ChildTagChildTags:       "ChildTagChildTags",
-	ParentTagChildTags:      "ParentTagChildTags",
+	ParentTagTags:           "ParentTagTags",
+	ChildTagTags:            "ChildTagTags",
 	Documents:               "Documents",
-	ChildTagTagParentPaths:  "ChildTagTagParentPaths",
 	ParentTagTagParentPaths: "ParentTagTagParentPaths",
+	TagParentPaths:          "TagParentPaths",
 }
 
 // tagR is where relationships are stored.
 type tagR struct {
 	Bookmarks               BookmarkSlice      `boil:"Bookmarks" json:"Bookmarks" toml:"Bookmarks" yaml:"Bookmarks"`
-	ChildTagChildTags       ChildTagSlice      `boil:"ChildTagChildTags" json:"ChildTagChildTags" toml:"ChildTagChildTags" yaml:"ChildTagChildTags"`
-	ParentTagChildTags      ChildTagSlice      `boil:"ParentTagChildTags" json:"ParentTagChildTags" toml:"ParentTagChildTags" yaml:"ParentTagChildTags"`
+	ParentTagTags           TagSlice           `boil:"ParentTagTags" json:"ParentTagTags" toml:"ParentTagTags" yaml:"ParentTagTags"`
+	ChildTagTags            TagSlice           `boil:"ChildTagTags" json:"ChildTagTags" toml:"ChildTagTags" yaml:"ChildTagTags"`
 	Documents               DocumentSlice      `boil:"Documents" json:"Documents" toml:"Documents" yaml:"Documents"`
-	ChildTagTagParentPaths  TagParentPathSlice `boil:"ChildTagTagParentPaths" json:"ChildTagTagParentPaths" toml:"ChildTagTagParentPaths" yaml:"ChildTagTagParentPaths"`
 	ParentTagTagParentPaths TagParentPathSlice `boil:"ParentTagTagParentPaths" json:"ParentTagTagParentPaths" toml:"ParentTagTagParentPaths" yaml:"ParentTagTagParentPaths"`
+	TagParentPaths          TagParentPathSlice `boil:"TagParentPaths" json:"TagParentPaths" toml:"TagParentPaths" yaml:"TagParentPaths"`
 }
 
 // NewStruct creates a new relationship struct
@@ -95,18 +95,18 @@ func (r *tagR) GetBookmarks() BookmarkSlice {
 	return r.Bookmarks
 }
 
-func (r *tagR) GetChildTagChildTags() ChildTagSlice {
+func (r *tagR) GetParentTagTags() TagSlice {
 	if r == nil {
 		return nil
 	}
-	return r.ChildTagChildTags
+	return r.ParentTagTags
 }
 
-func (r *tagR) GetParentTagChildTags() ChildTagSlice {
+func (r *tagR) GetChildTagTags() TagSlice {
 	if r == nil {
 		return nil
 	}
-	return r.ParentTagChildTags
+	return r.ChildTagTags
 }
 
 func (r *tagR) GetDocuments() DocumentSlice {
@@ -116,18 +116,18 @@ func (r *tagR) GetDocuments() DocumentSlice {
 	return r.Documents
 }
 
-func (r *tagR) GetChildTagTagParentPaths() TagParentPathSlice {
-	if r == nil {
-		return nil
-	}
-	return r.ChildTagTagParentPaths
-}
-
 func (r *tagR) GetParentTagTagParentPaths() TagParentPathSlice {
 	if r == nil {
 		return nil
 	}
 	return r.ParentTagTagParentPaths
+}
+
+func (r *tagR) GetTagParentPaths() TagParentPathSlice {
+	if r == nil {
+		return nil
+	}
+	return r.TagParentPaths
 }
 
 // tagL is where Load methods for each relationship are stored.
@@ -434,32 +434,34 @@ func (o *Tag) Bookmarks(mods ...qm.QueryMod) bookmarkQuery {
 	return Bookmarks(queryMods...)
 }
 
-// ChildTagChildTags retrieves all the child_tag's ChildTags with an executor via child_tag_id column.
-func (o *Tag) ChildTagChildTags(mods ...qm.QueryMod) childTagQuery {
+// ParentTagTags retrieves all the tag's Tags with an executor via id column.
+func (o *Tag) ParentTagTags(mods ...qm.QueryMod) tagQuery {
 	var queryMods []qm.QueryMod
 	if len(mods) != 0 {
 		queryMods = append(queryMods, mods...)
 	}
 
 	queryMods = append(queryMods,
+		qm.InnerJoin("\"child_tags\" on \"tags\".\"id\" = \"child_tags\".\"parent_tag_id\""),
 		qm.Where("\"child_tags\".\"child_tag_id\"=?", o.ID),
 	)
 
-	return ChildTags(queryMods...)
+	return Tags(queryMods...)
 }
 
-// ParentTagChildTags retrieves all the child_tag's ChildTags with an executor via parent_tag_id column.
-func (o *Tag) ParentTagChildTags(mods ...qm.QueryMod) childTagQuery {
+// ChildTagTags retrieves all the tag's Tags with an executor via id column.
+func (o *Tag) ChildTagTags(mods ...qm.QueryMod) tagQuery {
 	var queryMods []qm.QueryMod
 	if len(mods) != 0 {
 		queryMods = append(queryMods, mods...)
 	}
 
 	queryMods = append(queryMods,
+		qm.InnerJoin("\"child_tags\" on \"tags\".\"id\" = \"child_tags\".\"child_tag_id\""),
 		qm.Where("\"child_tags\".\"parent_tag_id\"=?", o.ID),
 	)
 
-	return ChildTags(queryMods...)
+	return Tags(queryMods...)
 }
 
 // Documents retrieves all the document's Documents with an executor.
@@ -477,20 +479,6 @@ func (o *Tag) Documents(mods ...qm.QueryMod) documentQuery {
 	return Documents(queryMods...)
 }
 
-// ChildTagTagParentPaths retrieves all the tag_parent_path's TagParentPaths with an executor via child_tag_id column.
-func (o *Tag) ChildTagTagParentPaths(mods ...qm.QueryMod) tagParentPathQuery {
-	var queryMods []qm.QueryMod
-	if len(mods) != 0 {
-		queryMods = append(queryMods, mods...)
-	}
-
-	queryMods = append(queryMods,
-		qm.Where("\"tag_parent_paths\".\"child_tag_id\"=?", o.ID),
-	)
-
-	return TagParentPaths(queryMods...)
-}
-
 // ParentTagTagParentPaths retrieves all the tag_parent_path's TagParentPaths with an executor via parent_tag_id column.
 func (o *Tag) ParentTagTagParentPaths(mods ...qm.QueryMod) tagParentPathQuery {
 	var queryMods []qm.QueryMod
@@ -500,6 +488,20 @@ func (o *Tag) ParentTagTagParentPaths(mods ...qm.QueryMod) tagParentPathQuery {
 
 	queryMods = append(queryMods,
 		qm.Where("\"tag_parent_paths\".\"parent_tag_id\"=?", o.ID),
+	)
+
+	return TagParentPaths(queryMods...)
+}
+
+// TagParentPaths retrieves all the tag_parent_path's TagParentPaths with an executor.
+func (o *Tag) TagParentPaths(mods ...qm.QueryMod) tagParentPathQuery {
+	var queryMods []qm.QueryMod
+	if len(mods) != 0 {
+		queryMods = append(queryMods, mods...)
+	}
+
+	queryMods = append(queryMods,
+		qm.Where("\"tag_parent_paths\".\"tag_id\"=?", o.ID),
 	)
 
 	return TagParentPaths(queryMods...)
@@ -620,9 +622,9 @@ func (tagL) LoadBookmarks(ctx context.Context, e boil.ContextExecutor, singular 
 	return nil
 }
 
-// LoadChildTagChildTags allows an eager lookup of values, cached into the
+// LoadParentTagTags allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (tagL) LoadChildTagChildTags(ctx context.Context, e boil.ContextExecutor, singular bool, maybeTag interface{}, mods queries.Applicator) error {
+func (tagL) LoadParentTagTags(ctx context.Context, e boil.ContextExecutor, singular bool, maybeTag interface{}, mods queries.Applicator) error {
 	var slice []*Tag
 	var object *Tag
 
@@ -646,7 +648,7 @@ func (tagL) LoadChildTagChildTags(ctx context.Context, e boil.ContextExecutor, s
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.ID) {
+				if a == obj.ID {
 					continue Outer
 				}
 			}
@@ -660,8 +662,10 @@ func (tagL) LoadChildTagChildTags(ctx context.Context, e boil.ContextExecutor, s
 	}
 
 	query := NewQuery(
-		qm.From(`child_tags`),
-		qm.WhereIn(`child_tags.child_tag_id in ?`, args...),
+		qm.Select("\"tags\".\"id\", \"tags\".\"tag\", \"a\".\"child_tag_id\""),
+		qm.From("\"tags\""),
+		qm.InnerJoin("\"child_tags\" as \"a\" on \"tags\".\"id\" = \"a\".\"parent_tag_id\""),
+		qm.WhereIn("\"a\".\"child_tag_id\" in ?", args...),
 	)
 	if mods != nil {
 		mods.Apply(query)
@@ -669,22 +673,36 @@ func (tagL) LoadChildTagChildTags(ctx context.Context, e boil.ContextExecutor, s
 
 	results, err := query.QueryContext(ctx, e)
 	if err != nil {
-		return errors.Wrap(err, "failed to eager load child_tags")
+		return errors.Wrap(err, "failed to eager load tags")
 	}
 
-	var resultSlice []*ChildTag
-	if err = queries.Bind(results, &resultSlice); err != nil {
-		return errors.Wrap(err, "failed to bind eager loaded slice child_tags")
+	var resultSlice []*Tag
+
+	var localJoinCols []int64
+	for results.Next() {
+		one := new(Tag)
+		var localJoinCol int64
+
+		err = results.Scan(&one.ID, &one.Tag, &localJoinCol)
+		if err != nil {
+			return errors.Wrap(err, "failed to scan eager loaded results for tags")
+		}
+		if err = results.Err(); err != nil {
+			return errors.Wrap(err, "failed to plebian-bind eager loaded slice tags")
+		}
+
+		resultSlice = append(resultSlice, one)
+		localJoinCols = append(localJoinCols, localJoinCol)
 	}
 
 	if err = results.Close(); err != nil {
-		return errors.Wrap(err, "failed to close results in eager load on child_tags")
+		return errors.Wrap(err, "failed to close results in eager load on tags")
 	}
 	if err = results.Err(); err != nil {
-		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for child_tags")
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for tags")
 	}
 
-	if len(childTagAfterSelectHooks) != 0 {
+	if len(tagAfterSelectHooks) != 0 {
 		for _, obj := range resultSlice {
 			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
 				return err
@@ -692,24 +710,25 @@ func (tagL) LoadChildTagChildTags(ctx context.Context, e boil.ContextExecutor, s
 		}
 	}
 	if singular {
-		object.R.ChildTagChildTags = resultSlice
+		object.R.ParentTagTags = resultSlice
 		for _, foreign := range resultSlice {
 			if foreign.R == nil {
-				foreign.R = &childTagR{}
+				foreign.R = &tagR{}
 			}
-			foreign.R.ChildTag = object
+			foreign.R.ChildTagTags = append(foreign.R.ChildTagTags, object)
 		}
 		return nil
 	}
 
-	for _, foreign := range resultSlice {
+	for i, foreign := range resultSlice {
+		localJoinCol := localJoinCols[i]
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.ChildTagID) {
-				local.R.ChildTagChildTags = append(local.R.ChildTagChildTags, foreign)
+			if local.ID == localJoinCol {
+				local.R.ParentTagTags = append(local.R.ParentTagTags, foreign)
 				if foreign.R == nil {
-					foreign.R = &childTagR{}
+					foreign.R = &tagR{}
 				}
-				foreign.R.ChildTag = local
+				foreign.R.ChildTagTags = append(foreign.R.ChildTagTags, local)
 				break
 			}
 		}
@@ -718,9 +737,9 @@ func (tagL) LoadChildTagChildTags(ctx context.Context, e boil.ContextExecutor, s
 	return nil
 }
 
-// LoadParentTagChildTags allows an eager lookup of values, cached into the
+// LoadChildTagTags allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (tagL) LoadParentTagChildTags(ctx context.Context, e boil.ContextExecutor, singular bool, maybeTag interface{}, mods queries.Applicator) error {
+func (tagL) LoadChildTagTags(ctx context.Context, e boil.ContextExecutor, singular bool, maybeTag interface{}, mods queries.Applicator) error {
 	var slice []*Tag
 	var object *Tag
 
@@ -744,7 +763,7 @@ func (tagL) LoadParentTagChildTags(ctx context.Context, e boil.ContextExecutor, 
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.ID) {
+				if a == obj.ID {
 					continue Outer
 				}
 			}
@@ -758,8 +777,10 @@ func (tagL) LoadParentTagChildTags(ctx context.Context, e boil.ContextExecutor, 
 	}
 
 	query := NewQuery(
-		qm.From(`child_tags`),
-		qm.WhereIn(`child_tags.parent_tag_id in ?`, args...),
+		qm.Select("\"tags\".\"id\", \"tags\".\"tag\", \"a\".\"parent_tag_id\""),
+		qm.From("\"tags\""),
+		qm.InnerJoin("\"child_tags\" as \"a\" on \"tags\".\"id\" = \"a\".\"child_tag_id\""),
+		qm.WhereIn("\"a\".\"parent_tag_id\" in ?", args...),
 	)
 	if mods != nil {
 		mods.Apply(query)
@@ -767,22 +788,36 @@ func (tagL) LoadParentTagChildTags(ctx context.Context, e boil.ContextExecutor, 
 
 	results, err := query.QueryContext(ctx, e)
 	if err != nil {
-		return errors.Wrap(err, "failed to eager load child_tags")
+		return errors.Wrap(err, "failed to eager load tags")
 	}
 
-	var resultSlice []*ChildTag
-	if err = queries.Bind(results, &resultSlice); err != nil {
-		return errors.Wrap(err, "failed to bind eager loaded slice child_tags")
+	var resultSlice []*Tag
+
+	var localJoinCols []int64
+	for results.Next() {
+		one := new(Tag)
+		var localJoinCol int64
+
+		err = results.Scan(&one.ID, &one.Tag, &localJoinCol)
+		if err != nil {
+			return errors.Wrap(err, "failed to scan eager loaded results for tags")
+		}
+		if err = results.Err(); err != nil {
+			return errors.Wrap(err, "failed to plebian-bind eager loaded slice tags")
+		}
+
+		resultSlice = append(resultSlice, one)
+		localJoinCols = append(localJoinCols, localJoinCol)
 	}
 
 	if err = results.Close(); err != nil {
-		return errors.Wrap(err, "failed to close results in eager load on child_tags")
+		return errors.Wrap(err, "failed to close results in eager load on tags")
 	}
 	if err = results.Err(); err != nil {
-		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for child_tags")
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for tags")
 	}
 
-	if len(childTagAfterSelectHooks) != 0 {
+	if len(tagAfterSelectHooks) != 0 {
 		for _, obj := range resultSlice {
 			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
 				return err
@@ -790,24 +825,25 @@ func (tagL) LoadParentTagChildTags(ctx context.Context, e boil.ContextExecutor, 
 		}
 	}
 	if singular {
-		object.R.ParentTagChildTags = resultSlice
+		object.R.ChildTagTags = resultSlice
 		for _, foreign := range resultSlice {
 			if foreign.R == nil {
-				foreign.R = &childTagR{}
+				foreign.R = &tagR{}
 			}
-			foreign.R.ParentTag = object
+			foreign.R.ParentTagTags = append(foreign.R.ParentTagTags, object)
 		}
 		return nil
 	}
 
-	for _, foreign := range resultSlice {
+	for i, foreign := range resultSlice {
+		localJoinCol := localJoinCols[i]
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.ParentTagID) {
-				local.R.ParentTagChildTags = append(local.R.ParentTagChildTags, foreign)
+			if local.ID == localJoinCol {
+				local.R.ChildTagTags = append(local.R.ChildTagTags, foreign)
 				if foreign.R == nil {
-					foreign.R = &childTagR{}
+					foreign.R = &tagR{}
 				}
-				foreign.R.ParentTag = local
+				foreign.R.ParentTagTags = append(foreign.R.ParentTagTags, local)
 				break
 			}
 		}
@@ -931,104 +967,6 @@ func (tagL) LoadDocuments(ctx context.Context, e boil.ContextExecutor, singular 
 	return nil
 }
 
-// LoadChildTagTagParentPaths allows an eager lookup of values, cached into the
-// loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (tagL) LoadChildTagTagParentPaths(ctx context.Context, e boil.ContextExecutor, singular bool, maybeTag interface{}, mods queries.Applicator) error {
-	var slice []*Tag
-	var object *Tag
-
-	if singular {
-		object = maybeTag.(*Tag)
-	} else {
-		slice = *maybeTag.(*[]*Tag)
-	}
-
-	args := make([]interface{}, 0, 1)
-	if singular {
-		if object.R == nil {
-			object.R = &tagR{}
-		}
-		args = append(args, object.ID)
-	} else {
-	Outer:
-		for _, obj := range slice {
-			if obj.R == nil {
-				obj.R = &tagR{}
-			}
-
-			for _, a := range args {
-				if queries.Equal(a, obj.ID) {
-					continue Outer
-				}
-			}
-
-			args = append(args, obj.ID)
-		}
-	}
-
-	if len(args) == 0 {
-		return nil
-	}
-
-	query := NewQuery(
-		qm.From(`tag_parent_paths`),
-		qm.WhereIn(`tag_parent_paths.child_tag_id in ?`, args...),
-	)
-	if mods != nil {
-		mods.Apply(query)
-	}
-
-	results, err := query.QueryContext(ctx, e)
-	if err != nil {
-		return errors.Wrap(err, "failed to eager load tag_parent_paths")
-	}
-
-	var resultSlice []*TagParentPath
-	if err = queries.Bind(results, &resultSlice); err != nil {
-		return errors.Wrap(err, "failed to bind eager loaded slice tag_parent_paths")
-	}
-
-	if err = results.Close(); err != nil {
-		return errors.Wrap(err, "failed to close results in eager load on tag_parent_paths")
-	}
-	if err = results.Err(); err != nil {
-		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for tag_parent_paths")
-	}
-
-	if len(tagParentPathAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
-	if singular {
-		object.R.ChildTagTagParentPaths = resultSlice
-		for _, foreign := range resultSlice {
-			if foreign.R == nil {
-				foreign.R = &tagParentPathR{}
-			}
-			foreign.R.ChildTag = object
-		}
-		return nil
-	}
-
-	for _, foreign := range resultSlice {
-		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.ChildTagID) {
-				local.R.ChildTagTagParentPaths = append(local.R.ChildTagTagParentPaths, foreign)
-				if foreign.R == nil {
-					foreign.R = &tagParentPathR{}
-				}
-				foreign.R.ChildTag = local
-				break
-			}
-		}
-	}
-
-	return nil
-}
-
 // LoadParentTagTagParentPaths allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
 func (tagL) LoadParentTagTagParentPaths(ctx context.Context, e boil.ContextExecutor, singular bool, maybeTag interface{}, mods queries.Applicator) error {
@@ -1055,7 +993,7 @@ func (tagL) LoadParentTagTagParentPaths(ctx context.Context, e boil.ContextExecu
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.ID) {
+				if a == obj.ID {
 					continue Outer
 				}
 			}
@@ -1113,12 +1051,110 @@ func (tagL) LoadParentTagTagParentPaths(ctx context.Context, e boil.ContextExecu
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.ParentTagID) {
+			if local.ID == foreign.ParentTagID {
 				local.R.ParentTagTagParentPaths = append(local.R.ParentTagTagParentPaths, foreign)
 				if foreign.R == nil {
 					foreign.R = &tagParentPathR{}
 				}
 				foreign.R.ParentTag = local
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// LoadTagParentPaths allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for a 1-M or N-M relationship.
+func (tagL) LoadTagParentPaths(ctx context.Context, e boil.ContextExecutor, singular bool, maybeTag interface{}, mods queries.Applicator) error {
+	var slice []*Tag
+	var object *Tag
+
+	if singular {
+		object = maybeTag.(*Tag)
+	} else {
+		slice = *maybeTag.(*[]*Tag)
+	}
+
+	args := make([]interface{}, 0, 1)
+	if singular {
+		if object.R == nil {
+			object.R = &tagR{}
+		}
+		args = append(args, object.ID)
+	} else {
+	Outer:
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &tagR{}
+			}
+
+			for _, a := range args {
+				if a == obj.ID {
+					continue Outer
+				}
+			}
+
+			args = append(args, obj.ID)
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	query := NewQuery(
+		qm.From(`tag_parent_paths`),
+		qm.WhereIn(`tag_parent_paths.tag_id in ?`, args...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.QueryContext(ctx, e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load tag_parent_paths")
+	}
+
+	var resultSlice []*TagParentPath
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice tag_parent_paths")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results in eager load on tag_parent_paths")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for tag_parent_paths")
+	}
+
+	if len(tagParentPathAfterSelectHooks) != 0 {
+		for _, obj := range resultSlice {
+			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
+				return err
+			}
+		}
+	}
+	if singular {
+		object.R.TagParentPaths = resultSlice
+		for _, foreign := range resultSlice {
+			if foreign.R == nil {
+				foreign.R = &tagParentPathR{}
+			}
+			foreign.R.Tag = object
+		}
+		return nil
+	}
+
+	for _, foreign := range resultSlice {
+		for _, local := range slice {
+			if local.ID == foreign.TagID {
+				local.R.TagParentPaths = append(local.R.TagParentPaths, foreign)
+				if foreign.R == nil {
+					foreign.R = &tagParentPathR{}
+				}
+				foreign.R.Tag = local
 				break
 			}
 		}
@@ -1272,67 +1308,62 @@ func removeBookmarksFromTagsSlice(o *Tag, related []*Bookmark) {
 	}
 }
 
-// AddChildTagChildTags adds the given related objects to the existing relationships
+// AddParentTagTags adds the given related objects to the existing relationships
 // of the tag, optionally inserting them as new records.
-// Appends related to o.R.ChildTagChildTags.
-// Sets related.R.ChildTag appropriately.
-func (o *Tag) AddChildTagChildTags(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*ChildTag) error {
+// Appends related to o.R.ParentTagTags.
+// Sets related.R.ChildTagTags appropriately.
+func (o *Tag) AddParentTagTags(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Tag) error {
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.ChildTagID, o.ID)
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
-		} else {
-			updateQuery := fmt.Sprintf(
-				"UPDATE \"child_tags\" SET %s WHERE %s",
-				strmangle.SetParamNames("\"", "\"", 0, []string{"child_tag_id"}),
-				strmangle.WhereClause("\"", "\"", 0, childTagPrimaryKeyColumns),
-			)
-			values := []interface{}{o.ID, rel.ID}
-
-			if boil.IsDebug(ctx) {
-				writer := boil.DebugWriterFrom(ctx)
-				fmt.Fprintln(writer, updateQuery)
-				fmt.Fprintln(writer, values)
-			}
-			if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
-				return errors.Wrap(err, "failed to update foreign table")
-			}
-
-			queries.Assign(&rel.ChildTagID, o.ID)
 		}
 	}
 
+	for _, rel := range related {
+		query := "insert into \"child_tags\" (\"child_tag_id\", \"parent_tag_id\") values (?, ?)"
+		values := []interface{}{o.ID, rel.ID}
+
+		if boil.IsDebug(ctx) {
+			writer := boil.DebugWriterFrom(ctx)
+			fmt.Fprintln(writer, query)
+			fmt.Fprintln(writer, values)
+		}
+		_, err = exec.ExecContext(ctx, query, values...)
+		if err != nil {
+			return errors.Wrap(err, "failed to insert into join table")
+		}
+	}
 	if o.R == nil {
 		o.R = &tagR{
-			ChildTagChildTags: related,
+			ParentTagTags: related,
 		}
 	} else {
-		o.R.ChildTagChildTags = append(o.R.ChildTagChildTags, related...)
+		o.R.ParentTagTags = append(o.R.ParentTagTags, related...)
 	}
 
 	for _, rel := range related {
 		if rel.R == nil {
-			rel.R = &childTagR{
-				ChildTag: o,
+			rel.R = &tagR{
+				ChildTagTags: TagSlice{o},
 			}
 		} else {
-			rel.R.ChildTag = o
+			rel.R.ChildTagTags = append(rel.R.ChildTagTags, o)
 		}
 	}
 	return nil
 }
 
-// SetChildTagChildTags removes all previously related items of the
+// SetParentTagTags removes all previously related items of the
 // tag replacing them completely with the passed
 // in related items, optionally inserting them as new records.
-// Sets o.R.ChildTag's ChildTagChildTags accordingly.
-// Replaces o.R.ChildTagChildTags with related.
-// Sets related.R.ChildTag's ChildTagChildTags accordingly.
-func (o *Tag) SetChildTagChildTags(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*ChildTag) error {
-	query := "update \"child_tags\" set \"child_tag_id\" = null where \"child_tag_id\" = ?"
+// Sets o.R.ChildTagTags's ParentTagTags accordingly.
+// Replaces o.R.ParentTagTags with related.
+// Sets related.R.ChildTagTags's ParentTagTags accordingly.
+func (o *Tag) SetParentTagTags(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Tag) error {
+	query := "delete from \"child_tags\" where \"child_tag_id\" = ?"
 	values := []interface{}{o.ID}
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
@@ -1344,54 +1375,57 @@ func (o *Tag) SetChildTagChildTags(ctx context.Context, exec boil.ContextExecuto
 		return errors.Wrap(err, "failed to remove relationships before set")
 	}
 
+	removeParentTagTagsFromChildTagTagsSlice(o, related)
 	if o.R != nil {
-		for _, rel := range o.R.ChildTagChildTags {
-			queries.SetScanner(&rel.ChildTagID, nil)
-			if rel.R == nil {
-				continue
-			}
-
-			rel.R.ChildTag = nil
-		}
-		o.R.ChildTagChildTags = nil
+		o.R.ParentTagTags = nil
 	}
 
-	return o.AddChildTagChildTags(ctx, exec, insert, related...)
+	return o.AddParentTagTags(ctx, exec, insert, related...)
 }
 
-// RemoveChildTagChildTags relationships from objects passed in.
-// Removes related items from R.ChildTagChildTags (uses pointer comparison, removal does not keep order)
-// Sets related.R.ChildTag.
-func (o *Tag) RemoveChildTagChildTags(ctx context.Context, exec boil.ContextExecutor, related ...*ChildTag) error {
+// RemoveParentTagTags relationships from objects passed in.
+// Removes related items from R.ParentTagTags (uses pointer comparison, removal does not keep order)
+// Sets related.R.ChildTagTags.
+func (o *Tag) RemoveParentTagTags(ctx context.Context, exec boil.ContextExecutor, related ...*Tag) error {
 	if len(related) == 0 {
 		return nil
 	}
 
 	var err error
+	query := fmt.Sprintf(
+		"delete from \"child_tags\" where \"child_tag_id\" = ? and \"parent_tag_id\" in (%s)",
+		strmangle.Placeholders(dialect.UseIndexPlaceholders, len(related), 2, 1),
+	)
+	values := []interface{}{o.ID}
 	for _, rel := range related {
-		queries.SetScanner(&rel.ChildTagID, nil)
-		if rel.R != nil {
-			rel.R.ChildTag = nil
-		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("child_tag_id")); err != nil {
-			return err
-		}
+		values = append(values, rel.ID)
 	}
+
+	if boil.IsDebug(ctx) {
+		writer := boil.DebugWriterFrom(ctx)
+		fmt.Fprintln(writer, query)
+		fmt.Fprintln(writer, values)
+	}
+	_, err = exec.ExecContext(ctx, query, values...)
+	if err != nil {
+		return errors.Wrap(err, "failed to remove relationships before set")
+	}
+	removeParentTagTagsFromChildTagTagsSlice(o, related)
 	if o.R == nil {
 		return nil
 	}
 
 	for _, rel := range related {
-		for i, ri := range o.R.ChildTagChildTags {
+		for i, ri := range o.R.ParentTagTags {
 			if rel != ri {
 				continue
 			}
 
-			ln := len(o.R.ChildTagChildTags)
+			ln := len(o.R.ParentTagTags)
 			if ln > 1 && i < ln-1 {
-				o.R.ChildTagChildTags[i] = o.R.ChildTagChildTags[ln-1]
+				o.R.ParentTagTags[i] = o.R.ParentTagTags[ln-1]
 			}
-			o.R.ChildTagChildTags = o.R.ChildTagChildTags[:ln-1]
+			o.R.ParentTagTags = o.R.ParentTagTags[:ln-1]
 			break
 		}
 	}
@@ -1399,67 +1433,82 @@ func (o *Tag) RemoveChildTagChildTags(ctx context.Context, exec boil.ContextExec
 	return nil
 }
 
-// AddParentTagChildTags adds the given related objects to the existing relationships
+func removeParentTagTagsFromChildTagTagsSlice(o *Tag, related []*Tag) {
+	for _, rel := range related {
+		if rel.R == nil {
+			continue
+		}
+		for i, ri := range rel.R.ChildTagTags {
+			if o.ID != ri.ID {
+				continue
+			}
+
+			ln := len(rel.R.ChildTagTags)
+			if ln > 1 && i < ln-1 {
+				rel.R.ChildTagTags[i] = rel.R.ChildTagTags[ln-1]
+			}
+			rel.R.ChildTagTags = rel.R.ChildTagTags[:ln-1]
+			break
+		}
+	}
+}
+
+// AddChildTagTags adds the given related objects to the existing relationships
 // of the tag, optionally inserting them as new records.
-// Appends related to o.R.ParentTagChildTags.
-// Sets related.R.ParentTag appropriately.
-func (o *Tag) AddParentTagChildTags(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*ChildTag) error {
+// Appends related to o.R.ChildTagTags.
+// Sets related.R.ParentTagTags appropriately.
+func (o *Tag) AddChildTagTags(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Tag) error {
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.ParentTagID, o.ID)
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
-		} else {
-			updateQuery := fmt.Sprintf(
-				"UPDATE \"child_tags\" SET %s WHERE %s",
-				strmangle.SetParamNames("\"", "\"", 0, []string{"parent_tag_id"}),
-				strmangle.WhereClause("\"", "\"", 0, childTagPrimaryKeyColumns),
-			)
-			values := []interface{}{o.ID, rel.ID}
-
-			if boil.IsDebug(ctx) {
-				writer := boil.DebugWriterFrom(ctx)
-				fmt.Fprintln(writer, updateQuery)
-				fmt.Fprintln(writer, values)
-			}
-			if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
-				return errors.Wrap(err, "failed to update foreign table")
-			}
-
-			queries.Assign(&rel.ParentTagID, o.ID)
 		}
 	}
 
+	for _, rel := range related {
+		query := "insert into \"child_tags\" (\"parent_tag_id\", \"child_tag_id\") values (?, ?)"
+		values := []interface{}{o.ID, rel.ID}
+
+		if boil.IsDebug(ctx) {
+			writer := boil.DebugWriterFrom(ctx)
+			fmt.Fprintln(writer, query)
+			fmt.Fprintln(writer, values)
+		}
+		_, err = exec.ExecContext(ctx, query, values...)
+		if err != nil {
+			return errors.Wrap(err, "failed to insert into join table")
+		}
+	}
 	if o.R == nil {
 		o.R = &tagR{
-			ParentTagChildTags: related,
+			ChildTagTags: related,
 		}
 	} else {
-		o.R.ParentTagChildTags = append(o.R.ParentTagChildTags, related...)
+		o.R.ChildTagTags = append(o.R.ChildTagTags, related...)
 	}
 
 	for _, rel := range related {
 		if rel.R == nil {
-			rel.R = &childTagR{
-				ParentTag: o,
+			rel.R = &tagR{
+				ParentTagTags: TagSlice{o},
 			}
 		} else {
-			rel.R.ParentTag = o
+			rel.R.ParentTagTags = append(rel.R.ParentTagTags, o)
 		}
 	}
 	return nil
 }
 
-// SetParentTagChildTags removes all previously related items of the
+// SetChildTagTags removes all previously related items of the
 // tag replacing them completely with the passed
 // in related items, optionally inserting them as new records.
-// Sets o.R.ParentTag's ParentTagChildTags accordingly.
-// Replaces o.R.ParentTagChildTags with related.
-// Sets related.R.ParentTag's ParentTagChildTags accordingly.
-func (o *Tag) SetParentTagChildTags(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*ChildTag) error {
-	query := "update \"child_tags\" set \"parent_tag_id\" = null where \"parent_tag_id\" = ?"
+// Sets o.R.ParentTagTags's ChildTagTags accordingly.
+// Replaces o.R.ChildTagTags with related.
+// Sets related.R.ParentTagTags's ChildTagTags accordingly.
+func (o *Tag) SetChildTagTags(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Tag) error {
+	query := "delete from \"child_tags\" where \"parent_tag_id\" = ?"
 	values := []interface{}{o.ID}
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
@@ -1471,59 +1520,82 @@ func (o *Tag) SetParentTagChildTags(ctx context.Context, exec boil.ContextExecut
 		return errors.Wrap(err, "failed to remove relationships before set")
 	}
 
+	removeChildTagTagsFromParentTagTagsSlice(o, related)
 	if o.R != nil {
-		for _, rel := range o.R.ParentTagChildTags {
-			queries.SetScanner(&rel.ParentTagID, nil)
-			if rel.R == nil {
-				continue
-			}
-
-			rel.R.ParentTag = nil
-		}
-		o.R.ParentTagChildTags = nil
+		o.R.ChildTagTags = nil
 	}
 
-	return o.AddParentTagChildTags(ctx, exec, insert, related...)
+	return o.AddChildTagTags(ctx, exec, insert, related...)
 }
 
-// RemoveParentTagChildTags relationships from objects passed in.
-// Removes related items from R.ParentTagChildTags (uses pointer comparison, removal does not keep order)
-// Sets related.R.ParentTag.
-func (o *Tag) RemoveParentTagChildTags(ctx context.Context, exec boil.ContextExecutor, related ...*ChildTag) error {
+// RemoveChildTagTags relationships from objects passed in.
+// Removes related items from R.ChildTagTags (uses pointer comparison, removal does not keep order)
+// Sets related.R.ParentTagTags.
+func (o *Tag) RemoveChildTagTags(ctx context.Context, exec boil.ContextExecutor, related ...*Tag) error {
 	if len(related) == 0 {
 		return nil
 	}
 
 	var err error
+	query := fmt.Sprintf(
+		"delete from \"child_tags\" where \"parent_tag_id\" = ? and \"child_tag_id\" in (%s)",
+		strmangle.Placeholders(dialect.UseIndexPlaceholders, len(related), 2, 1),
+	)
+	values := []interface{}{o.ID}
 	for _, rel := range related {
-		queries.SetScanner(&rel.ParentTagID, nil)
-		if rel.R != nil {
-			rel.R.ParentTag = nil
-		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("parent_tag_id")); err != nil {
-			return err
-		}
+		values = append(values, rel.ID)
 	}
+
+	if boil.IsDebug(ctx) {
+		writer := boil.DebugWriterFrom(ctx)
+		fmt.Fprintln(writer, query)
+		fmt.Fprintln(writer, values)
+	}
+	_, err = exec.ExecContext(ctx, query, values...)
+	if err != nil {
+		return errors.Wrap(err, "failed to remove relationships before set")
+	}
+	removeChildTagTagsFromParentTagTagsSlice(o, related)
 	if o.R == nil {
 		return nil
 	}
 
 	for _, rel := range related {
-		for i, ri := range o.R.ParentTagChildTags {
+		for i, ri := range o.R.ChildTagTags {
 			if rel != ri {
 				continue
 			}
 
-			ln := len(o.R.ParentTagChildTags)
+			ln := len(o.R.ChildTagTags)
 			if ln > 1 && i < ln-1 {
-				o.R.ParentTagChildTags[i] = o.R.ParentTagChildTags[ln-1]
+				o.R.ChildTagTags[i] = o.R.ChildTagTags[ln-1]
 			}
-			o.R.ParentTagChildTags = o.R.ParentTagChildTags[:ln-1]
+			o.R.ChildTagTags = o.R.ChildTagTags[:ln-1]
 			break
 		}
 	}
 
 	return nil
+}
+
+func removeChildTagTagsFromParentTagTagsSlice(o *Tag, related []*Tag) {
+	for _, rel := range related {
+		if rel.R == nil {
+			continue
+		}
+		for i, ri := range rel.R.ParentTagTags {
+			if o.ID != ri.ID {
+				continue
+			}
+
+			ln := len(rel.R.ParentTagTags)
+			if ln > 1 && i < ln-1 {
+				rel.R.ParentTagTags[i] = rel.R.ParentTagTags[ln-1]
+			}
+			rel.R.ParentTagTags = rel.R.ParentTagTags[:ln-1]
+			break
+		}
+	}
 }
 
 // AddDocuments adds the given related objects to the existing relationships
@@ -1671,133 +1743,6 @@ func removeDocumentsFromTagsSlice(o *Tag, related []*Document) {
 	}
 }
 
-// AddChildTagTagParentPaths adds the given related objects to the existing relationships
-// of the tag, optionally inserting them as new records.
-// Appends related to o.R.ChildTagTagParentPaths.
-// Sets related.R.ChildTag appropriately.
-func (o *Tag) AddChildTagTagParentPaths(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*TagParentPath) error {
-	var err error
-	for _, rel := range related {
-		if insert {
-			queries.Assign(&rel.ChildTagID, o.ID)
-			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
-				return errors.Wrap(err, "failed to insert into foreign table")
-			}
-		} else {
-			updateQuery := fmt.Sprintf(
-				"UPDATE \"tag_parent_paths\" SET %s WHERE %s",
-				strmangle.SetParamNames("\"", "\"", 0, []string{"child_tag_id"}),
-				strmangle.WhereClause("\"", "\"", 0, tagParentPathPrimaryKeyColumns),
-			)
-			values := []interface{}{o.ID, rel.ID}
-
-			if boil.IsDebug(ctx) {
-				writer := boil.DebugWriterFrom(ctx)
-				fmt.Fprintln(writer, updateQuery)
-				fmt.Fprintln(writer, values)
-			}
-			if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
-				return errors.Wrap(err, "failed to update foreign table")
-			}
-
-			queries.Assign(&rel.ChildTagID, o.ID)
-		}
-	}
-
-	if o.R == nil {
-		o.R = &tagR{
-			ChildTagTagParentPaths: related,
-		}
-	} else {
-		o.R.ChildTagTagParentPaths = append(o.R.ChildTagTagParentPaths, related...)
-	}
-
-	for _, rel := range related {
-		if rel.R == nil {
-			rel.R = &tagParentPathR{
-				ChildTag: o,
-			}
-		} else {
-			rel.R.ChildTag = o
-		}
-	}
-	return nil
-}
-
-// SetChildTagTagParentPaths removes all previously related items of the
-// tag replacing them completely with the passed
-// in related items, optionally inserting them as new records.
-// Sets o.R.ChildTag's ChildTagTagParentPaths accordingly.
-// Replaces o.R.ChildTagTagParentPaths with related.
-// Sets related.R.ChildTag's ChildTagTagParentPaths accordingly.
-func (o *Tag) SetChildTagTagParentPaths(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*TagParentPath) error {
-	query := "update \"tag_parent_paths\" set \"child_tag_id\" = null where \"child_tag_id\" = ?"
-	values := []interface{}{o.ID}
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, query)
-		fmt.Fprintln(writer, values)
-	}
-	_, err := exec.ExecContext(ctx, query, values...)
-	if err != nil {
-		return errors.Wrap(err, "failed to remove relationships before set")
-	}
-
-	if o.R != nil {
-		for _, rel := range o.R.ChildTagTagParentPaths {
-			queries.SetScanner(&rel.ChildTagID, nil)
-			if rel.R == nil {
-				continue
-			}
-
-			rel.R.ChildTag = nil
-		}
-		o.R.ChildTagTagParentPaths = nil
-	}
-
-	return o.AddChildTagTagParentPaths(ctx, exec, insert, related...)
-}
-
-// RemoveChildTagTagParentPaths relationships from objects passed in.
-// Removes related items from R.ChildTagTagParentPaths (uses pointer comparison, removal does not keep order)
-// Sets related.R.ChildTag.
-func (o *Tag) RemoveChildTagTagParentPaths(ctx context.Context, exec boil.ContextExecutor, related ...*TagParentPath) error {
-	if len(related) == 0 {
-		return nil
-	}
-
-	var err error
-	for _, rel := range related {
-		queries.SetScanner(&rel.ChildTagID, nil)
-		if rel.R != nil {
-			rel.R.ChildTag = nil
-		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("child_tag_id")); err != nil {
-			return err
-		}
-	}
-	if o.R == nil {
-		return nil
-	}
-
-	for _, rel := range related {
-		for i, ri := range o.R.ChildTagTagParentPaths {
-			if rel != ri {
-				continue
-			}
-
-			ln := len(o.R.ChildTagTagParentPaths)
-			if ln > 1 && i < ln-1 {
-				o.R.ChildTagTagParentPaths[i] = o.R.ChildTagTagParentPaths[ln-1]
-			}
-			o.R.ChildTagTagParentPaths = o.R.ChildTagTagParentPaths[:ln-1]
-			break
-		}
-	}
-
-	return nil
-}
-
 // AddParentTagTagParentPaths adds the given related objects to the existing relationships
 // of the tag, optionally inserting them as new records.
 // Appends related to o.R.ParentTagTagParentPaths.
@@ -1806,7 +1751,7 @@ func (o *Tag) AddParentTagTagParentPaths(ctx context.Context, exec boil.ContextE
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.ParentTagID, o.ID)
+			rel.ParentTagID = o.ID
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
@@ -1816,7 +1761,7 @@ func (o *Tag) AddParentTagTagParentPaths(ctx context.Context, exec boil.ContextE
 				strmangle.SetParamNames("\"", "\"", 0, []string{"parent_tag_id"}),
 				strmangle.WhereClause("\"", "\"", 0, tagParentPathPrimaryKeyColumns),
 			)
-			values := []interface{}{o.ID, rel.ID}
+			values := []interface{}{o.ID, rel.TagID, rel.ParentTagID}
 
 			if boil.IsDebug(ctx) {
 				writer := boil.DebugWriterFrom(ctx)
@@ -1827,7 +1772,7 @@ func (o *Tag) AddParentTagTagParentPaths(ctx context.Context, exec boil.ContextE
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.ParentTagID, o.ID)
+			rel.ParentTagID = o.ID
 		}
 	}
 
@@ -1851,77 +1796,56 @@ func (o *Tag) AddParentTagTagParentPaths(ctx context.Context, exec boil.ContextE
 	return nil
 }
 
-// SetParentTagTagParentPaths removes all previously related items of the
-// tag replacing them completely with the passed
-// in related items, optionally inserting them as new records.
-// Sets o.R.ParentTag's ParentTagTagParentPaths accordingly.
-// Replaces o.R.ParentTagTagParentPaths with related.
-// Sets related.R.ParentTag's ParentTagTagParentPaths accordingly.
-func (o *Tag) SetParentTagTagParentPaths(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*TagParentPath) error {
-	query := "update \"tag_parent_paths\" set \"parent_tag_id\" = null where \"parent_tag_id\" = ?"
-	values := []interface{}{o.ID}
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, query)
-		fmt.Fprintln(writer, values)
-	}
-	_, err := exec.ExecContext(ctx, query, values...)
-	if err != nil {
-		return errors.Wrap(err, "failed to remove relationships before set")
-	}
-
-	if o.R != nil {
-		for _, rel := range o.R.ParentTagTagParentPaths {
-			queries.SetScanner(&rel.ParentTagID, nil)
-			if rel.R == nil {
-				continue
-			}
-
-			rel.R.ParentTag = nil
-		}
-		o.R.ParentTagTagParentPaths = nil
-	}
-
-	return o.AddParentTagTagParentPaths(ctx, exec, insert, related...)
-}
-
-// RemoveParentTagTagParentPaths relationships from objects passed in.
-// Removes related items from R.ParentTagTagParentPaths (uses pointer comparison, removal does not keep order)
-// Sets related.R.ParentTag.
-func (o *Tag) RemoveParentTagTagParentPaths(ctx context.Context, exec boil.ContextExecutor, related ...*TagParentPath) error {
-	if len(related) == 0 {
-		return nil
-	}
-
+// AddTagParentPaths adds the given related objects to the existing relationships
+// of the tag, optionally inserting them as new records.
+// Appends related to o.R.TagParentPaths.
+// Sets related.R.Tag appropriately.
+func (o *Tag) AddTagParentPaths(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*TagParentPath) error {
 	var err error
 	for _, rel := range related {
-		queries.SetScanner(&rel.ParentTagID, nil)
-		if rel.R != nil {
-			rel.R.ParentTag = nil
-		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("parent_tag_id")); err != nil {
-			return err
+		if insert {
+			rel.TagID = o.ID
+			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
+				return errors.Wrap(err, "failed to insert into foreign table")
+			}
+		} else {
+			updateQuery := fmt.Sprintf(
+				"UPDATE \"tag_parent_paths\" SET %s WHERE %s",
+				strmangle.SetParamNames("\"", "\"", 0, []string{"tag_id"}),
+				strmangle.WhereClause("\"", "\"", 0, tagParentPathPrimaryKeyColumns),
+			)
+			values := []interface{}{o.ID, rel.TagID, rel.ParentTagID}
+
+			if boil.IsDebug(ctx) {
+				writer := boil.DebugWriterFrom(ctx)
+				fmt.Fprintln(writer, updateQuery)
+				fmt.Fprintln(writer, values)
+			}
+			if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+				return errors.Wrap(err, "failed to update foreign table")
+			}
+
+			rel.TagID = o.ID
 		}
 	}
+
 	if o.R == nil {
-		return nil
+		o.R = &tagR{
+			TagParentPaths: related,
+		}
+	} else {
+		o.R.TagParentPaths = append(o.R.TagParentPaths, related...)
 	}
 
 	for _, rel := range related {
-		for i, ri := range o.R.ParentTagTagParentPaths {
-			if rel != ri {
-				continue
+		if rel.R == nil {
+			rel.R = &tagParentPathR{
+				Tag: o,
 			}
-
-			ln := len(o.R.ParentTagTagParentPaths)
-			if ln > 1 && i < ln-1 {
-				o.R.ParentTagTagParentPaths[i] = o.R.ParentTagTagParentPaths[ln-1]
-			}
-			o.R.ParentTagTagParentPaths = o.R.ParentTagTagParentPaths[:ln-1]
-			break
+		} else {
+			rel.R.Tag = o
 		}
 	}
-
 	return nil
 }
 

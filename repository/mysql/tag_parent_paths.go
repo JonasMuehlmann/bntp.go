@@ -14,7 +14,6 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
-	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -24,51 +23,44 @@ import (
 
 // TagParentPath is an object representing the database table.
 type TagParentPath struct {
-	ID          int      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	ParentTagID null.Int `boil:"parent_tag_id" json:"parent_tag_id,omitempty" toml:"parent_tag_id" yaml:"parent_tag_id,omitempty"`
-	ChildTagID  null.Int `boil:"child_tag_id" json:"child_tag_id,omitempty" toml:"child_tag_id" yaml:"child_tag_id,omitempty"`
-	Distance    null.Int `boil:"distance" json:"distance,omitempty" toml:"distance" yaml:"distance,omitempty"`
+	TagID       int `boil:"tag_id" json:"tag_id" toml:"tag_id" yaml:"tag_id"`
+	ParentTagID int `boil:"parent_tag_id" json:"parent_tag_id" toml:"parent_tag_id" yaml:"parent_tag_id"`
+	Distance    int `boil:"distance" json:"distance" toml:"distance" yaml:"distance"`
 
 	R *tagParentPathR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L tagParentPathL  `boil:"-" json:"-" toml:"-" yaml:"-"`
 }
 
 var TagParentPathColumns = struct {
-	ID          string
+	TagID       string
 	ParentTagID string
-	ChildTagID  string
 	Distance    string
 }{
-	ID:          "id",
+	TagID:       "tag_id",
 	ParentTagID: "parent_tag_id",
-	ChildTagID:  "child_tag_id",
 	Distance:    "distance",
 }
 
 var TagParentPathTableColumns = struct {
-	ID          string
+	TagID       string
 	ParentTagID string
-	ChildTagID  string
 	Distance    string
 }{
-	ID:          "tag_parent_paths.id",
+	TagID:       "tag_parent_paths.tag_id",
 	ParentTagID: "tag_parent_paths.parent_tag_id",
-	ChildTagID:  "tag_parent_paths.child_tag_id",
 	Distance:    "tag_parent_paths.distance",
 }
 
 // Generated where
 
 var TagParentPathWhere = struct {
-	ID          whereHelperint
-	ParentTagID whereHelpernull_Int
-	ChildTagID  whereHelpernull_Int
-	Distance    whereHelpernull_Int
+	TagID       whereHelperint
+	ParentTagID whereHelperint
+	Distance    whereHelperint
 }{
-	ID:          whereHelperint{field: "`tag_parent_paths`.`id`"},
-	ParentTagID: whereHelpernull_Int{field: "`tag_parent_paths`.`parent_tag_id`"},
-	ChildTagID:  whereHelpernull_Int{field: "`tag_parent_paths`.`child_tag_id`"},
-	Distance:    whereHelpernull_Int{field: "`tag_parent_paths`.`distance`"},
+	TagID:       whereHelperint{field: "`tag_parent_paths`.`tag_id`"},
+	ParentTagID: whereHelperint{field: "`tag_parent_paths`.`parent_tag_id`"},
+	Distance:    whereHelperint{field: "`tag_parent_paths`.`distance`"},
 }
 
 // TagParentPathRels is where relationship names are stored.
@@ -88,10 +80,10 @@ func (*tagParentPathR) NewStruct() *tagParentPathR {
 type tagParentPathL struct{}
 
 var (
-	tagParentPathAllColumns            = []string{"id", "parent_tag_id", "child_tag_id", "distance"}
-	tagParentPathColumnsWithoutDefault = []string{"id", "parent_tag_id", "child_tag_id", "distance"}
+	tagParentPathAllColumns            = []string{"tag_id", "parent_tag_id", "distance"}
+	tagParentPathColumnsWithoutDefault = []string{"tag_id", "parent_tag_id", "distance"}
 	tagParentPathColumnsWithDefault    = []string{}
-	tagParentPathPrimaryKeyColumns     = []string{"id"}
+	tagParentPathPrimaryKeyColumns     = []string{"parent_tag_id", "tag_id"}
 	tagParentPathGeneratedColumns      = []string{}
 )
 
@@ -386,7 +378,7 @@ func TagParentPaths(mods ...qm.QueryMod) tagParentPathQuery {
 
 // FindTagParentPath retrieves a single record by ID with an executor.
 // If selectCols is empty Find will return all columns.
-func FindTagParentPath(ctx context.Context, exec boil.ContextExecutor, iD int, selectCols ...string) (*TagParentPath, error) {
+func FindTagParentPath(ctx context.Context, exec boil.ContextExecutor, parentTagID int, tagID int, selectCols ...string) (*TagParentPath, error) {
 	tagParentPathObj := &TagParentPath{}
 
 	sel := "*"
@@ -394,10 +386,10 @@ func FindTagParentPath(ctx context.Context, exec boil.ContextExecutor, iD int, s
 		sel = strings.Join(strmangle.IdentQuoteSlice(dialect.LQ, dialect.RQ, selectCols), ",")
 	}
 	query := fmt.Sprintf(
-		"select %s from `tag_parent_paths` where `id`=?", sel,
+		"select %s from `tag_parent_paths` where `parent_tag_id`=? AND `tag_id`=?", sel,
 	)
 
-	q := queries.Raw(query, iD)
+	q := queries.Raw(query, parentTagID, tagID)
 
 	err := q.Bind(ctx, exec, tagParentPathObj)
 	if err != nil {
@@ -486,7 +478,8 @@ func (o *TagParentPath) Insert(ctx context.Context, exec boil.ContextExecutor, c
 	}
 
 	identifierCols = []interface{}{
-		o.ID,
+		o.ParentTagID,
+		o.TagID,
 	}
 
 	if boil.IsDebug(ctx) {
@@ -637,9 +630,7 @@ func (o TagParentPathSlice) UpdateAll(ctx context.Context, exec boil.ContextExec
 	return rowsAff, nil
 }
 
-var mySQLTagParentPathUniqueColumns = []string{
-	"id",
-}
+var mySQLTagParentPathUniqueColumns = []string{}
 
 // Upsert attempts an insert using an executor, and does an update or ignore on conflict.
 // See boil.Columns documentation for how to properly use updateColumns and insertColumns.
@@ -787,7 +778,7 @@ func (o *TagParentPath) Delete(ctx context.Context, exec boil.ContextExecutor) (
 	}
 
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), tagParentPathPrimaryKeyMapping)
-	sql := "DELETE FROM `tag_parent_paths` WHERE `id`=?"
+	sql := "DELETE FROM `tag_parent_paths` WHERE `parent_tag_id`=? AND `tag_id`=?"
 
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
@@ -884,7 +875,7 @@ func (o TagParentPathSlice) DeleteAll(ctx context.Context, exec boil.ContextExec
 // Reload refetches the object from the database
 // using the primary keys with an executor.
 func (o *TagParentPath) Reload(ctx context.Context, exec boil.ContextExecutor) error {
-	ret, err := FindTagParentPath(ctx, exec, o.ID)
+	ret, err := FindTagParentPath(ctx, exec, o.ParentTagID, o.TagID)
 	if err != nil {
 		return err
 	}
@@ -923,16 +914,16 @@ func (o *TagParentPathSlice) ReloadAll(ctx context.Context, exec boil.ContextExe
 }
 
 // TagParentPathExists checks if the TagParentPath row exists.
-func TagParentPathExists(ctx context.Context, exec boil.ContextExecutor, iD int) (bool, error) {
+func TagParentPathExists(ctx context.Context, exec boil.ContextExecutor, parentTagID int, tagID int) (bool, error) {
 	var exists bool
-	sql := "select exists(select 1 from `tag_parent_paths` where `id`=? limit 1)"
+	sql := "select exists(select 1 from `tag_parent_paths` where `parent_tag_id`=? AND `tag_id`=? limit 1)"
 
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
 		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, iD)
+		fmt.Fprintln(writer, parentTagID, tagID)
 	}
-	row := exec.QueryRowContext(ctx, sql, iD)
+	row := exec.QueryRowContext(ctx, sql, parentTagID, tagID)
 
 	err := row.Scan(&exists)
 	if err != nil {

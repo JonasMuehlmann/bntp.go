@@ -8,17 +8,17 @@ CREATE TABLE tags
 
 CREATE TABLE child_tags
 (
-    id            INTEGER PRIMARY KEY,
-    parent_tag_id INTEGER ,
-    child_tag_id  INTEGER 
+    parent_tag_id INTEGER NOT NULL ,
+    child_tag_id  INTEGER NOT NULL ,
+    PRIMARY KEY (parent_tag_id, child_tag_id)
 );
 
 CREATE TABLE tag_parent_paths
 (
-    id            INTEGER PRIMARY KEY,
-    parent_tag_id INTEGER ,
-    child_tag_id  INTEGER ,
-    distance      INTEGER
+    tag_id        INTEGER NOT NULL ,
+    parent_tag_id INTEGER NOT NULL ,
+    distance      INTEGER NOT NULL,
+    PRIMARY KEY (parent_tag_id, tag_id)
 );
 
 CREATE TABLE bookmark_types
