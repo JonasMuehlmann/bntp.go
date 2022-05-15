@@ -29,6 +29,7 @@ import (
 	"github.com/JonasMuehlmann/optional.go"
 )
 
+
 type Document struct {
     
     CreatedAt time.Time `json:"created_at" toml:"created_at" yaml:"created_at"`
@@ -65,5 +66,31 @@ var DocumentFields = struct {
     LinkedDocuments: "linked_documents",
     BacklinkedDocuments: "backlinked_documents",
     ID: "id",
+    
+}
+
+type DocumentFilter struct {
+    CreatedAt optional.Optional[FilterOperation[time.Time]]
+    UpdatedAt optional.Optional[FilterOperation[time.Time]]
+    DeletedAt optional.Optional[FilterOperation[optional.Optional[time.Time]]]
+    Path optional.Optional[FilterOperation[string]]
+    DocumentType optional.Optional[FilterOperation[optional.Optional[string]]]
+    Tags optional.Optional[FilterOperation[[]*Tag]]
+    LinkedDocuments optional.Optional[FilterOperation[[]*Document]]
+    BacklinkedDocuments optional.Optional[FilterOperation[[]*Document]]
+    ID optional.Optional[FilterOperation[int64]]
+    
+}
+
+type DocumentUpdater struct {
+    CreatedAt optional.Optional[UpdateOperation[time.Time]]
+    UpdatedAt optional.Optional[UpdateOperation[time.Time]]
+    DeletedAt optional.Optional[UpdateOperation[optional.Optional[time.Time]]]
+    Path optional.Optional[UpdateOperation[string]]
+    DocumentType optional.Optional[UpdateOperation[optional.Optional[string]]]
+    Tags optional.Optional[UpdateOperation[[]*Tag]]
+    LinkedDocuments optional.Optional[UpdateOperation[[]*Document]]
+    BacklinkedDocuments optional.Optional[UpdateOperation[[]*Document]]
+    ID optional.Optional[UpdateOperation[int64]]
     
 }

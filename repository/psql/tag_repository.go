@@ -43,6 +43,16 @@ var TagFieldsList = []TagField{
     
 }
 
+var TagRelationsList = []string{
+    "Bookmarks",
+    "ParentTagTags",
+    "ChildTagTags",
+    "Documents",
+    "ParentTagTagParentPaths",
+    "TagParentPaths",
+    
+}
+
 type TagFilter struct {
     ID optional.Optional[FilterOperation[int64]]
     Tag optional.Optional[FilterOperation[string]]

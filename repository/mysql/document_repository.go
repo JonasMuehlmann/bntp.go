@@ -55,6 +55,14 @@ var DocumentFieldsList = []DocumentField{
     
 }
 
+var DocumentRelationsList = []string{
+    "DocumentType",
+    "Tags",
+    "SourceDocuments",
+    "DestinationDocuments",
+    
+}
+
 type DocumentFilter struct {
     ID optional.Optional[FilterOperation[int64]]
     Path optional.Optional[FilterOperation[string]]

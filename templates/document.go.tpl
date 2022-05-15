@@ -38,12 +38,6 @@ type {{.StructName}} struct {
     {{end}}
 }
 
-type {{.StructName}} struct {
-    {{range $field := .StructFields}}
-    {{.FieldName}} {{.FieldType}} {{.FieldTags -}}
-    {{end}}
-}
-
 type {{.StructName}}Field string
 
 var {{.StructName}}Fields = struct {
@@ -53,5 +47,17 @@ var {{.StructName}}Fields = struct {
 }{
     {{range $field := .StructFields -}}
     {{.FieldName}}: "{{.LogicalFieldName -}}",
+    {{end}}
+}
+
+type {{.StructName}}Filter struct {
+    {{range $field := .StructFields -}}
+    {{.FieldName}} optional.Optional[FilterOperation[{{.FieldType}}]]
+    {{end}}
+}
+
+type {{$.StructName}}Updater struct {
+    {{range $field := .StructFields -}}
+    {{.FieldName}} optional.Optional[UpdateOperation[{{.FieldType}}]]
     {{end}}
 }

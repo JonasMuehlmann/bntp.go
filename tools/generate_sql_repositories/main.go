@@ -52,9 +52,10 @@ var databases = []Database{
 }
 
 type Configuration struct {
-	EntityName   string
-	DatabaseName string
-	StructFields []tools.StructField
+	EntityName    string
+	DatabaseName  string
+	StructFields  []tools.StructField
+	RelationsList []string
 }
 
 var structNameVarTemplaterFragment = `{{$StructName := print (UppercaseBeginning .DatabaseName) (UppercaseBeginning .EntityName) "Repository" -}}
@@ -80,6 +81,12 @@ var {{$EntityName}}Fields = struct {
 var {{$EntityName}}FieldsList = []{{$EntityName}}Field{
     {{range $field := .StructFields -}}
     {{$EntityName}}Field("{{.FieldName}}"),
+    {{end}}
+}
+
+var {{$EntityName}}RelationsList = []string{
+    {{range $relation := .RelationsList -}}
+    "{{.}}",
     {{end}}
 }
 
@@ -129,15 +136,40 @@ func main() {
 			}
 
 			entityStruct := tools.NewStructModel(entity.Struct)
+
 			entityStruct.StructFields, err = goaoi.CopyExceptIfSlice(entityStruct.StructFields, func(s tools.StructField) bool { return s.FieldName == "R" || s.FieldName == "L" })
 			if err != nil {
 				panic(err)
 			}
 
+			var relationStruct tools.Struct
+
+			relationsList := []string{}
+
+			switch e := entity.Struct.(type) {
+			case repository.Bookmark:
+				e.R = e.R.NewStruct()
+				relationStruct = tools.NewStructModel(*e.R)
+			case repository.Document:
+				e.R = e.R.NewStruct()
+				relationStruct = tools.NewStructModel(*e.R)
+			case repository.Tag:
+				e.R = e.R.NewStruct()
+				relationStruct = tools.NewStructModel(*e.R)
+
+			default:
+				panic("Unhandled sql repository type")
+			}
+
+			for _, relation := range relationStruct.StructFields {
+				relationsList = append(relationsList, relation.FieldName)
+			}
+
 			err = tmpl.Execute(outFile, Configuration{
-				EntityName:   entity.EntityName,
-				DatabaseName: database.DatabaseName,
-				StructFields: entityStruct.StructFields,
+				EntityName:    entity.EntityName,
+				DatabaseName:  database.DatabaseName,
+				StructFields:  entityStruct.StructFields,
+				RelationsList: relationsList,
 			})
 			if err != nil {
 				panic(err)

@@ -55,3 +55,15 @@ var {{.StructName}}Fields = struct {
     {{.FieldName}}: "{{.LogicalFieldName -}}",
     {{end}}
 }
+
+type {{.StructName}}Filter struct {
+    {{range $field := .StructFields -}}
+    {{.FieldName}} optional.Optional[FilterOperation[{{.FieldType}}]]
+    {{end}}
+}
+
+type {{$.StructName}}Updater struct {
+    {{range $field := .StructFields -}}
+    {{.FieldName}} optional.Optional[UpdateOperation[{{.FieldType}}]]
+    {{end}}
+}
