@@ -1,5 +1,20 @@
 
 
+-- TODO: It might be worth exploring tables which support caching, ideas below:
+/*
+CREATE TABLE table_cache_states
+(
+    table_name  NOT NULL TEXT PRIMARY KEY,
+    is_dirty    NOT NULL INTEGER
+);
+
+CREATE TABLE dirty_entries
+(
+    dirty_rows_pk TEXT NOT NULL PRIMARY KEY,
+    table_name    TEXT NOT NULL
+);
+*/
+
 CREATE TABLE tags
 (
     id  INTEGER PRIMARY KEY NOT NULL,
