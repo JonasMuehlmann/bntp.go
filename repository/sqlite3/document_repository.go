@@ -71,6 +71,11 @@ type DocumentFilter struct {
     UpdatedAt optional.Optional[FilterOperation[string]]
     DeletedAt optional.Optional[FilterOperation[null.String]]
     
+    DocumentType optional.Optional[UpdateOperation[*repository.DocumentType]]
+    Tags optional.Optional[UpdateOperation[repository.TagSlice]]
+    SourceDocuments optional.Optional[UpdateOperation[repository.DocumentSlice]]
+    DestinationDocuments optional.Optional[UpdateOperation[repository.DocumentSlice]]
+    
 }
 
 type DocumentUpdater struct {
@@ -80,6 +85,11 @@ type DocumentUpdater struct {
     CreatedAt optional.Optional[UpdateOperation[string]]
     UpdatedAt optional.Optional[UpdateOperation[string]]
     DeletedAt optional.Optional[UpdateOperation[null.String]]
+    
+    DocumentType optional.Optional[UpdateOperation[*repository.DocumentType]]
+    Tags optional.Optional[UpdateOperation[repository.TagSlice]]
+    SourceDocuments optional.Optional[UpdateOperation[repository.DocumentSlice]]
+    DestinationDocuments optional.Optional[UpdateOperation[repository.DocumentSlice]]
     
 }
 

@@ -52,10 +52,10 @@ var databases = []Database{
 }
 
 type Configuration struct {
-	EntityName    string
-	DatabaseName  string
-	StructFields  []tools.StructField
-	RelationsList []string
+	EntityName     string
+	DatabaseName   string
+	StructFields   []tools.StructField
+	RelationFields []tools.StructField
 }
 
 var structNameVarTemplaterFragment = `{{$StructName := print (UppercaseBeginning .DatabaseName) (UppercaseBeginning .EntityName) "Repository" -}}
@@ -85,8 +85,8 @@ var {{$EntityName}}FieldsList = []{{$EntityName}}Field{
 }
 
 var {{$EntityName}}RelationsList = []string{
-    {{range $relation := .RelationsList -}}
-    "{{.}}",
+    {{range $relation := .RelationFields -}}
+    "{{.FieldName}}",
     {{end}}
 }
 
@@ -94,10 +94,16 @@ type {{$EntityName}}Filter struct {
     {{range $field := .StructFields -}}
     {{.FieldName}} optional.Optional[FilterOperation[{{.FieldType}}]]
     {{end}}
+    {{range $relation := .RelationFields -}}
+    {{.FieldName}} optional.Optional[UpdateOperation[{{.FieldType}}]]
+    {{end}}
 }
 
 type {{$EntityName}}Updater struct {
     {{range $field := .StructFields -}}
+    {{.FieldName}} optional.Optional[UpdateOperation[{{.FieldType}}]]
+    {{end}}
+    {{range $relation := .RelationFields -}}
     {{.FieldName}} optional.Optional[UpdateOperation[{{.FieldType}}]]
     {{end}}
 }
@@ -144,8 +150,6 @@ func main() {
 
 			var relationStruct tools.Struct
 
-			relationsList := []string{}
-
 			switch e := entity.Struct.(type) {
 			case repository.Bookmark:
 				e.R = e.R.NewStruct()
@@ -161,15 +165,11 @@ func main() {
 				panic("Unhandled sql repository type")
 			}
 
-			for _, relation := range relationStruct.StructFields {
-				relationsList = append(relationsList, relation.FieldName)
-			}
-
 			err = tmpl.Execute(outFile, Configuration{
-				EntityName:    entity.EntityName,
-				DatabaseName:  database.DatabaseName,
-				StructFields:  entityStruct.StructFields,
-				RelationsList: relationsList,
+				EntityName:     entity.EntityName,
+				DatabaseName:   database.DatabaseName,
+				StructFields:   entityStruct.StructFields,
+				RelationFields: relationStruct.StructFields,
 			})
 			if err != nil {
 				panic(err)

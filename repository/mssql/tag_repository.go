@@ -57,11 +57,25 @@ type TagFilter struct {
     ID optional.Optional[FilterOperation[int64]]
     Tag optional.Optional[FilterOperation[string]]
     
+    Bookmarks optional.Optional[UpdateOperation[repository.BookmarkSlice]]
+    ParentTagTags optional.Optional[UpdateOperation[repository.TagSlice]]
+    ChildTagTags optional.Optional[UpdateOperation[repository.TagSlice]]
+    Documents optional.Optional[UpdateOperation[repository.DocumentSlice]]
+    ParentTagTagParentPaths optional.Optional[UpdateOperation[repository.TagParentPathSlice]]
+    TagParentPaths optional.Optional[UpdateOperation[repository.TagParentPathSlice]]
+    
 }
 
 type TagUpdater struct {
     ID optional.Optional[UpdateOperation[int64]]
     Tag optional.Optional[UpdateOperation[string]]
+    
+    Bookmarks optional.Optional[UpdateOperation[repository.BookmarkSlice]]
+    ParentTagTags optional.Optional[UpdateOperation[repository.TagSlice]]
+    ChildTagTags optional.Optional[UpdateOperation[repository.TagSlice]]
+    Documents optional.Optional[UpdateOperation[repository.DocumentSlice]]
+    ParentTagTagParentPaths optional.Optional[UpdateOperation[repository.TagParentPathSlice]]
+    TagParentPaths optional.Optional[UpdateOperation[repository.TagParentPathSlice]]
     
 }
 
