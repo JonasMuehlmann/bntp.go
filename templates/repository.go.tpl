@@ -28,18 +28,18 @@ import (
 )
 
 type {{.EntityName}}Repository interface {
-	New(...any) ({{.EntityName}}Repository, error)
+	New(args ...any) ({{.EntityName}}Repository, error)
 
-	Add(context.Context, []domain.{{.EntityName}}) (numAffectedRecords int, newID int, err error)
-	Replace(context.Context, []domain.{{.EntityName}}) error
-	UpdateWhere(context.Context, domain.{{.EntityName}}Filter, map[domain.{{.EntityName}}Field]domain.{{.EntityName}}UpdateOperation) (numAffectedRecords int, err error)
-	Delete(context.Context, []domain.{{.EntityName}}) error
-	DeleteWhere(context.Context, domain.{{.EntityName}}Filter) (numAffectedRecords int, err error)
-	CountWhere(context.Context, domain.{{.EntityName}}Filter) int
-	CountAll(context.Context) int
-	DoesExist(context.Context, domain.{{.EntityName}}) bool
-	DoesExistWhere(context.Context, domain.{{.EntityName}}Filter) bool
-	GetWhere(context.Context, domain.{{.EntityName}}Filter) []domain.{{.EntityName}}
-	GetFirstWhere(context.Context, domain.{{.EntityName}}Filter) domain.{{.EntityName}}
-	GetAll(context.Context) []domain.{{.EntityName}}
+	Add(ctx context.Context, domainModels []domain.{{.EntityName}}) error
+	Replace(ctx context.Context, domainModels []domain.{{.EntityName}}) error
+	UpdateWhere(ctx context.Context, columnFilter domain.{{.EntityName}}Filter, columnUpdaters map[domain.{{.EntityName}}Field]domain.{{.EntityName}}Updater) (numAffectedRecords int, err error)
+	Delete(ctx context.Context, domainModels []domain.{{.EntityName}}) error
+	DeleteWhere(ctx context.Context, columnFilter domain.{{.EntityName}}Filter) (numAffectedRecords int, err error)
+	CountWhere(ctx context.Context, columnFilter domain.{{.EntityName}}Filter) int
+	CountAll(ctx context.Context) int
+	DoesExist(ctx context.Context, domainModel domain.{{.EntityName}}) bool
+	DoesExistWhere(ctx context.Context, columnFilter domain.{{.EntityName}}Filter) bool
+	GetWhere(ctx context.Context, columnFilter domain.{{.EntityName}}Filter) []domain.{{.EntityName}}
+	GetFirstWhere(ctx context.Context, columnFilter domain.{{.EntityName}}Filter) domain.{{.EntityName}}
+	GetAll(ctx context.Context) []domain.{{.EntityName}}
 }
