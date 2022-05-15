@@ -46,21 +46,3 @@ var TagFields = struct {
     Subtags: "subtags",
     
 }
-
-type TagFilter struct {
-    ID optional.Optional[FilterOperation[int64]]
-    ParentPath optional.Optional[FilterOperation[[]*Tag]]
-    Tag optional.Optional[FilterOperation[string]]
-    Subtags optional.Optional[FilterOperation[[]*Tag]]
-    
-}
-
-type TagUpdater struct {
-    ID optional.Optional[UpdateOperation[int64]]
-    ParentPath optional.Optional[UpdateOperation[[]*Tag]]
-    Tag optional.Optional[UpdateOperation[string]]
-    Subtags optional.Optional[UpdateOperation[[]*Tag]]
-    
-}
-
-type TagHook func(context.Context, Tag) error

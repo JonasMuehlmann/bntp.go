@@ -23,6 +23,15 @@
 {{$StructName := .StructName}}
 package domain
 
+{{$StructName :=  .StructName -}}
+
+type {{.StructName}} struct {
+    {{range $field := .StructFields}}
+    {{.FieldName}} {{.FieldType}} {{.FieldTags -}}
+    {{end}}
+}
+
+
 type {{.StructName}} struct {
     {{range $field := .StructFields}}
     {{.FieldName}} {{.FieldType}} {{.FieldTags -}}
@@ -40,17 +49,3 @@ var {{.StructName}}Fields = struct {
     {{.FieldName}}: "{{.LogicalFieldName -}}",
     {{end}}
 }
-
-type {{.StructName}}Filter struct {
-    {{range $field := .StructFields -}}
-    {{.FieldName}} optional.Optional[FilterOperation[{{.FieldType}}]]
-    {{end}}
-}
-
-type {{.StructName}}Updater struct {
-    {{range $field := .StructFields -}}
-    {{.FieldName}} optional.Optional[UpdateOperation[{{.FieldType}}]]
-    {{end}}
-}
-
-type {{.StructName}}Hook func(context.Context, {{.StructName}}) error

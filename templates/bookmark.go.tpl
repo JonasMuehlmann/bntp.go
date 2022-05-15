@@ -30,6 +30,8 @@ import (
 	"github.com/JonasMuehlmann/optional.go"
 )
 
+{{$StructName :=  .StructName -}}
+
 type {{.StructName}} struct {
     {{range $field := .StructFields}}
     {{.FieldName}} {{.FieldType}} {{.FieldTags -}}
@@ -37,6 +39,12 @@ type {{.StructName}} struct {
 }
 
 type {{.StructName}}Field string
+
+var {{.StructName}}FieldsList = []{{.StructName}}Field{
+    {{range $field := .StructFields -}}
+    {{$StructName}}Field("{{.FieldName}}"),
+    {{end}}
+}
 
 var {{.StructName}}Fields = struct {
     {{range $field := .StructFields -}}
@@ -47,17 +55,3 @@ var {{.StructName}}Fields = struct {
     {{.FieldName}}: "{{.LogicalFieldName -}}",
     {{end}}
 }
-
-type {{.StructName}}Filter struct {
-    {{range $field := .StructFields -}}
-    {{.FieldName}} optional.Optional[FilterOperation[{{.FieldType}}]]
-    {{end}}
-}
-
-type {{.StructName}}Updater struct {
-    {{range $field := .StructFields -}}
-    {{.FieldName}} optional.Optional[UpdateOperation[{{.FieldType}}]]
-    {{end}}
-}
-
-type {{.StructName}}Hook func(context.Context, {{.StructName}}) error
