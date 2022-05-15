@@ -23,55 +23,56 @@
 package repository
 
 {{template "structDefinition" .}}
+{{template "repositoryHelperTypes" .}}
 
-func (repo *{{$StructName}}) New(_ ...any) (repository.TagRepository, error) {
+func (repo * {{$StructName}}) New(args ...any) ({{$StructName}}, error) {
         panic("not implemented") // TODO: Implement
 }
 
-func (repo *{{$StructName}}) Add(_ context.Context, _ []domain.Tag) (numAffectedRecords int, newID int, err error) {
+func (repo *{{$StructName}}) Add(ctx context.Context, domainModels []domain.Tag) (numAffectedRecords int, newID int, err error) {
         panic("not implemented") // TODO: Implement
 }
 
-func (repo *{{$StructName}}) Replace(_ context.Context, _ []domain.Tag) error {
+func (repo *{{$StructName}}) Replace(ctx context.Context, domainModels []domain.Tag) error {
         panic("not implemented") // TODO: Implement
 }
 
-func (repo *{{$StructName}}) UpdateWhere(_ context.Context, _ domain.TagFilter, _ map[domain.TagField]domain.TagUpdateOperation) (numAffectedRecords int, err error) {
+func (repo *{{$StructName}}) UpdateWhere(ctx context.Context, columnFilter domain.TagFilter, columnUpdaters map[domain.TagField]domain.TagUpdater) (numAffectedRecords int, err error) {
         panic("not implemented") // TODO: Implement
 }
 
-func (repo *{{$StructName}}) Delete(_ context.Context, _ []domain.Tag) error {
+func (repo *{{$StructName}}) Delete(ctx context.Context, domainModels []domain.Tag) error {
         panic("not implemented") // TODO: Implement
 }
 
-func (repo *{{$StructName}}) DeleteWhere(_ context.Context, _ domain.TagFilter) (numAffectedRecords int, err error) {
+func (repo *{{$StructName}}) DeleteWhere(ctx context.Context, columnFilter domain.TagFilter) (numAffectedRecords int, err error) {
         panic("not implemented") // TODO: Implement
 }
 
-func (repo *{{$StructName}}) CountWhere(_ context.Context, _ domain.TagFilter) int {
+func (repo *{{$StructName}}) CountWhere(ctx context.Context, columnFilter domain.TagFilter) int {
         panic("not implemented") // TODO: Implement
 }
 
-func (repo *{{$StructName}}) CountAll(_ context.Context) int {
+func (repo *{{$StructName}}) CountAll(ctx context.Context) int {
         panic("not implemented") // TODO: Implement
 }
 
-func (repo *{{$StructName}}) DoesExist(_ context.Context, _ domain.Tag) bool {
+func (repo *{{$StructName}}) DoesExist(ctx context.Context, domainModel domain.Tag) bool {
         panic("not implemented") // TODO: Implement
 }
 
-func (repo *{{$StructName}}) DoesExistWhere(_ context.Context, _ domain.TagFilter) bool {
+func (repo *{{$StructName}}) DoesExistWhere(ctx context.Context, columnFilter domain.TagFilter) bool {
         panic("not implemented") // TODO: Implement
 }
 
-func (repo *{{$StructName}}) GetWhere(_ context.Context, _ domain.TagFilter) []domain.Tag {
+func (repo *{{$StructName}}) GetWhere(ctx context.Context, columnFilter domain.TagFilter) []domain.Tag {
         panic("not implemented") // TODO: Implement
 }
 
-func (repo *{{$StructName}}) GetFirstWhere(_ context.Context, _ domain.TagFilter) domain.Tag {
+func (repo *{{$StructName}}) GetFirstWhere(ctx context.Context, columnFilter domain.TagFilter) domain.Tag {
         panic("not implemented") // TODO: Implement
 }
 
-func (repo *{{$StructName}}) GetAll(_ context.Context) []domain.Tag {
+func (repo *{{$StructName}}) GetAll(ctx context.Context) []domain.Tag {
         panic("not implemented") // TODO: Implement
 }

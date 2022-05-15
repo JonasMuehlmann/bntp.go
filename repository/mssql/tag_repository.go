@@ -23,57 +23,88 @@
 package repository
 
 type MssqlTagRepository struct {
-    db sql.Db
+    db sql.DB
+}
+type TagField string
+
+var TagFields = struct {
+    ID  TagField
+    Tag  TagField
+    
+}{
+    ID: "id",
+    Tag: "tag",
+    
 }
 
-func (repo *MssqlTagRepository) New(_ ...any) (repository.TagRepository, error) {
+var TagFieldsList = []TagField{
+    TagField("ID"),
+    TagField("Tag"),
+    
+}
+
+type TagFilter struct {
+    ID optional.Optional[FilterOperation[int64]]
+    Tag optional.Optional[FilterOperation[string]]
+    
+}
+
+type TagUpdater struct {
+    ID optional.Optional[UpdateOperation[int64]]
+    Tag optional.Optional[UpdateOperation[string]]
+    
+}
+
+type MssqlTagRepositoryHook func(context.Context, MssqlTagRepository) error
+
+func (repo * MssqlTagRepository) New(args ...any) (MssqlTagRepository, error) {
         panic("not implemented") // TODO: Implement
 }
 
-func (repo *MssqlTagRepository) Add(_ context.Context, _ []domain.Tag) (numAffectedRecords int, newID int, err error) {
+func (repo *MssqlTagRepository) Add(ctx context.Context, domainModels []domain.Tag) (numAffectedRecords int, newID int, err error) {
         panic("not implemented") // TODO: Implement
 }
 
-func (repo *MssqlTagRepository) Replace(_ context.Context, _ []domain.Tag) error {
+func (repo *MssqlTagRepository) Replace(ctx context.Context, domainModels []domain.Tag) error {
         panic("not implemented") // TODO: Implement
 }
 
-func (repo *MssqlTagRepository) UpdateWhere(_ context.Context, _ domain.TagFilter, _ map[domain.TagField]domain.TagUpdateOperation) (numAffectedRecords int, err error) {
+func (repo *MssqlTagRepository) UpdateWhere(ctx context.Context, columnFilter domain.TagFilter, columnUpdaters map[domain.TagField]domain.TagUpdater) (numAffectedRecords int, err error) {
         panic("not implemented") // TODO: Implement
 }
 
-func (repo *MssqlTagRepository) Delete(_ context.Context, _ []domain.Tag) error {
+func (repo *MssqlTagRepository) Delete(ctx context.Context, domainModels []domain.Tag) error {
         panic("not implemented") // TODO: Implement
 }
 
-func (repo *MssqlTagRepository) DeleteWhere(_ context.Context, _ domain.TagFilter) (numAffectedRecords int, err error) {
+func (repo *MssqlTagRepository) DeleteWhere(ctx context.Context, columnFilter domain.TagFilter) (numAffectedRecords int, err error) {
         panic("not implemented") // TODO: Implement
 }
 
-func (repo *MssqlTagRepository) CountWhere(_ context.Context, _ domain.TagFilter) int {
+func (repo *MssqlTagRepository) CountWhere(ctx context.Context, columnFilter domain.TagFilter) int {
         panic("not implemented") // TODO: Implement
 }
 
-func (repo *MssqlTagRepository) CountAll(_ context.Context) int {
+func (repo *MssqlTagRepository) CountAll(ctx context.Context) int {
         panic("not implemented") // TODO: Implement
 }
 
-func (repo *MssqlTagRepository) DoesExist(_ context.Context, _ domain.Tag) bool {
+func (repo *MssqlTagRepository) DoesExist(ctx context.Context, domainModel domain.Tag) bool {
         panic("not implemented") // TODO: Implement
 }
 
-func (repo *MssqlTagRepository) DoesExistWhere(_ context.Context, _ domain.TagFilter) bool {
+func (repo *MssqlTagRepository) DoesExistWhere(ctx context.Context, columnFilter domain.TagFilter) bool {
         panic("not implemented") // TODO: Implement
 }
 
-func (repo *MssqlTagRepository) GetWhere(_ context.Context, _ domain.TagFilter) []domain.Tag {
+func (repo *MssqlTagRepository) GetWhere(ctx context.Context, columnFilter domain.TagFilter) []domain.Tag {
         panic("not implemented") // TODO: Implement
 }
 
-func (repo *MssqlTagRepository) GetFirstWhere(_ context.Context, _ domain.TagFilter) domain.Tag {
+func (repo *MssqlTagRepository) GetFirstWhere(ctx context.Context, columnFilter domain.TagFilter) domain.Tag {
         panic("not implemented") // TODO: Implement
 }
 
-func (repo *MssqlTagRepository) GetAll(_ context.Context) []domain.Tag {
+func (repo *MssqlTagRepository) GetAll(ctx context.Context) []domain.Tag {
         panic("not implemented") // TODO: Implement
 }

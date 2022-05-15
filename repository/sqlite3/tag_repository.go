@@ -23,57 +23,88 @@
 package repository
 
 type Sqlite3TagRepository struct {
-    db sql.Db
+    db sql.DB
+}
+type TagField string
+
+var TagFields = struct {
+    ID  TagField
+    Tag  TagField
+    
+}{
+    ID: "id",
+    Tag: "tag",
+    
 }
 
-func (repo *Sqlite3TagRepository) New(_ ...any) (repository.TagRepository, error) {
+var TagFieldsList = []TagField{
+    TagField("ID"),
+    TagField("Tag"),
+    
+}
+
+type TagFilter struct {
+    ID optional.Optional[FilterOperation[int64]]
+    Tag optional.Optional[FilterOperation[string]]
+    
+}
+
+type TagUpdater struct {
+    ID optional.Optional[UpdateOperation[int64]]
+    Tag optional.Optional[UpdateOperation[string]]
+    
+}
+
+type Sqlite3TagRepositoryHook func(context.Context, Sqlite3TagRepository) error
+
+func (repo * Sqlite3TagRepository) New(args ...any) (Sqlite3TagRepository, error) {
         panic("not implemented") // TODO: Implement
 }
 
-func (repo *Sqlite3TagRepository) Add(_ context.Context, _ []domain.Tag) (numAffectedRecords int, newID int, err error) {
+func (repo *Sqlite3TagRepository) Add(ctx context.Context, domainModels []domain.Tag) (numAffectedRecords int, newID int, err error) {
         panic("not implemented") // TODO: Implement
 }
 
-func (repo *Sqlite3TagRepository) Replace(_ context.Context, _ []domain.Tag) error {
+func (repo *Sqlite3TagRepository) Replace(ctx context.Context, domainModels []domain.Tag) error {
         panic("not implemented") // TODO: Implement
 }
 
-func (repo *Sqlite3TagRepository) UpdateWhere(_ context.Context, _ domain.TagFilter, _ map[domain.TagField]domain.TagUpdateOperation) (numAffectedRecords int, err error) {
+func (repo *Sqlite3TagRepository) UpdateWhere(ctx context.Context, columnFilter domain.TagFilter, columnUpdaters map[domain.TagField]domain.TagUpdater) (numAffectedRecords int, err error) {
         panic("not implemented") // TODO: Implement
 }
 
-func (repo *Sqlite3TagRepository) Delete(_ context.Context, _ []domain.Tag) error {
+func (repo *Sqlite3TagRepository) Delete(ctx context.Context, domainModels []domain.Tag) error {
         panic("not implemented") // TODO: Implement
 }
 
-func (repo *Sqlite3TagRepository) DeleteWhere(_ context.Context, _ domain.TagFilter) (numAffectedRecords int, err error) {
+func (repo *Sqlite3TagRepository) DeleteWhere(ctx context.Context, columnFilter domain.TagFilter) (numAffectedRecords int, err error) {
         panic("not implemented") // TODO: Implement
 }
 
-func (repo *Sqlite3TagRepository) CountWhere(_ context.Context, _ domain.TagFilter) int {
+func (repo *Sqlite3TagRepository) CountWhere(ctx context.Context, columnFilter domain.TagFilter) int {
         panic("not implemented") // TODO: Implement
 }
 
-func (repo *Sqlite3TagRepository) CountAll(_ context.Context) int {
+func (repo *Sqlite3TagRepository) CountAll(ctx context.Context) int {
         panic("not implemented") // TODO: Implement
 }
 
-func (repo *Sqlite3TagRepository) DoesExist(_ context.Context, _ domain.Tag) bool {
+func (repo *Sqlite3TagRepository) DoesExist(ctx context.Context, domainModel domain.Tag) bool {
         panic("not implemented") // TODO: Implement
 }
 
-func (repo *Sqlite3TagRepository) DoesExistWhere(_ context.Context, _ domain.TagFilter) bool {
+func (repo *Sqlite3TagRepository) DoesExistWhere(ctx context.Context, columnFilter domain.TagFilter) bool {
         panic("not implemented") // TODO: Implement
 }
 
-func (repo *Sqlite3TagRepository) GetWhere(_ context.Context, _ domain.TagFilter) []domain.Tag {
+func (repo *Sqlite3TagRepository) GetWhere(ctx context.Context, columnFilter domain.TagFilter) []domain.Tag {
         panic("not implemented") // TODO: Implement
 }
 
-func (repo *Sqlite3TagRepository) GetFirstWhere(_ context.Context, _ domain.TagFilter) domain.Tag {
+func (repo *Sqlite3TagRepository) GetFirstWhere(ctx context.Context, columnFilter domain.TagFilter) domain.Tag {
         panic("not implemented") // TODO: Implement
 }
 
-func (repo *Sqlite3TagRepository) GetAll(_ context.Context) []domain.Tag {
+func (repo *Sqlite3TagRepository) GetAll(ctx context.Context) []domain.Tag {
         panic("not implemented") // TODO: Implement
 }

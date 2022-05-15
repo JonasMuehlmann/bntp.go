@@ -278,7 +278,46 @@ func DocumentSqlRepositoryToDomainModel(db *sql.DB, sqlRepositoryModel Document)
 func TagDomainToSqlRepositoryModel(db *sql.DB, domainModel domain.Tag) (sqlRepositoryModel Tag, err error)  {
     sqlRepositoryModel = Tag{}
 
+    sqlRepositoryModel.ID = domainModel.ID
+    sqlRepositoryModel.Tag = domainModel.Tag
 
+
+    //**********************    Set parent path    *********************//
+    var repositoryTag Tag
+    var repositoryParentPathTag TagParentPath
+
+    sqlRepositoryModel.R.ParentTagTagParentPaths = make(TagParentPathSlice, 0, len(domainModel.ParentPath))
+    sqlRepositoryModel.R.ChildTagTags = make(TagSlice, 0, len(domainModel.Subtags))
+
+    for distance, domainTag := range domainModel.ParentPath {
+        repositoryParentPathTag, err = tagDomainToRepositoryParentPathModel(db, *domainTag, distance)
+        if err != nil {
+            return
+        }
+
+        sqlRepositoryModel.R.ParentTagTagParentPaths = append(sqlRepositoryModel.R.ParentTagTagParentPaths, &repositoryParentPathTag)
+    }
+
+    //**********************    Set child tags *********************//
+    for _, domainTag := range domainModel.Subtags {
+        repositoryTag, err = TagDomainToSqlRepositoryModel(db, *domainTag)
+        if err != nil {
+            return
+        }
+
+        sqlRepositoryModel.R.ChildTagTags = append(sqlRepositoryModel.R.ChildTagTags, &repositoryTag)
+    }
+
+
+    return
+}
+
+func  tagDomainToRepositoryParentPathModel(db *sql.DB, domainModel domain.Tag,distance int) (sqlRepositoryModel TagParentPath, err error)  {
+    sqlRepositoryModel = TagParentPath{}
+
+    sqlRepositoryModel.TagID = domainModel.ID
+    sqlRepositoryModel.ParentTagID = domainModel.ID
+    sqlRepositoryModel.Distance = int64(distance)
 
     return
 }
@@ -286,17 +325,34 @@ func TagDomainToSqlRepositoryModel(db *sql.DB, domainModel domain.Tag) (sqlRepos
 func TagSqlRepositoryToDomainModel(db *sql.DB, sqlRepositoryModel Tag) (domainModel domain.Tag, err error) {
     domainModel = domain.Tag{}
 
-    //**********************    Set Timestamps    **********************//
-    
-    sqlRepositoryModel.CreatedAt = domainModel.CreatedAt
-    sqlRepositoryModel.UpdatedAt = domainModel.UpdatedAt
-    sqlRepositoryModel.DeletedAt = domainModel.DeletedAt
+    domainModel.ID = sqlRepositoryModel.ID
+    domainModel.Tag = sqlRepositoryModel.Tag
 
-    if domainModel.DeletedAt.HasValue {
-        sqlRepositoryModel.DeletedAt.Valid = true
-        sqlRepositoryModel.DeletedAt.String = domainModel.DeletedAt
+    //**********************    Set parent path    *********************//
+    var domainTag domain.Tag
+
+    domainModel.ParentPath   = make([]*domain.Tag, 0, len(sqlRepositoryModel.R.ParentTagTagParentPaths))
+
+    for _, repositoryParentPathTag := range sqlRepositoryModel.R.ParentTagTagParentPaths  {
+        domainTag, err = TagSqlRepositoryToDomainModel(db,  *repositoryParentPathTag.R.Tag)
+        if err != nil {
+            return
+        }
+
+        domainModel.ParentPath[repositoryParentPathTag.Distance] = &domainTag
     }
-    
+
+    //**********************    Set child tags *********************//
+    domainModel.Subtags = make([]*domain.Tag, 0, len(sqlRepositoryModel.R.ChildTagTags))
+
+    for _, repositoryTag := range sqlRepositoryModel.R.ChildTagTags {
+        domainTag, err = TagSqlRepositoryToDomainModel(db, *repositoryTag)
+        if err != nil {
+            return
+        }
+
+        domainModel.Subtags = append(domainModel.Subtags, &domainTag)
+    }
 
     return
 }

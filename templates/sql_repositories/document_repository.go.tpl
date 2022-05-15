@@ -23,55 +23,56 @@
 package repository
 
 {{template "structDefinition" .}}
+{{template "repositoryHelperTypes" .}}
 
-func (repo *{{$StructName}}) New(_ ...any) (repository.DocumentRepository, error) {
+func (repo *{{$StructName}}) New(args ...any) ({{$StructName}}, error) {
         panic("not implemented") // TODO: Implement
 }
 
-func (repo *{{$StructName}}) Add(_ context.Context, _ []domain.Document) (numAffectedRecords int, newID int, err error) {
+func (repo *{{$StructName}}) Add(ctx context.Context, domainModels []domain.Document) (numAffectedRecords int, newID int, err error) {
         panic("not implemented") // TODO: Implement
 }
 
-func (repo *{{$StructName}}) Replace(_ context.Context, _ []domain.Document) error {
+func (repo *{{$StructName}}) Replace(ctx context.Context, domainModels []domain.Document) error {
         panic("not implemented") // TODO: Implement
 }
 
-func (repo *{{$StructName}}) UpdateWhere(_ context.Context, _ domain.DocumentFilter, _ map[domain.DocumentField]domain.DocumentUpdateOperation) (numAffectedRecords int, err error) {
+func (repo *{{$StructName}}) UpdateWhere(ctx context.Context, columnFilter domain.DocumentFilter, columnUpdaters map[domain.DocumentField]domain.DocumentUpdater) (numAffectedRecords int, err error) {
         panic("not implemented") // TODO: Implement
 }
 
-func (repo *{{$StructName}}) Delete(_ context.Context, _ []domain.Document) error {
+func (repo *{{$StructName}}) Delete(ctx context.Context, domainModels []domain.Document) error {
         panic("not implemented") // TODO: Implement
 }
 
-func (repo *{{$StructName}}) DeleteWhere(_ context.Context, _ domain.DocumentFilter) (numAffectedRecords int, err error) {
+func (repo *{{$StructName}}) DeleteWhere(ctx context.Context, columnFilter domain.DocumentFilter) (numAffectedRecords int, err error) {
         panic("not implemented") // TODO: Implement
 }
 
-func (repo *{{$StructName}}) CountWhere(_ context.Context, _ domain.DocumentFilter) int {
+func (repo *{{$StructName}}) CountWhere(ctx context.Context, columnFilter domain.DocumentFilter) int {
         panic("not implemented") // TODO: Implement
 }
 
-func (repo *{{$StructName}}) CountAll(_ context.Context) int {
+func (repo *{{$StructName}}) CountAll(ctx context.Context) int {
         panic("not implemented") // TODO: Implement
 }
 
-func (repo *{{$StructName}}) DoesExist(_ context.Context, _ domain.Document) bool {
+func (repo *{{$StructName}}) DoesExist(ctx context.Context, domainModel domain.Document) bool {
         panic("not implemented") // TODO: Implement
 }
 
-func (repo *{{$StructName}}) DoesExistWhere(_ context.Context, _ domain.DocumentFilter) bool {
+func (repo *{{$StructName}}) DoesExistWhere(ctx context.Context, columnFilter domain.DocumentFilter) bool {
         panic("not implemented") // TODO: Implement
 }
 
-func (repo *{{$StructName}}) GetWhere(_ context.Context, _ domain.DocumentFilter) []domain.Document {
+func (repo *{{$StructName}}) GetWhere(ctx context.Context, columnFilter domain.DocumentFilter) []domain.Document {
         panic("not implemented") // TODO: Implement
 }
 
-func (repo *{{$StructName}}) GetFirstWhere(_ context.Context, _ domain.DocumentFilter) domain.Document {
+func (repo *{{$StructName}}) GetFirstWhere(ctx context.Context, columnFilter domain.DocumentFilter) domain.Document {
         panic("not implemented") // TODO: Implement
 }
 
-func (repo *{{$StructName}}) GetAll(_ context.Context) []domain.Document {
+func (repo *{{$StructName}}) GetAll(ctx context.Context) []domain.Document {
         panic("not implemented") // TODO: Implement
 }

@@ -23,57 +23,108 @@
 package repository
 
 type Sqlite3DocumentRepository struct {
-    db sql.Db
+    db sql.DB
+}
+type DocumentField string
+
+var DocumentFields = struct {
+    ID  DocumentField
+    Path  DocumentField
+    DocumentTypeID  DocumentField
+    CreatedAt  DocumentField
+    UpdatedAt  DocumentField
+    DeletedAt  DocumentField
+    
+}{
+    ID: "id",
+    Path: "path",
+    DocumentTypeID: "document_type_id",
+    CreatedAt: "created_at",
+    UpdatedAt: "updated_at",
+    DeletedAt: "deleted_at",
+    
 }
 
-func (repo *Sqlite3DocumentRepository) New(_ ...any) (repository.DocumentRepository, error) {
+var DocumentFieldsList = []DocumentField{
+    DocumentField("ID"),
+    DocumentField("Path"),
+    DocumentField("DocumentTypeID"),
+    DocumentField("CreatedAt"),
+    DocumentField("UpdatedAt"),
+    DocumentField("DeletedAt"),
+    
+}
+
+type DocumentFilter struct {
+    ID optional.Optional[FilterOperation[int64]]
+    Path optional.Optional[FilterOperation[string]]
+    DocumentTypeID optional.Optional[FilterOperation[int64]]
+    CreatedAt optional.Optional[FilterOperation[string]]
+    UpdatedAt optional.Optional[FilterOperation[string]]
+    DeletedAt optional.Optional[FilterOperation[null.String]]
+    
+}
+
+type DocumentUpdater struct {
+    ID optional.Optional[UpdateOperation[int64]]
+    Path optional.Optional[UpdateOperation[string]]
+    DocumentTypeID optional.Optional[UpdateOperation[int64]]
+    CreatedAt optional.Optional[UpdateOperation[string]]
+    UpdatedAt optional.Optional[UpdateOperation[string]]
+    DeletedAt optional.Optional[UpdateOperation[null.String]]
+    
+}
+
+type Sqlite3DocumentRepositoryHook func(context.Context, Sqlite3DocumentRepository) error
+
+func (repo *Sqlite3DocumentRepository) New(args ...any) (Sqlite3DocumentRepository, error) {
         panic("not implemented") // TODO: Implement
 }
 
-func (repo *Sqlite3DocumentRepository) Add(_ context.Context, _ []domain.Document) (numAffectedRecords int, newID int, err error) {
+func (repo *Sqlite3DocumentRepository) Add(ctx context.Context, domainModels []domain.Document) (numAffectedRecords int, newID int, err error) {
         panic("not implemented") // TODO: Implement
 }
 
-func (repo *Sqlite3DocumentRepository) Replace(_ context.Context, _ []domain.Document) error {
+func (repo *Sqlite3DocumentRepository) Replace(ctx context.Context, domainModels []domain.Document) error {
         panic("not implemented") // TODO: Implement
 }
 
-func (repo *Sqlite3DocumentRepository) UpdateWhere(_ context.Context, _ domain.DocumentFilter, _ map[domain.DocumentField]domain.DocumentUpdateOperation) (numAffectedRecords int, err error) {
+func (repo *Sqlite3DocumentRepository) UpdateWhere(ctx context.Context, columnFilter domain.DocumentFilter, columnUpdaters map[domain.DocumentField]domain.DocumentUpdater) (numAffectedRecords int, err error) {
         panic("not implemented") // TODO: Implement
 }
 
-func (repo *Sqlite3DocumentRepository) Delete(_ context.Context, _ []domain.Document) error {
+func (repo *Sqlite3DocumentRepository) Delete(ctx context.Context, domainModels []domain.Document) error {
         panic("not implemented") // TODO: Implement
 }
 
-func (repo *Sqlite3DocumentRepository) DeleteWhere(_ context.Context, _ domain.DocumentFilter) (numAffectedRecords int, err error) {
+func (repo *Sqlite3DocumentRepository) DeleteWhere(ctx context.Context, columnFilter domain.DocumentFilter) (numAffectedRecords int, err error) {
         panic("not implemented") // TODO: Implement
 }
 
-func (repo *Sqlite3DocumentRepository) CountWhere(_ context.Context, _ domain.DocumentFilter) int {
+func (repo *Sqlite3DocumentRepository) CountWhere(ctx context.Context, columnFilter domain.DocumentFilter) int {
         panic("not implemented") // TODO: Implement
 }
 
-func (repo *Sqlite3DocumentRepository) CountAll(_ context.Context) int {
+func (repo *Sqlite3DocumentRepository) CountAll(ctx context.Context) int {
         panic("not implemented") // TODO: Implement
 }
 
-func (repo *Sqlite3DocumentRepository) DoesExist(_ context.Context, _ domain.Document) bool {
+func (repo *Sqlite3DocumentRepository) DoesExist(ctx context.Context, domainModel domain.Document) bool {
         panic("not implemented") // TODO: Implement
 }
 
-func (repo *Sqlite3DocumentRepository) DoesExistWhere(_ context.Context, _ domain.DocumentFilter) bool {
+func (repo *Sqlite3DocumentRepository) DoesExistWhere(ctx context.Context, columnFilter domain.DocumentFilter) bool {
         panic("not implemented") // TODO: Implement
 }
 
-func (repo *Sqlite3DocumentRepository) GetWhere(_ context.Context, _ domain.DocumentFilter) []domain.Document {
+func (repo *Sqlite3DocumentRepository) GetWhere(ctx context.Context, columnFilter domain.DocumentFilter) []domain.Document {
         panic("not implemented") // TODO: Implement
 }
 
-func (repo *Sqlite3DocumentRepository) GetFirstWhere(_ context.Context, _ domain.DocumentFilter) domain.Document {
+func (repo *Sqlite3DocumentRepository) GetFirstWhere(ctx context.Context, columnFilter domain.DocumentFilter) domain.Document {
         panic("not implemented") // TODO: Implement
 }
 
-func (repo *Sqlite3DocumentRepository) GetAll(_ context.Context) []domain.Document {
+func (repo *Sqlite3DocumentRepository) GetAll(ctx context.Context) []domain.Document {
         panic("not implemented") // TODO: Implement
 }

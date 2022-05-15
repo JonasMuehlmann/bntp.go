@@ -28,6 +28,7 @@ import (
 )
 
 {{template "structDefinition" .}}
+{{template "repositoryHelperTypes" .}}
 
 func (repo * {{$StructName}}) New(_ ...any) (repository.BookmarkRepository, error) {
         panic("not implemented") // TODO: Implement

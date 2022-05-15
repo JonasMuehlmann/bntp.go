@@ -24,17 +24,20 @@ import (
 	"os"
 	"text/template"
 
+	repository "github.com/JonasMuehlmann/bntp.go/repository/sqlite3"
 	"github.com/JonasMuehlmann/bntp.go/tools"
+	"github.com/JonasMuehlmann/goaoi"
 )
 
 type Entity struct {
 	EntityName string
+	Struct     any
 }
 
 var entities = []Entity{
-	{"Document"},
-	{"Bookmark"},
-	{"Tag"},
+	{"Document", repository.Document{}},
+	{"Bookmark", repository.Bookmark{}},
+	{"Tag", repository.Tag{}},
 }
 
 type Database struct {
@@ -51,13 +54,51 @@ var databases = []Database{
 type Configuration struct {
 	EntityName   string
 	DatabaseName string
+	StructFields []tools.StructField
 }
 
-var structNameVarTemplaterFragment = `{{$StructName := print (UppercaseBeginning .DatabaseName) (UppercaseBeginning .EntityName) "Repository" -}}`
+var structNameVarTemplaterFragment = `{{$StructName := print (UppercaseBeginning .DatabaseName) (UppercaseBeginning .EntityName) "Repository" -}}
+{{$EntityName := UppercaseBeginning .EntityName -}}`
 
 var structDefinition = `type {{UppercaseBeginning .DatabaseName}}{{UppercaseBeginning .EntityName}}Repository struct {
-    db sql.Db
+    db sql.DB
 }`
+
+var repositoryHelperTypesFragment = structNameVarTemplaterFragment + `
+type {{$EntityName}}Field string
+
+var {{$EntityName}}Fields = struct {
+    {{range $field := .StructFields -}}
+    {{.FieldName}}  {{$EntityName}}Field
+    {{end}}
+}{
+    {{range $field := .StructFields -}}
+    {{.FieldName}}: "{{.LogicalFieldName -}}",
+    {{end}}
+}
+
+var {{$EntityName}}FieldsList = []{{$EntityName}}Field{
+    {{range $field := .StructFields -}}
+    {{$EntityName}}Field("{{.FieldName}}"),
+    {{end}}
+}
+
+type {{$EntityName}}Filter struct {
+    {{range $field := .StructFields -}}
+    {{.FieldName}} optional.Optional[FilterOperation[{{.FieldType}}]]
+    {{end}}
+}
+
+type {{$EntityName}}Updater struct {
+    {{range $field := .StructFields -}}
+    {{.FieldName}} optional.Optional[UpdateOperation[{{.FieldType}}]]
+    {{end}}
+}
+
+type {{$StructName}}Hook func(context.Context, {{$StructName}}) error`
+
+// TODO: Add template for type safe config struct per provider for New() methods
+// It could embed a generic RepositoryConfig into repository specific configurations e.g. Sqlite3RepositoryConfig
 
 func main() {
 	for _, database := range databases {
@@ -72,6 +113,11 @@ func main() {
 				panic(err)
 			}
 
+			tmpl, err = tmpl.New("repositoryHelperTypes").Funcs(tools.FullFuncMap).Parse(repositoryHelperTypesFragment)
+			if err != nil {
+				panic(err)
+			}
+
 			tmpl, err = tmpl.New(tools.LowercaseBeginning(entity.EntityName) + "_repository").Funcs(tools.FullFuncMap).Parse(structNameVarTemplaterFragment + string(tmplRaw))
 			if err != nil {
 				panic(err)
@@ -82,9 +128,16 @@ func main() {
 				panic(err)
 			}
 
+			entityStruct := tools.NewStructModel(entity.Struct)
+			entityStruct.StructFields, err = goaoi.CopyExceptIfSlice(entityStruct.StructFields, func(s tools.StructField) bool { return s.FieldName == "R" || s.FieldName == "L" })
+			if err != nil {
+				panic(err)
+			}
+
 			err = tmpl.Execute(outFile, Configuration{
 				EntityName:   entity.EntityName,
 				DatabaseName: database.DatabaseName,
+				StructFields: entityStruct.StructFields,
 			})
 			if err != nil {
 				panic(err)

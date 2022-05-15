@@ -23,57 +23,108 @@
 package repository
 
 type MssqlDocumentRepository struct {
-    db sql.Db
+    db sql.DB
+}
+type DocumentField string
+
+var DocumentFields = struct {
+    ID  DocumentField
+    Path  DocumentField
+    DocumentTypeID  DocumentField
+    CreatedAt  DocumentField
+    UpdatedAt  DocumentField
+    DeletedAt  DocumentField
+    
+}{
+    ID: "id",
+    Path: "path",
+    DocumentTypeID: "document_type_id",
+    CreatedAt: "created_at",
+    UpdatedAt: "updated_at",
+    DeletedAt: "deleted_at",
+    
 }
 
-func (repo *MssqlDocumentRepository) New(_ ...any) (repository.DocumentRepository, error) {
+var DocumentFieldsList = []DocumentField{
+    DocumentField("ID"),
+    DocumentField("Path"),
+    DocumentField("DocumentTypeID"),
+    DocumentField("CreatedAt"),
+    DocumentField("UpdatedAt"),
+    DocumentField("DeletedAt"),
+    
+}
+
+type DocumentFilter struct {
+    ID optional.Optional[FilterOperation[int64]]
+    Path optional.Optional[FilterOperation[string]]
+    DocumentTypeID optional.Optional[FilterOperation[int64]]
+    CreatedAt optional.Optional[FilterOperation[string]]
+    UpdatedAt optional.Optional[FilterOperation[string]]
+    DeletedAt optional.Optional[FilterOperation[null.String]]
+    
+}
+
+type DocumentUpdater struct {
+    ID optional.Optional[UpdateOperation[int64]]
+    Path optional.Optional[UpdateOperation[string]]
+    DocumentTypeID optional.Optional[UpdateOperation[int64]]
+    CreatedAt optional.Optional[UpdateOperation[string]]
+    UpdatedAt optional.Optional[UpdateOperation[string]]
+    DeletedAt optional.Optional[UpdateOperation[null.String]]
+    
+}
+
+type MssqlDocumentRepositoryHook func(context.Context, MssqlDocumentRepository) error
+
+func (repo *MssqlDocumentRepository) New(args ...any) (MssqlDocumentRepository, error) {
         panic("not implemented") // TODO: Implement
 }
 
-func (repo *MssqlDocumentRepository) Add(_ context.Context, _ []domain.Document) (numAffectedRecords int, newID int, err error) {
+func (repo *MssqlDocumentRepository) Add(ctx context.Context, domainModels []domain.Document) (numAffectedRecords int, newID int, err error) {
         panic("not implemented") // TODO: Implement
 }
 
-func (repo *MssqlDocumentRepository) Replace(_ context.Context, _ []domain.Document) error {
+func (repo *MssqlDocumentRepository) Replace(ctx context.Context, domainModels []domain.Document) error {
         panic("not implemented") // TODO: Implement
 }
 
-func (repo *MssqlDocumentRepository) UpdateWhere(_ context.Context, _ domain.DocumentFilter, _ map[domain.DocumentField]domain.DocumentUpdateOperation) (numAffectedRecords int, err error) {
+func (repo *MssqlDocumentRepository) UpdateWhere(ctx context.Context, columnFilter domain.DocumentFilter, columnUpdaters map[domain.DocumentField]domain.DocumentUpdater) (numAffectedRecords int, err error) {
         panic("not implemented") // TODO: Implement
 }
 
-func (repo *MssqlDocumentRepository) Delete(_ context.Context, _ []domain.Document) error {
+func (repo *MssqlDocumentRepository) Delete(ctx context.Context, domainModels []domain.Document) error {
         panic("not implemented") // TODO: Implement
 }
 
-func (repo *MssqlDocumentRepository) DeleteWhere(_ context.Context, _ domain.DocumentFilter) (numAffectedRecords int, err error) {
+func (repo *MssqlDocumentRepository) DeleteWhere(ctx context.Context, columnFilter domain.DocumentFilter) (numAffectedRecords int, err error) {
         panic("not implemented") // TODO: Implement
 }
 
-func (repo *MssqlDocumentRepository) CountWhere(_ context.Context, _ domain.DocumentFilter) int {
+func (repo *MssqlDocumentRepository) CountWhere(ctx context.Context, columnFilter domain.DocumentFilter) int {
         panic("not implemented") // TODO: Implement
 }
 
-func (repo *MssqlDocumentRepository) CountAll(_ context.Context) int {
+func (repo *MssqlDocumentRepository) CountAll(ctx context.Context) int {
         panic("not implemented") // TODO: Implement
 }
 
-func (repo *MssqlDocumentRepository) DoesExist(_ context.Context, _ domain.Document) bool {
+func (repo *MssqlDocumentRepository) DoesExist(ctx context.Context, domainModel domain.Document) bool {
         panic("not implemented") // TODO: Implement
 }
 
-func (repo *MssqlDocumentRepository) DoesExistWhere(_ context.Context, _ domain.DocumentFilter) bool {
+func (repo *MssqlDocumentRepository) DoesExistWhere(ctx context.Context, columnFilter domain.DocumentFilter) bool {
         panic("not implemented") // TODO: Implement
 }
 
-func (repo *MssqlDocumentRepository) GetWhere(_ context.Context, _ domain.DocumentFilter) []domain.Document {
+func (repo *MssqlDocumentRepository) GetWhere(ctx context.Context, columnFilter domain.DocumentFilter) []domain.Document {
         panic("not implemented") // TODO: Implement
 }
 
-func (repo *MssqlDocumentRepository) GetFirstWhere(_ context.Context, _ domain.DocumentFilter) domain.Document {
+func (repo *MssqlDocumentRepository) GetFirstWhere(ctx context.Context, columnFilter domain.DocumentFilter) domain.Document {
         panic("not implemented") // TODO: Implement
 }
 
-func (repo *MssqlDocumentRepository) GetAll(_ context.Context) []domain.Document {
+func (repo *MssqlDocumentRepository) GetAll(ctx context.Context) []domain.Document {
         panic("not implemented") // TODO: Implement
 }
