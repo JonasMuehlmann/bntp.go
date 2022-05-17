@@ -87,7 +87,7 @@ func (repo *{{$StructName}}) UpdateWhere(ctx context.Context, columnFilter Bookm
 
     setFilters := *columnFilter.GetSetFilters()
 
-	queryFilters := BuildQueryModListFromFilter(setFilters)
+	queryFilters := buildQueryModListFromFilter{{$EntityName}}(setFilters)
 
 	modelsToUpdate, err = Bookmarks(queryFilters...).All(ctx, repo.db)
 
@@ -129,7 +129,7 @@ func (repo *{{$StructName}}) Delete(ctx context.Context, repositoryModels []Book
 func (repo *{{$StructName}}) DeleteWhere(ctx context.Context, columnFilter BookmarkFilter) (numAffectedRecords int64, err error) {
     setFilters := *columnFilter.GetSetFilters()
 
-	queryFilters := BuildQueryModListFromFilter(setFilters)
+	queryFilters := buildQueryModListFromFilter{{$EntityName}}(setFilters)
 
 	tx, err := repo.db.BeginTx(ctx, nil)
 	if err != nil {
@@ -146,7 +146,7 @@ func (repo *{{$StructName}}) DeleteWhere(ctx context.Context, columnFilter Bookm
 func (repo *{{$StructName}}) CountWhere(ctx context.Context, columnFilter BookmarkFilter) (int64, error) {
     setFilters := *columnFilter.GetSetFilters()
 
-	queryFilters := BuildQueryModListFromFilter(setFilters)
+	queryFilters := buildQueryModListFromFilter{{$EntityName}}(setFilters)
 
 	return Bookmarks(queryFilters...).Count(ctx, repo.db)
 }
@@ -162,7 +162,7 @@ func (repo *{{$StructName}}) DoesExist(ctx context.Context, repositoryModel Book
 func (repo *{{$StructName}}) DoesExistWhere(ctx context.Context, columnFilter BookmarkFilter) (bool, error) {
     setFilters := *columnFilter.GetSetFilters()
 
-	queryFilters := BuildQueryModListFromFilter(setFilters)
+	queryFilters := buildQueryModListFromFilter{{$EntityName}}(setFilters)
 
 	return Bookmarks(queryFilters...).Exists(ctx, repo.db)
 }
@@ -170,7 +170,7 @@ func (repo *{{$StructName}}) DoesExistWhere(ctx context.Context, columnFilter Bo
 func (repo *{{$StructName}}) GetWhere(ctx context.Context, columnFilter BookmarkFilter) ([]*Bookmark, error) {
     setFilters := *columnFilter.GetSetFilters()
 
-	queryFilters := BuildQueryModListFromFilter(setFilters)
+	queryFilters := buildQueryModListFromFilter{{$EntityName}}(setFilters)
 
 	return Bookmarks(queryFilters...).All(ctx, repo.db)
 }
@@ -178,7 +178,7 @@ func (repo *{{$StructName}}) GetWhere(ctx context.Context, columnFilter Bookmark
 func (repo *{{$StructName}}) GetFirstWhere(ctx context.Context, columnFilter BookmarkFilter) (*Bookmark, error) {
     setFilters := *columnFilter.GetSetFilters()
 
-	queryFilters := BuildQueryModListFromFilter(setFilters)
+	queryFilters := buildQueryModListFromFilter{{$EntityName}}(setFilters)
 
 	return Bookmarks(queryFilters...).One(ctx, repo.db)
 }

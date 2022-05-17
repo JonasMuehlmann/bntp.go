@@ -228,14 +228,14 @@ func (updater *BookmarkUpdater) ApplyToModel(bookmarkModel *Bookmark) {
 
 type MysqlBookmarkRepositoryHook func(context.Context, MysqlBookmarkRepository) error
 
-type queryModSlice []qm.QueryMod
+type queryModSliceBookmark []qm.QueryMod
 
-func (s queryModSlice) Apply(q *queries.Query) {
+func (s queryModSliceBookmark) Apply(q *queries.Query) {
     qm.Apply(q, s...)
 }
 
-func buildQueryModFilter[T any](filterField BookmarkField, filterOperation model.FilterOperation[T]) queryModSlice {
-    var newQueryMod queryModSlice
+func buildQueryModFilterBookmark[T any](filterField BookmarkField, filterOperation model.FilterOperation[T]) queryModSliceBookmark {
+    var newQueryMod queryModSliceBookmark
 
     filterOperator := filterOperation.Operator
 
@@ -329,16 +329,16 @@ func buildQueryModFilter[T any](filterField BookmarkField, filterOperation model
         if !ok {
             panic("Expected a scalar operand for FilterOr operator")
         }
-        newQueryMod = append(newQueryMod, qm.Expr(buildQueryModFilter(filterField, filterOperand.LHS)))
-        newQueryMod = append(newQueryMod, qm.Or2(qm.Expr(buildQueryModFilter(filterField, filterOperand.RHS))))
+        newQueryMod = append(newQueryMod, qm.Expr(buildQueryModFilterBookmark(filterField, filterOperand.LHS)))
+        newQueryMod = append(newQueryMod, qm.Or2(qm.Expr(buildQueryModFilterBookmark(filterField, filterOperand.RHS))))
     case model.FilterAnd:
         filterOperand, ok := filterOperation.Operand.(model.CompoundOperand[any])
         if !ok {
             panic("Expected a scalar operand for FilterAnd operator")
         }
 
-        newQueryMod = append(newQueryMod, qm.Expr(buildQueryModFilter(filterField, filterOperand.LHS)))
-        newQueryMod = append(newQueryMod, qm.Expr(buildQueryModFilter(filterField, filterOperand.RHS)))
+        newQueryMod = append(newQueryMod, qm.Expr(buildQueryModFilterBookmark(filterField, filterOperand.LHS)))
+        newQueryMod = append(newQueryMod, qm.Expr(buildQueryModFilterBookmark(filterField, filterOperand.RHS)))
     default:
         panic("Unhandled FilterOperator")
     }
@@ -346,8 +346,8 @@ func buildQueryModFilter[T any](filterField BookmarkField, filterOperation model
     return newQueryMod
 }
 
-func buildQueryModListFromFilter(setFilters list.List) queryModSlice {
-	queryModList := make(queryModSlice, 0, 9)
+func buildQueryModListFromFilterBookmark(setFilters list.List) queryModSliceBookmark {
+	queryModList := make(queryModSliceBookmark, 0, 9)
 
 	for filter := setFilters.Front(); filter != nil; filter = filter.Next() {
 		filterMapping, ok := filter.Value.(BookmarkFilterMapping[any])
@@ -355,7 +355,7 @@ func buildQueryModListFromFilter(setFilters list.List) queryModSlice {
 			panic(fmt.Sprintf("Expected type %t but got %t", BookmarkFilterMapping[any]{}, filter))
 		}
 
-        newQueryMod := buildQueryModFilter(filterMapping.Field, filterMapping.FilterOperation)
+        newQueryMod := buildQueryModFilterBookmark(filterMapping.Field, filterMapping.FilterOperation)
 
         for _, queryMod := range newQueryMod {
             queryModList = append(queryModList, queryMod)
@@ -414,7 +414,7 @@ func (repo *MysqlBookmarkRepository) UpdateWhere(ctx context.Context, columnFilt
 
     setFilters := *columnFilter.GetSetFilters()
 
-	queryFilters := BuildQueryModListFromFilter(setFilters)
+	queryFilters := buildQueryModListFromFilterBookmark(setFilters)
 
 	modelsToUpdate, err = Bookmarks(queryFilters...).All(ctx, repo.db)
 
@@ -456,7 +456,7 @@ func (repo *MysqlBookmarkRepository) Delete(ctx context.Context, repositoryModel
 func (repo *MysqlBookmarkRepository) DeleteWhere(ctx context.Context, columnFilter BookmarkFilter) (numAffectedRecords int64, err error) {
     setFilters := *columnFilter.GetSetFilters()
 
-	queryFilters := BuildQueryModListFromFilter(setFilters)
+	queryFilters := buildQueryModListFromFilterBookmark(setFilters)
 
 	tx, err := repo.db.BeginTx(ctx, nil)
 	if err != nil {
@@ -473,7 +473,7 @@ func (repo *MysqlBookmarkRepository) DeleteWhere(ctx context.Context, columnFilt
 func (repo *MysqlBookmarkRepository) CountWhere(ctx context.Context, columnFilter BookmarkFilter) (int64, error) {
     setFilters := *columnFilter.GetSetFilters()
 
-	queryFilters := BuildQueryModListFromFilter(setFilters)
+	queryFilters := buildQueryModListFromFilterBookmark(setFilters)
 
 	return Bookmarks(queryFilters...).Count(ctx, repo.db)
 }
@@ -489,7 +489,7 @@ func (repo *MysqlBookmarkRepository) DoesExist(ctx context.Context, repositoryMo
 func (repo *MysqlBookmarkRepository) DoesExistWhere(ctx context.Context, columnFilter BookmarkFilter) (bool, error) {
     setFilters := *columnFilter.GetSetFilters()
 
-	queryFilters := BuildQueryModListFromFilter(setFilters)
+	queryFilters := buildQueryModListFromFilterBookmark(setFilters)
 
 	return Bookmarks(queryFilters...).Exists(ctx, repo.db)
 }
@@ -497,7 +497,7 @@ func (repo *MysqlBookmarkRepository) DoesExistWhere(ctx context.Context, columnF
 func (repo *MysqlBookmarkRepository) GetWhere(ctx context.Context, columnFilter BookmarkFilter) ([]*Bookmark, error) {
     setFilters := *columnFilter.GetSetFilters()
 
-	queryFilters := BuildQueryModListFromFilter(setFilters)
+	queryFilters := buildQueryModListFromFilterBookmark(setFilters)
 
 	return Bookmarks(queryFilters...).All(ctx, repo.db)
 }
@@ -505,7 +505,7 @@ func (repo *MysqlBookmarkRepository) GetWhere(ctx context.Context, columnFilter 
 func (repo *MysqlBookmarkRepository) GetFirstWhere(ctx context.Context, columnFilter BookmarkFilter) (*Bookmark, error) {
     setFilters := *columnFilter.GetSetFilters()
 
-	queryFilters := BuildQueryModListFromFilter(setFilters)
+	queryFilters := buildQueryModListFromFilterBookmark(setFilters)
 
 	return Bookmarks(queryFilters...).One(ctx, repo.db)
 }

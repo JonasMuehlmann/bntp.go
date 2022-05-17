@@ -22,6 +22,19 @@
 
 package repository
 
+import (
+    "database/sql"
+	"github.com/JonasMuehlmann/bntp.go/model"
+	"github.com/JonasMuehlmann/optional.go"
+    "context"
+	"fmt"
+    "github.com/volatiletech/sqlboiler/v4/boil"
+    "github.com/volatiletech/sqlboiler/v4/queries/qm"
+    "github.com/volatiletech/sqlboiler/v4/queries"
+	"github.com/volatiletech/null/v8"
+	"container/list"
+)
+
 type Sqlite3DocumentRepository struct {
     db *sql.DB
 }
@@ -179,14 +192,14 @@ func (updater *DocumentUpdater) ApplyToModel(documentModel *Document) {
 
 type Sqlite3DocumentRepositoryHook func(context.Context, Sqlite3DocumentRepository) error
 
-type queryModSlice []qm.QueryMod
+type queryModSliceDocument []qm.QueryMod
 
-func (s queryModSlice) Apply(q *queries.Query) {
+func (s queryModSliceDocument) Apply(q *queries.Query) {
     qm.Apply(q, s...)
 }
 
-func buildQueryModFilter[T any](filterField DocumentField, filterOperation model.FilterOperation[T]) queryModSlice {
-    var newQueryMod queryModSlice
+func buildQueryModFilterDocument[T any](filterField DocumentField, filterOperation model.FilterOperation[T]) queryModSliceDocument {
+    var newQueryMod queryModSliceDocument
 
     filterOperator := filterOperation.Operator
 
@@ -280,16 +293,16 @@ func buildQueryModFilter[T any](filterField DocumentField, filterOperation model
         if !ok {
             panic("Expected a scalar operand for FilterOr operator")
         }
-        newQueryMod = append(newQueryMod, qm.Expr(buildQueryModFilter(filterField, filterOperand.LHS)))
-        newQueryMod = append(newQueryMod, qm.Or2(qm.Expr(buildQueryModFilter(filterField, filterOperand.RHS))))
+        newQueryMod = append(newQueryMod, qm.Expr(buildQueryModFilterDocument(filterField, filterOperand.LHS)))
+        newQueryMod = append(newQueryMod, qm.Or2(qm.Expr(buildQueryModFilterDocument(filterField, filterOperand.RHS))))
     case model.FilterAnd:
         filterOperand, ok := filterOperation.Operand.(model.CompoundOperand[any])
         if !ok {
             panic("Expected a scalar operand for FilterAnd operator")
         }
 
-        newQueryMod = append(newQueryMod, qm.Expr(buildQueryModFilter(filterField, filterOperand.LHS)))
-        newQueryMod = append(newQueryMod, qm.Expr(buildQueryModFilter(filterField, filterOperand.RHS)))
+        newQueryMod = append(newQueryMod, qm.Expr(buildQueryModFilterDocument(filterField, filterOperand.LHS)))
+        newQueryMod = append(newQueryMod, qm.Expr(buildQueryModFilterDocument(filterField, filterOperand.RHS)))
     default:
         panic("Unhandled FilterOperator")
     }
@@ -297,8 +310,8 @@ func buildQueryModFilter[T any](filterField DocumentField, filterOperation model
     return newQueryMod
 }
 
-func buildQueryModListFromFilter(setFilters list.List) queryModSlice {
-	queryModList := make(queryModSlice, 0, 6)
+func buildQueryModListFromFilterDocument(setFilters list.List) queryModSliceDocument {
+	queryModList := make(queryModSliceDocument, 0, 6)
 
 	for filter := setFilters.Front(); filter != nil; filter = filter.Next() {
 		filterMapping, ok := filter.Value.(DocumentFilterMapping[any])
@@ -306,7 +319,7 @@ func buildQueryModListFromFilter(setFilters list.List) queryModSlice {
 			panic(fmt.Sprintf("Expected type %t but got %t", DocumentFilterMapping[any]{}, filter))
 		}
 
-        newQueryMod := buildQueryModFilter(filterMapping.Field, filterMapping.FilterOperation)
+        newQueryMod := buildQueryModFilterDocument(filterMapping.Field, filterMapping.FilterOperation)
 
         for _, queryMod := range newQueryMod {
             queryModList = append(queryModList, queryMod)
@@ -316,54 +329,151 @@ func buildQueryModListFromFilter(setFilters list.List) queryModSlice {
 	return queryModList
 }
 
-func (repo *Sqlite3DocumentRepository) New(args ...any) (Sqlite3DocumentRepository, error) {
+func (repo * Sqlite3DocumentRepository) New(args ...any) (Sqlite3DocumentRepository, error) {
         panic("not implemented") // TODO: Implement
 }
 
-func (repo *Sqlite3DocumentRepository) Add(ctx context.Context, domainModels []domain.Document) (numAffectedRecords int, newID int, err error) {
-        panic("not implemented") // TODO: Implement
+func (repo *Sqlite3DocumentRepository) Add(ctx context.Context, repositoryModels []Document) error {
+	tx, err := repo.db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+
+	for _, repositoryModel := range repositoryModels {
+		err = repositoryModel.Insert(ctx, tx, boil.Infer())
+		if err != nil {
+			return err
+		}
+	}
+
+	tx.Commit()
+
+    return nil
 }
 
-func (repo *Sqlite3DocumentRepository) Replace(ctx context.Context, domainModels []domain.Document) error {
-        panic("not implemented") // TODO: Implement
+func (repo *Sqlite3DocumentRepository) Replace(ctx context.Context, repositoryModels []Document) error {
+	tx, err := repo.db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+
+	for _, repositoryModel := range repositoryModels {
+		_, err = repositoryModel.Update(ctx, tx, boil.Infer())
+		if err != nil {
+			return err
+		}
+	}
+
+	tx.Commit()
+
+    return nil
 }
 
-func (repo *Sqlite3DocumentRepository) UpdateWhere(ctx context.Context, columnFilter domain.DocumentFilter, columnUpdaters map[domain.DocumentField]domain.DocumentUpdater) (numAffectedRecords int, err error) {
-        panic("not implemented") // TODO: Implement
+func (repo *Sqlite3DocumentRepository) UpdateWhere(ctx context.Context, columnFilter DocumentFilter, columnUpdater DocumentUpdater) (numAffectedRecords int64, err error) {
+    // NOTE: This kind of update is inefficient, since we do a read just to do a write later, but at the moment there is no better way
+    // Either SQLboiler adds support for this usecase or (preferably), we use the caching and hook system to avoid database interaction, when it is not needed
+
+    // TODO: Implement translator from domainColumnFilter to repositoryColumnFilter and updater
+	var modelsToUpdate DocumentSlice
+
+    setFilters := *columnFilter.GetSetFilters()
+
+	queryFilters := buildQueryModListFromFilterDocument(setFilters)
+
+	modelsToUpdate, err = Documents(queryFilters...).All(ctx, repo.db)
+
+    numAffectedRecords = int64(len(modelsToUpdate))
+
+	tx, err := repo.db.BeginTx(ctx, nil)
+	if err != nil {
+		return
+	}
+
+    for _, model := range modelsToUpdate {
+        columnUpdater.ApplyToModel(model)
+        model.Update(ctx, tx, boil.Infer())
+    }
+
+    tx.Commit()
+
+    return
 }
 
-func (repo *Sqlite3DocumentRepository) Delete(ctx context.Context, domainModels []domain.Document) error {
-        panic("not implemented") // TODO: Implement
+func (repo *Sqlite3DocumentRepository) Delete(ctx context.Context, repositoryModels []Document) error {
+	tx, err := repo.db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+
+	for _, repositoryModel := range repositoryModels {
+		_, err = repositoryModel.Delete(ctx, tx)
+		if err != nil {
+			return err
+		}
+	}
+
+	tx.Commit()
+
+    return nil
 }
 
-func (repo *Sqlite3DocumentRepository) DeleteWhere(ctx context.Context, columnFilter domain.DocumentFilter) (numAffectedRecords int, err error) {
-        panic("not implemented") // TODO: Implement
+func (repo *Sqlite3DocumentRepository) DeleteWhere(ctx context.Context, columnFilter DocumentFilter) (numAffectedRecords int64, err error) {
+    setFilters := *columnFilter.GetSetFilters()
+
+	queryFilters := buildQueryModListFromFilterDocument(setFilters)
+
+	tx, err := repo.db.BeginTx(ctx, nil)
+	if err != nil {
+		return
+	}
+
+	numAffectedRecords, err = Documents(queryFilters...).DeleteAll(ctx, tx)
+
+    tx.Commit()
+
+    return
 }
 
-func (repo *Sqlite3DocumentRepository) CountWhere(ctx context.Context, columnFilter domain.DocumentFilter) int {
-        panic("not implemented") // TODO: Implement
+func (repo *Sqlite3DocumentRepository) CountWhere(ctx context.Context, columnFilter DocumentFilter) (int64, error) {
+    setFilters := *columnFilter.GetSetFilters()
+
+	queryFilters := buildQueryModListFromFilterDocument(setFilters)
+
+	return Documents(queryFilters...).Count(ctx, repo.db)
 }
 
-func (repo *Sqlite3DocumentRepository) CountAll(ctx context.Context) int {
-        panic("not implemented") // TODO: Implement
+func (repo *Sqlite3DocumentRepository) CountAll(ctx context.Context) (int64, error) {
+	return Documents().Count(ctx, repo.db)
 }
 
-func (repo *Sqlite3DocumentRepository) DoesExist(ctx context.Context, domainModel domain.Document) bool {
-        panic("not implemented") // TODO: Implement
+func (repo *Sqlite3DocumentRepository) DoesExist(ctx context.Context, repositoryModel Document) (bool, error) {
+	return DocumentExists(ctx, repo.db, repositoryModel.ID)
 }
 
-func (repo *Sqlite3DocumentRepository) DoesExistWhere(ctx context.Context, columnFilter domain.DocumentFilter) bool {
-        panic("not implemented") // TODO: Implement
+func (repo *Sqlite3DocumentRepository) DoesExistWhere(ctx context.Context, columnFilter DocumentFilter) (bool, error) {
+    setFilters := *columnFilter.GetSetFilters()
+
+	queryFilters := buildQueryModListFromFilterDocument(setFilters)
+
+	return Documents(queryFilters...).Exists(ctx, repo.db)
 }
 
-func (repo *Sqlite3DocumentRepository) GetWhere(ctx context.Context, columnFilter domain.DocumentFilter) []domain.Document {
-        panic("not implemented") // TODO: Implement
+func (repo *Sqlite3DocumentRepository) GetWhere(ctx context.Context, columnFilter DocumentFilter) ([]*Document, error) {
+    setFilters := *columnFilter.GetSetFilters()
+
+	queryFilters := buildQueryModListFromFilterDocument(setFilters)
+
+	return Documents(queryFilters...).All(ctx, repo.db)
 }
 
-func (repo *Sqlite3DocumentRepository) GetFirstWhere(ctx context.Context, columnFilter domain.DocumentFilter) domain.Document {
-        panic("not implemented") // TODO: Implement
+func (repo *Sqlite3DocumentRepository) GetFirstWhere(ctx context.Context, columnFilter DocumentFilter) (*Document, error) {
+    setFilters := *columnFilter.GetSetFilters()
+
+	queryFilters := buildQueryModListFromFilterDocument(setFilters)
+
+	return Documents(queryFilters...).One(ctx, repo.db)
 }
 
-func (repo *Sqlite3DocumentRepository) GetAll(ctx context.Context) []domain.Document {
-        panic("not implemented") // TODO: Implement
+func (repo *Sqlite3DocumentRepository) GetAll(ctx context.Context) ([]*Document, error) {
+	return Documents().All(ctx, repo.db)
 }

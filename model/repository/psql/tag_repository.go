@@ -22,6 +22,18 @@
 
 package repository
 
+import (
+    "database/sql"
+	"github.com/JonasMuehlmann/bntp.go/model"
+	"github.com/JonasMuehlmann/optional.go"
+    "context"
+	"fmt"
+    "github.com/volatiletech/sqlboiler/v4/boil"
+    "github.com/volatiletech/sqlboiler/v4/queries/qm"
+    "github.com/volatiletech/sqlboiler/v4/queries"
+	"container/list"
+)
+
 type PsqlTagRepository struct {
     db *sql.DB
 }
@@ -129,14 +141,14 @@ func (updater *TagUpdater) ApplyToModel(tagModel *Tag) {
 
 type PsqlTagRepositoryHook func(context.Context, PsqlTagRepository) error
 
-type queryModSlice []qm.QueryMod
+type queryModSliceTag []qm.QueryMod
 
-func (s queryModSlice) Apply(q *queries.Query) {
+func (s queryModSliceTag) Apply(q *queries.Query) {
     qm.Apply(q, s...)
 }
 
-func buildQueryModFilter[T any](filterField TagField, filterOperation model.FilterOperation[T]) queryModSlice {
-    var newQueryMod queryModSlice
+func buildQueryModFilterTag[T any](filterField TagField, filterOperation model.FilterOperation[T]) queryModSliceTag {
+    var newQueryMod queryModSliceTag
 
     filterOperator := filterOperation.Operator
 
@@ -230,16 +242,16 @@ func buildQueryModFilter[T any](filterField TagField, filterOperation model.Filt
         if !ok {
             panic("Expected a scalar operand for FilterOr operator")
         }
-        newQueryMod = append(newQueryMod, qm.Expr(buildQueryModFilter(filterField, filterOperand.LHS)))
-        newQueryMod = append(newQueryMod, qm.Or2(qm.Expr(buildQueryModFilter(filterField, filterOperand.RHS))))
+        newQueryMod = append(newQueryMod, qm.Expr(buildQueryModFilterTag(filterField, filterOperand.LHS)))
+        newQueryMod = append(newQueryMod, qm.Or2(qm.Expr(buildQueryModFilterTag(filterField, filterOperand.RHS))))
     case model.FilterAnd:
         filterOperand, ok := filterOperation.Operand.(model.CompoundOperand[any])
         if !ok {
             panic("Expected a scalar operand for FilterAnd operator")
         }
 
-        newQueryMod = append(newQueryMod, qm.Expr(buildQueryModFilter(filterField, filterOperand.LHS)))
-        newQueryMod = append(newQueryMod, qm.Expr(buildQueryModFilter(filterField, filterOperand.RHS)))
+        newQueryMod = append(newQueryMod, qm.Expr(buildQueryModFilterTag(filterField, filterOperand.LHS)))
+        newQueryMod = append(newQueryMod, qm.Expr(buildQueryModFilterTag(filterField, filterOperand.RHS)))
     default:
         panic("Unhandled FilterOperator")
     }
@@ -247,8 +259,8 @@ func buildQueryModFilter[T any](filterField TagField, filterOperation model.Filt
     return newQueryMod
 }
 
-func buildQueryModListFromFilter(setFilters list.List) queryModSlice {
-	queryModList := make(queryModSlice, 0, 2)
+func buildQueryModListFromFilterTag(setFilters list.List) queryModSliceTag {
+	queryModList := make(queryModSliceTag, 0, 2)
 
 	for filter := setFilters.Front(); filter != nil; filter = filter.Next() {
 		filterMapping, ok := filter.Value.(TagFilterMapping[any])
@@ -256,7 +268,7 @@ func buildQueryModListFromFilter(setFilters list.List) queryModSlice {
 			panic(fmt.Sprintf("Expected type %t but got %t", TagFilterMapping[any]{}, filter))
 		}
 
-        newQueryMod := buildQueryModFilter(filterMapping.Field, filterMapping.FilterOperation)
+        newQueryMod := buildQueryModFilterTag(filterMapping.Field, filterMapping.FilterOperation)
 
         for _, queryMod := range newQueryMod {
             queryModList = append(queryModList, queryMod)
@@ -270,50 +282,147 @@ func (repo * PsqlTagRepository) New(args ...any) (PsqlTagRepository, error) {
         panic("not implemented") // TODO: Implement
 }
 
-func (repo *PsqlTagRepository) Add(ctx context.Context, domainModels []domain.Tag) (numAffectedRecords int, newID int, err error) {
-        panic("not implemented") // TODO: Implement
+func (repo *PsqlTagRepository) Add(ctx context.Context, repositoryModels []Tag) error {
+	tx, err := repo.db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+
+	for _, repositoryModel := range repositoryModels {
+		err = repositoryModel.Insert(ctx, tx, boil.Infer())
+		if err != nil {
+			return err
+		}
+	}
+
+	tx.Commit()
+
+    return nil
 }
 
-func (repo *PsqlTagRepository) Replace(ctx context.Context, domainModels []domain.Tag) error {
-        panic("not implemented") // TODO: Implement
+func (repo *PsqlTagRepository) Replace(ctx context.Context, repositoryModels []Tag) error {
+	tx, err := repo.db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+
+	for _, repositoryModel := range repositoryModels {
+		_, err = repositoryModel.Update(ctx, tx, boil.Infer())
+		if err != nil {
+			return err
+		}
+	}
+
+	tx.Commit()
+
+    return nil
 }
 
-func (repo *PsqlTagRepository) UpdateWhere(ctx context.Context, columnFilter domain.TagFilter, columnUpdaters map[domain.TagField]domain.TagUpdater) (numAffectedRecords int, err error) {
-        panic("not implemented") // TODO: Implement
+func (repo *PsqlTagRepository) UpdateWhere(ctx context.Context, columnFilter TagFilter, columnUpdater TagUpdater) (numAffectedRecords int64, err error) {
+    // NOTE: This kind of update is inefficient, since we do a read just to do a write later, but at the moment there is no better way
+    // Either SQLboiler adds support for this usecase or (preferably), we use the caching and hook system to avoid database interaction, when it is not needed
+
+    // TODO: Implement translator from domainColumnFilter to repositoryColumnFilter and updater
+	var modelsToUpdate TagSlice
+
+    setFilters := *columnFilter.GetSetFilters()
+
+	queryFilters := buildQueryModListFromFilterTag(setFilters)
+
+	modelsToUpdate, err = Tags(queryFilters...).All(ctx, repo.db)
+
+    numAffectedRecords = int64(len(modelsToUpdate))
+
+	tx, err := repo.db.BeginTx(ctx, nil)
+	if err != nil {
+		return
+	}
+
+    for _, model := range modelsToUpdate {
+        columnUpdater.ApplyToModel(model)
+        model.Update(ctx, tx, boil.Infer())
+    }
+
+    tx.Commit()
+
+    return
 }
 
-func (repo *PsqlTagRepository) Delete(ctx context.Context, domainModels []domain.Tag) error {
-        panic("not implemented") // TODO: Implement
+func (repo *PsqlTagRepository) Delete(ctx context.Context, repositoryModels []Tag) error {
+	tx, err := repo.db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+
+	for _, repositoryModel := range repositoryModels {
+		_, err = repositoryModel.Delete(ctx, tx)
+		if err != nil {
+			return err
+		}
+	}
+
+	tx.Commit()
+
+    return nil
 }
 
-func (repo *PsqlTagRepository) DeleteWhere(ctx context.Context, columnFilter domain.TagFilter) (numAffectedRecords int, err error) {
-        panic("not implemented") // TODO: Implement
+func (repo *PsqlTagRepository) DeleteWhere(ctx context.Context, columnFilter TagFilter) (numAffectedRecords int64, err error) {
+    setFilters := *columnFilter.GetSetFilters()
+
+	queryFilters := buildQueryModListFromFilterTag(setFilters)
+
+	tx, err := repo.db.BeginTx(ctx, nil)
+	if err != nil {
+		return
+	}
+
+	numAffectedRecords, err = Tags(queryFilters...).DeleteAll(ctx, tx)
+
+    tx.Commit()
+
+    return
 }
 
-func (repo *PsqlTagRepository) CountWhere(ctx context.Context, columnFilter domain.TagFilter) int {
-        panic("not implemented") // TODO: Implement
+func (repo *PsqlTagRepository) CountWhere(ctx context.Context, columnFilter TagFilter) (int64, error) {
+    setFilters := *columnFilter.GetSetFilters()
+
+	queryFilters := buildQueryModListFromFilterTag(setFilters)
+
+	return Tags(queryFilters...).Count(ctx, repo.db)
 }
 
-func (repo *PsqlTagRepository) CountAll(ctx context.Context) int {
-        panic("not implemented") // TODO: Implement
+func (repo *PsqlTagRepository) CountAll(ctx context.Context) (int64, error) {
+	return Tags().Count(ctx, repo.db)
 }
 
-func (repo *PsqlTagRepository) DoesExist(ctx context.Context, domainModel domain.Tag) bool {
-        panic("not implemented") // TODO: Implement
+func (repo *PsqlTagRepository) DoesExist(ctx context.Context, repositoryModel Tag) (bool, error) {
+	return TagExists(ctx, repo.db, repositoryModel.ID)
 }
 
-func (repo *PsqlTagRepository) DoesExistWhere(ctx context.Context, columnFilter domain.TagFilter) bool {
-        panic("not implemented") // TODO: Implement
+func (repo *PsqlTagRepository) DoesExistWhere(ctx context.Context, columnFilter TagFilter) (bool, error) {
+    setFilters := *columnFilter.GetSetFilters()
+
+	queryFilters := buildQueryModListFromFilterTag(setFilters)
+
+	return Tags(queryFilters...).Exists(ctx, repo.db)
 }
 
-func (repo *PsqlTagRepository) GetWhere(ctx context.Context, columnFilter domain.TagFilter) []domain.Tag {
-        panic("not implemented") // TODO: Implement
+func (repo *PsqlTagRepository) GetWhere(ctx context.Context, columnFilter TagFilter) ([]*Tag, error) {
+    setFilters := *columnFilter.GetSetFilters()
+
+	queryFilters := buildQueryModListFromFilterTag(setFilters)
+
+	return Tags(queryFilters...).All(ctx, repo.db)
 }
 
-func (repo *PsqlTagRepository) GetFirstWhere(ctx context.Context, columnFilter domain.TagFilter) domain.Tag {
-        panic("not implemented") // TODO: Implement
+func (repo *PsqlTagRepository) GetFirstWhere(ctx context.Context, columnFilter TagFilter) (*Tag, error) {
+    setFilters := *columnFilter.GetSetFilters()
+
+	queryFilters := buildQueryModListFromFilterTag(setFilters)
+
+	return Tags(queryFilters...).One(ctx, repo.db)
 }
 
-func (repo *PsqlTagRepository) GetAll(ctx context.Context) []domain.Tag {
-        panic("not implemented") // TODO: Implement
+func (repo *PsqlTagRepository) GetAll(ctx context.Context) ([]*Tag, error) {
+	return Tags().All(ctx, repo.db)
 }

@@ -153,14 +153,14 @@ func (updater *{{$EntityName}}Updater) ApplyToModel({{LowercaseBeginning $Entity
 
 type {{$StructName}}Hook func(context.Context, {{$StructName}}) error
 
-type queryModSlice []qm.QueryMod
+type queryModSlice{{$EntityName}} []qm.QueryMod
 
-func (s queryModSlice) Apply(q *queries.Query) {
+func (s queryModSlice{{$EntityName}}) Apply(q *queries.Query) {
     qm.Apply(q, s...)
 }
 
-func buildQueryModFilter[T any](filterField {{$EntityName}}Field, filterOperation model.FilterOperation[T]) queryModSlice {
-    var newQueryMod queryModSlice
+func buildQueryModFilter{{$EntityName}}[T any](filterField {{$EntityName}}Field, filterOperation model.FilterOperation[T]) queryModSlice{{$EntityName}} {
+    var newQueryMod queryModSlice{{$EntityName}}
 
     filterOperator := filterOperation.Operator
 
@@ -254,16 +254,16 @@ func buildQueryModFilter[T any](filterField {{$EntityName}}Field, filterOperatio
         if !ok {
             panic("Expected a scalar operand for FilterOr operator")
         }
-        newQueryMod = append(newQueryMod, qm.Expr(buildQueryModFilter(filterField, filterOperand.LHS)))
-        newQueryMod = append(newQueryMod, qm.Or2(qm.Expr(buildQueryModFilter(filterField, filterOperand.RHS))))
+        newQueryMod = append(newQueryMod, qm.Expr(buildQueryModFilter{{$EntityName}}(filterField, filterOperand.LHS)))
+        newQueryMod = append(newQueryMod, qm.Or2(qm.Expr(buildQueryModFilter{{$EntityName}}(filterField, filterOperand.RHS))))
     case model.FilterAnd:
         filterOperand, ok := filterOperation.Operand.(model.CompoundOperand[any])
         if !ok {
             panic("Expected a scalar operand for FilterAnd operator")
         }
 
-        newQueryMod = append(newQueryMod, qm.Expr(buildQueryModFilter(filterField, filterOperand.LHS)))
-        newQueryMod = append(newQueryMod, qm.Expr(buildQueryModFilter(filterField, filterOperand.RHS)))
+        newQueryMod = append(newQueryMod, qm.Expr(buildQueryModFilter{{$EntityName}}(filterField, filterOperand.LHS)))
+        newQueryMod = append(newQueryMod, qm.Expr(buildQueryModFilter{{$EntityName}}(filterField, filterOperand.RHS)))
     default:
         panic("Unhandled FilterOperator")
     }
@@ -271,8 +271,8 @@ func buildQueryModFilter[T any](filterField {{$EntityName}}Field, filterOperatio
     return newQueryMod
 }
 
-func buildQueryModListFromFilter(setFilters list.List) queryModSlice {
-	queryModList := make(queryModSlice, 0, {{len .StructFields}})
+func buildQueryModListFromFilter{{$EntityName}}(setFilters list.List) queryModSlice{{$EntityName}} {
+	queryModList := make(queryModSlice{{$EntityName}}, 0, {{len .StructFields}})
 
 	for filter := setFilters.Front(); filter != nil; filter = filter.Next() {
 		filterMapping, ok := filter.Value.({{$EntityName}}FilterMapping[any])
@@ -280,7 +280,7 @@ func buildQueryModListFromFilter(setFilters list.List) queryModSlice {
 			panic(fmt.Sprintf("Expected type %t but got %t", {{$EntityName}}FilterMapping[any]{}, filter))
 		}
 
-        newQueryMod := buildQueryModFilter(filterMapping.Field, filterMapping.FilterOperation)
+        newQueryMod := buildQueryModFilter{{$EntityName}}(filterMapping.Field, filterMapping.FilterOperation)
 
         for _, queryMod := range newQueryMod {
             queryModList = append(queryModList, queryMod)
