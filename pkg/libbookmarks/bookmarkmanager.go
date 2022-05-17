@@ -22,6 +22,7 @@ package libbookmarks
 
 import (
 	"context"
+
 	domain "github.com/JonasMuehlmann/bntp.go/model/domain"
 	repository "github.com/JonasMuehlmann/bntp.go/model/repository"
 

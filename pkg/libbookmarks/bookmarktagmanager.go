@@ -22,6 +22,7 @@ package libbookmarks
 
 import (
 	"context"
+
 	bntp "github.com/JonasMuehlmann/bntp.go/pkg"
 )
 
