@@ -77,7 +77,7 @@ func main() {
 			panic(err)
 		}
 
-		outFile, err := os.Create("domain/" + tools.LowercaseBeginning(entityStruct.StructName) + ".go")
+		outFile, err := os.Create("models/domain/" + tools.LowercaseBeginning(entityStruct.StructName) + ".go")
 		if err != nil {
 			panic(err)
 		}
