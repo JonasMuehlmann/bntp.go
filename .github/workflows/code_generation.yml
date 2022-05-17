@@ -73,7 +73,7 @@ jobs:
       run: ./create_db_models.sh
     - uses: stefanzweifel/git-auto-commit-action@v4
       with:
-        file_pattern: ./models/repository/* ./schema/*
+        file_pattern: ./model/repository/* ./schema/*
 
     - name: Run code generator
       run: |
@@ -90,4 +90,4 @@ jobs:
          
     - uses: stefanzweifel/git-auto-commit-action@v4
       with:
-        file_pattern: ./internal/** ./pkg/** ./models/**
+        file_pattern: ./internal/** ./pkg/** ./model/**
