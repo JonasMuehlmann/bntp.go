@@ -24,7 +24,7 @@ package repository
 
 import (
 	"github.com/JonasMuehlmann/optional.go"
-	"github.com/JonasMuehlmann/bntp.go/domain"
+	"github.com/JonasMuehlmann/bntp.go/model/domain"
     "context"
     "database/sql"
     "time"

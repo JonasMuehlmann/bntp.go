@@ -24,7 +24,7 @@ package repository
 
 import (
     "context"
-	"github.com/JonasMuehlmann/bntp.go/domain"
+	"github.com/JonasMuehlmann/bntp.go/model/domain"
 )
 
 type {{.EntityName}}Repository interface {
