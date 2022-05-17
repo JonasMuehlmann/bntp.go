@@ -88,8 +88,8 @@ type DocumentFilter struct {
 }
 
 type DocumentFilterMapping[T any] struct {
-	Field           DocumentField
 	FilterOperation model.FilterOperation[T]
+	Field           DocumentField
 }
 
 func (filter *DocumentFilter) GetSetFilters() *list.List {
@@ -118,22 +118,21 @@ func (filter *DocumentFilter) GetSetFilters() *list.List {
 }
 
 type DocumentUpdater struct {
-	ID             optional.Optional[model.UpdateOperation[int64]]
-	Path           optional.Optional[model.UpdateOperation[string]]
-	DocumentTypeID optional.Optional[model.UpdateOperation[int64]]
-	CreatedAt      optional.Optional[model.UpdateOperation[string]]
-	UpdatedAt      optional.Optional[model.UpdateOperation[string]]
-	DeletedAt      optional.Optional[model.UpdateOperation[null.String]]
-
 	DocumentType         optional.Optional[model.UpdateOperation[*DocumentType]]
-	Tags                 optional.Optional[model.UpdateOperation[TagSlice]]
+	Path                 optional.Optional[model.UpdateOperation[string]]
+	CreatedAt            optional.Optional[model.UpdateOperation[string]]
+	UpdatedAt            optional.Optional[model.UpdateOperation[string]]
 	SourceDocuments      optional.Optional[model.UpdateOperation[DocumentSlice]]
+	DeletedAt            optional.Optional[model.UpdateOperation[null.String]]
+	Tags                 optional.Optional[model.UpdateOperation[TagSlice]]
 	DestinationDocuments optional.Optional[model.UpdateOperation[DocumentSlice]]
+	ID                   optional.Optional[model.UpdateOperation[int64]]
+	DocumentTypeID       optional.Optional[model.UpdateOperation[int64]]
 }
 
 type DocumentUpdaterMapping[T any] struct {
-	Field   DocumentField
 	Updater model.UpdateOperation[T]
+	Field   DocumentField
 }
 
 func (updater *DocumentUpdater) GetSetUpdaters() *list.List {

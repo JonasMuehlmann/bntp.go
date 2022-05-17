@@ -28,6 +28,6 @@ import (
 )
 
 type TagManager struct {
-	hooks      bntp.Hooks[domain.Tag]
 	repository repository.TagRepository
+	hooks      bntp.Hooks[domain.Tag]
 }

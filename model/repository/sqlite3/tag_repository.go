@@ -75,8 +75,8 @@ type TagFilter struct {
 }
 
 type TagFilterMapping[T any] struct {
-	Field           TagField
 	FilterOperation model.FilterOperation[T]
+	Field           TagField
 }
 
 func (filter *TagFilter) GetSetFilters() *list.List {
@@ -93,20 +93,19 @@ func (filter *TagFilter) GetSetFilters() *list.List {
 }
 
 type TagUpdater struct {
-	ID  optional.Optional[model.UpdateOperation[int64]]
-	Tag optional.Optional[model.UpdateOperation[string]]
-
+	Tag                     optional.Optional[model.UpdateOperation[string]]
+	ParentTagTagParentPaths optional.Optional[model.UpdateOperation[TagParentPathSlice]]
 	Bookmarks               optional.Optional[model.UpdateOperation[BookmarkSlice]]
 	ParentTagTags           optional.Optional[model.UpdateOperation[TagSlice]]
 	ChildTagTags            optional.Optional[model.UpdateOperation[TagSlice]]
 	Documents               optional.Optional[model.UpdateOperation[DocumentSlice]]
-	ParentTagTagParentPaths optional.Optional[model.UpdateOperation[TagParentPathSlice]]
 	TagParentPaths          optional.Optional[model.UpdateOperation[TagParentPathSlice]]
+	ID                      optional.Optional[model.UpdateOperation[int64]]
 }
 
 type TagUpdaterMapping[T any] struct {
-	Field   TagField
 	Updater model.UpdateOperation[T]
+	Field   TagField
 }
 
 func (updater *TagUpdater) GetSetUpdaters() *list.List {

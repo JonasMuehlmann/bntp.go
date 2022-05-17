@@ -26,7 +26,6 @@ import (
 	"time"
 
 	"github.com/JonasMuehlmann/bntp.go/model"
-
 	"github.com/JonasMuehlmann/optional.go"
 )
 

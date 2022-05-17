@@ -25,22 +25,22 @@ package repository
 import (
 	"context"
 
-	domain "github.com/JonasMuehlmann/bntp.go/model/domain"
+	"github.com/JonasMuehlmann/bntp.go/model/domain"
 )
 
 type BookmarkRepository interface {
-	New(...any) (BookmarkRepository, error)
+	New(args ...any) (BookmarkRepository, error)
 
-	Add(ctx context.Context, domainModels []domain.Bookmark) (numAffectedRecords int, newID int, err error)
+	Add(ctx context.Context, domainModels []domain.Bookmark) error
 	Replace(ctx context.Context, domainModels []domain.Bookmark) error
-	UpdateWhere(ctx context.Context, columnFilter domain.BookmarkFilter, columnUpdaters map[domain.BookmarkField]domain.BookmarkUpdater) (numAffectedRecords int, err error)
+	UpdateWhere(ctx context.Context, columnFilter domain.BookmarkFilter, columnUpdaters domain.BookmarkUpdater) (numAffectedRecords int64, err error)
 	Delete(ctx context.Context, domainModels []domain.Bookmark) error
-	DeleteWhere(ctx context.Context, columnFilter domain.BookmarkFilter) (numAffectedRecords int, err error)
-	CountWhere(ctx context.Context, columnFilter domain.BookmarkFilter) int
-	CountAll(ctx context.Context) int
-	DoesExist(ctx context.Context, domainModel domain.Bookmark) bool
-	DoesExistWhere(ctx context.Context, columnFilter domain.BookmarkFilter) bool
-	GetWhere(ctx context.Context, columnFilter domain.BookmarkFilter) []domain.Bookmark
-	GetFirstWhere(ctx context.Context, columnFilter domain.BookmarkFilter) domain.Bookmark
-	GetAll(ctx context.Context) []domain.Bookmark
+	DeleteWhere(ctx context.Context, columnFilter domain.BookmarkFilter) (numAffectedRecords int64, err error)
+	CountWhere(ctx context.Context, columnFilter domain.BookmarkFilter) (int64, error)
+	CountAll(ctx context.Context) int64
+	DoesExist(ctx context.Context, domainModel domain.Bookmark) (bool, error)
+	DoesExistWhere(ctx context.Context, columnFilter domain.BookmarkFilter) (bool, error)
+	GetWhere(ctx context.Context, columnFilter domain.BookmarkFilter) []*domain.Bookmark
+	GetFirstWhere(ctx context.Context, columnFilter domain.BookmarkFilter) (*domain.Bookmark, error)
+	GetAll(ctx context.Context) ([]*domain.Bookmark, error)
 }

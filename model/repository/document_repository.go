@@ -25,22 +25,22 @@ package repository
 import (
 	"context"
 
-	domain "github.com/JonasMuehlmann/bntp.go/model/domain"
+	"github.com/JonasMuehlmann/bntp.go/model/domain"
 )
 
 type DocumentRepository interface {
-	New(...any) (DocumentRepository, error)
+	New(args ...any) (DocumentRepository, error)
 
-	Add(ctx context.Context, domainModels []domain.Document) (numAffectedRecords int, newID int, err error)
+	Add(ctx context.Context, domainModels []domain.Document) error
 	Replace(ctx context.Context, domainModels []domain.Document) error
-	UpdateWhere(ctx context.Context, columnFilter domain.DocumentFilter, columnUpdaters map[domain.DocumentField]domain.DocumentUpdater) (numAffectedRecords int, err error)
+	UpdateWhere(ctx context.Context, columnFilter domain.DocumentFilter, columnUpdaters domain.DocumentUpdater) (numAffectedRecords int64, err error)
 	Delete(ctx context.Context, domainModels []domain.Document) error
-	DeleteWhere(ctx context.Context, columnFilter domain.DocumentFilter) (numAffectedRecords int, err error)
-	CountWhere(ctx context.Context, columnFilter domain.DocumentFilter) int
-	CountAll(ctx context.Context) int
-	DoesExist(ctx context.Context, domainModel domain.Document) bool
-	DoesExistWhere(ctx context.Context, columnFilter domain.DocumentFilter) bool
-	GetWhere(ctx context.Context, columnFilter domain.DocumentFilter) []domain.Document
-	GetFirstWhere(ctx context.Context, columnFilter domain.DocumentFilter) domain.Document
-	GetAll(ctx context.Context) []domain.Document
+	DeleteWhere(ctx context.Context, columnFilter domain.DocumentFilter) (numAffectedRecords int64, err error)
+	CountWhere(ctx context.Context, columnFilter domain.DocumentFilter) (int64, error)
+	CountAll(ctx context.Context) int64
+	DoesExist(ctx context.Context, domainModel domain.Document) (bool, error)
+	DoesExistWhere(ctx context.Context, columnFilter domain.DocumentFilter) (bool, error)
+	GetWhere(ctx context.Context, columnFilter domain.DocumentFilter) []*domain.Document
+	GetFirstWhere(ctx context.Context, columnFilter domain.DocumentFilter) (*domain.Document, error)
+	GetAll(ctx context.Context) ([]*domain.Document, error)
 }

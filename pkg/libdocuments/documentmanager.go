@@ -28,6 +28,6 @@ import (
 )
 
 type DocumentManager struct {
-	hooks      bntp.Hooks[domain.Document]
 	repository repository.DocumentRepository
+	hooks      bntp.Hooks[domain.Document]
 }

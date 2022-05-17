@@ -71,7 +71,6 @@ func (o ListOperand[T]) OperandDummyMethod()     {}
 func (o CompoundOperand[T]) OperandDummyMethod() {}
 
 type FilterOperation[T any] struct {
+	Operand  Operand[T]
 	Operator FilterOperator
-	// TODO: Filter by fields type
-	Operand Operand[T]
 }

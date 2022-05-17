@@ -34,8 +34,8 @@ const (
 )
 
 type UpdateOperation[T any] struct {
-	Operator UpdateOperator
 	Operand  T
+	Operator UpdateOperator
 }
 
 func ApplyUpdater[T any](target *T, updateOperation UpdateOperation[T]) {

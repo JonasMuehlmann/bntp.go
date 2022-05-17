@@ -96,8 +96,8 @@ type BookmarkFilter struct {
 }
 
 type BookmarkFilterMapping[T any] struct {
-	Field           BookmarkField
 	FilterOperation model.FilterOperation[T]
+	Field           BookmarkField
 }
 
 func (filter *BookmarkFilter) GetSetFilters() *list.List {
@@ -135,23 +135,22 @@ func (filter *BookmarkFilter) GetSetFilters() *list.List {
 }
 
 type BookmarkUpdater struct {
-	ID             optional.Optional[model.UpdateOperation[int64]]
-	IsRead         optional.Optional[model.UpdateOperation[int64]]
-	Title          optional.Optional[model.UpdateOperation[null.String]]
-	URL            optional.Optional[model.UpdateOperation[string]]
-	BookmarkTypeID optional.Optional[model.UpdateOperation[null.Int64]]
-	IsCollection   optional.Optional[model.UpdateOperation[int64]]
+	BookmarkType   optional.Optional[model.UpdateOperation[*BookmarkType]]
 	CreatedAt      optional.Optional[model.UpdateOperation[string]]
 	UpdatedAt      optional.Optional[model.UpdateOperation[string]]
+	URL            optional.Optional[model.UpdateOperation[string]]
+	Title          optional.Optional[model.UpdateOperation[null.String]]
+	Tags           optional.Optional[model.UpdateOperation[TagSlice]]
 	DeletedAt      optional.Optional[model.UpdateOperation[null.String]]
-
-	BookmarkType optional.Optional[model.UpdateOperation[*BookmarkType]]
-	Tags         optional.Optional[model.UpdateOperation[TagSlice]]
+	BookmarkTypeID optional.Optional[model.UpdateOperation[null.Int64]]
+	IsCollection   optional.Optional[model.UpdateOperation[int64]]
+	ID             optional.Optional[model.UpdateOperation[int64]]
+	IsRead         optional.Optional[model.UpdateOperation[int64]]
 }
 
 type BookmarkUpdaterMapping[T any] struct {
-	Field   BookmarkField
 	Updater model.UpdateOperation[T]
+	Field   BookmarkField
 }
 
 func (updater *BookmarkUpdater) GetSetUpdaters() *list.List {
