@@ -73,10 +73,11 @@ jobs:
       run: ./create_db_models.sh
     - uses: stefanzweifel/git-auto-commit-action@v4
       with:
-        file_pattern: ./repository/* ./schema/*
+        file_pattern: ./models/repository/* ./schema/*
 
     - name: Run code generator
       run: |
+         setopt extendedglob
          go install golang.org/x/tools/go/analysis/passes/fieldalignment/cmd/fieldalignment@latest
          go install golang.org/x/tools/cmd/goimports@latest
          
@@ -89,4 +90,4 @@ jobs:
          
     - uses: stefanzweifel/git-auto-commit-action@v4
       with:
-        file_pattern: ./internal/** ./pkg/** ./model/**
+        file_pattern: ./internal/** ./pkg/** ./models/**
