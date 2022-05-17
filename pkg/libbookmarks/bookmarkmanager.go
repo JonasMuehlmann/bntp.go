@@ -29,43 +29,72 @@ import (
 	bntp "github.com/JonasMuehlmann/bntp.go/pkg"
 )
 
-// TODO: Allow skipping certain hooks
+// TODO: Allow skipping certain hooks.
 type BookmarkManager struct {
-	hooks      bntp.Hooks[Bookmark]
+	hooks      bntp.Hooks[domain.Bookmark]
 	repository repository.BookmarkRepository
 }
 
 func (m *BookmarkManager) New(...any) (BookmarkManager, error) {
+	panic("Not implemented")
 }
 
 func (m *BookmarkManager) Add(context.Context, []domain.Bookmark) (numAffectedRecords int, newID int, err error) {
+	panic("Not implemented")
 }
+
 func (m *BookmarkManager) Replace(context.Context, []domain.Bookmark) error {
+	panic("Not implemented")
 }
-func (m *BookmarkManager) UpdateWhere(context.Context, BookmarkFilter, map[domain.BookmarkField]domain.BookmarkUpdater) (numAffectedRecords int, err error) {
+
+func (m *BookmarkManager) UpdateWhere(context.Context, domain.BookmarkFilter, map[domain.BookmarkField]domain.BookmarkUpdater) (numAffectedRecords int, err error) {
+	panic("Not implemented")
 }
+
 func (m *BookmarkManager) Delete(context.Context, []domain.Bookmark) error {
+	panic("Not implemented")
 }
-func (m *BookmarkManager) DeleteWhere(context.Context, BookmarkFilter) (numAffectedRecords int, err error) {
+
+func (m *BookmarkManager) DeleteWhere(context.Context, domain.BookmarkFilter) (numAffectedRecords int, err error) {
+	panic("Not implemented")
 }
-func (m *BookmarkManager) CountWhere(context.Context, BookmarkFilter) int {
+
+func (m *BookmarkManager) CountWhere(context.Context, domain.BookmarkFilter) int {
+	panic("Not implemented")
 }
+
 func (m *BookmarkManager) CountAll(context.Context) int {
+	panic("Not implemented")
 }
+
 func (m *BookmarkManager) DoesExist(context.Context, domain.Bookmark) bool {
+	panic("Not implemented")
 }
-func (m *BookmarkManager) DoesExistWhere(context.Context, BookmarkFilter) bool {
+
+func (m *BookmarkManager) DoesExistWhere(context.Context, domain.BookmarkFilter) bool {
+	panic("Not implemented")
 }
-func (m *BookmarkManager) GetWhere(context.Context, BookmarkFilter) []domain.Bookmark {
+
+func (m *BookmarkManager) GetWhere(context.Context, domain.BookmarkFilter) []domain.Bookmark {
+	panic("Not implemented")
 }
-func (m *BookmarkManager) GetFirstWhere(context.Context, BookmarkFilter) domain.Bookmark {
+
+func (m *BookmarkManager) GetFirstWhere(context.Context, domain.BookmarkFilter) domain.Bookmark {
+	panic("Not implemented")
 }
+
 func (m *BookmarkManager) GetAll(context.Context) []domain.Bookmark {
+	panic("Not implemented")
 }
 
 func (m *BookmarkManager) AddType(context.Context, string) error {
+	panic("Not implemented")
 }
+
 func (m *BookmarkManager) DeleteType(context.Context, string) error {
+	panic("Not implemented")
 }
+
 func (m *BookmarkManager) UpdateType(context.Context, string, string) error {
+	panic("Not implemented")
 }

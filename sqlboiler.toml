@@ -1,6 +1,12 @@
 wipe = true
 add-soft-delete = true
 
+[[types]]
+  [types.match]
+    type = "int"
+
+  [types.replace]
+    type = "int64"
 
 [auto-columns]
 created = "createdAt"
