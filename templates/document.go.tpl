@@ -27,6 +27,7 @@ import (
 	"time"
 
 	"github.com/JonasMuehlmann/optional.go"
+	"github.com/JonasMuehlmann/bntp.go/model"
 )
 
 
@@ -52,12 +53,12 @@ var {{.StructName}}Fields = struct {
 
 type {{.StructName}}Filter struct {
     {{range $field := .StructFields -}}
-    {{.FieldName}} optional.Optional[FilterOperation[{{.FieldType}}]]
+    {{.FieldName}} optional.Optional[model.FilterOperation[{{.FieldType}}]]
     {{end}}
 }
 
 type {{$.StructName}}Updater struct {
     {{range $field := .StructFields -}}
-    {{.FieldName}} optional.Optional[UpdateOperation[{{.FieldType}}]]
+    {{.FieldName}} optional.Optional[model.UpdateOperation[{{.FieldType}}]]
     {{end}}
 }

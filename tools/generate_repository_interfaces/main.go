@@ -49,7 +49,7 @@ func main() {
 	}
 
 	for _, entity := range entities {
-		outFile, err := os.Create("repository/" + tools.LowercaseBeginning(entity.EntityName) + "_repository.go")
+		outFile, err := os.Create("model/repository/" + tools.LowercaseBeginning(entity.EntityName) + "_repository.go")
 		if err != nil {
 			panic(err)
 		}
