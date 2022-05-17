@@ -60,6 +60,7 @@ func NewStructModel(target any) Struct {
 
 		fieldType := field.Type.String()
 		fieldType = strings.Replace(fieldType, "main.", "", 1)
+		fieldType = strings.Replace(fieldType, "repository.", "", 1)
 
 		entityStruct.StructFields = append(entityStruct.StructFields, StructField{
 			FieldName:        field.Name,

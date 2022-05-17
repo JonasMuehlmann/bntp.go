@@ -24,7 +24,8 @@ import (
 	"os"
 	"text/template"
 
-	repository "github.com/JonasMuehlmann/bntp.go/repository/sqlite3"
+	repository "github.com/JonasMuehlmann/bntp.go/model/repository/sqlite3"
+
 	"github.com/JonasMuehlmann/bntp.go/tools"
 	"github.com/JonasMuehlmann/goaoi"
 )
@@ -62,7 +63,7 @@ var structNameVarTemplaterFragment = `{{$StructName := print (UppercaseBeginning
 {{$EntityName := UppercaseBeginning .EntityName -}}`
 
 var structDefinition = `type {{UppercaseBeginning .DatabaseName}}{{UppercaseBeginning .EntityName}}Repository struct {
-    db sql.DB
+    db *sql.DB
 }`
 
 var repositoryHelperTypesFragment = structNameVarTemplaterFragment + `
@@ -92,23 +93,202 @@ var {{$EntityName}}RelationsList = []string{
 
 type {{$EntityName}}Filter struct {
     {{range $field := .StructFields -}}
-    {{.FieldName}} optional.Optional[FilterOperation[{{.FieldType}}]]
+    {{.FieldName}} optional.Optional[model.FilterOperation[{{.FieldType}}]]
     {{end}}
     {{range $relation := .RelationFields -}}
-    {{.FieldName}} optional.Optional[UpdateOperation[{{.FieldType}}]]
+    {{.FieldName}} optional.Optional[model.UpdateOperation[{{.FieldType}}]]
     {{end}}
+}
+
+type {{$EntityName}}FilterMapping[T any] struct {
+    Field {{$EntityName}}Field
+    FilterOperation model.FilterOperation[T]
+}
+
+func (filter *{{$EntityName}}Filter) GetSetFilters() *list.List {
+    setFilters := list.New()
+
+    {{range $field := .StructFields -}}
+    if filter.{{.FieldName}}.HasValue {
+        setFilters.PushBack({{$EntityName}}FilterMapping[{{.FieldType}}]{{"{"}}{{$EntityName}}Fields.{{.FieldName}}, filter.{{.FieldName}}.Wrappee})
+    }
+    {{end}}
+
+    return setFilters
 }
 
 type {{$EntityName}}Updater struct {
     {{range $field := .StructFields -}}
-    {{.FieldName}} optional.Optional[UpdateOperation[{{.FieldType}}]]
+    {{.FieldName}} optional.Optional[model.UpdateOperation[{{.FieldType}}]]
     {{end}}
     {{range $relation := .RelationFields -}}
-    {{.FieldName}} optional.Optional[UpdateOperation[{{.FieldType}}]]
+    {{.FieldName}} optional.Optional[model.UpdateOperation[{{.FieldType}}]]
     {{end}}
 }
 
-type {{$StructName}}Hook func(context.Context, {{$StructName}}) error`
+type {{$EntityName}}UpdaterMapping[T any] struct {
+    Field {{$EntityName}}Field
+    Updater model.UpdateOperation[T]
+}
+
+func (updater *{{$EntityName}}Updater) GetSetUpdaters() *list.List {
+    setUpdaters := list.New()
+
+    {{range $field := .StructFields -}}
+    if updater.{{.FieldName}}.HasValue {
+        setUpdaters.PushBack({{$EntityName}}UpdaterMapping[{{.FieldType}}]{{"{"}}{{$EntityName}}Fields.{{.FieldName}}, updater.{{.FieldName}}.Wrappee})
+    }
+    {{end}}
+
+    return setUpdaters
+}
+
+func (updater *{{$EntityName}}Updater) ApplyToModel({{LowercaseBeginning $EntityName}}Model *{{$EntityName}}) {
+    {{range $field := .StructFields -}}
+    if updater.{{.FieldName}}.HasValue {
+        model.ApplyUpdater(&(*{{LowercaseBeginning $EntityName}}Model).{{.FieldName}}, updater.{{.FieldName}}.Wrappee)
+    }
+    {{end}}
+}
+
+type {{$StructName}}Hook func(context.Context, {{$StructName}}) error
+
+type queryModSlice []qm.QueryMod
+
+func (s queryModSlice) Apply(q *queries.Query) {
+    qm.Apply(q, s...)
+}
+
+func buildQueryModFilter[T any](filterField {{$EntityName}}Field, filterOperation model.FilterOperation[T]) queryModSlice {
+    var newQueryMod queryModSlice
+
+    filterOperator := filterOperation.Operator
+
+    switch filterOperator {
+    case model.FilterEqual:
+        filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[any])
+        if !ok {
+            panic("Expected a scalar operand for FilterEqual operator")
+        }
+
+        newQueryMod = append(newQueryMod, qm.Where(string(filterField)+" = ?", filterOperand.Operand))
+    case model.FilterNEqual:
+        filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[any])
+        if !ok {
+            panic("Expected a scalar operand for FilterNEqual operator")
+        }
+
+        newQueryMod = append(newQueryMod, qm.Where(string(filterField)+" != ?", filterOperand.Operand))
+    case model.FilterGreaterThan:
+        filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[any])
+        if !ok {
+            panic("Expected a scalar operand for FilterGreaterThan operator")
+        }
+
+        newQueryMod = append(newQueryMod, qm.Where(string(filterField)+" > ?", filterOperand.Operand))
+    case model.FilterGreaterThanEqual:
+        filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[any])
+        if !ok {
+            panic("Expected a scalar operand for FilterGreaterThanEqual operator")
+        }
+
+        newQueryMod = append(newQueryMod, qm.Where(string(filterField)+" >= ?", filterOperand.Operand))
+    case model.FilterLessThan:
+        filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[any])
+        if !ok {
+            panic("Expected a scalar operand for FilterLessThan operator")
+        }
+
+        newQueryMod = append(newQueryMod, qm.Where(string(filterField)+" < ?", filterOperand.Operand))
+    case model.FilterLessThanEqual:
+        filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[any])
+        if !ok {
+            panic("Expected a scalar operand for FilterLessThanEqual operator")
+        }
+
+        newQueryMod = append(newQueryMod, qm.Where(string(filterField)+" <= ?", filterOperand.Operand))
+    case model.FilterIn:
+        filterOperand, ok := filterOperation.Operand.(model.ListOperand[any])
+        if !ok {
+            panic("Expected a list operand for FilterIn operator")
+        }
+
+        newQueryMod = append(newQueryMod, qm.WhereIn(string(filterField)+" IN (?)", filterOperand.Operands))
+    case model.FilterNotIn:
+        filterOperand, ok := filterOperation.Operand.(model.ListOperand[any])
+        if !ok {
+            panic("Expected a list operand for FilterNotIn operator")
+        }
+
+        newQueryMod = append(newQueryMod, qm.WhereNotIn(string(filterField)+" IN (?)", filterOperand.Operands))
+    case model.FilterBetween:
+        filterOperand, ok := filterOperation.Operand.(model.RangeOperand[any])
+        if !ok {
+            panic("Expected a scalar operand for FilterBetween operator")
+        }
+
+        newQueryMod = append(newQueryMod, qm.Where(string(filterField)+" BETWEEN ? AND ?", filterOperand.Start, filterOperand.End))
+    case model.FilterNotBetween:
+        filterOperand, ok := filterOperation.Operand.(model.RangeOperand[any])
+        if !ok {
+            panic("Expected a scalar operand for FilterNotBetween operator")
+        }
+
+        newQueryMod = append(newQueryMod, qm.Where(string(filterField)+" NOT BETWEEN ? AND ?", filterOperand.Start, filterOperand.End))
+    case model.FilterLike:
+        filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[any])
+        if !ok {
+            panic("Expected a scalar operand for FilterLike operator")
+        }
+
+        newQueryMod = append(newQueryMod, qm.Where(string(filterField)+" LIKE ?", filterOperand.Operand))
+    case model.FilterNotLike:
+        filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[any])
+        if !ok {
+            panic("Expected a scalar operand for FilterLike operator")
+        }
+
+        newQueryMod = append(newQueryMod, qm.Where(string(filterField)+" NOT LIKE ?", filterOperand.Operand))
+    case model.FilterOr:
+        filterOperand, ok := filterOperation.Operand.(model.CompoundOperand[any])
+        if !ok {
+            panic("Expected a scalar operand for FilterOr operator")
+        }
+        newQueryMod = append(newQueryMod, qm.Expr(buildQueryModFilter(filterField, filterOperand.LHS)))
+        newQueryMod = append(newQueryMod, qm.Or2(qm.Expr(buildQueryModFilter(filterField, filterOperand.RHS))))
+    case model.FilterAnd:
+        filterOperand, ok := filterOperation.Operand.(model.CompoundOperand[any])
+        if !ok {
+            panic("Expected a scalar operand for FilterAnd operator")
+        }
+
+        newQueryMod = append(newQueryMod, qm.Expr(buildQueryModFilter(filterField, filterOperand.LHS)))
+        newQueryMod = append(newQueryMod, qm.Expr(buildQueryModFilter(filterField, filterOperand.RHS)))
+    default:
+        panic("Unhandled FilterOperator")
+    }
+
+    return newQueryMod
+}
+
+func buildQueryModListFromFilter(setFilters list.List) queryModSlice {
+	queryModList := make(queryModSlice, 0, {{len .StructFields}})
+
+	for filter := setFilters.Front(); filter != nil; filter = filter.Next() {
+		filterMapping, ok := filter.Value.({{$EntityName}}FilterMapping[any])
+		if !ok {
+			panic(fmt.Sprintf("Expected type %t but got %t", {{$EntityName}}FilterMapping[any]{}, filter))
+		}
+
+        newQueryMod := buildQueryModFilter(filterMapping.Field, filterMapping.FilterOperation)
+
+        for _, queryMod := range newQueryMod {
+            queryModList = append(queryModList, queryMod)
+        }
+	}
+
+	return queryModList
+}`
 
 // TODO: Add template for type safe config struct per provider for New() methods
 // It could embed a generic RepositoryConfig into repository specific configurations e.g. Sqlite3RepositoryConfig
@@ -136,7 +316,7 @@ func main() {
 				panic(err)
 			}
 
-			outFile, err := os.Create("repository/" + database.DatabaseName + "/" + tools.LowercaseBeginning(entity.EntityName) + "_repository.go")
+			outFile, err := os.Create("model/repository/" + database.DatabaseName + "/" + tools.LowercaseBeginning(entity.EntityName) + "_repository.go")
 			if err != nil {
 				panic(err)
 			}
