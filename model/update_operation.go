@@ -18,7 +18,7 @@
 // TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE
 // OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-package domain
+package model
 
 type UpdateOperator int
 
@@ -29,11 +29,120 @@ const (
 	UpdateAppend
 	UpdatePrepend
 
-	UpdateIncrement
-	UpdateDecrement
+	UpdateAdd
+	UpdateSubtract
 )
 
 type UpdateOperation[T any] struct {
 	Operator UpdateOperator
 	Operand  T
+}
+
+func ApplyUpdater[T any](target *T, updateOperation UpdateOperation[T]) {
+	var zero T
+
+	switch updateOperation.Operator {
+	case UpdateSet:
+		*target = updateOperation.Operand
+	case UpdateClear:
+		*target = zero
+	case UpdateAppend:
+		switch t := any(target).(type) {
+		case *string:
+			operand, _ := any(updateOperation.Operand).(string)
+			*t += operand
+		default:
+			panic("Can only append to string")
+		}
+	case UpdatePrepend:
+		switch t := any(target).(type) {
+		case *string:
+			operand, _ := any(updateOperation.Operand).(string)
+			*t = operand + *t
+		default:
+			panic("Can only prepend to string")
+		}
+	case UpdateAdd:
+		switch t := any(target).(type) {
+		case *int:
+			operand, _ := any(updateOperation.Operand).(int)
+			*t += operand
+		case *int8:
+			operand, _ := any(updateOperation.Operand).(int8)
+			*t += operand
+		case *int16:
+			operand, _ := any(updateOperation.Operand).(int16)
+			*t += operand
+		case *int32:
+			operand, _ := any(updateOperation.Operand).(int32)
+			*t += operand
+		case *int64:
+			operand, _ := any(updateOperation.Operand).(int64)
+			*t += operand
+		case *uint:
+			operand, _ := any(updateOperation.Operand).(uint)
+			*t += operand
+		case *uint8:
+			operand, _ := any(updateOperation.Operand).(uint8)
+			*t += operand
+		case *uint16:
+			operand, _ := any(updateOperation.Operand).(uint16)
+			*t += operand
+		case *uint32:
+			operand, _ := any(updateOperation.Operand).(uint32)
+			*t += operand
+		case *uint64:
+			operand, _ := any(updateOperation.Operand).(uint64)
+			*t += operand
+		case *float32:
+			operand, _ := any(updateOperation.Operand).(float32)
+			*t += operand
+		case *float64:
+			operand, _ := any(updateOperation.Operand).(float64)
+			*t += operand
+		default:
+			panic("Can only add to numeric types")
+		}
+	case UpdateSubtract:
+		switch t := any(target).(type) {
+		case *int:
+			operand, _ := any(updateOperation.Operand).(int)
+			*t -= operand
+		case *int8:
+			operand, _ := any(updateOperation.Operand).(int8)
+			*t -= operand
+		case *int16:
+			operand, _ := any(updateOperation.Operand).(int16)
+			*t -= operand
+		case *int32:
+			operand, _ := any(updateOperation.Operand).(int32)
+			*t -= operand
+		case *int64:
+			operand, _ := any(updateOperation.Operand).(int64)
+			*t -= operand
+		case *uint:
+			operand, _ := any(updateOperation.Operand).(uint)
+			*t -= operand
+		case *uint8:
+			operand, _ := any(updateOperation.Operand).(uint8)
+			*t -= operand
+		case *uint16:
+			operand, _ := any(updateOperation.Operand).(uint16)
+			*t -= operand
+		case *uint32:
+			operand, _ := any(updateOperation.Operand).(uint32)
+			*t -= operand
+		case *uint64:
+			operand, _ := any(updateOperation.Operand).(uint64)
+			*t -= operand
+		case *float32:
+			operand, _ := any(updateOperation.Operand).(float32)
+			*t -= operand
+		case *float64:
+			operand, _ := any(updateOperation.Operand).(float64)
+			*t -= operand
+		default:
+			panic("Can only add to numeric types")
+		}
+	}
 }

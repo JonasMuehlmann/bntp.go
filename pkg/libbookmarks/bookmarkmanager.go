@@ -22,10 +22,10 @@ package libbookmarks
 
 import (
 	"context"
+	domain "github.com/JonasMuehlmann/bntp.go/model/domain"
+	repository "github.com/JonasMuehlmann/bntp.go/model/repository"
 
-	"github.com/JonasMuehlmann/bntp.go/domain"
 	bntp "github.com/JonasMuehlmann/bntp.go/pkg"
-	"github.com/JonasMuehlmann/bntp.go/repository"
 )
 
 // TODO: Allow skipping certain hooks

@@ -23,7 +23,7 @@
 package repository
 
 type PsqlTagRepository struct {
-    db sql.DB
+    db *sql.DB
 }
 type TagField string
 
@@ -54,32 +54,217 @@ var TagRelationsList = []string{
 }
 
 type TagFilter struct {
-    ID optional.Optional[FilterOperation[int64]]
-    Tag optional.Optional[FilterOperation[string]]
+    ID optional.Optional[model.FilterOperation[int64]]
+    Tag optional.Optional[model.FilterOperation[string]]
     
-    Bookmarks optional.Optional[UpdateOperation[repository.BookmarkSlice]]
-    ParentTagTags optional.Optional[UpdateOperation[repository.TagSlice]]
-    ChildTagTags optional.Optional[UpdateOperation[repository.TagSlice]]
-    Documents optional.Optional[UpdateOperation[repository.DocumentSlice]]
-    ParentTagTagParentPaths optional.Optional[UpdateOperation[repository.TagParentPathSlice]]
-    TagParentPaths optional.Optional[UpdateOperation[repository.TagParentPathSlice]]
+    Bookmarks optional.Optional[model.UpdateOperation[BookmarkSlice]]
+    ParentTagTags optional.Optional[model.UpdateOperation[TagSlice]]
+    ChildTagTags optional.Optional[model.UpdateOperation[TagSlice]]
+    Documents optional.Optional[model.UpdateOperation[DocumentSlice]]
+    ParentTagTagParentPaths optional.Optional[model.UpdateOperation[TagParentPathSlice]]
+    TagParentPaths optional.Optional[model.UpdateOperation[TagParentPathSlice]]
     
 }
 
-type TagUpdater struct {
-    ID optional.Optional[UpdateOperation[int64]]
-    Tag optional.Optional[UpdateOperation[string]]
+type TagFilterMapping[T any] struct {
+    Field TagField
+    FilterOperation model.FilterOperation[T]
+}
+
+func (filter *TagFilter) GetSetFilters() *list.List {
+    setFilters := list.New()
+
+    if filter.ID.HasValue {
+        setFilters.PushBack(TagFilterMapping[int64]{TagFields.ID, filter.ID.Wrappee})
+    }
+    if filter.Tag.HasValue {
+        setFilters.PushBack(TagFilterMapping[string]{TagFields.Tag, filter.Tag.Wrappee})
+    }
     
-    Bookmarks optional.Optional[UpdateOperation[repository.BookmarkSlice]]
-    ParentTagTags optional.Optional[UpdateOperation[repository.TagSlice]]
-    ChildTagTags optional.Optional[UpdateOperation[repository.TagSlice]]
-    Documents optional.Optional[UpdateOperation[repository.DocumentSlice]]
-    ParentTagTagParentPaths optional.Optional[UpdateOperation[repository.TagParentPathSlice]]
-    TagParentPaths optional.Optional[UpdateOperation[repository.TagParentPathSlice]]
+
+    return setFilters
+}
+
+type TagUpdater struct {
+    ID optional.Optional[model.UpdateOperation[int64]]
+    Tag optional.Optional[model.UpdateOperation[string]]
+    
+    Bookmarks optional.Optional[model.UpdateOperation[BookmarkSlice]]
+    ParentTagTags optional.Optional[model.UpdateOperation[TagSlice]]
+    ChildTagTags optional.Optional[model.UpdateOperation[TagSlice]]
+    Documents optional.Optional[model.UpdateOperation[DocumentSlice]]
+    ParentTagTagParentPaths optional.Optional[model.UpdateOperation[TagParentPathSlice]]
+    TagParentPaths optional.Optional[model.UpdateOperation[TagParentPathSlice]]
+    
+}
+
+type TagUpdaterMapping[T any] struct {
+    Field TagField
+    Updater model.UpdateOperation[T]
+}
+
+func (updater *TagUpdater) GetSetUpdaters() *list.List {
+    setUpdaters := list.New()
+
+    if updater.ID.HasValue {
+        setUpdaters.PushBack(TagUpdaterMapping[int64]{TagFields.ID, updater.ID.Wrappee})
+    }
+    if updater.Tag.HasValue {
+        setUpdaters.PushBack(TagUpdaterMapping[string]{TagFields.Tag, updater.Tag.Wrappee})
+    }
+    
+
+    return setUpdaters
+}
+
+func (updater *TagUpdater) ApplyToModel(tagModel *Tag) {
+    if updater.ID.HasValue {
+        model.ApplyUpdater(&(*tagModel).ID, updater.ID.Wrappee)
+    }
+    if updater.Tag.HasValue {
+        model.ApplyUpdater(&(*tagModel).Tag, updater.Tag.Wrappee)
+    }
     
 }
 
 type PsqlTagRepositoryHook func(context.Context, PsqlTagRepository) error
+
+type queryModSlice []qm.QueryMod
+
+func (s queryModSlice) Apply(q *queries.Query) {
+    qm.Apply(q, s...)
+}
+
+func buildQueryModFilter[T any](filterField TagField, filterOperation model.FilterOperation[T]) queryModSlice {
+    var newQueryMod queryModSlice
+
+    filterOperator := filterOperation.Operator
+
+    switch filterOperator {
+    case model.FilterEqual:
+        filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[any])
+        if !ok {
+            panic("Expected a scalar operand for FilterEqual operator")
+        }
+
+        newQueryMod = append(newQueryMod, qm.Where(string(filterField)+" = ?", filterOperand.Operand))
+    case model.FilterNEqual:
+        filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[any])
+        if !ok {
+            panic("Expected a scalar operand for FilterNEqual operator")
+        }
+
+        newQueryMod = append(newQueryMod, qm.Where(string(filterField)+" != ?", filterOperand.Operand))
+    case model.FilterGreaterThan:
+        filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[any])
+        if !ok {
+            panic("Expected a scalar operand for FilterGreaterThan operator")
+        }
+
+        newQueryMod = append(newQueryMod, qm.Where(string(filterField)+" > ?", filterOperand.Operand))
+    case model.FilterGreaterThanEqual:
+        filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[any])
+        if !ok {
+            panic("Expected a scalar operand for FilterGreaterThanEqual operator")
+        }
+
+        newQueryMod = append(newQueryMod, qm.Where(string(filterField)+" >= ?", filterOperand.Operand))
+    case model.FilterLessThan:
+        filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[any])
+        if !ok {
+            panic("Expected a scalar operand for FilterLessThan operator")
+        }
+
+        newQueryMod = append(newQueryMod, qm.Where(string(filterField)+" < ?", filterOperand.Operand))
+    case model.FilterLessThanEqual:
+        filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[any])
+        if !ok {
+            panic("Expected a scalar operand for FilterLessThanEqual operator")
+        }
+
+        newQueryMod = append(newQueryMod, qm.Where(string(filterField)+" <= ?", filterOperand.Operand))
+    case model.FilterIn:
+        filterOperand, ok := filterOperation.Operand.(model.ListOperand[any])
+        if !ok {
+            panic("Expected a list operand for FilterIn operator")
+        }
+
+        newQueryMod = append(newQueryMod, qm.WhereIn(string(filterField)+" IN (?)", filterOperand.Operands))
+    case model.FilterNotIn:
+        filterOperand, ok := filterOperation.Operand.(model.ListOperand[any])
+        if !ok {
+            panic("Expected a list operand for FilterNotIn operator")
+        }
+
+        newQueryMod = append(newQueryMod, qm.WhereNotIn(string(filterField)+" IN (?)", filterOperand.Operands))
+    case model.FilterBetween:
+        filterOperand, ok := filterOperation.Operand.(model.RangeOperand[any])
+        if !ok {
+            panic("Expected a scalar operand for FilterBetween operator")
+        }
+
+        newQueryMod = append(newQueryMod, qm.Where(string(filterField)+" BETWEEN ? AND ?", filterOperand.Start, filterOperand.End))
+    case model.FilterNotBetween:
+        filterOperand, ok := filterOperation.Operand.(model.RangeOperand[any])
+        if !ok {
+            panic("Expected a scalar operand for FilterNotBetween operator")
+        }
+
+        newQueryMod = append(newQueryMod, qm.Where(string(filterField)+" NOT BETWEEN ? AND ?", filterOperand.Start, filterOperand.End))
+    case model.FilterLike:
+        filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[any])
+        if !ok {
+            panic("Expected a scalar operand for FilterLike operator")
+        }
+
+        newQueryMod = append(newQueryMod, qm.Where(string(filterField)+" LIKE ?", filterOperand.Operand))
+    case model.FilterNotLike:
+        filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[any])
+        if !ok {
+            panic("Expected a scalar operand for FilterLike operator")
+        }
+
+        newQueryMod = append(newQueryMod, qm.Where(string(filterField)+" NOT LIKE ?", filterOperand.Operand))
+    case model.FilterOr:
+        filterOperand, ok := filterOperation.Operand.(model.CompoundOperand[any])
+        if !ok {
+            panic("Expected a scalar operand for FilterOr operator")
+        }
+        newQueryMod = append(newQueryMod, qm.Expr(buildQueryModFilter(filterField, filterOperand.LHS)))
+        newQueryMod = append(newQueryMod, qm.Or2(qm.Expr(buildQueryModFilter(filterField, filterOperand.RHS))))
+    case model.FilterAnd:
+        filterOperand, ok := filterOperation.Operand.(model.CompoundOperand[any])
+        if !ok {
+            panic("Expected a scalar operand for FilterAnd operator")
+        }
+
+        newQueryMod = append(newQueryMod, qm.Expr(buildQueryModFilter(filterField, filterOperand.LHS)))
+        newQueryMod = append(newQueryMod, qm.Expr(buildQueryModFilter(filterField, filterOperand.RHS)))
+    default:
+        panic("Unhandled FilterOperator")
+    }
+
+    return newQueryMod
+}
+
+func buildQueryModListFromFilter(setFilters list.List) queryModSlice {
+	queryModList := make(queryModSlice, 0, 2)
+
+	for filter := setFilters.Front(); filter != nil; filter = filter.Next() {
+		filterMapping, ok := filter.Value.(TagFilterMapping[any])
+		if !ok {
+			panic(fmt.Sprintf("Expected type %t but got %t", TagFilterMapping[any]{}, filter))
+		}
+
+        newQueryMod := buildQueryModFilter(filterMapping.Field, filterMapping.FilterOperation)
+
+        for _, queryMod := range newQueryMod {
+            queryModList = append(queryModList, queryMod)
+        }
+	}
+
+	return queryModList
+}
 
 func (repo * PsqlTagRepository) New(args ...any) (PsqlTagRepository, error) {
         panic("not implemented") // TODO: Implement

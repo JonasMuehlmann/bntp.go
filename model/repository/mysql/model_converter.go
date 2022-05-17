@@ -23,11 +23,10 @@
 package repository
 
 import (
+	"context"
+	"database/sql"
+	domain "github.com/JonasMuehlmann/bntp.go/model/domain"
 	"github.com/JonasMuehlmann/optional.go"
-	"github.com/JonasMuehlmann/bntp.go/domain"
-    "context"
-    "database/sql"
-    "time"
 )
 
 func BookmarkDomainToSqlRepositoryModel(db *sql.DB, domainModel domain.Bookmark) ( sqlRepositoryModel Bookmark, err error)  {

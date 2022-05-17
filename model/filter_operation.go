@@ -18,7 +18,7 @@
 // TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE
 // OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-package domain
+package model
 
 type FilterOperator int
 
@@ -31,7 +31,7 @@ const (
 	FilterLessThanEqual
 
 	FilterIn
-	FilterWhereNotIn
+	FilterNotIn
 
 	FilterBetween
 	FilterNotBetween
@@ -48,21 +48,27 @@ type ScalarOperand[T any] struct {
 }
 
 type RangeOperand[T any] struct {
-	Start ScalarOperand[T]
-	End   ScalarOperand[T]
+	Start T
+	End   T
 }
 
 type ListOperand[T any] struct {
-	Operands []ScalarOperand[T]
+	Operands []T
+}
+
+type CompoundOperand[T any] struct {
+	LHS FilterOperation[T]
+	RHS FilterOperation[T]
 }
 
 type Operand[T any] interface {
 	OperandDummyMethod()
 }
 
-func (o ScalarOperand[T]) OperandDummyMethod() {}
-func (o RangeOperand[T]) OperandDummyMethod()  {}
-func (o ListOperand[T]) OperandDummyMethod()   {}
+func (o ScalarOperand[T]) OperandDummyMethod()   {}
+func (o RangeOperand[T]) OperandDummyMethod()    {}
+func (o ListOperand[T]) OperandDummyMethod()     {}
+func (o CompoundOperand[T]) OperandDummyMethod() {}
 
 type FilterOperation[T any] struct {
 	Operator FilterOperator

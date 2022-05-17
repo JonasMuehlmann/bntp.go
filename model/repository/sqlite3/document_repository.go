@@ -23,7 +23,7 @@
 package repository
 
 type Sqlite3DocumentRepository struct {
-    db sql.DB
+    db *sql.DB
 }
 type DocumentField string
 
@@ -64,36 +64,257 @@ var DocumentRelationsList = []string{
 }
 
 type DocumentFilter struct {
-    ID optional.Optional[FilterOperation[int64]]
-    Path optional.Optional[FilterOperation[string]]
-    DocumentTypeID optional.Optional[FilterOperation[int64]]
-    CreatedAt optional.Optional[FilterOperation[string]]
-    UpdatedAt optional.Optional[FilterOperation[string]]
-    DeletedAt optional.Optional[FilterOperation[null.String]]
+    ID optional.Optional[model.FilterOperation[int64]]
+    Path optional.Optional[model.FilterOperation[string]]
+    DocumentTypeID optional.Optional[model.FilterOperation[int64]]
+    CreatedAt optional.Optional[model.FilterOperation[string]]
+    UpdatedAt optional.Optional[model.FilterOperation[string]]
+    DeletedAt optional.Optional[model.FilterOperation[null.String]]
     
-    DocumentType optional.Optional[UpdateOperation[*repository.DocumentType]]
-    Tags optional.Optional[UpdateOperation[repository.TagSlice]]
-    SourceDocuments optional.Optional[UpdateOperation[repository.DocumentSlice]]
-    DestinationDocuments optional.Optional[UpdateOperation[repository.DocumentSlice]]
+    DocumentType optional.Optional[model.UpdateOperation[*DocumentType]]
+    Tags optional.Optional[model.UpdateOperation[TagSlice]]
+    SourceDocuments optional.Optional[model.UpdateOperation[DocumentSlice]]
+    DestinationDocuments optional.Optional[model.UpdateOperation[DocumentSlice]]
     
 }
 
-type DocumentUpdater struct {
-    ID optional.Optional[UpdateOperation[int64]]
-    Path optional.Optional[UpdateOperation[string]]
-    DocumentTypeID optional.Optional[UpdateOperation[int64]]
-    CreatedAt optional.Optional[UpdateOperation[string]]
-    UpdatedAt optional.Optional[UpdateOperation[string]]
-    DeletedAt optional.Optional[UpdateOperation[null.String]]
+type DocumentFilterMapping[T any] struct {
+    Field DocumentField
+    FilterOperation model.FilterOperation[T]
+}
+
+func (filter *DocumentFilter) GetSetFilters() *list.List {
+    setFilters := list.New()
+
+    if filter.ID.HasValue {
+        setFilters.PushBack(DocumentFilterMapping[int64]{DocumentFields.ID, filter.ID.Wrappee})
+    }
+    if filter.Path.HasValue {
+        setFilters.PushBack(DocumentFilterMapping[string]{DocumentFields.Path, filter.Path.Wrappee})
+    }
+    if filter.DocumentTypeID.HasValue {
+        setFilters.PushBack(DocumentFilterMapping[int64]{DocumentFields.DocumentTypeID, filter.DocumentTypeID.Wrappee})
+    }
+    if filter.CreatedAt.HasValue {
+        setFilters.PushBack(DocumentFilterMapping[string]{DocumentFields.CreatedAt, filter.CreatedAt.Wrappee})
+    }
+    if filter.UpdatedAt.HasValue {
+        setFilters.PushBack(DocumentFilterMapping[string]{DocumentFields.UpdatedAt, filter.UpdatedAt.Wrappee})
+    }
+    if filter.DeletedAt.HasValue {
+        setFilters.PushBack(DocumentFilterMapping[null.String]{DocumentFields.DeletedAt, filter.DeletedAt.Wrappee})
+    }
     
-    DocumentType optional.Optional[UpdateOperation[*repository.DocumentType]]
-    Tags optional.Optional[UpdateOperation[repository.TagSlice]]
-    SourceDocuments optional.Optional[UpdateOperation[repository.DocumentSlice]]
-    DestinationDocuments optional.Optional[UpdateOperation[repository.DocumentSlice]]
+
+    return setFilters
+}
+
+type DocumentUpdater struct {
+    ID optional.Optional[model.UpdateOperation[int64]]
+    Path optional.Optional[model.UpdateOperation[string]]
+    DocumentTypeID optional.Optional[model.UpdateOperation[int64]]
+    CreatedAt optional.Optional[model.UpdateOperation[string]]
+    UpdatedAt optional.Optional[model.UpdateOperation[string]]
+    DeletedAt optional.Optional[model.UpdateOperation[null.String]]
+    
+    DocumentType optional.Optional[model.UpdateOperation[*DocumentType]]
+    Tags optional.Optional[model.UpdateOperation[TagSlice]]
+    SourceDocuments optional.Optional[model.UpdateOperation[DocumentSlice]]
+    DestinationDocuments optional.Optional[model.UpdateOperation[DocumentSlice]]
+    
+}
+
+type DocumentUpdaterMapping[T any] struct {
+    Field DocumentField
+    Updater model.UpdateOperation[T]
+}
+
+func (updater *DocumentUpdater) GetSetUpdaters() *list.List {
+    setUpdaters := list.New()
+
+    if updater.ID.HasValue {
+        setUpdaters.PushBack(DocumentUpdaterMapping[int64]{DocumentFields.ID, updater.ID.Wrappee})
+    }
+    if updater.Path.HasValue {
+        setUpdaters.PushBack(DocumentUpdaterMapping[string]{DocumentFields.Path, updater.Path.Wrappee})
+    }
+    if updater.DocumentTypeID.HasValue {
+        setUpdaters.PushBack(DocumentUpdaterMapping[int64]{DocumentFields.DocumentTypeID, updater.DocumentTypeID.Wrappee})
+    }
+    if updater.CreatedAt.HasValue {
+        setUpdaters.PushBack(DocumentUpdaterMapping[string]{DocumentFields.CreatedAt, updater.CreatedAt.Wrappee})
+    }
+    if updater.UpdatedAt.HasValue {
+        setUpdaters.PushBack(DocumentUpdaterMapping[string]{DocumentFields.UpdatedAt, updater.UpdatedAt.Wrappee})
+    }
+    if updater.DeletedAt.HasValue {
+        setUpdaters.PushBack(DocumentUpdaterMapping[null.String]{DocumentFields.DeletedAt, updater.DeletedAt.Wrappee})
+    }
+    
+
+    return setUpdaters
+}
+
+func (updater *DocumentUpdater) ApplyToModel(documentModel *Document) {
+    if updater.ID.HasValue {
+        model.ApplyUpdater(&(*documentModel).ID, updater.ID.Wrappee)
+    }
+    if updater.Path.HasValue {
+        model.ApplyUpdater(&(*documentModel).Path, updater.Path.Wrappee)
+    }
+    if updater.DocumentTypeID.HasValue {
+        model.ApplyUpdater(&(*documentModel).DocumentTypeID, updater.DocumentTypeID.Wrappee)
+    }
+    if updater.CreatedAt.HasValue {
+        model.ApplyUpdater(&(*documentModel).CreatedAt, updater.CreatedAt.Wrappee)
+    }
+    if updater.UpdatedAt.HasValue {
+        model.ApplyUpdater(&(*documentModel).UpdatedAt, updater.UpdatedAt.Wrappee)
+    }
+    if updater.DeletedAt.HasValue {
+        model.ApplyUpdater(&(*documentModel).DeletedAt, updater.DeletedAt.Wrappee)
+    }
     
 }
 
 type Sqlite3DocumentRepositoryHook func(context.Context, Sqlite3DocumentRepository) error
+
+type queryModSlice []qm.QueryMod
+
+func (s queryModSlice) Apply(q *queries.Query) {
+    qm.Apply(q, s...)
+}
+
+func buildQueryModFilter[T any](filterField DocumentField, filterOperation model.FilterOperation[T]) queryModSlice {
+    var newQueryMod queryModSlice
+
+    filterOperator := filterOperation.Operator
+
+    switch filterOperator {
+    case model.FilterEqual:
+        filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[any])
+        if !ok {
+            panic("Expected a scalar operand for FilterEqual operator")
+        }
+
+        newQueryMod = append(newQueryMod, qm.Where(string(filterField)+" = ?", filterOperand.Operand))
+    case model.FilterNEqual:
+        filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[any])
+        if !ok {
+            panic("Expected a scalar operand for FilterNEqual operator")
+        }
+
+        newQueryMod = append(newQueryMod, qm.Where(string(filterField)+" != ?", filterOperand.Operand))
+    case model.FilterGreaterThan:
+        filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[any])
+        if !ok {
+            panic("Expected a scalar operand for FilterGreaterThan operator")
+        }
+
+        newQueryMod = append(newQueryMod, qm.Where(string(filterField)+" > ?", filterOperand.Operand))
+    case model.FilterGreaterThanEqual:
+        filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[any])
+        if !ok {
+            panic("Expected a scalar operand for FilterGreaterThanEqual operator")
+        }
+
+        newQueryMod = append(newQueryMod, qm.Where(string(filterField)+" >= ?", filterOperand.Operand))
+    case model.FilterLessThan:
+        filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[any])
+        if !ok {
+            panic("Expected a scalar operand for FilterLessThan operator")
+        }
+
+        newQueryMod = append(newQueryMod, qm.Where(string(filterField)+" < ?", filterOperand.Operand))
+    case model.FilterLessThanEqual:
+        filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[any])
+        if !ok {
+            panic("Expected a scalar operand for FilterLessThanEqual operator")
+        }
+
+        newQueryMod = append(newQueryMod, qm.Where(string(filterField)+" <= ?", filterOperand.Operand))
+    case model.FilterIn:
+        filterOperand, ok := filterOperation.Operand.(model.ListOperand[any])
+        if !ok {
+            panic("Expected a list operand for FilterIn operator")
+        }
+
+        newQueryMod = append(newQueryMod, qm.WhereIn(string(filterField)+" IN (?)", filterOperand.Operands))
+    case model.FilterNotIn:
+        filterOperand, ok := filterOperation.Operand.(model.ListOperand[any])
+        if !ok {
+            panic("Expected a list operand for FilterNotIn operator")
+        }
+
+        newQueryMod = append(newQueryMod, qm.WhereNotIn(string(filterField)+" IN (?)", filterOperand.Operands))
+    case model.FilterBetween:
+        filterOperand, ok := filterOperation.Operand.(model.RangeOperand[any])
+        if !ok {
+            panic("Expected a scalar operand for FilterBetween operator")
+        }
+
+        newQueryMod = append(newQueryMod, qm.Where(string(filterField)+" BETWEEN ? AND ?", filterOperand.Start, filterOperand.End))
+    case model.FilterNotBetween:
+        filterOperand, ok := filterOperation.Operand.(model.RangeOperand[any])
+        if !ok {
+            panic("Expected a scalar operand for FilterNotBetween operator")
+        }
+
+        newQueryMod = append(newQueryMod, qm.Where(string(filterField)+" NOT BETWEEN ? AND ?", filterOperand.Start, filterOperand.End))
+    case model.FilterLike:
+        filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[any])
+        if !ok {
+            panic("Expected a scalar operand for FilterLike operator")
+        }
+
+        newQueryMod = append(newQueryMod, qm.Where(string(filterField)+" LIKE ?", filterOperand.Operand))
+    case model.FilterNotLike:
+        filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[any])
+        if !ok {
+            panic("Expected a scalar operand for FilterLike operator")
+        }
+
+        newQueryMod = append(newQueryMod, qm.Where(string(filterField)+" NOT LIKE ?", filterOperand.Operand))
+    case model.FilterOr:
+        filterOperand, ok := filterOperation.Operand.(model.CompoundOperand[any])
+        if !ok {
+            panic("Expected a scalar operand for FilterOr operator")
+        }
+        newQueryMod = append(newQueryMod, qm.Expr(buildQueryModFilter(filterField, filterOperand.LHS)))
+        newQueryMod = append(newQueryMod, qm.Or2(qm.Expr(buildQueryModFilter(filterField, filterOperand.RHS))))
+    case model.FilterAnd:
+        filterOperand, ok := filterOperation.Operand.(model.CompoundOperand[any])
+        if !ok {
+            panic("Expected a scalar operand for FilterAnd operator")
+        }
+
+        newQueryMod = append(newQueryMod, qm.Expr(buildQueryModFilter(filterField, filterOperand.LHS)))
+        newQueryMod = append(newQueryMod, qm.Expr(buildQueryModFilter(filterField, filterOperand.RHS)))
+    default:
+        panic("Unhandled FilterOperator")
+    }
+
+    return newQueryMod
+}
+
+func buildQueryModListFromFilter(setFilters list.List) queryModSlice {
+	queryModList := make(queryModSlice, 0, 6)
+
+	for filter := setFilters.Front(); filter != nil; filter = filter.Next() {
+		filterMapping, ok := filter.Value.(DocumentFilterMapping[any])
+		if !ok {
+			panic(fmt.Sprintf("Expected type %t but got %t", DocumentFilterMapping[any]{}, filter))
+		}
+
+        newQueryMod := buildQueryModFilter(filterMapping.Field, filterMapping.FilterOperation)
+
+        for _, queryMod := range newQueryMod {
+            queryModList = append(queryModList, queryMod)
+        }
+	}
+
+	return queryModList
+}
 
 func (repo *Sqlite3DocumentRepository) New(args ...any) (Sqlite3DocumentRepository, error) {
         panic("not implemented") // TODO: Implement

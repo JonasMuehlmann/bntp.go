@@ -25,7 +25,8 @@ package domain
 
 // TODO: Whe could remove the imports and only have one template if goimport could parse this...
 import (
-	"time"
+    "github.com/JonasMuehlmann/bntp.go/model"
+    "time"
 
 	"github.com/JonasMuehlmann/optional.go"
 )
@@ -37,8 +38,8 @@ type Bookmark struct {
     DeletedAt optional.Optional[time.Time] `json:"deleted_at,omitempty" toml:"deleted_at" yaml:"deleted_at,omitempty"`
     URL string `json:"url" toml:"url" yaml:"url"`
     Title optional.Optional[string] `json:"title,omitempty" toml:"title" yaml:"title,omitempty"`
-    Tags []*Tag `json:"tags" toml:"tags" yaml:"tags"`
-    ID int64 `json:"id" toml:"id" yaml:"id"`
+    Tags []*Tag                     `json:"tags" toml:"tags" yaml:"tags"`
+    ID int64                        `json:"id" toml:"id" yaml:"id"`
     IsCollection bool `json:"is_collection,omitempty" toml:"is_collection" yaml:"is_collection,omitempty"`
     IsRead bool `json:"is_read,omitempty" toml:"is_read" yaml:"is_read,omitempty"`
     BookmarkType optional.Optional[string] `json:"bookmark_type,omitempty" toml:"bookmark_type" yaml:"bookmark_type,omitempty"`
@@ -47,30 +48,30 @@ type Bookmark struct {
 type BookmarkField string
 
 var BookmarkFieldsList = []BookmarkField{
-    BookmarkField("CreatedAt"),
-    BookmarkField("UpdatedAt"),
-    BookmarkField("DeletedAt"),
-    BookmarkField("URL"),
-    BookmarkField("Title"),
-    BookmarkField("Tags"),
-    BookmarkField("ID"),
-    BookmarkField("IsCollection"),
-    BookmarkField("IsRead"),
-    BookmarkField("BookmarkType"),
+	BookmarkField("CreatedAt"),
+	BookmarkField("UpdatedAt"),
+	BookmarkField("DeletedAt"),
+	BookmarkField("URL"),
+	BookmarkField("Title"),
+	BookmarkField("Tags"),
+	BookmarkField("ID"),
+	BookmarkField("IsCollection"),
+	BookmarkField("IsRead"),
+	BookmarkField("BookmarkType"),
     
 }
 
 var BookmarkFields = struct {
-    CreatedAt  BookmarkField
-    UpdatedAt  BookmarkField
-    DeletedAt  BookmarkField
-    URL  BookmarkField
-    Title  BookmarkField
-    Tags  BookmarkField
-    ID  BookmarkField
-    IsCollection  BookmarkField
-    IsRead  BookmarkField
-    BookmarkType  BookmarkField
+    CreatedAt    BookmarkField
+    UpdatedAt    BookmarkField
+    DeletedAt    BookmarkField
+    URL          BookmarkField
+    Title        BookmarkField
+    Tags         BookmarkField
+    ID           BookmarkField
+    IsCollection BookmarkField
+    IsRead       BookmarkField
+    BookmarkType BookmarkField
     
 }{
     CreatedAt: "created_at",
@@ -87,29 +88,29 @@ var BookmarkFields = struct {
 }
 
 type BookmarkFilter struct {
-    CreatedAt optional.Optional[FilterOperation[time.Time]]
-    UpdatedAt optional.Optional[FilterOperation[time.Time]]
-    DeletedAt optional.Optional[FilterOperation[optional.Optional[time.Time]]]
-    URL optional.Optional[FilterOperation[string]]
-    Title optional.Optional[FilterOperation[optional.Optional[string]]]
-    Tags optional.Optional[FilterOperation[[]*Tag]]
-    ID optional.Optional[FilterOperation[int64]]
-    IsCollection optional.Optional[FilterOperation[bool]]
-    IsRead optional.Optional[FilterOperation[bool]]
-    BookmarkType optional.Optional[FilterOperation[optional.Optional[string]]]
+    CreatedAt optional.Optional[model.FilterOperation[time.Time]]
+    UpdatedAt optional.Optional[model.FilterOperation[time.Time]]
+    DeletedAt optional.Optional[model.FilterOperation[optional.Optional[time.Time]]]
+    URL optional.Optional[model.FilterOperation[string]]
+    Title optional.Optional[model.FilterOperation[optional.Optional[string]]]
+    Tags optional.Optional[model.FilterOperation[[]*Tag]]
+    ID optional.Optional[model.FilterOperation[int64]]
+    IsCollection optional.Optional[model.FilterOperation[bool]]
+    IsRead optional.Optional[model.FilterOperation[bool]]
+    BookmarkType optional.Optional[model.FilterOperation[optional.Optional[string]]]
     
 }
 
 type BookmarkUpdater struct {
-    CreatedAt optional.Optional[UpdateOperation[time.Time]]
-    UpdatedAt optional.Optional[UpdateOperation[time.Time]]
-    DeletedAt optional.Optional[UpdateOperation[optional.Optional[time.Time]]]
-    URL optional.Optional[UpdateOperation[string]]
-    Title optional.Optional[UpdateOperation[optional.Optional[string]]]
-    Tags optional.Optional[UpdateOperation[[]*Tag]]
-    ID optional.Optional[UpdateOperation[int64]]
-    IsCollection optional.Optional[UpdateOperation[bool]]
-    IsRead optional.Optional[UpdateOperation[bool]]
-    BookmarkType optional.Optional[UpdateOperation[optional.Optional[string]]]
+    CreatedAt optional.Optional[model.UpdateOperation[time.Time]]
+    UpdatedAt optional.Optional[model.UpdateOperation[time.Time]]
+    DeletedAt optional.Optional[model.UpdateOperation[optional.Optional[time.Time]]]
+    URL optional.Optional[model.UpdateOperation[string]]
+    Title optional.Optional[model.UpdateOperation[optional.Optional[string]]]
+    Tags optional.Optional[model.UpdateOperation[[]*Tag]]
+    ID optional.Optional[model.UpdateOperation[int64]]
+    IsCollection optional.Optional[model.UpdateOperation[bool]]
+    IsRead optional.Optional[model.UpdateOperation[bool]]
+    BookmarkType optional.Optional[model.UpdateOperation[optional.Optional[string]]]
     
 }

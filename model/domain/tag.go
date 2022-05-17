@@ -22,7 +22,10 @@
 
 package domain
 
-import "github.com/JonasMuehlmann/optional.go"
+import (
+	"github.com/JonasMuehlmann/bntp.go/model"
+	"github.com/JonasMuehlmann/optional.go"
+)
 
 type Tag struct {
 	ID         int64  `json:"id" toml:"id" yaml:"id"`
@@ -46,15 +49,15 @@ var TagFields = struct {
 }
 
 type TagFilter struct {
-	ID         optional.Optional[FilterOperation[int64]]
-	ParentPath optional.Optional[FilterOperation[[]*Tag]]
-	Tag        optional.Optional[FilterOperation[string]]
-	Subtags    optional.Optional[FilterOperation[[]*Tag]]
+	ID         optional.Optional[model.FilterOperation[int64]]
+	ParentPath optional.Optional[model.FilterOperation[[]*Tag]]
+	Tag        optional.Optional[model.FilterOperation[string]]
+	Subtags    optional.Optional[model.FilterOperation[[]*Tag]]
 }
 
 type TagUpdater struct {
-	ID         optional.Optional[UpdateOperation[int64]]
-	ParentPath optional.Optional[UpdateOperation[[]*Tag]]
-	Tag        optional.Optional[UpdateOperation[string]]
-	Subtags    optional.Optional[UpdateOperation[[]*Tag]]
+	ID         optional.Optional[model.UpdateOperation[int64]]
+	ParentPath optional.Optional[model.UpdateOperation[[]*Tag]]
+	Tag        optional.Optional[model.UpdateOperation[string]]
+	Subtags    optional.Optional[model.UpdateOperation[[]*Tag]]
 }

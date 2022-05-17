@@ -24,7 +24,8 @@
 package domain
 
 import (
-	"time"
+    "github.com/JonasMuehlmann/bntp.go/model"
+    "time"
 
 	"github.com/JonasMuehlmann/optional.go"
 )
@@ -37,24 +38,24 @@ type Document struct {
     DeletedAt optional.Optional[time.Time] `json:"deleted_at,omitempty" toml:"deleted_at" yaml:"deleted_at,omitempty"`
     Path string `json:"path" toml:"path" yaml:"path"`
     DocumentType optional.Optional[string] `json:"document_type" toml:"document_type" yaml:"document_type"`
-    Tags []*Tag `json:"Tags" toml:"Tags" yaml:"Tags"`
-    LinkedDocuments []*Document `json:"linked_documents" toml:"linked_documents" yaml:"linked_documents"`
-    BacklinkedDocuments []*Document `json:"backlinked_documents" toml:"backlinked_documents" yaml:"backlinked_documents"`
-    ID int64 `json:"id" toml:"id" yaml:"id"`
+    Tags []*Tag                            `json:"Tags" toml:"Tags" yaml:"Tags"`
+    LinkedDocuments []*Document            `json:"linked_documents" toml:"linked_documents" yaml:"linked_documents"`
+    BacklinkedDocuments []*Document        `json:"backlinked_documents" toml:"backlinked_documents" yaml:"backlinked_documents"`
+    ID int64                               `json:"id" toml:"id" yaml:"id"`
 }
 
 type DocumentField string
 
 var DocumentFields = struct {
-    CreatedAt  DocumentField
-    UpdatedAt  DocumentField
-    DeletedAt  DocumentField
-    Path  DocumentField
-    DocumentType  DocumentField
-    Tags  DocumentField
-    LinkedDocuments  DocumentField
-    BacklinkedDocuments  DocumentField
-    ID  DocumentField
+    CreatedAt           DocumentField
+    UpdatedAt           DocumentField
+    DeletedAt           DocumentField
+    Path                DocumentField
+    DocumentType        DocumentField
+    Tags                DocumentField
+    LinkedDocuments     DocumentField
+    BacklinkedDocuments DocumentField
+    ID                  DocumentField
     
 }{
     CreatedAt: "created_at",
@@ -70,27 +71,27 @@ var DocumentFields = struct {
 }
 
 type DocumentFilter struct {
-    CreatedAt optional.Optional[FilterOperation[time.Time]]
-    UpdatedAt optional.Optional[FilterOperation[time.Time]]
-    DeletedAt optional.Optional[FilterOperation[optional.Optional[time.Time]]]
-    Path optional.Optional[FilterOperation[string]]
-    DocumentType optional.Optional[FilterOperation[optional.Optional[string]]]
-    Tags optional.Optional[FilterOperation[[]*Tag]]
-    LinkedDocuments optional.Optional[FilterOperation[[]*Document]]
-    BacklinkedDocuments optional.Optional[FilterOperation[[]*Document]]
-    ID optional.Optional[FilterOperation[int64]]
+    CreatedAt optional.Optional[model.FilterOperation[time.Time]]
+    UpdatedAt optional.Optional[model.FilterOperation[time.Time]]
+    DeletedAt optional.Optional[model.FilterOperation[optional.Optional[time.Time]]]
+    Path optional.Optional[model.FilterOperation[string]]
+    DocumentType optional.Optional[model.FilterOperation[optional.Optional[string]]]
+    Tags optional.Optional[model.FilterOperation[[]*Tag]]
+    LinkedDocuments optional.Optional[model.FilterOperation[[]*Document]]
+    BacklinkedDocuments optional.Optional[model.FilterOperation[[]*Document]]
+    ID optional.Optional[model.FilterOperation[int64]]
     
 }
 
 type DocumentUpdater struct {
-    CreatedAt optional.Optional[UpdateOperation[time.Time]]
-    UpdatedAt optional.Optional[UpdateOperation[time.Time]]
-    DeletedAt optional.Optional[UpdateOperation[optional.Optional[time.Time]]]
-    Path optional.Optional[UpdateOperation[string]]
-    DocumentType optional.Optional[UpdateOperation[optional.Optional[string]]]
-    Tags optional.Optional[UpdateOperation[[]*Tag]]
-    LinkedDocuments optional.Optional[UpdateOperation[[]*Document]]
-    BacklinkedDocuments optional.Optional[UpdateOperation[[]*Document]]
-    ID optional.Optional[UpdateOperation[int64]]
+    CreatedAt optional.Optional[model.UpdateOperation[time.Time]]
+    UpdatedAt optional.Optional[model.UpdateOperation[time.Time]]
+    DeletedAt optional.Optional[model.UpdateOperation[optional.Optional[time.Time]]]
+    Path optional.Optional[model.UpdateOperation[string]]
+    DocumentType optional.Optional[model.UpdateOperation[optional.Optional[string]]]
+    Tags optional.Optional[model.UpdateOperation[[]*Tag]]
+    LinkedDocuments optional.Optional[model.UpdateOperation[[]*Document]]
+    BacklinkedDocuments optional.Optional[model.UpdateOperation[[]*Document]]
+    ID optional.Optional[model.UpdateOperation[int64]]
     
 }

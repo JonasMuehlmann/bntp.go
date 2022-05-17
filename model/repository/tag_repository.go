@@ -23,8 +23,8 @@
 package repository
 
 import (
-    "context"
-	"github.com/JonasMuehlmann/bntp.go/domain"
+	"context"
+	domain "github.com/JonasMuehlmann/bntp.go/model/domain"
 )
 
 type TagRepository interface {
