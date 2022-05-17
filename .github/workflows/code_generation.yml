@@ -83,10 +83,10 @@ jobs:
          cp schema/bntp_sqlite.sql test/bntp.sql
          go generate ./...
          
-         goimports -w ./..
-         fieldalignment -fix ./pkg/... ./repository/... ./domain/... || true
-         gofmt -w ./..
+         goimports -w ./**/*.go
+         fieldalignment -fix ./pkg/... ./model/... || true
+         gofmt -w ./**/*.go
          
     - uses: stefanzweifel/git-auto-commit-action@v4
       with:
-        file_pattern: ./internal/** ./pkg/** ./repository/** ./domain/**
+        file_pattern: ./internal/** ./pkg/** ./model/**
