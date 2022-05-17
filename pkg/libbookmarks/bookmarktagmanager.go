@@ -23,6 +23,7 @@ package libbookmarks
 import (
 	"context"
 
+	"github.com/JonasMuehlmann/bntp.go/model/domain"
 	bntp "github.com/JonasMuehlmann/bntp.go/pkg"
 )
 
@@ -31,22 +32,37 @@ type BookmarkTagManager struct {
 }
 
 func (m *BookmarkTagManager) New(...any) (BookmarkTagManager, error) {
+	panic("Not implemented")
 }
 
 func (m *BookmarkTagManager) AddTag(context.Context, string) error {
-}
-func (m *BookmarkTagManager) DeleteTag(context.Context, string) error {
-}
-func (m *BookmarkTagManager) UpdateTag(context.Context, string, string) error {
-}
-func (m *BookmarkTagManager) CountAllTags(context.Context) int {
-}
-func (m *BookmarkTagManager) DoesExistTag(context.Context, string) bool {
-}
-func (m *BookmarkTagManager) GetAllTags(context.Context, bool) ([]string, error) {
+	panic("Not implemented")
 }
 
-func (m *BookmarkTagManager) ApplyTagWhere(context.Context, string, BookmarkFilter) error {
+func (m *BookmarkTagManager) DeleteTag(context.Context, string) error {
+	panic("Not implemented")
 }
-func (m *BookmarkTagManager) RemoveTagWhere(context.Context, string, BookmarkFilter) error {
+
+func (m *BookmarkTagManager) UpdateTag(context.Context, string, string) error {
+	panic("Not implemented")
+}
+
+func (m *BookmarkTagManager) CountAllTags(context.Context) int {
+	panic("Not implemented")
+}
+
+func (m *BookmarkTagManager) DoesExistTag(context.Context, string) bool {
+	panic("Not implemented")
+}
+
+func (m *BookmarkTagManager) GetAllTags(context.Context, bool) ([]string, error) {
+	panic("Not implemented")
+}
+
+func (m *BookmarkTagManager) ApplyTagWhere(context.Context, string, domain.BookmarkFilter) error {
+	panic("Not implemented")
+}
+
+func (m *BookmarkTagManager) RemoveTagWhere(context.Context, string, domain.BookmarkFilter) error {
+	panic("Not implemented")
 }

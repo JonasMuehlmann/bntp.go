@@ -45,6 +45,7 @@ for db in "${DBS[@]}"; do
     mv ./models/$db/*$tmp*.go "$repo_dir/"
 
     sed -i "s/package models/ package repository/g" "$repo_dir/"*.go
+    rm model/repository/**/child_tags.go
 done
 
 # Remove temp dir of generation
