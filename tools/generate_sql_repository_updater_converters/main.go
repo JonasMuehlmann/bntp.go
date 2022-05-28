@@ -57,17 +57,17 @@ type Configuration struct {
 
 func main() {
 	for _, database := range databases {
-		tmplRaw, err := os.ReadFile("templates/sql_repositories/model_converter.go.tpl")
+		tmplRaw, err := os.ReadFile("templates/sql_repositories/updater_converter.go.tpl")
 		if err != nil {
 			panic(err)
 		}
 
-		tmpl, err := template.New(tools.LowercaseBeginning(database.DatabaseName) + "_model_converter").Funcs(tools.FullFuncMap).Parse(string(tmplRaw))
+		tmpl, err := template.New(tools.LowercaseBeginning(database.DatabaseName) + "_updater_converter").Funcs(tools.FullFuncMap).Parse(string(tmplRaw))
 		if err != nil {
 			panic(err)
 		}
 
-		outFile, err := os.Create("model/repository/" + database.DatabaseName + "/model_converter.go")
+		outFile, err := os.Create("model/repository/" + database.DatabaseName + "/updater_converter.go")
 		if err != nil {
 			panic(err)
 		}

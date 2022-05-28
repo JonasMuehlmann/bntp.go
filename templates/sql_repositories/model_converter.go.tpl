@@ -30,8 +30,8 @@ import (
     "time"
 )
 
-func BookmarkDomainToSqlRepositoryModel(db *sql.DB, domainModel domain.{{.Entities.Bookmark}}) ( sqlRepositoryModel {{.Entities.Bookmark}}, err error)  {
-    sqlRepositoryModel = {{.Entities.Bookmark}}{}
+func BookmarkDomainToSqlRepositoryModel(db *sql.DB, domainModel *domain.{{.Entities.Bookmark}}) ( sqlRepositoryModel *{{.Entities.Bookmark}}, err error)  {
+    sqlRepositoryModel = &{{.Entities.Bookmark}}{}
 
     sqlRepositoryModel.URL = domainModel.URL
     sqlRepositoryModel.ID = domainModel.ID
@@ -114,8 +114,8 @@ func BookmarkDomainToSqlRepositoryModel(db *sql.DB, domainModel domain.{{.Entiti
     return
 }
 
-func BookmarkSqlRepositoryToDomainModel(db *sql.DB, sqlRepositoryModel {{.Entities.Bookmark}}) (domainModel domain.{{.Entities.Bookmark}}, err error) {
-    domainModel = domain.{{.Entities.Bookmark}}{}
+func BookmarkSqlRepositoryToDomainModel(db *sql.DB, sqlRepositoryModel *{{.Entities.Bookmark}}) (domainModel *domain.{{.Entities.Bookmark}}, err error) {
+    domainModel = &domain.{{.Entities.Bookmark}}{}
 
     domainModel.URL = sqlRepositoryModel.URL
     domainModel.ID = sqlRepositoryModel.ID
@@ -183,8 +183,8 @@ func BookmarkSqlRepositoryToDomainModel(db *sql.DB, sqlRepositoryModel {{.Entiti
     return
 }
 
-func DocumentDomainToSqlRepositoryModel(db *sql.DB, domainModel domain.{{.Entities.Document}}) (sqlRepositoryModel {{.Entities.Document}}, err error)  {
-    sqlRepositoryModel = {{.Entities.Document}}{}
+func DocumentDomainToSqlRepositoryModel(db *sql.DB, domainModel *domain.{{.Entities.Document}}) (sqlRepositoryModel *{{.Entities.Document}}, err error)  {
+    sqlRepositoryModel = &{{.Entities.Document}}{}
 
     sqlRepositoryModel.Path = domainModel.Path
     sqlRepositoryModel.ID = domainModel.ID
@@ -265,8 +265,8 @@ func DocumentDomainToSqlRepositoryModel(db *sql.DB, domainModel domain.{{.Entiti
     return
 }
 
-func DocumentSqlRepositoryToDomainModel(db *sql.DB, sqlRepositoryModel {{.Entities.Document}}) (domainModel domain.{{.Entities.Document}}, err error) {
-    domainModel = domain.{{.Entities.Document}}{}
+func DocumentSqlRepositoryToDomainModel(db *sql.DB, sqlRepositoryModel *{{.Entities.Document}}) (domainModel *domain.{{.Entities.Document}}, err error) {
+    domainModel = &domain.{{.Entities.Document}}{}
 
     domainModel.Path = sqlRepositoryModel.Path
     domainModel.ID = sqlRepositoryModel.ID
@@ -344,8 +344,8 @@ func DocumentSqlRepositoryToDomainModel(db *sql.DB, sqlRepositoryModel {{.Entiti
     return
 }
 
-func TagDomainToSqlRepositoryModel(db *sql.DB, domainModel domain.{{.Entities.Tag}}) (sqlRepositoryModel {{.Entities.Tag}}, err error)  {
-    sqlRepositoryModel = {{.Entities.Tag}}{}
+func TagDomainToSqlRepositoryModel(db *sql.DB, domainModel *domain.{{.Entities.Tag}}) (sqlRepositoryModel *{{.Entities.Tag}}, err error)  {
+    sqlRepositoryModel = &{{.Entities.Tag}}{}
 
     sqlRepositoryModel.ID = domainModel.ID
     sqlRepositoryModel.Tag = domainModel.Tag
@@ -381,8 +381,8 @@ func TagDomainToSqlRepositoryModel(db *sql.DB, domainModel domain.{{.Entities.Ta
     return
 }
 
-func  tagDomainToRepositoryParentPathModel(db *sql.DB, domainModel domain.{{.Entities.Tag}},distance int) (sqlRepositoryModel TagParentPath, err error)  {
-    sqlRepositoryModel = TagParentPath{}
+func  tagDomainToRepositoryParentPathModel(db *sql.DB, domainModel *domain.{{.Entities.Tag}},distance int) (sqlRepositoryModel *TagParentPath, err error)  {
+    sqlRepositoryModel = &TagParentPath{}
 
     sqlRepositoryModel.TagID = domainModel.ID
     sqlRepositoryModel.ParentTagID = domainModel.ID
@@ -391,8 +391,8 @@ func  tagDomainToRepositoryParentPathModel(db *sql.DB, domainModel domain.{{.Ent
     return
 }
 
-func TagSqlRepositoryToDomainModel(db *sql.DB, sqlRepositoryModel {{.Entities.Tag}}) (domainModel domain.{{.Entities.Tag}}, err error) {
-    domainModel = domain.{{.Entities.Tag}}{}
+func TagSqlRepositoryToDomainModel(db *sql.DB, sqlRepositoryModel *{{.Entities.Tag}}) (domainModel *domain.{{.Entities.Tag}}, err error) {
+    domainModel = &domain.{{.Entities.Tag}}{}
 
     domainModel.ID = sqlRepositoryModel.ID
     domainModel.Tag = sqlRepositoryModel.Tag

@@ -110,7 +110,7 @@ func (filter *{{$EntityName}}Filter) GetSetFilters() *list.List {
 
     {{range $field := .StructFields -}}
     if filter.{{.FieldName}}.HasValue {
-        setFilters.PushBack({{$EntityName}}FilterMapping[{{.FieldType}}]{{"{"}}{{$EntityName}}Fields.{{.FieldName}}, filter.{{.FieldName}}.Wrappee})
+    setFilters.PushBack({{$EntityName}}FilterMapping[{{.FieldType}}]{Field: {"{"}}{{$EntityName}}Fields.{{.FieldName}}, FilterOperation: filter.{{.FieldName}}.Wrappee})
     }
     {{end}}
 
@@ -136,7 +136,7 @@ func (updater *{{$EntityName}}Updater) GetSetUpdaters() *list.List {
 
     {{range $field := .StructFields -}}
     if updater.{{.FieldName}}.HasValue {
-        setUpdaters.PushBack({{$EntityName}}UpdaterMapping[{{.FieldType}}]{{"{"}}{{$EntityName}}Fields.{{.FieldName}}, updater.{{.FieldName}}.Wrappee})
+    setUpdaters.PushBack({{$EntityName}}UpdaterMapping[{{.FieldType}}]{Field: {"{"}}{{$EntityName}}Fields.{{.FieldName}}, Updater: updater.{{.FieldName}}.Wrappee})
     }
     {{end}}
 
@@ -344,6 +344,29 @@ func main() {
 			default:
 				panic("Unhandled sql repository type")
 			}
+
+			// We want to allow scalar values in filters and updaters
+			goaoi.TransformSliceUnsafe(entityStruct.StructFields, func(field *tools.StructField) {
+				switch field.FieldType {
+				case "TagSlice":
+					field.FieldType = "*Tag"
+				case "BookmarkSlice":
+					field.FieldType = "*Bookmark"
+				case "DocumentSlice":
+					field.FieldType = "*Document"
+				}
+			})
+
+			goaoi.TransformSliceUnsafe(relationStruct.StructFields, func(field *tools.StructField) {
+				switch field.FieldType {
+				case "TagSlice":
+					field.FieldType = "*Tag"
+				case "BookmarkSlice":
+					field.FieldType = "*Bookmark"
+				case "DocumentSlice":
+					field.FieldType = "*Document"
+				}
+			})
 
 			err = tmpl.Execute(outFile, Configuration{
 				EntityName:     entity.EntityName,

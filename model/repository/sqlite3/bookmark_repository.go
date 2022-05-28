@@ -91,8 +91,8 @@ type BookmarkFilter struct {
 	UpdatedAt      optional.Optional[model.FilterOperation[string]]
 	DeletedAt      optional.Optional[model.FilterOperation[null.String]]
 
-	BookmarkType optional.Optional[model.UpdateOperation[*BookmarkType]]
-	Tags         optional.Optional[model.UpdateOperation[TagSlice]]
+	BookmarkType optional.Optional[model.FilterOperation[*BookmarkType]]
+	Tags         optional.Optional[model.FilterOperation[TagSlice]]
 }
 
 type BookmarkFilterMapping[T any] struct {
