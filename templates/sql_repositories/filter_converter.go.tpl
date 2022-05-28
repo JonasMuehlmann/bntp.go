@@ -422,7 +422,7 @@ func DocumentDomainToSqlRepositoryFilter(db *sql.DB, domainFilter domain.{{.Enti
             }
 
 
-            bookmarkType, err := DocumentTypes(DocumentTypeWhere.Type.EQ(type_.Wrappee)).One(context.Background(), db)
+            bookmarkType, err := DocumentTypes(DocumentTypeWhere.DocumentType.EQ(type_.Wrappee)).One(context.Background(), db)
 
             return bookmarkType, err
         })
@@ -436,7 +436,7 @@ func DocumentDomainToSqlRepositoryFilter(db *sql.DB, domainFilter domain.{{.Enti
             }
 
 
-            bookmarkType, err := DocumentTypes(DocumentTypeWhere.Type.EQ(type_.Wrappee)).One(context.Background(), db)
+            bookmarkType, err := DocumentTypes(DocumentTypeWhere.DocumentType.EQ(type_.Wrappee)).One(context.Background(), db)
 
             return null.NewInt64(bookmarkType.ID, true), err
         })
@@ -454,7 +454,7 @@ func DocumentDomainToSqlRepositoryFilter(db *sql.DB, domainFilter domain.{{.Enti
     if domainFilter.LinkedDocuments.HasValue {
         var convertedFilter model.FilterOperation[*Document]
 
-        convertedFilter, err = model.ConvertFilter[*Document,*domain.Document](domainFilter.LinkedDocuments.Wrappee, repoCommon.MakeDomainToRepositoryEntityConverter[domain.Tag, Tag](db, DocumentDomainToSqlRepositoryModel))
+        convertedFilter, err = model.ConvertFilter[*Document,*domain.Document](domainFilter.LinkedDocuments.Wrappee, repoCommon.MakeDomainToRepositoryEntityConverter[domain.Document,Document](db, DocumentDomainToSqlRepositoryModel))
         if err != nil {
             return
         }
@@ -464,7 +464,7 @@ func DocumentDomainToSqlRepositoryFilter(db *sql.DB, domainFilter domain.{{.Enti
     if domainFilter.BacklinkedDocuments.HasValue {
         var convertedFilter model.FilterOperation[*Document]
 
-        convertedFilter, err = model.ConvertFilter[*Document,*domain.Document](domainFilter.BacklinkedDocuments.Wrappee, repoCommon.MakeDomainToRepositoryEntityConverter[domain.Tag, Tag](db, DocumentDomainToSqlRepositoryModel))
+        convertedFilter, err = model.ConvertFilter[*Document,*domain.Document](domainFilter.BacklinkedDocuments.Wrappee, repoCommon.MakeDomainToRepositoryEntityConverter[domain.Document,Document](db, DocumentDomainToSqlRepositoryModel))
         if err != nil {
             return
         }
@@ -487,12 +487,12 @@ func DocumentSqlRepositoryToDomainFilter(db *sql.DB, sqlRepositoryFilter {{.Enti
 
         convertedFilter, err = model.ConvertFilter[optional.Optional[string], null.Int64](sqlRepositoryFilter.DocumentTypeID.Wrappee, func(typeID null.Int64) (optional.Optional[string], error) {
             if typeID.Valid {
-                bookmarkType, err := DocumentTypes(DocumentTypeWhere.ID.EQ(typeID.Int64)).One(context.Background(), db)
+                documentType, err := DocumentTypes(DocumentTypeWhere.ID.EQ(typeID.Int64)).One(context.Background(), db)
                 if err != nil {
                     return optional.Optional[string]{}, err
                 }
 
-                return optional.Make(bookmarkType.Type), nil
+                return optional.Make(documentType.DocumentType), nil
             }
 
             return optional.Optional[string]{}, nil
@@ -509,7 +509,7 @@ func DocumentSqlRepositoryToDomainFilter(db *sql.DB, sqlRepositoryFilter {{.Enti
 
         convertedFilter, err = model.ConvertFilter[optional.Optional[string], *DocumentType](sqlRepositoryFilter.DocumentType.Wrappee, func(type_ *DocumentType) (optional.Optional[string], error) {
             if type_ != nil {
-                return optional.Make(type_.Type), nil
+                return optional.Make(type_.DocumentType), nil
             }
 
             return optional.Optional[string]{}, nil
@@ -587,7 +587,7 @@ func DocumentSqlRepositoryToDomainFilter(db *sql.DB, sqlRepositoryFilter {{.Enti
     if sqlRepositoryFilter.SourceDocuments.HasValue {
         var convertedFilter model.FilterOperation[*domain.Document]
 
-        convertedFilter, err = model.ConvertFilter[*domain.Document,*Document](sqlRepositoryFilter.SourceDocuments.Wrappee, repoCommon.MakeDomainToRepositoryEntityConverter[Document, domain.Document](dbDocumentagSqlRepositoryToDomainModel))
+        convertedFilter, err = model.ConvertFilter[*domain.Document,*Document](sqlRepositoryFilter.SourceDocuments.Wrappee, repoCommon.MakeDomainToRepositoryEntityConverter[Document, domain.Document](db, DocumentSqlRepositoryToDomainModel))
         if err != nil {
             return
         }
@@ -654,7 +654,7 @@ func TagSqlRepositoryToDomainFilter(db *sql.DB, sqlRepositoryFilter {{.Entities.
     if sqlRepositoryFilter.ParentTagTags.HasValue {
         var convertedFilter model.FilterOperation[*domain.Tag]
 
-        convertedFilter, err = model.ConvertFilter[*domain.Tag,*Tag]( sqlRepositoryFilter.ParentTagTags.Wrappee, repoCommon.MakeDomainToRepositoryEntityConverter[Tag, domain.Tag](db, TagSqlRepositoryToDomainFilter))
+        convertedFilter, err = model.ConvertFilter[*domain.Tag,*Tag]( sqlRepositoryFilter.ParentTagTags.Wrappee, repoCommon.MakeDomainToRepositoryEntityConverter[Tag, domain.Tag](db, TagSqlRepositoryToDomainModel))
         if err != nil {
             return
         }
@@ -666,7 +666,7 @@ func TagSqlRepositoryToDomainFilter(db *sql.DB, sqlRepositoryFilter {{.Entities.
     if sqlRepositoryFilter.ChildTagTags.HasValue {
         var convertedFilter model.FilterOperation[*domain.Tag]
 
-        convertedFilter, err = model.ConvertFilter[*domain.Tag,*Tag]( sqlRepositoryFilter.ChildTagTags.Wrappee, repoCommon.MakeDomainToRepositoryEntityConverter[Tag, domain.Tag](db, TagSqlRepositoryToDomainFilter))
+        convertedFilter, err = model.ConvertFilter[*domain.Tag,*Tag]( sqlRepositoryFilter.ChildTagTags.Wrappee, repoCommon.MakeDomainToRepositoryEntityConverter[Tag, domain.Tag](db, TagSqlRepositoryToDomainModel))
         if err != nil {
             return
         }

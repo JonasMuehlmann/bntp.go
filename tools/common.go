@@ -38,6 +38,23 @@ func Pluralize(str string) string {
 	return str + "s"
 }
 
+func Unslice(str string) string {
+	return strings.TrimPrefix(str, "[]")
+}
+
+func UnaliasSQLBoilerSlice(str string) string {
+	switch str {
+	case "TagSlice":
+		return "[]*Tag"
+	case "DocumentSlice":
+		return "[]*Document"
+	case "BookmarkSlice":
+		return "[]*Bookmark"
+	}
+
+	return str
+}
+
 type StructField struct {
 	FieldName        string
 	FieldType        string
@@ -74,7 +91,9 @@ func NewStructModel(target any) Struct {
 }
 
 var FullFuncMap = template.FuncMap{
-	"UppercaseBeginning": UppercaseBeginning,
-	"LowercaseBeginning": LowercaseBeginning,
-	"Pluralize":          Pluralize,
+	"UppercaseBeginning":    UppercaseBeginning,
+	"LowercaseBeginning":    LowercaseBeginning,
+	"Pluralize":             Pluralize,
+	"Unslice":               Unslice,
+	"UnaliasSQLBoilerSlice": UnaliasSQLBoilerSlice,
 }

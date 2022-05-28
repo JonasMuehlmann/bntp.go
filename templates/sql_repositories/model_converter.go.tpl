@@ -24,6 +24,7 @@ package repository
 
 import (
 	"github.com/JonasMuehlmann/optional.go"
+	"github.com/volatiletech/null/v8"
 	"github.com/JonasMuehlmann/bntp.go/model/domain"
     "context"
     "database/sql"
@@ -49,7 +50,6 @@ func BookmarkDomainToSqlRepositoryModel(db *sql.DB, domainModel *domain.{{.Entit
     {{else}}
     sqlRepositoryModel.CreatedAt = domainModel.CreatedAt
     sqlRepositoryModel.UpdatedAt = domainModel.UpdatedAt
-    sqlRepositoryModel.DeletedAt = domainModel.DeletedAt
 
     if domainModel.DeletedAt.HasValue {
         sqlRepositoryModel.DeletedAt.Valid = true
@@ -105,10 +105,12 @@ func BookmarkDomainToSqlRepositoryModel(db *sql.DB, domainModel *domain.{{.Entit
 			return
 		}
 
-		sqlRepositoryModel.BookmarkTypeID.Int64 = repositoryBookmarkType.ID
-		sqlRepositoryModel.BookmarkTypeID.Valid = true
-
-		sqlRepositoryModel.R.BookmarkType.ID = repositoryBookmarkType.ID
+        if repositoryBookmarkType != nil {
+            sqlRepositoryModel.BookmarkTypeID = null.NewInt64(repositoryBookmarkType.ID, true)
+            sqlRepositoryModel.R.BookmarkType.ID = repositoryBookmarkType.ID
+        } else {
+            sqlRepositoryModel.R.BookmarkType = nil
+        }
 	}
 
     return
@@ -146,7 +148,6 @@ func BookmarkSqlRepositoryToDomainModel(db *sql.DB, sqlRepositoryModel *{{.Entit
     {{else}}
     domainModel.CreatedAt = sqlRepositoryModel.CreatedAt
     domainModel.UpdatedAt = sqlRepositoryModel.UpdatedAt
-    domainModel.DeletedAt = sqlRepositoryModel.DeletedAt
 
     if sqlRepositoryModel.DeletedAt.Valid {
         domainModel.DeletedAt.Push(sqlRepositoryModel.DeletedAt.Time)
@@ -168,16 +169,16 @@ func BookmarkSqlRepositoryToDomainModel(db *sql.DB, sqlRepositoryModel *{{.Entit
     {{end}}
 
     //*************************    Set Tags    *************************//
-    var domainTag domain.Tag
+    var domainTag *domain.Tag
 
 	domainModel.Tags = make([]*domain.Tag, 0, len(sqlRepositoryModel.R.Tags))
     for _, repositoryTag := range sqlRepositoryModel.R.Tags {
-        domainTag, err = TagSqlRepositoryToDomainModel(db, *repositoryTag)
+        domainTag, err = TagSqlRepositoryToDomainModel(db, repositoryTag)
         if err != nil {
             return
         }
 
-        domainModel.Tags = append(domainModel.Tags, &domainTag)
+        domainModel.Tags = append(domainModel.Tags, domainTag)
     }
 
     return
@@ -202,7 +203,6 @@ func DocumentDomainToSqlRepositoryModel(db *sql.DB, domainModel *domain.{{.Entit
     {{else}}
     sqlRepositoryModel.CreatedAt = domainModel.CreatedAt
     sqlRepositoryModel.UpdatedAt = domainModel.UpdatedAt
-    sqlRepositoryModel.DeletedAt = domainModel.DeletedAt
 
     if domainModel.DeletedAt.HasValue {
         sqlRepositoryModel.DeletedAt.Valid = true
@@ -233,33 +233,37 @@ func DocumentDomainToSqlRepositoryModel(db *sql.DB, domainModel *domain.{{.Entit
 			return
 		}
 
-		sqlRepositoryModel.DocumentTypeID = repositoryDocumentType.ID
-		sqlRepositoryModel.R.DocumentType.ID = repositoryDocumentType.ID
+        if repositoryDocumentType != nil {
+            sqlRepositoryModel.DocumentTypeID = null.NewInt64(repositoryDocumentType.ID, true)
+            sqlRepositoryModel.R.DocumentType.ID = repositoryDocumentType.ID
+        } else {
+            sqlRepositoryModel.R.DocumentType = nil
+        }
 	}
 
 
     //**************    Set linked/backlinked documents    *************//
-    var repositoryDocument Document
+    var repositoryDocument *Document
 
     sqlRepositoryModel.R.SourceDocuments  = make(DocumentSlice, 0, len(domainModel.LinkedDocuments))
     sqlRepositoryModel.R.DestinationDocuments  = make(DocumentSlice, 0, len(domainModel.BacklinkedDocuments))
 
     for _ , link := range domainModel.LinkedDocuments {
-        repositoryDocument, err = DocumentDomainToSqlRepositoryModel(db, *link)
+        repositoryDocument, err = DocumentDomainToSqlRepositoryModel(db, link)
         if err != nil {
             return
         }
 
-        sqlRepositoryModel.R.SourceDocuments = append(sqlRepositoryModel.R.SourceDocuments, &repositoryDocument)
+        sqlRepositoryModel.R.SourceDocuments = append(sqlRepositoryModel.R.SourceDocuments, repositoryDocument)
     }
 
     for _ , backlink := range domainModel.BacklinkedDocuments {
-        repositoryDocument, err = DocumentDomainToSqlRepositoryModel(db, *backlink)
+        repositoryDocument, err = DocumentDomainToSqlRepositoryModel(db, backlink)
         if err != nil {
             return
         }
 
-        sqlRepositoryModel.R.DestinationDocuments = append(sqlRepositoryModel.R.DestinationDocuments, &repositoryDocument)
+        sqlRepositoryModel.R.DestinationDocuments = append(sqlRepositoryModel.R.DestinationDocuments, repositoryDocument)
     }
 
     return
@@ -297,7 +301,6 @@ func DocumentSqlRepositoryToDomainModel(db *sql.DB, sqlRepositoryModel *{{.Entit
     {{else}}
     domainModel.CreatedAt = sqlRepositoryModel.CreatedAt
     domainModel.UpdatedAt = sqlRepositoryModel.UpdatedAt
-    domainModel.DeletedAt = sqlRepositoryModel.DeletedAt
 
     if sqlRepositoryModel.DeletedAt.Valid {
         domainModel.DeletedAt.Push(sqlRepositoryModel.DeletedAt.Time)
@@ -305,40 +308,40 @@ func DocumentSqlRepositoryToDomainModel(db *sql.DB, sqlRepositoryModel *{{.Entit
     {{end}}
 
     //*************************    Set Tags    *************************//
-    var domainTag domain.Tag
+    var domainTag *domain.Tag
 
 	domainModel.Tags = make([]*domain.Tag, 0, len(sqlRepositoryModel.R.Tags))
     for _, repositoryTag := range sqlRepositoryModel.R.Tags {
-    domainTag, err = TagSqlRepositoryToDomainModel(db, *repositoryTag)
+    domainTag, err = TagSqlRepositoryToDomainModel(db, repositoryTag)
         if err != nil {
             return
         }
 
-        domainModel.Tags = append(domainModel.Tags, &domainTag)
+        domainModel.Tags = append(domainModel.Tags, domainTag)
     }
 
     //**************    Set linked/backlinked documents    *************//
-    var domainDocument domain.Document
+    var domainDocument *domain.Document
 
     domainModel.LinkedDocuments = make([]*domain.Document, 0, len(sqlRepositoryModel.R.SourceDocuments))
     domainModel.BacklinkedDocuments = make([]*domain.Document, 0, len(sqlRepositoryModel.R.DestinationDocuments))
 
     for _ , link := range sqlRepositoryModel.R.SourceDocuments {
-        domainDocument, err = DocumentSqlRepositoryToDomainModel(db, *link)
+        domainDocument, err = DocumentSqlRepositoryToDomainModel(db, link)
         if err != nil {
             return
         }
 
-        domainModel.LinkedDocuments = append(domainModel.LinkedDocuments, &domainDocument)
+        domainModel.LinkedDocuments = append(domainModel.LinkedDocuments, domainDocument)
     }
 
     for _ , backlink := range sqlRepositoryModel.R.DestinationDocuments {
-        domainDocument, err = DocumentSqlRepositoryToDomainModel(db, *backlink)
+        domainDocument, err = DocumentSqlRepositoryToDomainModel(db, backlink)
         if err != nil {
             return
         }
 
-        domainModel.BacklinkedDocuments = append(domainModel.BacklinkedDocuments, &domainDocument)
+        domainModel.BacklinkedDocuments = append(domainModel.BacklinkedDocuments, domainDocument)
     }
 
     return
@@ -352,29 +355,29 @@ func TagDomainToSqlRepositoryModel(db *sql.DB, domainModel *domain.{{.Entities.T
 
 
     //**********************    Set parent path    *********************//
-    var repositoryTag Tag
-    var repositoryParentPathTag TagParentPath
+    var repositoryTag *Tag
+    var repositoryParentPathTag *TagParentPath
 
     sqlRepositoryModel.R.ParentTagTagParentPaths = make(TagParentPathSlice, 0, len(domainModel.ParentPath))
     sqlRepositoryModel.R.ChildTagTags = make(TagSlice, 0, len(domainModel.Subtags))
 
     for distance, domainTag := range domainModel.ParentPath {
-        repositoryParentPathTag, err = tagDomainToRepositoryParentPathModel(db, *domainTag, distance)
+        repositoryParentPathTag, err = tagDomainToRepositoryParentPathModel(db, domainTag, distance)
         if err != nil {
             return
         }
 
-        sqlRepositoryModel.R.ParentTagTagParentPaths = append(sqlRepositoryModel.R.ParentTagTagParentPaths, &repositoryParentPathTag)
+        sqlRepositoryModel.R.ParentTagTagParentPaths = append(sqlRepositoryModel.R.ParentTagTagParentPaths, repositoryParentPathTag)
     }
 
     //**********************    Set child tags *********************//
     for _, domainTag := range domainModel.Subtags {
-        repositoryTag, err = TagDomainToSqlRepositoryModel(db, *domainTag)
+        repositoryTag, err = TagDomainToSqlRepositoryModel(db, domainTag)
         if err != nil {
             return
         }
 
-        sqlRepositoryModel.R.ChildTagTags = append(sqlRepositoryModel.R.ChildTagTags, &repositoryTag)
+        sqlRepositoryModel.R.ChildTagTags = append(sqlRepositoryModel.R.ChildTagTags, repositoryTag)
     }
 
 
@@ -398,29 +401,29 @@ func TagSqlRepositoryToDomainModel(db *sql.DB, sqlRepositoryModel *{{.Entities.T
     domainModel.Tag = sqlRepositoryModel.Tag
 
     //**********************    Set parent path    *********************//
-    var domainTag domain.{{.Entities.Tag}}
+    var domainTag *domain.{{.Entities.Tag}}
 
     domainModel.ParentPath   = make([]*domain.{{.Entities.Tag}}, 0, len(sqlRepositoryModel.R.ParentTagTagParentPaths))
 
     for _, repositoryParentPathTag := range sqlRepositoryModel.R.ParentTagTagParentPaths  {
-        domainTag, err = TagSqlRepositoryToDomainModel(db,  *repositoryParentPathTag.R.Tag)
+        domainTag, err = TagSqlRepositoryToDomainModel(db,  repositoryParentPathTag.R.Tag)
         if err != nil {
             return
         }
 
-        domainModel.ParentPath[repositoryParentPathTag.Distance] = &domainTag
+        domainModel.ParentPath[repositoryParentPathTag.Distance] = domainTag
     }
 
     //**********************    Set child tags *********************//
     domainModel.Subtags = make([]*domain.{{.Entities.Tag}}, 0, len(sqlRepositoryModel.R.ChildTagTags))
 
     for _, repositoryTag := range sqlRepositoryModel.R.ChildTagTags {
-        domainTag, err = TagSqlRepositoryToDomainModel(db, *repositoryTag)
+        domainTag, err = TagSqlRepositoryToDomainModel(db, repositoryTag)
         if err != nil {
             return
         }
 
-        domainModel.Subtags = append(domainModel.Subtags, &domainTag)
+        domainModel.Subtags = append(domainModel.Subtags, domainTag)
     }
 
     return

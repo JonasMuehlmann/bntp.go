@@ -63,9 +63,9 @@ CREATE TABLE document_types
 
 CREATE TABLE documents
 (
-    id               INTEGER PRIMARY KEY NOT NULL,
-    path             TEXT    NOT NULL UNIQUE,
-    document_type_id INTEGER NOT NULL REFERENCES document_types(id),
+    id               INTEGER   PRIMARY KEY NOT NULL,
+    path             TEXT      NOT NULL UNIQUE,
+    document_type_id INTEGER   REFERENCES document_types(id),
     created_at       TIMESTAMP NOT NULL,
     updated_at       TIMESTAMP NOT NULL,
     deleted_at       TIMESTAMP

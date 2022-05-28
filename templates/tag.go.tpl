@@ -50,7 +50,7 @@ var {{.StructName}}Fields = struct {
 
 type {{.StructName}}Filter struct {
     {{range $field := .StructFields -}}
-    {{.FieldName}} optional.Optional[model.FilterOperation[{{.FieldType}}]]
+    {{.FieldName}} optional.Optional[model.FilterOperation[{{Unslice (UnaliasSQLBoilerSlice .FieldType)}}]]
     {{end}}
 }
 
