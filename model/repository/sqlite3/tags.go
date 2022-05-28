@@ -23,11 +23,10 @@ import (
 
 // Tag is an object representing the database table.
 type Tag struct {
-	ID  int64  `boil:"id" json:"id" toml:"id" yaml:"id"`
+	L   tagL   `boil:"-" json:"-" toml:"-" yaml:"-"`
+	R   *tagR  `boil:"-" json:"-" toml:"-" yaml:"-"`
 	Tag string `boil:"tag" json:"tag" toml:"tag" yaml:"tag"`
-
-	R *tagR `boil:"-" json:"-" toml:"-" yaml:"-"`
-	L tagL  `boil:"-" json:"-" toml:"-" yaml:"-"`
+	ID  int64  `boil:"id" json:"id" toml:"id" yaml:"id"`
 }
 
 var TagColumns = struct {

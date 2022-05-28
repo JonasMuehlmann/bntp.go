@@ -23,207 +23,200 @@
 package repository
 
 import (
-    "database/sql"
+	"container/list"
+	"context"
+	"database/sql"
+	"fmt"
+
 	"github.com/JonasMuehlmann/bntp.go/model"
 	"github.com/JonasMuehlmann/optional.go"
-    "context"
-	"fmt"
-    "github.com/volatiletech/sqlboiler/v4/boil"
-    "github.com/volatiletech/sqlboiler/v4/queries/qm"
-    "github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/null/v8"
-	"container/list"
+	"github.com/volatiletech/sqlboiler/v4/boil"
+	"github.com/volatiletech/sqlboiler/v4/queries"
+	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
 type MysqlBookmarkRepository struct {
-    db *sql.DB
+	db *sql.DB
 }
 type BookmarkField string
 
 var BookmarkFields = struct {
-    ID  BookmarkField
-    IsRead  BookmarkField
-    Title  BookmarkField
-    URL  BookmarkField
-    BookmarkTypeID  BookmarkField
-    IsCollection  BookmarkField
-    CreatedAt  BookmarkField
-    UpdatedAt  BookmarkField
-    DeletedAt  BookmarkField
-    
+	ID             BookmarkField
+	IsRead         BookmarkField
+	Title          BookmarkField
+	URL            BookmarkField
+	BookmarkTypeID BookmarkField
+	IsCollection   BookmarkField
+	CreatedAt      BookmarkField
+	UpdatedAt      BookmarkField
+	DeletedAt      BookmarkField
 }{
-    ID: "id",
-    IsRead: "is_read",
-    Title: "title",
-    URL: "url",
-    BookmarkTypeID: "bookmark_type_id",
-    IsCollection: "is_collection",
-    CreatedAt: "created_at",
-    UpdatedAt: "updated_at",
-    DeletedAt: "deleted_at",
-    
+	ID:             "id",
+	IsRead:         "is_read",
+	Title:          "title",
+	URL:            "url",
+	BookmarkTypeID: "bookmark_type_id",
+	IsCollection:   "is_collection",
+	CreatedAt:      "created_at",
+	UpdatedAt:      "updated_at",
+	DeletedAt:      "deleted_at",
 }
 
 var BookmarkFieldsList = []BookmarkField{
-    BookmarkField("ID"),
-    BookmarkField("IsRead"),
-    BookmarkField("Title"),
-    BookmarkField("URL"),
-    BookmarkField("BookmarkTypeID"),
-    BookmarkField("IsCollection"),
-    BookmarkField("CreatedAt"),
-    BookmarkField("UpdatedAt"),
-    BookmarkField("DeletedAt"),
-    
+	BookmarkField("ID"),
+	BookmarkField("IsRead"),
+	BookmarkField("Title"),
+	BookmarkField("URL"),
+	BookmarkField("BookmarkTypeID"),
+	BookmarkField("IsCollection"),
+	BookmarkField("CreatedAt"),
+	BookmarkField("UpdatedAt"),
+	BookmarkField("DeletedAt"),
 }
 
 var BookmarkRelationsList = []string{
-    "BookmarkType",
-    "Tags",
-    
+	"BookmarkType",
+	"Tags",
 }
 
 type BookmarkFilter struct {
-    ID optional.Optional[model.FilterOperation[int64]]
-    IsRead optional.Optional[model.FilterOperation[int64]]
-    Title optional.Optional[model.FilterOperation[null.String]]
-    URL optional.Optional[model.FilterOperation[string]]
-    BookmarkTypeID optional.Optional[model.FilterOperation[null.Int64]]
-    IsCollection optional.Optional[model.FilterOperation[int64]]
-    CreatedAt optional.Optional[model.FilterOperation[string]]
-    UpdatedAt optional.Optional[model.FilterOperation[string]]
-    DeletedAt optional.Optional[model.FilterOperation[null.String]]
-    
-    BookmarkType optional.Optional[model.FilterOperation[*BookmarkType]]
-    Tags optional.Optional[model.FilterOperation[*Tag]]
-    
+	ID             optional.Optional[model.FilterOperation[int64]]
+	IsRead         optional.Optional[model.FilterOperation[int64]]
+	Title          optional.Optional[model.FilterOperation[null.String]]
+	URL            optional.Optional[model.FilterOperation[string]]
+	BookmarkTypeID optional.Optional[model.FilterOperation[null.Int64]]
+	IsCollection   optional.Optional[model.FilterOperation[int64]]
+	CreatedAt      optional.Optional[model.FilterOperation[string]]
+	UpdatedAt      optional.Optional[model.FilterOperation[string]]
+	DeletedAt      optional.Optional[model.FilterOperation[null.String]]
+
+	BookmarkType optional.Optional[model.FilterOperation[*BookmarkType]]
+	Tags         optional.Optional[model.FilterOperation[*Tag]]
 }
 
 type BookmarkFilterMapping[T any] struct {
-    Field BookmarkField
-    FilterOperation model.FilterOperation[T]
+	Field           BookmarkField
+	FilterOperation model.FilterOperation[T]
 }
 
 func (filter *BookmarkFilter) GetSetFilters() *list.List {
-    setFilters := list.New()
+	setFilters := list.New()
 
-    if filter.ID.HasValue {
-    setFilters.PushBack(BookmarkFilterMapping[int64]{Field: BookmarkFields.ID, FilterOperation: filter.ID.Wrappee})
-    }
-    if filter.IsRead.HasValue {
-    setFilters.PushBack(BookmarkFilterMapping[int64]{Field: BookmarkFields.IsRead, FilterOperation: filter.IsRead.Wrappee})
-    }
-    if filter.Title.HasValue {
-    setFilters.PushBack(BookmarkFilterMapping[null.String]{Field: BookmarkFields.Title, FilterOperation: filter.Title.Wrappee})
-    }
-    if filter.URL.HasValue {
-    setFilters.PushBack(BookmarkFilterMapping[string]{Field: BookmarkFields.URL, FilterOperation: filter.URL.Wrappee})
-    }
-    if filter.BookmarkTypeID.HasValue {
-    setFilters.PushBack(BookmarkFilterMapping[null.Int64]{Field: BookmarkFields.BookmarkTypeID, FilterOperation: filter.BookmarkTypeID.Wrappee})
-    }
-    if filter.IsCollection.HasValue {
-    setFilters.PushBack(BookmarkFilterMapping[int64]{Field: BookmarkFields.IsCollection, FilterOperation: filter.IsCollection.Wrappee})
-    }
-    if filter.CreatedAt.HasValue {
-    setFilters.PushBack(BookmarkFilterMapping[string]{Field: BookmarkFields.CreatedAt, FilterOperation: filter.CreatedAt.Wrappee})
-    }
-    if filter.UpdatedAt.HasValue {
-    setFilters.PushBack(BookmarkFilterMapping[string]{Field: BookmarkFields.UpdatedAt, FilterOperation: filter.UpdatedAt.Wrappee})
-    }
-    if filter.DeletedAt.HasValue {
-    setFilters.PushBack(BookmarkFilterMapping[null.String]{Field: BookmarkFields.DeletedAt, FilterOperation: filter.DeletedAt.Wrappee})
-    }
-    
+	if filter.ID.HasValue {
+		setFilters.PushBack(BookmarkFilterMapping[int64]{Field: BookmarkFields.ID, FilterOperation: filter.ID.Wrappee})
+	}
+	if filter.IsRead.HasValue {
+		setFilters.PushBack(BookmarkFilterMapping[int64]{Field: BookmarkFields.IsRead, FilterOperation: filter.IsRead.Wrappee})
+	}
+	if filter.Title.HasValue {
+		setFilters.PushBack(BookmarkFilterMapping[null.String]{Field: BookmarkFields.Title, FilterOperation: filter.Title.Wrappee})
+	}
+	if filter.URL.HasValue {
+		setFilters.PushBack(BookmarkFilterMapping[string]{Field: BookmarkFields.URL, FilterOperation: filter.URL.Wrappee})
+	}
+	if filter.BookmarkTypeID.HasValue {
+		setFilters.PushBack(BookmarkFilterMapping[null.Int64]{Field: BookmarkFields.BookmarkTypeID, FilterOperation: filter.BookmarkTypeID.Wrappee})
+	}
+	if filter.IsCollection.HasValue {
+		setFilters.PushBack(BookmarkFilterMapping[int64]{Field: BookmarkFields.IsCollection, FilterOperation: filter.IsCollection.Wrappee})
+	}
+	if filter.CreatedAt.HasValue {
+		setFilters.PushBack(BookmarkFilterMapping[string]{Field: BookmarkFields.CreatedAt, FilterOperation: filter.CreatedAt.Wrappee})
+	}
+	if filter.UpdatedAt.HasValue {
+		setFilters.PushBack(BookmarkFilterMapping[string]{Field: BookmarkFields.UpdatedAt, FilterOperation: filter.UpdatedAt.Wrappee})
+	}
+	if filter.DeletedAt.HasValue {
+		setFilters.PushBack(BookmarkFilterMapping[null.String]{Field: BookmarkFields.DeletedAt, FilterOperation: filter.DeletedAt.Wrappee})
+	}
 
-    return setFilters
+	return setFilters
 }
 
 type BookmarkUpdater struct {
-    ID optional.Optional[model.UpdateOperation[int64]]
-    IsRead optional.Optional[model.UpdateOperation[int64]]
-    Title optional.Optional[model.UpdateOperation[null.String]]
-    URL optional.Optional[model.UpdateOperation[string]]
-    BookmarkTypeID optional.Optional[model.UpdateOperation[null.Int64]]
-    IsCollection optional.Optional[model.UpdateOperation[int64]]
-    CreatedAt optional.Optional[model.UpdateOperation[string]]
-    UpdatedAt optional.Optional[model.UpdateOperation[string]]
-    DeletedAt optional.Optional[model.UpdateOperation[null.String]]
-    
-    BookmarkType optional.Optional[model.UpdateOperation[*BookmarkType]]
-    Tags optional.Optional[model.UpdateOperation[TagSlice]]
-    
+	ID             optional.Optional[model.UpdateOperation[int64]]
+	IsRead         optional.Optional[model.UpdateOperation[int64]]
+	Title          optional.Optional[model.UpdateOperation[null.String]]
+	URL            optional.Optional[model.UpdateOperation[string]]
+	BookmarkTypeID optional.Optional[model.UpdateOperation[null.Int64]]
+	IsCollection   optional.Optional[model.UpdateOperation[int64]]
+	CreatedAt      optional.Optional[model.UpdateOperation[string]]
+	UpdatedAt      optional.Optional[model.UpdateOperation[string]]
+	DeletedAt      optional.Optional[model.UpdateOperation[null.String]]
+
+	BookmarkType optional.Optional[model.UpdateOperation[*BookmarkType]]
+	Tags         optional.Optional[model.UpdateOperation[TagSlice]]
 }
 
 type BookmarkUpdaterMapping[T any] struct {
-    Field BookmarkField
-    Updater model.UpdateOperation[T]
+	Field   BookmarkField
+	Updater model.UpdateOperation[T]
 }
 
 func (updater *BookmarkUpdater) GetSetUpdaters() *list.List {
-    setUpdaters := list.New()
+	setUpdaters := list.New()
 
-    if updater.ID.HasValue {
-    setUpdaters.PushBack(BookmarkUpdaterMapping[int64]{Field: BookmarkFields.ID, Updater: updater.ID.Wrappee})
-    }
-    if updater.IsRead.HasValue {
-    setUpdaters.PushBack(BookmarkUpdaterMapping[int64]{Field: BookmarkFields.IsRead, Updater: updater.IsRead.Wrappee})
-    }
-    if updater.Title.HasValue {
-    setUpdaters.PushBack(BookmarkUpdaterMapping[null.String]{Field: BookmarkFields.Title, Updater: updater.Title.Wrappee})
-    }
-    if updater.URL.HasValue {
-    setUpdaters.PushBack(BookmarkUpdaterMapping[string]{Field: BookmarkFields.URL, Updater: updater.URL.Wrappee})
-    }
-    if updater.BookmarkTypeID.HasValue {
-    setUpdaters.PushBack(BookmarkUpdaterMapping[null.Int64]{Field: BookmarkFields.BookmarkTypeID, Updater: updater.BookmarkTypeID.Wrappee})
-    }
-    if updater.IsCollection.HasValue {
-    setUpdaters.PushBack(BookmarkUpdaterMapping[int64]{Field: BookmarkFields.IsCollection, Updater: updater.IsCollection.Wrappee})
-    }
-    if updater.CreatedAt.HasValue {
-    setUpdaters.PushBack(BookmarkUpdaterMapping[string]{Field: BookmarkFields.CreatedAt, Updater: updater.CreatedAt.Wrappee})
-    }
-    if updater.UpdatedAt.HasValue {
-    setUpdaters.PushBack(BookmarkUpdaterMapping[string]{Field: BookmarkFields.UpdatedAt, Updater: updater.UpdatedAt.Wrappee})
-    }
-    if updater.DeletedAt.HasValue {
-    setUpdaters.PushBack(BookmarkUpdaterMapping[null.String]{Field: BookmarkFields.DeletedAt, Updater: updater.DeletedAt.Wrappee})
-    }
-    
+	if updater.ID.HasValue {
+		setUpdaters.PushBack(BookmarkUpdaterMapping[int64]{Field: BookmarkFields.ID, Updater: updater.ID.Wrappee})
+	}
+	if updater.IsRead.HasValue {
+		setUpdaters.PushBack(BookmarkUpdaterMapping[int64]{Field: BookmarkFields.IsRead, Updater: updater.IsRead.Wrappee})
+	}
+	if updater.Title.HasValue {
+		setUpdaters.PushBack(BookmarkUpdaterMapping[null.String]{Field: BookmarkFields.Title, Updater: updater.Title.Wrappee})
+	}
+	if updater.URL.HasValue {
+		setUpdaters.PushBack(BookmarkUpdaterMapping[string]{Field: BookmarkFields.URL, Updater: updater.URL.Wrappee})
+	}
+	if updater.BookmarkTypeID.HasValue {
+		setUpdaters.PushBack(BookmarkUpdaterMapping[null.Int64]{Field: BookmarkFields.BookmarkTypeID, Updater: updater.BookmarkTypeID.Wrappee})
+	}
+	if updater.IsCollection.HasValue {
+		setUpdaters.PushBack(BookmarkUpdaterMapping[int64]{Field: BookmarkFields.IsCollection, Updater: updater.IsCollection.Wrappee})
+	}
+	if updater.CreatedAt.HasValue {
+		setUpdaters.PushBack(BookmarkUpdaterMapping[string]{Field: BookmarkFields.CreatedAt, Updater: updater.CreatedAt.Wrappee})
+	}
+	if updater.UpdatedAt.HasValue {
+		setUpdaters.PushBack(BookmarkUpdaterMapping[string]{Field: BookmarkFields.UpdatedAt, Updater: updater.UpdatedAt.Wrappee})
+	}
+	if updater.DeletedAt.HasValue {
+		setUpdaters.PushBack(BookmarkUpdaterMapping[null.String]{Field: BookmarkFields.DeletedAt, Updater: updater.DeletedAt.Wrappee})
+	}
 
-    return setUpdaters
+	return setUpdaters
 }
 
 func (updater *BookmarkUpdater) ApplyToModel(bookmarkModel *Bookmark) {
-    if updater.ID.HasValue {
-        model.ApplyUpdater(&(*bookmarkModel).ID, updater.ID.Wrappee)
-    }
-    if updater.IsRead.HasValue {
-        model.ApplyUpdater(&(*bookmarkModel).IsRead, updater.IsRead.Wrappee)
-    }
-    if updater.Title.HasValue {
-        model.ApplyUpdater(&(*bookmarkModel).Title, updater.Title.Wrappee)
-    }
-    if updater.URL.HasValue {
-        model.ApplyUpdater(&(*bookmarkModel).URL, updater.URL.Wrappee)
-    }
-    if updater.BookmarkTypeID.HasValue {
-        model.ApplyUpdater(&(*bookmarkModel).BookmarkTypeID, updater.BookmarkTypeID.Wrappee)
-    }
-    if updater.IsCollection.HasValue {
-        model.ApplyUpdater(&(*bookmarkModel).IsCollection, updater.IsCollection.Wrappee)
-    }
-    if updater.CreatedAt.HasValue {
-        model.ApplyUpdater(&(*bookmarkModel).CreatedAt, updater.CreatedAt.Wrappee)
-    }
-    if updater.UpdatedAt.HasValue {
-        model.ApplyUpdater(&(*bookmarkModel).UpdatedAt, updater.UpdatedAt.Wrappee)
-    }
-    if updater.DeletedAt.HasValue {
-        model.ApplyUpdater(&(*bookmarkModel).DeletedAt, updater.DeletedAt.Wrappee)
-    }
-    
+	if updater.ID.HasValue {
+		model.ApplyUpdater(&(*bookmarkModel).ID, updater.ID.Wrappee)
+	}
+	if updater.IsRead.HasValue {
+		model.ApplyUpdater(&(*bookmarkModel).IsRead, updater.IsRead.Wrappee)
+	}
+	if updater.Title.HasValue {
+		model.ApplyUpdater(&(*bookmarkModel).Title, updater.Title.Wrappee)
+	}
+	if updater.URL.HasValue {
+		model.ApplyUpdater(&(*bookmarkModel).URL, updater.URL.Wrappee)
+	}
+	if updater.BookmarkTypeID.HasValue {
+		model.ApplyUpdater(&(*bookmarkModel).BookmarkTypeID, updater.BookmarkTypeID.Wrappee)
+	}
+	if updater.IsCollection.HasValue {
+		model.ApplyUpdater(&(*bookmarkModel).IsCollection, updater.IsCollection.Wrappee)
+	}
+	if updater.CreatedAt.HasValue {
+		model.ApplyUpdater(&(*bookmarkModel).CreatedAt, updater.CreatedAt.Wrappee)
+	}
+	if updater.UpdatedAt.HasValue {
+		model.ApplyUpdater(&(*bookmarkModel).UpdatedAt, updater.UpdatedAt.Wrappee)
+	}
+	if updater.DeletedAt.HasValue {
+		model.ApplyUpdater(&(*bookmarkModel).DeletedAt, updater.DeletedAt.Wrappee)
+	}
+
 }
 
 type MysqlBookmarkRepositoryHook func(context.Context, MysqlBookmarkRepository) error
@@ -231,119 +224,119 @@ type MysqlBookmarkRepositoryHook func(context.Context, MysqlBookmarkRepository) 
 type queryModSliceBookmark []qm.QueryMod
 
 func (s queryModSliceBookmark) Apply(q *queries.Query) {
-    qm.Apply(q, s...)
+	qm.Apply(q, s...)
 }
 
 func buildQueryModFilterBookmark[T any](filterField BookmarkField, filterOperation model.FilterOperation[T]) queryModSliceBookmark {
-    var newQueryMod queryModSliceBookmark
+	var newQueryMod queryModSliceBookmark
 
-    filterOperator := filterOperation.Operator
+	filterOperator := filterOperation.Operator
 
-    switch filterOperator {
-    case model.FilterEqual:
-        filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[any])
-        if !ok {
-            panic("Expected a scalar operand for FilterEqual operator")
-        }
+	switch filterOperator {
+	case model.FilterEqual:
+		filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[any])
+		if !ok {
+			panic("Expected a scalar operand for FilterEqual operator")
+		}
 
-        newQueryMod = append(newQueryMod, qm.Where(string(filterField)+" = ?", filterOperand.Operand))
-    case model.FilterNEqual:
-        filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[any])
-        if !ok {
-            panic("Expected a scalar operand for FilterNEqual operator")
-        }
+		newQueryMod = append(newQueryMod, qm.Where(string(filterField)+" = ?", filterOperand.Operand))
+	case model.FilterNEqual:
+		filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[any])
+		if !ok {
+			panic("Expected a scalar operand for FilterNEqual operator")
+		}
 
-        newQueryMod = append(newQueryMod, qm.Where(string(filterField)+" != ?", filterOperand.Operand))
-    case model.FilterGreaterThan:
-        filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[any])
-        if !ok {
-            panic("Expected a scalar operand for FilterGreaterThan operator")
-        }
+		newQueryMod = append(newQueryMod, qm.Where(string(filterField)+" != ?", filterOperand.Operand))
+	case model.FilterGreaterThan:
+		filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[any])
+		if !ok {
+			panic("Expected a scalar operand for FilterGreaterThan operator")
+		}
 
-        newQueryMod = append(newQueryMod, qm.Where(string(filterField)+" > ?", filterOperand.Operand))
-    case model.FilterGreaterThanEqual:
-        filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[any])
-        if !ok {
-            panic("Expected a scalar operand for FilterGreaterThanEqual operator")
-        }
+		newQueryMod = append(newQueryMod, qm.Where(string(filterField)+" > ?", filterOperand.Operand))
+	case model.FilterGreaterThanEqual:
+		filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[any])
+		if !ok {
+			panic("Expected a scalar operand for FilterGreaterThanEqual operator")
+		}
 
-        newQueryMod = append(newQueryMod, qm.Where(string(filterField)+" >= ?", filterOperand.Operand))
-    case model.FilterLessThan:
-        filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[any])
-        if !ok {
-            panic("Expected a scalar operand for FilterLessThan operator")
-        }
+		newQueryMod = append(newQueryMod, qm.Where(string(filterField)+" >= ?", filterOperand.Operand))
+	case model.FilterLessThan:
+		filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[any])
+		if !ok {
+			panic("Expected a scalar operand for FilterLessThan operator")
+		}
 
-        newQueryMod = append(newQueryMod, qm.Where(string(filterField)+" < ?", filterOperand.Operand))
-    case model.FilterLessThanEqual:
-        filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[any])
-        if !ok {
-            panic("Expected a scalar operand for FilterLessThanEqual operator")
-        }
+		newQueryMod = append(newQueryMod, qm.Where(string(filterField)+" < ?", filterOperand.Operand))
+	case model.FilterLessThanEqual:
+		filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[any])
+		if !ok {
+			panic("Expected a scalar operand for FilterLessThanEqual operator")
+		}
 
-        newQueryMod = append(newQueryMod, qm.Where(string(filterField)+" <= ?", filterOperand.Operand))
-    case model.FilterIn:
-        filterOperand, ok := filterOperation.Operand.(model.ListOperand[any])
-        if !ok {
-            panic("Expected a list operand for FilterIn operator")
-        }
+		newQueryMod = append(newQueryMod, qm.Where(string(filterField)+" <= ?", filterOperand.Operand))
+	case model.FilterIn:
+		filterOperand, ok := filterOperation.Operand.(model.ListOperand[any])
+		if !ok {
+			panic("Expected a list operand for FilterIn operator")
+		}
 
-        newQueryMod = append(newQueryMod, qm.WhereIn(string(filterField)+" IN (?)", filterOperand.Operands))
-    case model.FilterNotIn:
-        filterOperand, ok := filterOperation.Operand.(model.ListOperand[any])
-        if !ok {
-            panic("Expected a list operand for FilterNotIn operator")
-        }
+		newQueryMod = append(newQueryMod, qm.WhereIn(string(filterField)+" IN (?)", filterOperand.Operands))
+	case model.FilterNotIn:
+		filterOperand, ok := filterOperation.Operand.(model.ListOperand[any])
+		if !ok {
+			panic("Expected a list operand for FilterNotIn operator")
+		}
 
-        newQueryMod = append(newQueryMod, qm.WhereNotIn(string(filterField)+" IN (?)", filterOperand.Operands))
-    case model.FilterBetween:
-        filterOperand, ok := filterOperation.Operand.(model.RangeOperand[any])
-        if !ok {
-            panic("Expected a scalar operand for FilterBetween operator")
-        }
+		newQueryMod = append(newQueryMod, qm.WhereNotIn(string(filterField)+" IN (?)", filterOperand.Operands))
+	case model.FilterBetween:
+		filterOperand, ok := filterOperation.Operand.(model.RangeOperand[any])
+		if !ok {
+			panic("Expected a scalar operand for FilterBetween operator")
+		}
 
-        newQueryMod = append(newQueryMod, qm.Where(string(filterField)+" BETWEEN ? AND ?", filterOperand.Start, filterOperand.End))
-    case model.FilterNotBetween:
-        filterOperand, ok := filterOperation.Operand.(model.RangeOperand[any])
-        if !ok {
-            panic("Expected a scalar operand for FilterNotBetween operator")
-        }
+		newQueryMod = append(newQueryMod, qm.Where(string(filterField)+" BETWEEN ? AND ?", filterOperand.Start, filterOperand.End))
+	case model.FilterNotBetween:
+		filterOperand, ok := filterOperation.Operand.(model.RangeOperand[any])
+		if !ok {
+			panic("Expected a scalar operand for FilterNotBetween operator")
+		}
 
-        newQueryMod = append(newQueryMod, qm.Where(string(filterField)+" NOT BETWEEN ? AND ?", filterOperand.Start, filterOperand.End))
-    case model.FilterLike:
-        filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[any])
-        if !ok {
-            panic("Expected a scalar operand for FilterLike operator")
-        }
+		newQueryMod = append(newQueryMod, qm.Where(string(filterField)+" NOT BETWEEN ? AND ?", filterOperand.Start, filterOperand.End))
+	case model.FilterLike:
+		filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[any])
+		if !ok {
+			panic("Expected a scalar operand for FilterLike operator")
+		}
 
-        newQueryMod = append(newQueryMod, qm.Where(string(filterField)+" LIKE ?", filterOperand.Operand))
-    case model.FilterNotLike:
-        filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[any])
-        if !ok {
-            panic("Expected a scalar operand for FilterLike operator")
-        }
+		newQueryMod = append(newQueryMod, qm.Where(string(filterField)+" LIKE ?", filterOperand.Operand))
+	case model.FilterNotLike:
+		filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[any])
+		if !ok {
+			panic("Expected a scalar operand for FilterLike operator")
+		}
 
-        newQueryMod = append(newQueryMod, qm.Where(string(filterField)+" NOT LIKE ?", filterOperand.Operand))
-    case model.FilterOr:
-        filterOperand, ok := filterOperation.Operand.(model.CompoundOperand[any])
-        if !ok {
-            panic("Expected a scalar operand for FilterOr operator")
-        }
-        newQueryMod = append(newQueryMod, qm.Expr(buildQueryModFilterBookmark(filterField, filterOperand.LHS)))
-        newQueryMod = append(newQueryMod, qm.Or2(qm.Expr(buildQueryModFilterBookmark(filterField, filterOperand.RHS))))
-    case model.FilterAnd:
-        filterOperand, ok := filterOperation.Operand.(model.CompoundOperand[any])
-        if !ok {
-            panic("Expected a scalar operand for FilterAnd operator")
-        }
+		newQueryMod = append(newQueryMod, qm.Where(string(filterField)+" NOT LIKE ?", filterOperand.Operand))
+	case model.FilterOr:
+		filterOperand, ok := filterOperation.Operand.(model.CompoundOperand[any])
+		if !ok {
+			panic("Expected a scalar operand for FilterOr operator")
+		}
+		newQueryMod = append(newQueryMod, qm.Expr(buildQueryModFilterBookmark(filterField, filterOperand.LHS)))
+		newQueryMod = append(newQueryMod, qm.Or2(qm.Expr(buildQueryModFilterBookmark(filterField, filterOperand.RHS))))
+	case model.FilterAnd:
+		filterOperand, ok := filterOperation.Operand.(model.CompoundOperand[any])
+		if !ok {
+			panic("Expected a scalar operand for FilterAnd operator")
+		}
 
-        newQueryMod = append(newQueryMod, qm.Expr(buildQueryModFilterBookmark(filterField, filterOperand.LHS)))
-        newQueryMod = append(newQueryMod, qm.Expr(buildQueryModFilterBookmark(filterField, filterOperand.RHS)))
-    default:
-        panic("Unhandled FilterOperator")
-    }
+		newQueryMod = append(newQueryMod, qm.Expr(buildQueryModFilterBookmark(filterField, filterOperand.LHS)))
+		newQueryMod = append(newQueryMod, qm.Expr(buildQueryModFilterBookmark(filterField, filterOperand.RHS)))
+	default:
+		panic("Unhandled FilterOperator")
+	}
 
-    return newQueryMod
+	return newQueryMod
 }
 
 func buildQueryModListFromFilterBookmark(setFilters list.List) queryModSliceBookmark {
@@ -355,18 +348,18 @@ func buildQueryModListFromFilterBookmark(setFilters list.List) queryModSliceBook
 			panic(fmt.Sprintf("Expected type %t but got %t", BookmarkFilterMapping[any]{}, filter))
 		}
 
-        newQueryMod := buildQueryModFilterBookmark(filterMapping.Field, filterMapping.FilterOperation)
+		newQueryMod := buildQueryModFilterBookmark(filterMapping.Field, filterMapping.FilterOperation)
 
-        for _, queryMod := range newQueryMod {
-            queryModList = append(queryModList, queryMod)
-        }
+		for _, queryMod := range newQueryMod {
+			queryModList = append(queryModList, queryMod)
+		}
 	}
 
 	return queryModList
 }
 
-func (repo * MysqlBookmarkRepository) New(args ...any) (MysqlBookmarkRepository, error) {
-        panic("not implemented") // TODO: Implement
+func (repo *MysqlBookmarkRepository) New(args ...any) (MysqlBookmarkRepository, error) {
+	panic("not implemented") // TODO: Implement
 }
 
 func (repo *MysqlBookmarkRepository) Add(ctx context.Context, repositoryModels []Bookmark) error {
@@ -384,7 +377,7 @@ func (repo *MysqlBookmarkRepository) Add(ctx context.Context, repositoryModels [
 
 	tx.Commit()
 
-    return nil
+	return nil
 }
 
 func (repo *MysqlBookmarkRepository) Replace(ctx context.Context, repositoryModels []Bookmark) error {
@@ -402,37 +395,37 @@ func (repo *MysqlBookmarkRepository) Replace(ctx context.Context, repositoryMode
 
 	tx.Commit()
 
-    return nil
+	return nil
 }
 
 func (repo *MysqlBookmarkRepository) UpdateWhere(ctx context.Context, columnFilter BookmarkFilter, columnUpdater BookmarkUpdater) (numAffectedRecords int64, err error) {
-    // NOTE: This kind of update is inefficient, since we do a read just to do a write later, but at the moment there is no better way
-    // Either SQLboiler adds support for this usecase or (preferably), we use the caching and hook system to avoid database interaction, when it is not needed
+	// NOTE: This kind of update is inefficient, since we do a read just to do a write later, but at the moment there is no better way
+	// Either SQLboiler adds support for this usecase or (preferably), we use the caching and hook system to avoid database interaction, when it is not needed
 
-    // TODO: Implement translator from domainColumnFilter to repositoryColumnFilter and updater
+	// TODO: Implement translator from domainColumnFilter to repositoryColumnFilter and updater
 	var modelsToUpdate BookmarkSlice
 
-    setFilters := *columnFilter.GetSetFilters()
+	setFilters := *columnFilter.GetSetFilters()
 
 	queryFilters := buildQueryModListFromFilterBookmark(setFilters)
 
 	modelsToUpdate, err = Bookmarks(queryFilters...).All(ctx, repo.db)
 
-    numAffectedRecords = int64(len(modelsToUpdate))
+	numAffectedRecords = int64(len(modelsToUpdate))
 
 	tx, err := repo.db.BeginTx(ctx, nil)
 	if err != nil {
 		return
 	}
 
-    for _, model := range modelsToUpdate {
-        columnUpdater.ApplyToModel(model)
-        model.Update(ctx, tx, boil.Infer())
-    }
+	for _, model := range modelsToUpdate {
+		columnUpdater.ApplyToModel(model)
+		model.Update(ctx, tx, boil.Infer())
+	}
 
-    tx.Commit()
+	tx.Commit()
 
-    return
+	return
 }
 
 func (repo *MysqlBookmarkRepository) Delete(ctx context.Context, repositoryModels []Bookmark) error {
@@ -450,11 +443,11 @@ func (repo *MysqlBookmarkRepository) Delete(ctx context.Context, repositoryModel
 
 	tx.Commit()
 
-    return nil
+	return nil
 }
 
 func (repo *MysqlBookmarkRepository) DeleteWhere(ctx context.Context, columnFilter BookmarkFilter) (numAffectedRecords int64, err error) {
-    setFilters := *columnFilter.GetSetFilters()
+	setFilters := *columnFilter.GetSetFilters()
 
 	queryFilters := buildQueryModListFromFilterBookmark(setFilters)
 
@@ -465,13 +458,13 @@ func (repo *MysqlBookmarkRepository) DeleteWhere(ctx context.Context, columnFilt
 
 	numAffectedRecords, err = Bookmarks(queryFilters...).DeleteAll(ctx, tx)
 
-    tx.Commit()
+	tx.Commit()
 
-    return
+	return
 }
 
 func (repo *MysqlBookmarkRepository) CountWhere(ctx context.Context, columnFilter BookmarkFilter) (int64, error) {
-    setFilters := *columnFilter.GetSetFilters()
+	setFilters := *columnFilter.GetSetFilters()
 
 	queryFilters := buildQueryModListFromFilterBookmark(setFilters)
 
@@ -487,7 +480,7 @@ func (repo *MysqlBookmarkRepository) DoesExist(ctx context.Context, repositoryMo
 }
 
 func (repo *MysqlBookmarkRepository) DoesExistWhere(ctx context.Context, columnFilter BookmarkFilter) (bool, error) {
-    setFilters := *columnFilter.GetSetFilters()
+	setFilters := *columnFilter.GetSetFilters()
 
 	queryFilters := buildQueryModListFromFilterBookmark(setFilters)
 
@@ -495,7 +488,7 @@ func (repo *MysqlBookmarkRepository) DoesExistWhere(ctx context.Context, columnF
 }
 
 func (repo *MysqlBookmarkRepository) GetWhere(ctx context.Context, columnFilter BookmarkFilter) ([]*Bookmark, error) {
-    setFilters := *columnFilter.GetSetFilters()
+	setFilters := *columnFilter.GetSetFilters()
 
 	queryFilters := buildQueryModListFromFilterBookmark(setFilters)
 
@@ -503,7 +496,7 @@ func (repo *MysqlBookmarkRepository) GetWhere(ctx context.Context, columnFilter 
 }
 
 func (repo *MysqlBookmarkRepository) GetFirstWhere(ctx context.Context, columnFilter BookmarkFilter) (*Bookmark, error) {
-    setFilters := *columnFilter.GetSetFilters()
+	setFilters := *columnFilter.GetSetFilters()
 
 	queryFilters := buildQueryModListFromFilterBookmark(setFilters)
 

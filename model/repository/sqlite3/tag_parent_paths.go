@@ -23,12 +23,11 @@ import (
 
 // TagParentPath is an object representing the database table.
 type TagParentPath struct {
-	TagID       int64 `boil:"tag_id" json:"tag_id" toml:"tag_id" yaml:"tag_id"`
-	ParentTagID int64 `boil:"parent_tag_id" json:"parent_tag_id" toml:"parent_tag_id" yaml:"parent_tag_id"`
-	Distance    int64 `boil:"distance" json:"distance" toml:"distance" yaml:"distance"`
-
-	R *tagParentPathR `boil:"-" json:"-" toml:"-" yaml:"-"`
-	L tagParentPathL  `boil:"-" json:"-" toml:"-" yaml:"-"`
+	L           tagParentPathL  `boil:"-" json:"-" toml:"-" yaml:"-"`
+	R           *tagParentPathR `boil:"-" json:"-" toml:"-" yaml:"-"`
+	TagID       int64           `boil:"tag_id" json:"tag_id" toml:"tag_id" yaml:"tag_id"`
+	ParentTagID int64           `boil:"parent_tag_id" json:"parent_tag_id" toml:"parent_tag_id" yaml:"parent_tag_id"`
+	Distance    int64           `boil:"distance" json:"distance" toml:"distance" yaml:"distance"`
 }
 
 var TagParentPathColumns = struct {
