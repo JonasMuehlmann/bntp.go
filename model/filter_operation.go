@@ -74,3 +74,59 @@ type FilterOperation[T any] struct {
 	Operand  Operand[T]
 	Operator FilterOperator
 }
+
+func ConvertFilter[TOut any, TIn any](from FilterOperation[TIn], operandConverter func(fromOperator TIn) (TOut, error)) (FilterOperation[TOut], error) {
+	switch t := any(from.Operand).(type) {
+	//***********************    ScalarOperand    **********************//
+	case ScalarOperand[TIn]:
+		operandValue, err := operandConverter(t.Operand)
+		if err != nil {
+			return FilterOperation[TOut]{}, err
+		}
+
+		return FilterOperation[TOut]{Operand: ScalarOperand[TOut]{Operand: operandValue}, Operator: from.Operator}, nil
+		//***********************    RangeOperand    ***********************//
+	case RangeOperand[TIn]:
+		operandStartValue, err := operandConverter(t.Start)
+		if err != nil {
+			return FilterOperation[TOut]{}, err
+		}
+		operandStopValue, err := operandConverter(t.End)
+		if err != nil {
+			return FilterOperation[TOut]{}, err
+		}
+
+		return FilterOperation[TOut]{Operand: RangeOperand[TOut]{Start: operandStartValue, End: operandStopValue}, Operator: from.Operator}, nil
+		//************************    ListOperand    ***********************//
+	case ListOperand[TIn]:
+		operandValues := make([]TOut, 0, len(t.Operands))
+		for _, operandValue := range t.Operands {
+			newOperandValue, err := operandConverter(operandValue)
+			if err != nil {
+				return FilterOperation[TOut]{}, err
+			}
+
+			operandValues = append(operandValues, newOperandValue)
+		}
+
+		return FilterOperation[TOut]{Operand: ListOperand[TOut]{Operands: operandValues}, Operator: from.Operator}, nil
+		//**********************    CompoundOperand    *********************//
+	case CompoundOperand[TIn]:
+		lhsOperation, err := ConvertFilter(t.LHS, operandConverter)
+		if err != nil {
+			return FilterOperation[TOut]{}, err
+		}
+
+		rhsOperation, err := ConvertFilter(t.RHS, operandConverter)
+		if err != nil {
+			return FilterOperation[TOut]{}, err
+		}
+
+		return FilterOperation[TOut]{
+			Operand:  CompoundOperand[TOut]{LHS: lhsOperation, RHS: rhsOperation},
+			Operator: from.Operator,
+		}, nil
+	default:
+		panic("Unhandled Operand type")
+	}
+}

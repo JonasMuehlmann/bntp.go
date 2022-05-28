@@ -37,10 +37,10 @@ type Bookmark struct {
 	URL          string                       `json:"url" toml:"url" yaml:"url"`
 	Title        optional.Optional[string]    `json:"title,omitempty" toml:"title" yaml:"title,omitempty"`
 	Tags         []*Tag                       `json:"tags" toml:"tags" yaml:"tags"`
-	BookmarkType optional.Optional[string]    `json:"bookmark_type,omitempty" toml:"bookmark_type" yaml:"bookmark_type,omitempty"`
 	ID           int64                        `json:"id" toml:"id" yaml:"id"`
 	IsCollection bool                         `json:"is_collection,omitempty" toml:"is_collection" yaml:"is_collection,omitempty"`
 	IsRead       bool                         `json:"is_read,omitempty" toml:"is_read" yaml:"is_read,omitempty"`
+	BookmarkType optional.Optional[string]    `json:"bookmark_type,omitempty" toml:"bookmark_type" yaml:"bookmark_type,omitempty"`
 }
 
 type BookmarkField string
@@ -102,8 +102,8 @@ type BookmarkUpdater struct {
 	URL          optional.Optional[model.UpdateOperation[string]]
 	Title        optional.Optional[model.UpdateOperation[optional.Optional[string]]]
 	Tags         optional.Optional[model.UpdateOperation[[]*Tag]]
-	BookmarkType optional.Optional[model.UpdateOperation[optional.Optional[string]]]
 	ID           optional.Optional[model.UpdateOperation[int64]]
 	IsCollection optional.Optional[model.UpdateOperation[bool]]
 	IsRead       optional.Optional[model.UpdateOperation[bool]]
+	BookmarkType optional.Optional[model.UpdateOperation[optional.Optional[string]]]
 }
