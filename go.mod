@@ -3,7 +3,7 @@ module github.com/JonasMuehlmann/bntp.go
 go 1.18
 
 require (
-	github.com/JonasMuehlmann/goaoi v1.2.0
+	github.com/JonasMuehlmann/goaoi v1.3.0
 	github.com/friendsofgo/errors v0.9.2
 	github.com/go-playground/validator/v10 v10.10.1
 	github.com/jmoiron/sqlx v1.3.4
