@@ -25,6 +25,8 @@ package repository
 import (
     "database/sql"
 	"github.com/JonasMuehlmann/bntp.go/model"
+	"github.com/JonasMuehlmann/bntp.go/model/domain"
+	"github.com/JonasMuehlmann/goaoi"
 	"github.com/JonasMuehlmann/optional.go"
     "context"
 	"fmt"
@@ -276,11 +278,28 @@ func buildQueryModListFromFilterTag(setFilters list.List) queryModSliceTag {
 	return queryModList
 }
 
+func GetTagDomainToSqlRepositoryModel(db *sql.DB) func(domainModel *domain.Tag) (sqlRepositoryModel *Tag, err error) {
+    return func(domainModel *domain.Tag) (sqlRepositoryModel *Tag, err error) {
+        return TagDomainToSqlRepositoryModel(db, domainModel)
+    }
+}
+
+func GetTagSqlRepositoryToDomainModel(db *sql.DB) func(repositoryModel *Tag) (domainModel *domain.Tag, err error) {
+    return func(sqlRepositoryModel *Tag) (domainModel *domain.Tag, err error) {
+        return TagSqlRepositoryToDomainModel(db,sqlRepositoryModel)
+    }
+}
+
 func (repo * MysqlTagRepository) New(args ...any) (MysqlTagRepository, error) {
         panic("not implemented") // TODO: Implement
 }
 
-func (repo *MysqlTagRepository) Add(ctx context.Context, repositoryModels []Tag) error {
+func (repo *MysqlTagRepository) Add(ctx context.Context, domainModels []domain.Tag) error {
+    repositoryModels, err := goaoi.TransformCopySlice(domainModels, GetTagDomainToSqlRepositoryModel(repo.db))
+	if err != nil {
+		return err
+	}
+
 	tx, err := repo.db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
@@ -298,7 +317,12 @@ func (repo *MysqlTagRepository) Add(ctx context.Context, repositoryModels []Tag)
     return nil
 }
 
-func (repo *MysqlTagRepository) Replace(ctx context.Context, repositoryModels []Tag) error {
+func (repo *MysqlTagRepository) Replace(ctx context.Context, domainModels []domain.Tag) error {
+    repositoryModels, err := goaoi.TransformCopySlice(domainModels, GetTagDomainToSqlRepositoryModel(repo.db))
+	if err != nil {
+		return err
+	}
+
 	tx, err := repo.db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
@@ -316,11 +340,23 @@ func (repo *MysqlTagRepository) Replace(ctx context.Context, repositoryModels []
     return nil
 }
 
-func (repo *MysqlTagRepository) UpdateWhere(ctx context.Context, columnFilter TagFilter, columnUpdater TagUpdater) (numAffectedRecords int64, err error) {
+func (repo *MysqlTagRepository) UpdateWhere(ctx context.Context, domainColumnFilter domain.TagFilter, domainColumnUpdater domain.TagUpdater) (numAffectedRecords int64, err error) {
     // NOTE: This kind of update is inefficient, since we do a read just to do a write later, but at the moment there is no better way
     // Either SQLboiler adds support for this usecase or (preferably), we use the caching and hook system to avoid database interaction, when it is not needed
 
 	var modelsToUpdate TagSlice
+
+    columnFilter, err := TagDomainToSqlRepositoryFilter(repo.db, domainColumnFilter)
+    if err != nil {
+        return
+    }
+
+    columnUpdater, err := TagDomainToSqlRepositoryUpdater(repo.db, domainColumnUpdater)
+    if err != nil {
+        return
+    }
+
+
 
     setFilters := *columnFilter.GetSetFilters()
 
@@ -348,7 +384,12 @@ func (repo *MysqlTagRepository) UpdateWhere(ctx context.Context, columnFilter Ta
     return
 }
 
-func (repo *MysqlTagRepository) Delete(ctx context.Context, repositoryModels []Tag) error {
+func (repo *MysqlTagRepository) Delete(ctx context.Context, domainModels []domain.Tag) error {
+    repositoryModels, err := goaoi.TransformCopySlice(domainModels, GetTagDomainToSqlRepositoryModel(repo.db))
+	if err != nil {
+		return err
+	}
+
 	tx, err := repo.db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
@@ -366,7 +407,12 @@ func (repo *MysqlTagRepository) Delete(ctx context.Context, repositoryModels []T
     return nil
 }
 
-func (repo *MysqlTagRepository) DeleteWhere(ctx context.Context, columnFilter TagFilter) (numAffectedRecords int64, err error) {
+func (repo *MysqlTagRepository) DeleteWhere(ctx context.Context, domainColumnFilter domain.TagFilter) (numAffectedRecords int64, err error) {
+    columnFilter, err := TagDomainToSqlRepositoryFilter(repo.db, domainColumnFilter)
+    if err != nil {
+        return
+    }
+
     setFilters := *columnFilter.GetSetFilters()
 
 	queryFilters := buildQueryModListFromFilterTag(setFilters)
@@ -383,7 +429,12 @@ func (repo *MysqlTagRepository) DeleteWhere(ctx context.Context, columnFilter Ta
     return
 }
 
-func (repo *MysqlTagRepository) CountWhere(ctx context.Context, columnFilter TagFilter) (int64, error) {
+func (repo *MysqlTagRepository) CountWhere(ctx context.Context, domainColumnFilter domain.TagFilter) (int64, error) {
+    columnFilter, err := TagDomainToSqlRepositoryFilter(repo.db, domainColumnFilter)
+    if err != nil {
+        return 0, err
+    }
+
     setFilters := *columnFilter.GetSetFilters()
 
 	queryFilters := buildQueryModListFromFilterTag(setFilters)
@@ -395,11 +446,21 @@ func (repo *MysqlTagRepository) CountAll(ctx context.Context) (int64, error) {
 	return Tags().Count(ctx, repo.db)
 }
 
-func (repo *MysqlTagRepository) DoesExist(ctx context.Context, repositoryModel Tag) (bool, error) {
+func (repo *MysqlTagRepository) DoesExist(ctx context.Context, domainModel *domain.Tag) (bool, error) {
+    repositoryModel, err := TagDomainToSqlRepositoryModel(repo.db, domainModel)
+    if err != nil {
+        return false, err
+    }
+
 	return TagExists(ctx, repo.db, repositoryModel.ID)
 }
 
-func (repo *MysqlTagRepository) DoesExistWhere(ctx context.Context, columnFilter TagFilter) (bool, error) {
+func (repo *MysqlTagRepository) DoesExistWhere(ctx context.Context, domainColumnFilter domain.TagFilter) (bool, error) {
+    columnFilter, err := TagDomainToSqlRepositoryFilter(repo.db, domainColumnFilter)
+    if err != nil {
+        return false, err
+    }
+
     setFilters := *columnFilter.GetSetFilters()
 
 	queryFilters := buildQueryModListFromFilterTag(setFilters)
@@ -407,22 +468,52 @@ func (repo *MysqlTagRepository) DoesExistWhere(ctx context.Context, columnFilter
 	return Tags(queryFilters...).Exists(ctx, repo.db)
 }
 
-func (repo *MysqlTagRepository) GetWhere(ctx context.Context, columnFilter TagFilter) ([]*Tag, error) {
+func (repo *MysqlTagRepository) GetWhere(ctx context.Context, domainColumnFilter domain.TagFilter) ([]*domain.Tag, error) {
+    columnFilter, err := TagDomainToSqlRepositoryFilter(repo.db, domainColumnFilter)
+    if err != nil {
+        return []*domain.Tag{}, err
+    }
+
     setFilters := *columnFilter.GetSetFilters()
 
 	queryFilters := buildQueryModListFromFilterTag(setFilters)
 
-	return Tags(queryFilters...).All(ctx, repo.db)
+    repositoryModels, err := Tags(queryFilters...).All(ctx, repo.db)
+    if err != nil {
+        return []*domain.Tag{}, err
+    }
+
+
+    domainModels, err := goaoi.TransformCopySlice(repositoryModels, GetBookmarkSqlRepositoryToDomainModel(repo.db))
+
+    return domainModels, err
 }
 
-func (repo *MysqlTagRepository) GetFirstWhere(ctx context.Context, columnFilter TagFilter) (*Tag, error) {
+func (repo *MysqlTagRepository) GetFirstWhere(ctx context.Context, domainColumnFilter domain.TagFilter) (*domain.Tag, error) {
+    columnFilter, err := TagDomainToSqlRepositoryFilter(repo.db, domainColumnFilter)
+    if err != nil {
+        return nil, err
+    }
+
     setFilters := *columnFilter.GetSetFilters()
 
 	queryFilters := buildQueryModListFromFilterTag(setFilters)
 
-	return Tags(queryFilters...).One(ctx, repo.db)
+    repositoryModel, err := Tags(queryFilters...).One(ctx, repo.db)
+    if err != nil {
+        return nil, err
+    }
+
+    return TagSqlRepositoryToDomainModel(repo.db, repositoryModel)
 }
 
-func (repo *MysqlTagRepository) GetAll(ctx context.Context) ([]*Tag, error) {
-	return Tags().All(ctx, repo.db)
+func (repo *MysqlTagRepository) GetAll(ctx context.Context) ([]*domain.Tag, error) {
+    repositoryModels, err := Tags().All(ctx, repo.db)
+    if err != nil {
+        return []*domain.Tag{}, err
+    }
+
+    domainModels, err := goaoi.TransformCopySlice(repositoryModels, GetTagSqlRepositoryToDomainModel(repo.db))
+
+    return domainModels, err
 }

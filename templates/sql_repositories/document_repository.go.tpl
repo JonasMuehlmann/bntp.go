@@ -25,6 +25,8 @@ package repository
 import (
     "database/sql"
 	"github.com/JonasMuehlmann/bntp.go/model"
+	"github.com/JonasMuehlmann/bntp.go/model/domain"
+	"github.com/JonasMuehlmann/goaoi"
 	"github.com/JonasMuehlmann/optional.go"
     "context"
 	"fmt"
@@ -38,11 +40,28 @@ import (
 {{template "structDefinition" .}}
 {{template "repositoryHelperTypes" .}}
 
+func GetDocumentDomainToSqlRepositoryModel(db *sql.DB) func(domainModel *domain.Document) (sqlRepositoryModel *Document, err error) {
+    return func(domainModel *domain.Document) (sqlRepositoryModel *Document, err error) {
+        return DocumentDomainToSqlRepositoryModel(db, domainModel)
+    }
+}
+
+func GetDocumentSqlRepositoryToDomainModel(db *sql.DB) func(repositoryModel *Document) (domainModel *domain.Document, err error) {
+    return func(sqlRepositoryModel *Document) (domainModel *domain.Document, err error) {
+        return DocumentSqlRepositoryToDomainModel(db,sqlRepositoryModel)
+    }
+}
+
 func (repo * {{$StructName}}) New(args ...any) ({{$StructName}}, error) {
         panic("not implemented") // TODO: Implement
 }
 
-func (repo *{{$StructName}}) Add(ctx context.Context, repositoryModels []Document) error {
+func (repo *{{$StructName}}) Add(ctx context.Context, domainModels []domain.Document) error {
+    repositoryModels, err := goaoi.TransformCopySlice(domainModels, GetDocumentDomainToSqlRepositoryModel(repo.db))
+	if err != nil {
+		return err
+	}
+
 	tx, err := repo.db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
@@ -60,7 +79,12 @@ func (repo *{{$StructName}}) Add(ctx context.Context, repositoryModels []Documen
     return nil
 }
 
-func (repo *{{$StructName}}) Replace(ctx context.Context, repositoryModels []Document) error {
+func (repo *{{$StructName}}) Replace(ctx context.Context, domainModels []domain.Document) error {
+    repositoryModels, err := goaoi.TransformCopySlice(domainModels, GetDocumentDomainToSqlRepositoryModel(repo.db))
+	if err != nil {
+		return err
+	}
+
 	tx, err := repo.db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
@@ -78,11 +102,23 @@ func (repo *{{$StructName}}) Replace(ctx context.Context, repositoryModels []Doc
     return nil
 }
 
-func (repo *{{$StructName}}) UpdateWhere(ctx context.Context, columnFilter DocumentFilter, columnUpdater DocumentUpdater) (numAffectedRecords int64, err error) {
+func (repo *{{$StructName}}) UpdateWhere(ctx context.Context, domainColumnFilter domain.DocumentFilter, domainColumnUpdater domain.DocumentUpdater) (numAffectedRecords int64, err error) {
     // NOTE: This kind of update is inefficient, since we do a read just to do a write later, but at the moment there is no better way
     // Either SQLboiler adds support for this usecase or (preferably), we use the caching and hook system to avoid database interaction, when it is not needed
 
 	var modelsToUpdate DocumentSlice
+
+    columnFilter, err := DocumentDomainToSqlRepositoryFilter(repo.db, domainColumnFilter)
+    if err != nil {
+        return
+    }
+
+    columnUpdater, err := DocumentDomainToSqlRepositoryUpdater(repo.db, domainColumnUpdater)
+    if err != nil {
+        return
+    }
+
+
 
     setFilters := *columnFilter.GetSetFilters()
 
@@ -110,7 +146,12 @@ func (repo *{{$StructName}}) UpdateWhere(ctx context.Context, columnFilter Docum
     return
 }
 
-func (repo *{{$StructName}}) Delete(ctx context.Context, repositoryModels []Document) error {
+func (repo *{{$StructName}}) Delete(ctx context.Context, domainModels []domain.Document) error {
+    repositoryModels, err := goaoi.TransformCopySlice(domainModels, GetDocumentDomainToSqlRepositoryModel(repo.db))
+	if err != nil {
+		return err
+	}
+
 	tx, err := repo.db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
@@ -128,7 +169,12 @@ func (repo *{{$StructName}}) Delete(ctx context.Context, repositoryModels []Docu
     return nil
 }
 
-func (repo *{{$StructName}}) DeleteWhere(ctx context.Context, columnFilter DocumentFilter) (numAffectedRecords int64, err error) {
+func (repo *{{$StructName}}) DeleteWhere(ctx context.Context, domainColumnFilter domain.DocumentFilter) (numAffectedRecords int64, err error) {
+    columnFilter, err := DocumentDomainToSqlRepositoryFilter(repo.db, domainColumnFilter)
+    if err != nil {
+        return
+    }
+
     setFilters := *columnFilter.GetSetFilters()
 
 	queryFilters := buildQueryModListFromFilter{{$EntityName}}(setFilters)
@@ -148,7 +194,12 @@ func (repo *{{$StructName}}) DeleteWhere(ctx context.Context, columnFilter Docum
     return
 }
 
-func (repo *{{$StructName}}) CountWhere(ctx context.Context, columnFilter DocumentFilter) (int64, error) {
+func (repo *{{$StructName}}) CountWhere(ctx context.Context, domainColumnFilter domain.DocumentFilter) (int64, error) {
+    columnFilter, err := DocumentDomainToSqlRepositoryFilter(repo.db, domainColumnFilter)
+    if err != nil {
+        return 0, err
+    }
+
     setFilters := *columnFilter.GetSetFilters()
 
 	queryFilters := buildQueryModListFromFilter{{$EntityName}}(setFilters)
@@ -160,11 +211,21 @@ func (repo *{{$StructName}}) CountAll(ctx context.Context) (int64, error) {
 	return Documents().Count(ctx, repo.db)
 }
 
-func (repo *{{$StructName}}) DoesExist(ctx context.Context, repositoryModel Document) (bool, error) {
+func (repo *{{$StructName}}) DoesExist(ctx context.Context, domainModel *domain.Document) (bool, error) {
+    repositoryModel, err := DocumentDomainToSqlRepositoryModel(repo.db, domainModel)
+    if err != nil {
+        return false, err
+    }
+
 	return DocumentExists(ctx, repo.db, repositoryModel.ID)
 }
 
-func (repo *{{$StructName}}) DoesExistWhere(ctx context.Context, columnFilter DocumentFilter) (bool, error) {
+func (repo *{{$StructName}}) DoesExistWhere(ctx context.Context, domainColumnFilter domain.DocumentFilter) (bool, error) {
+    columnFilter, err := DocumentDomainToSqlRepositoryFilter(repo.db, domainColumnFilter)
+    if err != nil {
+        return false, err
+    }
+
     setFilters := *columnFilter.GetSetFilters()
 
 	queryFilters := buildQueryModListFromFilter{{$EntityName}}(setFilters)
@@ -172,22 +233,53 @@ func (repo *{{$StructName}}) DoesExistWhere(ctx context.Context, columnFilter Do
 	return Documents(queryFilters...).Exists(ctx, repo.db)
 }
 
-func (repo *{{$StructName}}) GetWhere(ctx context.Context, columnFilter DocumentFilter) ([]*Document, error) {
+func (repo *{{$StructName}}) GetWhere(ctx context.Context, domainColumnFilter domain.DocumentFilter) ([]*domain.Document, error) {
+    columnFilter, err := DocumentDomainToSqlRepositoryFilter(repo.db, domainColumnFilter)
+    if err != nil {
+        return []*domain.Document{}, err
+    }
+
     setFilters := *columnFilter.GetSetFilters()
 
 	queryFilters := buildQueryModListFromFilter{{$EntityName}}(setFilters)
 
-	return Documents(queryFilters...).All(ctx, repo.db)
+    repositoryModels, err := Documents(queryFilters...).All(ctx, repo.db)
+
+    domainModels, err := goaoi.TransformCopySlice(repositoryModels, GetDocumentSqlRepositoryToDomainModel(repo.db))
+
+    return domainModels, err
 }
 
-func (repo *{{$StructName}}) GetFirstWhere(ctx context.Context, columnFilter DocumentFilter) (*Document, error) {
+func (repo *{{$StructName}}) GetFirstWhere(ctx context.Context, domainColumnFilter domain.DocumentFilter) (*domain.Document, error) {
+    columnFilter, err := DocumentDomainToSqlRepositoryFilter(repo.db, domainColumnFilter)
+    if err != nil {
+        return nil, err
+    }
+
     setFilters := *columnFilter.GetSetFilters()
 
 	queryFilters := buildQueryModListFromFilter{{$EntityName}}(setFilters)
 
-	return Documents(queryFilters...).One(ctx, repo.db)
+    repositoryModel, err := Documents(queryFilters...).One(ctx, repo.db)
+
+    var domainModel *domain.Document
+    if err != nil {
+        return domainModel, err
+    }
+
+    domainModel, err = DocumentSqlRepositoryToDomainModel(repo.db, repositoryModel)
+
+    return domainModel, err
 }
 
-func (repo *{{$StructName}}) GetAll(ctx context.Context) ([]*Document, error) {
-	return Documents().All(ctx, repo.db)
+func (repo *{{$StructName}}) GetAll(ctx context.Context) ([]*domain.Document, error) {
+    repositoryModels, err := Documents().All(ctx, repo.db)
+
+    if err != nil {
+        return []*domain.Document{}, err
+    }
+
+    domainModels, err := goaoi.TransformCopySlice(repositoryModels, GetDocumentSqlRepositoryToDomainModel(repo.db))
+
+    return domainModels, err
 }

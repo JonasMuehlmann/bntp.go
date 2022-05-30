@@ -30,15 +30,15 @@ import (
 type {{.EntityName}}Repository interface {
 	New(args ...any) ({{.EntityName}}Repository, error)
 
-	Add(ctx context.Context, domainModels []domain.{{.EntityName}}) error
-	Replace(ctx context.Context, domainModels []domain.{{.EntityName}}) error
+	Add(ctx context.Context, domainModels []*domain.{{.EntityName}}) error
+	Replace(ctx context.Context, domainModels []*domain.{{.EntityName}}) error
 	UpdateWhere(ctx context.Context, columnFilter domain.{{.EntityName}}Filter, columnUpdaters domain.{{.EntityName}}Updater) (numAffectedRecords int64, err error)
-	Delete(ctx context.Context, domainModels []domain.{{.EntityName}}) error
+	Delete(ctx context.Context, domainModels []*domain.{{.EntityName}}) error
 	DeleteWhere(ctx context.Context, columnFilter domain.{{.EntityName}}Filter) (numAffectedRecords int64, err error)
 	CountWhere(ctx context.Context, columnFilter domain.{{.EntityName}}Filter) (int64, error)
 	CountAll(ctx context.Context) int64
-	DoesExist(ctx context.Context, domainModel domain.{{.EntityName}}) (bool, error)
-	DoesExistWhere(ctx context.Context, columnFilter domain.{{.EntityName}}Filter) (bool, error)
+	DoesExist(ctx context.Context, domainModel *domain.{{.EntityName}}) (bool, error)
+	DoesExistWhere(ctx context.Context, columnFilter *domain.{{.EntityName}}Filter) (bool, error)
 	GetWhere(ctx context.Context, columnFilter domain.{{.EntityName}}Filter) ([]*domain.{{.EntityName}})
 	GetFirstWhere(ctx context.Context, columnFilter domain.{{.EntityName}}Filter) (*domain.{{.EntityName}}, error)
 	GetAll(ctx context.Context) ([]*domain.{{.EntityName}}, error)

@@ -23,8 +23,7 @@
 package repository
 
 import (
-	"context"
-
+    "context"
 	"github.com/JonasMuehlmann/bntp.go/model/domain"
 )
 
@@ -40,7 +39,7 @@ type BookmarkRepository interface {
 	CountAll(ctx context.Context) int64
 	DoesExist(ctx context.Context, domainModel domain.Bookmark) (bool, error)
 	DoesExistWhere(ctx context.Context, columnFilter domain.BookmarkFilter) (bool, error)
-	GetWhere(ctx context.Context, columnFilter domain.BookmarkFilter) []*domain.Bookmark
+	GetWhere(ctx context.Context, columnFilter domain.BookmarkFilter) ([]*domain.Bookmark)
 	GetFirstWhere(ctx context.Context, columnFilter domain.BookmarkFilter) (*domain.Bookmark, error)
 	GetAll(ctx context.Context) ([]*domain.Bookmark, error)
 }

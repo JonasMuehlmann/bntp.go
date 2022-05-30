@@ -23,8 +23,7 @@
 package repository
 
 import (
-	"context"
-
+    "context"
 	"github.com/JonasMuehlmann/bntp.go/model/domain"
 )
 
@@ -40,7 +39,7 @@ type DocumentRepository interface {
 	CountAll(ctx context.Context) int64
 	DoesExist(ctx context.Context, domainModel domain.Document) (bool, error)
 	DoesExistWhere(ctx context.Context, columnFilter domain.DocumentFilter) (bool, error)
-	GetWhere(ctx context.Context, columnFilter domain.DocumentFilter) []*domain.Document
+	GetWhere(ctx context.Context, columnFilter domain.DocumentFilter) ([]*domain.Document)
 	GetFirstWhere(ctx context.Context, columnFilter domain.DocumentFilter) (*domain.Document, error)
 	GetAll(ctx context.Context) ([]*domain.Document, error)
 }

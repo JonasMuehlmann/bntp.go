@@ -25,6 +25,8 @@ package repository
 import (
     "database/sql"
 	"github.com/JonasMuehlmann/bntp.go/model"
+	"github.com/JonasMuehlmann/bntp.go/model/domain"
+	"github.com/JonasMuehlmann/goaoi"
 	"github.com/JonasMuehlmann/optional.go"
     "context"
 	"fmt"
@@ -38,11 +40,28 @@ import (
 {{template "structDefinition" .}}
 {{template "repositoryHelperTypes" .}}
 
+func GetBookmarkDomainToSqlRepositoryModel(db *sql.DB) func(domainModel *domain.Bookmark) (sqlRepositoryModel *Bookmark, err error) {
+    return func(domainModel *domain.Bookmark) (sqlRepositoryModel *Bookmark, err error) {
+        return BookmarkDomainToSqlRepositoryModel(db, domainModel)
+    }
+}
+
+func GetBookmarkSqlRepositoryToDomainModel(db *sql.DB) func(repositoryModel *Bookmark) (domainModel *domain.Bookmark, err error) {
+    return func(sqlRepositoryModel *Bookmark) (domainModel *domain.Bookmark, err error) {
+        return BookmarkSqlRepositoryToDomainModel(db,sqlRepositoryModel)
+    }
+}
+
 func (repo * {{$StructName}}) New(args ...any) ({{$StructName}}, error) {
         panic("not implemented") // TODO: Implement
 }
 
-func (repo *{{$StructName}}) Add(ctx context.Context, repositoryModels []Bookmark) error {
+func (repo *{{$StructName}}) Add(ctx context.Context, domainModels []domain.Bookmark) error {
+    repositoryModels, err := goaoi.TransformCopySlice(domainModels, GetBookmarkDomainToSqlRepositoryModel(repo.db))
+	if err != nil {
+		return err
+	}
+
 	tx, err := repo.db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
@@ -60,7 +79,12 @@ func (repo *{{$StructName}}) Add(ctx context.Context, repositoryModels []Bookmar
     return nil
 }
 
-func (repo *{{$StructName}}) Replace(ctx context.Context, repositoryModels []Bookmark) error {
+func (repo *{{$StructName}}) Replace(ctx context.Context, domainModels []domain.Bookmark) error {
+    repositoryModels, err := goaoi.TransformCopySlice(domainModels, GetBookmarkDomainToSqlRepositoryModel(repo.db))
+	if err != nil {
+		return err
+	}
+
 	tx, err := repo.db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
@@ -78,11 +102,22 @@ func (repo *{{$StructName}}) Replace(ctx context.Context, repositoryModels []Boo
     return nil
 }
 
-func (repo *{{$StructName}}) UpdateWhere(ctx context.Context, columnFilter BookmarkFilter, columnUpdater BookmarkUpdater) (numAffectedRecords int64, err error) {
+func (repo *{{$StructName}}) UpdateWhere(ctx context.Context, domainColumnFilter domain.BookmarkFilter, domainColumnUpdater domain.BookmarkUpdater) (numAffectedRecords int64, err error) {
     // NOTE: This kind of update is inefficient, since we do a read just to do a write later, but at the moment there is no better way
     // Either SQLboiler adds support for this usecase or (preferably), we use the caching and hook system to avoid database interaction, when it is not needed
 
 	var modelsToUpdate BookmarkSlice
+
+    columnFilter, err := BookmarkDomainToSqlRepositoryFilter(repo.db, domainColumnFilter)
+    if err != nil {
+        return
+    }
+
+    columnUpdater, err := BookmarkDomainToSqlRepositoryUpdater(repo.db, domainColumnUpdater)
+    if err != nil {
+        return
+    }
+
 
     setFilters := *columnFilter.GetSetFilters()
 
@@ -110,7 +145,12 @@ func (repo *{{$StructName}}) UpdateWhere(ctx context.Context, columnFilter Bookm
     return
 }
 
-func (repo *{{$StructName}}) Delete(ctx context.Context, repositoryModels []Bookmark) error {
+func (repo *{{$StructName}}) Delete(ctx context.Context, domainModels []domain.Bookmark) error {
+    repositoryModels, err := goaoi.TransformCopySlice(domainModels, GetBookmarkDomainToSqlRepositoryModel(repo.db))
+	if err != nil {
+		return err
+	}
+
 	tx, err := repo.db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
@@ -128,7 +168,12 @@ func (repo *{{$StructName}}) Delete(ctx context.Context, repositoryModels []Book
     return nil
 }
 
-func (repo *{{$StructName}}) DeleteWhere(ctx context.Context, columnFilter BookmarkFilter) (numAffectedRecords int64, err error) {
+func (repo *{{$StructName}}) DeleteWhere(ctx context.Context, domainColumnFilter domain.BookmarkFilter) (numAffectedRecords int64, err error) {
+    columnFilter, err := BookmarkDomainToSqlRepositoryFilter(repo.db, domainColumnFilter)
+    if err != nil {
+        return
+    }
+
     setFilters := *columnFilter.GetSetFilters()
 
 	queryFilters := buildQueryModListFromFilter{{$EntityName}}(setFilters)
@@ -145,7 +190,12 @@ func (repo *{{$StructName}}) DeleteWhere(ctx context.Context, columnFilter Bookm
     return
 }
 
-func (repo *{{$StructName}}) CountWhere(ctx context.Context, columnFilter BookmarkFilter) (int64, error) {
+func (repo *{{$StructName}}) CountWhere(ctx context.Context, domainColumnFilter domain.BookmarkFilter) (int64, error) {
+    columnFilter, err := BookmarkDomainToSqlRepositoryFilter(repo.db, domainColumnFilter)
+    if err != nil {
+        return 0, err
+    }
+
     setFilters := *columnFilter.GetSetFilters()
 
 	queryFilters := buildQueryModListFromFilter{{$EntityName}}(setFilters)
@@ -157,11 +207,22 @@ func (repo *{{$StructName}}) CountAll(ctx context.Context) (int64, error) {
 	return Bookmarks().Count(ctx, repo.db)
 }
 
-func (repo *{{$StructName}}) DoesExist(ctx context.Context, repositoryModel Bookmark) (bool, error) {
+func (repo *{{$StructName}}) DoesExist(ctx context.Context, domainModel *domain.Bookmark) (bool, error) {
+    repositoryModel, err := BookmarkDomainToSqlRepositoryModel(repo.db, domainModel)
+    if err != nil {
+        return false, err
+    }
+
+
 	return BookmarkExists(ctx, repo.db, repositoryModel.ID)
 }
 
-func (repo *{{$StructName}}) DoesExistWhere(ctx context.Context, columnFilter BookmarkFilter) (bool, error) {
+func (repo *{{$StructName}}) DoesExistWhere(ctx context.Context, domainColumnFilter domain.BookmarkFilter) (bool, error) {
+    columnFilter, err := BookmarkDomainToSqlRepositoryFilter(repo.db, domainColumnFilter)
+    if err != nil {
+        return false, err
+    }
+
     setFilters := *columnFilter.GetSetFilters()
 
 	queryFilters := buildQueryModListFromFilter{{$EntityName}}(setFilters)
@@ -169,22 +230,51 @@ func (repo *{{$StructName}}) DoesExistWhere(ctx context.Context, columnFilter Bo
 	return Bookmarks(queryFilters...).Exists(ctx, repo.db)
 }
 
-func (repo *{{$StructName}}) GetWhere(ctx context.Context, columnFilter BookmarkFilter) ([]*Bookmark, error) {
+func (repo *{{$StructName}}) GetWhere(ctx context.Context, domainColumnFilter domain.BookmarkFilter) ([]*domain.Bookmark, error) {
+    columnFilter, err := BookmarkDomainToSqlRepositoryFilter(repo.db, domainColumnFilter)
+    if err != nil {
+        return []*domain.Bookmark{}, err
+    }
+
     setFilters := *columnFilter.GetSetFilters()
 
 	queryFilters := buildQueryModListFromFilter{{$EntityName}}(setFilters)
 
-	return Bookmarks(queryFilters...).All(ctx, repo.db)
+    repositoryModels, err := Bookmarks(queryFilters...).All(ctx, repo.db)
+    domainModels, err := goaoi.TransformCopySlice(repositoryModels, GetBookmarkSqlRepositoryToDomainModel(repo.db))
+
+    return domainModels, err
 }
 
-func (repo *{{$StructName}}) GetFirstWhere(ctx context.Context, columnFilter BookmarkFilter) (*Bookmark, error) {
+func (repo *{{$StructName}}) GetFirstWhere(ctx context.Context, domainColumnFilter domain.BookmarkFilter) (*domain.Bookmark, error) {
+    columnFilter, err := BookmarkDomainToSqlRepositoryFilter(repo.db, domainColumnFilter)
+    if err != nil {
+        return nil, err
+    }
+
     setFilters := *columnFilter.GetSetFilters()
 
 	queryFilters := buildQueryModListFromFilter{{$EntityName}}(setFilters)
 
-	return Bookmarks(queryFilters...).One(ctx, repo.db)
+    repositoryModel, err := Bookmarks(queryFilters...).One(ctx, repo.db)
+
+    var domainModel *domain.Bookmark
+    if err != nil {
+        return domainModel, err
+    }
+
+    domainModel, err =BookmarkSqlRepositoryToDomainModel(repo.db, repositoryModel)
+
+    return domainModel, err
 }
 
-func (repo *{{$StructName}}) GetAll(ctx context.Context) ([]*Bookmark, error) {
-	return Bookmarks().All(ctx, repo.db)
+func (repo *{{$StructName}}) GetAll(ctx context.Context) ([]*domain.Bookmark, error) {
+    repositoryModels, err := Bookmarks().All(ctx, repo.db)
+    if err != nil {
+        return []*domain.Bookmark{}, err
+    }
+
+    domainModels, err := goaoi.TransformCopySlice(repositoryModels, GetBookmarkSqlRepositoryToDomainModel(repo.db))
+
+    return domainModels, err
 }
