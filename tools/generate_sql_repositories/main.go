@@ -277,14 +277,12 @@ func buildQueryModListFromFilter{{$EntityName}}(setFilters list.List) queryModSl
 	for filter := setFilters.Front(); filter != nil; filter = filter.Next() {
 		filterMapping, ok := filter.Value.({{$EntityName}}FilterMapping[any])
 		if !ok {
-			panic(fmt.Sprintf("Expected type %t but got %t", {{$EntityName}}FilterMapping[any]{}, filter))
+			panic(fmt.Sprintf("Expected type %T but got %T", {{$EntityName}}FilterMapping[any]{}, filter))
 		}
 
         newQueryMod := buildQueryModFilter{{$EntityName}}(filterMapping.Field, filterMapping.FilterOperation)
 
-        for _, queryMod := range newQueryMod {
-            queryModList = append(queryModList, queryMod)
-        }
+        queryModList = append(queryModList, newQueryMod...)
 	}
 
 	return queryModList

@@ -81,7 +81,6 @@ func (repo *{{$StructName}}) UpdateWhere(ctx context.Context, columnFilter TagFi
     // NOTE: This kind of update is inefficient, since we do a read just to do a write later, but at the moment there is no better way
     // Either SQLboiler adds support for this usecase or (preferably), we use the caching and hook system to avoid database interaction, when it is not needed
 
-    // TODO: Implement translator from domainColumnFilter to repositoryColumnFilter and updater
 	var modelsToUpdate TagSlice
 
     setFilters := *columnFilter.GetSetFilters()
@@ -89,6 +88,9 @@ func (repo *{{$StructName}}) UpdateWhere(ctx context.Context, columnFilter TagFi
 	queryFilters := buildQueryModListFromFilter{{$EntityName}}(setFilters)
 
 	modelsToUpdate, err = Tags(queryFilters...).All(ctx, repo.db)
+	if err != nil {
+		return
+	}
 
     numAffectedRecords = int64(len(modelsToUpdate))
 
