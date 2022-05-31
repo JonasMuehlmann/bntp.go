@@ -30,16 +30,21 @@ import (
 type BookmarkRepository interface {
 	New(args ...any) (BookmarkRepository, error)
 
-	Add(ctx context.Context, domainModels []domain.Bookmark) error
-	Replace(ctx context.Context, domainModels []domain.Bookmark) error
+	Add(ctx context.Context, domainModels []*domain.Bookmark) error
+	Replace(ctx context.Context, domainModels []*domain.Bookmark) error
 	UpdateWhere(ctx context.Context, columnFilter domain.BookmarkFilter, columnUpdaters domain.BookmarkUpdater) (numAffectedRecords int64, err error)
-	Delete(ctx context.Context, domainModels []domain.Bookmark) error
+	Delete(ctx context.Context, domainModels []*domain.Bookmark) error
 	DeleteWhere(ctx context.Context, columnFilter domain.BookmarkFilter) (numAffectedRecords int64, err error)
-	CountWhere(ctx context.Context, columnFilter domain.BookmarkFilter) (int64, error)
-	CountAll(ctx context.Context) int64
-	DoesExist(ctx context.Context, domainModel domain.Bookmark) (bool, error)
-	DoesExistWhere(ctx context.Context, columnFilter domain.BookmarkFilter) (bool, error)
-	GetWhere(ctx context.Context, columnFilter domain.BookmarkFilter) ([]*domain.Bookmark)
-	GetFirstWhere(ctx context.Context, columnFilter domain.BookmarkFilter) (*domain.Bookmark, error)
-	GetAll(ctx context.Context) ([]*domain.Bookmark, error)
+	CountWhere(ctx context.Context, columnFilter domain.BookmarkFilter) (numRecords int64, err error)
+	CountAll(ctx context.Context) (numRecords int64, err error)
+	DoesExist(ctx context.Context, domainModel *domain.Bookmark) (doesExist bool, errerror)
+	DoesExistWhere(ctx context.Context, columnFilter *domain.BookmarkFilter) (doesExist bool, err error)
+	GetWhere(ctx context.Context, columnFilter domain.BookmarkFilter) (records []*domain.Bookmark, error)
+	GetFirstWhere(ctx context.Context, columnFilter domain.BookmarkFilter) (record *domain.Bookmark, error)
+	GetAll(ctx context.Context) (records []*domain.Bookmark, err error)
+    
+    AddType(ctx context.Context, type_ string) error
+    DeleteType(ctx context.Context, type_ string) error
+    UpdateType(ctx context.Context, oldType string, newType string) error
+    
 }

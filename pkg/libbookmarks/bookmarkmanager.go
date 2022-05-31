@@ -27,6 +27,7 @@ import (
 	repository "github.com/JonasMuehlmann/bntp.go/model/repository"
 
 	bntp "github.com/JonasMuehlmann/bntp.go/pkg"
+	log "github.com/sirupsen/logrus"
 )
 
 // TODO: Allow skipping certain hooks.
@@ -39,62 +40,138 @@ func (m *BookmarkManager) New(...any) (BookmarkManager, error) {
 	panic("Not implemented")
 }
 
-func (m *BookmarkManager) Add(context.Context, []domain.Bookmark) (numAffectedRecords int, newID int, err error) {
-	panic("Not implemented")
+// TODO: Execute hooks
+func (m *BookmarkManager) Add(ctx context.Context, bookmarks []domain.Bookmark) error {
+	err := m.repository.Add(ctx, bookmarks)
+	if err != nil {
+		log.Error(err)
+	}
+
+	return err
 }
 
-func (m *BookmarkManager) Replace(context.Context, []domain.Bookmark) error {
-	panic("Not implemented")
+func (m *BookmarkManager) Replace(ctx context.Context, bookmarks []domain.Bookmark) error {
+	err := m.repository.Replace(ctx, bookmarks)
+	if err != nil {
+		log.Error(err)
+	}
+
+	return err
 }
 
-func (m *BookmarkManager) UpdateWhere(context.Context, domain.BookmarkFilter, map[domain.BookmarkField]domain.BookmarkUpdater) (numAffectedRecords int, err error) {
-	panic("Not implemented")
+func (m *BookmarkManager) UpdateWhere(ctx context.Context, bookmarkFilter domain.BookmarkFilter, bookmarkUpdater domain.BookmarkUpdater) (numAffectedRecords int64, err error) {
+	numAffectedRecords, err = m.repository.UpdateWhere(ctx, bookmarkFilter, bookmarkUpdater)
+	if err != nil {
+		log.Error(err)
+	}
+
+	return
 }
 
-func (m *BookmarkManager) Delete(context.Context, []domain.Bookmark) error {
-	panic("Not implemented")
+func (m *BookmarkManager) Delete(ctx context.Context, bookmarks []domain.Bookmark) error {
+	err := m.repository.Delete(ctx, bookmarks)
+	if err != nil {
+		log.Error(err)
+	}
+
+	return err
 }
 
-func (m *BookmarkManager) DeleteWhere(context.Context, domain.BookmarkFilter) (numAffectedRecords int, err error) {
-	panic("Not implemented")
+func (m *BookmarkManager) DeleteWhere(ctx context.Context, bookmarkFilter domain.BookmarkFilter) (numAffectedRecords int64, err error) {
+	numAffectedRecords, err = m.repository.DeleteWhere(ctx, bookmarkFilter)
+	if err != nil {
+		log.Error(err)
+	}
+
+	return
 }
 
-func (m *BookmarkManager) CountWhere(context.Context, domain.BookmarkFilter) int {
-	panic("Not implemented")
+func (m *BookmarkManager) CountWhere(ctx context.Context, bookmarkFilter domain.BookmarkFilter) (numRecords int64, err error) {
+	numRecords, err = m.repository.CountWhere(ctx, bookmarkFilter)
+	if err != nil {
+		log.Error(err)
+	}
+
+	return
 }
 
-func (m *BookmarkManager) CountAll(context.Context) int {
-	panic("Not implemented")
+func (m *BookmarkManager) CountAll(ctx context.Context) (numRecords int64, err error) {
+	numRecords, err = m.repository.CountAll(ctx)
+	if err != nil {
+		log.Error(err)
+	}
+
+	return
 }
 
-func (m *BookmarkManager) DoesExist(context.Context, domain.Bookmark) bool {
-	panic("Not implemented")
+func (m *BookmarkManager) DoesExist(ctx context.Context, bookmark domain.Bookmark) (doesExist bool, err error) {
+	doesExist, err = m.repository.DoesExist(ctx, bookmark)
+	if err != nil {
+		log.Error(err)
+	}
+
+	return
 }
 
-func (m *BookmarkManager) DoesExistWhere(context.Context, domain.BookmarkFilter) bool {
-	panic("Not implemented")
+func (m *BookmarkManager) DoesExistWhere(ctx context.Context, bookmarkFilter domain.BookmarkFilter) (doesExist bool, err error) {
+	doesExist, err = m.repository.DoesExistWhere(ctx, bookmarkFilter)
+	if err != nil {
+		log.Error(err)
+	}
+
+	return
 }
 
-func (m *BookmarkManager) GetWhere(context.Context, domain.BookmarkFilter) []domain.Bookmark {
-	panic("Not implemented")
+func (m *BookmarkManager) GetWhere(ctx context.Context, bookmarkFilter domain.BookmarkFilter) (records []*domain.Bookmark, err error) {
+	records, err = m.repository.GetWhere(ctx, bookmarkFilter)
+	if err != nil {
+		log.Error(err)
+	}
+
+	return
 }
 
-func (m *BookmarkManager) GetFirstWhere(context.Context, domain.BookmarkFilter) domain.Bookmark {
-	panic("Not implemented")
+func (m *BookmarkManager) GetFirstWhere(ctx context.Context, bookmarkFilter domain.BookmarkFilter) (record *domain.Bookmark, err error) {
+	record, err = m.repository.GetFirstWhere(ctx, bookmarkFilter)
+	if err != nil {
+		log.Error(err)
+	}
+
+	return
 }
 
-func (m *BookmarkManager) GetAll(context.Context) []domain.Bookmark {
-	panic("Not implemented")
+func (m *BookmarkManager) GetAll(ctx context.Context) (records []*domain.Bookmark, err error) {
+	records, err = m.repository.GetAll(ctx)
+	if err != nil {
+		log.Error(err)
+	}
+
+	return
 }
 
-func (m *BookmarkManager) AddType(context.Context, string) error {
-	panic("Not implemented")
+func (m *BookmarkManager) AddType(ctx context.Context, type_ string) error {
+	err := m.repository.AddType(ctx, type_)
+	if err != nil {
+		log.Error(err)
+	}
+
+	return err
 }
 
-func (m *BookmarkManager) DeleteType(context.Context, string) error {
-	panic("Not implemented")
+func (m *BookmarkManager) DeleteType(ctx context.Context, type_ string) error {
+	err := m.repository.DeleteType(ctx, type_)
+	if err != nil {
+		log.Error(err)
+	}
+
+	return err
 }
 
-func (m *BookmarkManager) UpdateType(context.Context, string, string) error {
-	panic("Not implemented")
+func (m *BookmarkManager) UpdateType(ctx context.Context, oldType string, newType string) error {
+	err := m.repository.UpdateType(ctx, oldType, newType)
+	if err != nil {
+		log.Error(err)
+	}
+
+	return err
 }

@@ -35,11 +35,16 @@ type {{.EntityName}}Repository interface {
 	UpdateWhere(ctx context.Context, columnFilter domain.{{.EntityName}}Filter, columnUpdaters domain.{{.EntityName}}Updater) (numAffectedRecords int64, err error)
 	Delete(ctx context.Context, domainModels []*domain.{{.EntityName}}) error
 	DeleteWhere(ctx context.Context, columnFilter domain.{{.EntityName}}Filter) (numAffectedRecords int64, err error)
-	CountWhere(ctx context.Context, columnFilter domain.{{.EntityName}}Filter) (int64, error)
-	CountAll(ctx context.Context) int64
-	DoesExist(ctx context.Context, domainModel *domain.{{.EntityName}}) (bool, error)
-	DoesExistWhere(ctx context.Context, columnFilter *domain.{{.EntityName}}Filter) (bool, error)
-	GetWhere(ctx context.Context, columnFilter domain.{{.EntityName}}Filter) ([]*domain.{{.EntityName}})
-	GetFirstWhere(ctx context.Context, columnFilter domain.{{.EntityName}}Filter) (*domain.{{.EntityName}}, error)
-	GetAll(ctx context.Context) ([]*domain.{{.EntityName}}, error)
+	CountWhere(ctx context.Context, columnFilter domain.{{.EntityName}}Filter) (numRecords int64, err error)
+	CountAll(ctx context.Context) (numRecords int64, err error)
+	DoesExist(ctx context.Context, domainModel *domain.{{.EntityName}}) (doesExist bool, errerror)
+	DoesExistWhere(ctx context.Context, columnFilter *domain.{{.EntityName}}Filter) (doesExist bool, err error)
+	GetWhere(ctx context.Context, columnFilter domain.{{.EntityName}}Filter) (records []*domain.{{.EntityName}}, error)
+	GetFirstWhere(ctx context.Context, columnFilter domain.{{.EntityName}}Filter) (record *domain.{{.EntityName}}, error)
+	GetAll(ctx context.Context) (records []*domain.{{.EntityName}}, err error)
+    {{if eq .EntityName "Bookmark"}}
+    AddType(ctx context.Context, type_ string) error
+    DeleteType(ctx context.Context, type_ string) error
+    UpdateType(ctx context.Context, oldType string, newType string) error
+    {{end}}
 }

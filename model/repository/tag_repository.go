@@ -30,16 +30,17 @@ import (
 type TagRepository interface {
 	New(args ...any) (TagRepository, error)
 
-	Add(ctx context.Context, domainModels []domain.Tag) error
-	Replace(ctx context.Context, domainModels []domain.Tag) error
+	Add(ctx context.Context, domainModels []*domain.Tag) error
+	Replace(ctx context.Context, domainModels []*domain.Tag) error
 	UpdateWhere(ctx context.Context, columnFilter domain.TagFilter, columnUpdaters domain.TagUpdater) (numAffectedRecords int64, err error)
-	Delete(ctx context.Context, domainModels []domain.Tag) error
+	Delete(ctx context.Context, domainModels []*domain.Tag) error
 	DeleteWhere(ctx context.Context, columnFilter domain.TagFilter) (numAffectedRecords int64, err error)
-	CountWhere(ctx context.Context, columnFilter domain.TagFilter) (int64, error)
-	CountAll(ctx context.Context) int64
-	DoesExist(ctx context.Context, domainModel domain.Tag) (bool, error)
-	DoesExistWhere(ctx context.Context, columnFilter domain.TagFilter) (bool, error)
-	GetWhere(ctx context.Context, columnFilter domain.TagFilter) ([]*domain.Tag)
-	GetFirstWhere(ctx context.Context, columnFilter domain.TagFilter) (*domain.Tag, error)
-	GetAll(ctx context.Context) ([]*domain.Tag, error)
+	CountWhere(ctx context.Context, columnFilter domain.TagFilter) (numRecords int64, err error)
+	CountAll(ctx context.Context) (numRecords int64, err error)
+	DoesExist(ctx context.Context, domainModel *domain.Tag) (doesExist bool, errerror)
+	DoesExistWhere(ctx context.Context, columnFilter *domain.TagFilter) (doesExist bool, err error)
+	GetWhere(ctx context.Context, columnFilter domain.TagFilter) (records []*domain.Tag, error)
+	GetFirstWhere(ctx context.Context, columnFilter domain.TagFilter) (record *domain.Tag, error)
+	GetAll(ctx context.Context) (records []*domain.Tag, err error)
+    
 }

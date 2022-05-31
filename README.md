@@ -24,6 +24,7 @@ Tools and systems, which have or, after research and considerations, might influ
 - Roam Research
 - Obsidian
 - Todoist
+- Jira
 - The *Zettelkasten* Method
 - David Allens *Getting Things Done* (GTD)
 

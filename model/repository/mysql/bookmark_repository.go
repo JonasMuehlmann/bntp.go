@@ -603,3 +603,30 @@ func (repo *MysqlBookmarkRepository) GetAll(ctx context.Context) ([]*domain.Book
 
     return domainModels, err
 }
+
+func (repo *MysqlBookmarkRepository) AddType(ctx context.Context, type_ string) error {
+    repositoryModel := BookmarkType{Type: type_}
+
+    return repositoryModel.Insert(ctx, repo.db, boil.Infer())
+}
+
+func (repo *MysqlBookmarkRepository) DeleteType(ctx context.Context, type_ string) error {
+    repositoryModel := BookmarkType{Type: type_}
+
+    _, err := repositoryModel.Delete(ctx, repo.db)
+
+    return err
+}
+
+func (repo *MysqlBookmarkRepository) UpdateType(ctx context.Context, oldType string, newType string) error {
+    repositoryModel, err := BookmarkTypes(BookmarkTypeWhere.Type.EQ(oldType)).One(ctx, repo.db)
+    if err != nil {
+        return err
+    }
+
+    repositoryModel.Type = newType
+
+    _, err = repositoryModel.Update(ctx, repo.db, boil.Infer())
+
+    return err
+}
