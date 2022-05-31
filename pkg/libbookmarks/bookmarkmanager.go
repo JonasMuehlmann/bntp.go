@@ -41,7 +41,7 @@ func (m *BookmarkManager) New(...any) (BookmarkManager, error) {
 }
 
 // TODO: Execute hooks
-func (m *BookmarkManager) Add(ctx context.Context, bookmarks []domain.Bookmark) error {
+func (m *BookmarkManager) Add(ctx context.Context, bookmarks []*domain.Bookmark) error {
 	err := m.repository.Add(ctx, bookmarks)
 	if err != nil {
 		log.Error(err)
@@ -50,7 +50,7 @@ func (m *BookmarkManager) Add(ctx context.Context, bookmarks []domain.Bookmark) 
 	return err
 }
 
-func (m *BookmarkManager) Replace(ctx context.Context, bookmarks []domain.Bookmark) error {
+func (m *BookmarkManager) Replace(ctx context.Context, bookmarks []*domain.Bookmark) error {
 	err := m.repository.Replace(ctx, bookmarks)
 	if err != nil {
 		log.Error(err)
@@ -68,7 +68,7 @@ func (m *BookmarkManager) UpdateWhere(ctx context.Context, bookmarkFilter domain
 	return
 }
 
-func (m *BookmarkManager) Delete(ctx context.Context, bookmarks []domain.Bookmark) error {
+func (m *BookmarkManager) Delete(ctx context.Context, bookmarks []*domain.Bookmark) error {
 	err := m.repository.Delete(ctx, bookmarks)
 	if err != nil {
 		log.Error(err)
@@ -104,7 +104,7 @@ func (m *BookmarkManager) CountAll(ctx context.Context) (numRecords int64, err e
 	return
 }
 
-func (m *BookmarkManager) DoesExist(ctx context.Context, bookmark domain.Bookmark) (doesExist bool, err error) {
+func (m *BookmarkManager) DoesExist(ctx context.Context, bookmark *domain.Bookmark) (doesExist bool, err error) {
 	doesExist, err = m.repository.DoesExist(ctx, bookmark)
 	if err != nil {
 		log.Error(err)

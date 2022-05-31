@@ -38,9 +38,9 @@ type TagRepository interface {
 	CountWhere(ctx context.Context, columnFilter domain.TagFilter) (numRecords int64, err error)
 	CountAll(ctx context.Context) (numRecords int64, err error)
 	DoesExist(ctx context.Context, domainModel *domain.Tag) (doesExist bool, errerror)
-	DoesExistWhere(ctx context.Context, columnFilter *domain.TagFilter) (doesExist bool, err error)
-	GetWhere(ctx context.Context, columnFilter domain.TagFilter) (records []*domain.Tag, error)
-	GetFirstWhere(ctx context.Context, columnFilter domain.TagFilter) (record *domain.Tag, error)
+	DoesExistWhere(ctx context.Context, columnFilter domain.TagFilter) (doesExist bool, err error)
+	GetWhere(ctx context.Context, columnFilter domain.TagFilter) (records []*domain.Tag, err error)
+	GetFirstWhere(ctx context.Context, columnFilter domain.TagFilter) (record *domain.Tag, err error)
 	GetAll(ctx context.Context) (records []*domain.Tag, err error)
     
 }

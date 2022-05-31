@@ -38,9 +38,9 @@ type DocumentRepository interface {
 	CountWhere(ctx context.Context, columnFilter domain.DocumentFilter) (numRecords int64, err error)
 	CountAll(ctx context.Context) (numRecords int64, err error)
 	DoesExist(ctx context.Context, domainModel *domain.Document) (doesExist bool, errerror)
-	DoesExistWhere(ctx context.Context, columnFilter *domain.DocumentFilter) (doesExist bool, err error)
-	GetWhere(ctx context.Context, columnFilter domain.DocumentFilter) (records []*domain.Document, error)
-	GetFirstWhere(ctx context.Context, columnFilter domain.DocumentFilter) (record *domain.Document, error)
+	DoesExistWhere(ctx context.Context, columnFilter domain.DocumentFilter) (doesExist bool, err error)
+	GetWhere(ctx context.Context, columnFilter domain.DocumentFilter) (records []*domain.Document, err error)
+	GetFirstWhere(ctx context.Context, columnFilter domain.DocumentFilter) (record *domain.Document, err error)
 	GetAll(ctx context.Context) (records []*domain.Document, err error)
     
 }

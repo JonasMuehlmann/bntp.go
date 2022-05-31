@@ -38,11 +38,11 @@ type {{.EntityName}}Repository interface {
 	CountWhere(ctx context.Context, columnFilter domain.{{.EntityName}}Filter) (numRecords int64, err error)
 	CountAll(ctx context.Context) (numRecords int64, err error)
 	DoesExist(ctx context.Context, domainModel *domain.{{.EntityName}}) (doesExist bool, errerror)
-	DoesExistWhere(ctx context.Context, columnFilter *domain.{{.EntityName}}Filter) (doesExist bool, err error)
-	GetWhere(ctx context.Context, columnFilter domain.{{.EntityName}}Filter) (records []*domain.{{.EntityName}}, error)
-	GetFirstWhere(ctx context.Context, columnFilter domain.{{.EntityName}}Filter) (record *domain.{{.EntityName}}, error)
+	DoesExistWhere(ctx context.Context, columnFilter domain.{{.EntityName}}Filter) (doesExist bool, err error)
+	GetWhere(ctx context.Context, columnFilter domain.{{.EntityName}}Filter) (records []*domain.{{.EntityName}}, err error)
+	GetFirstWhere(ctx context.Context, columnFilter domain.{{.EntityName}}Filter) (record *domain.{{.EntityName}}, err error)
 	GetAll(ctx context.Context) (records []*domain.{{.EntityName}}, err error)
-    {{if eq .EntityName "Bookmark"}}
+    {{if or (eq .EntityName "Bookmark") (eq .EntityName "Bookmark")}}
     AddType(ctx context.Context, type_ string) error
     DeleteType(ctx context.Context, type_ string) error
     UpdateType(ctx context.Context, oldType string, newType string) error

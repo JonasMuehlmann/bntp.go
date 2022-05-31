@@ -572,3 +572,30 @@ func (repo *PsqlDocumentRepository) GetAll(ctx context.Context) ([]*domain.Docum
 
     return domainModels, err
 }
+
+func (repo *PsqlDocumentRepository) AddType(ctx context.Context, type_ string) error {
+    repositoryModel := DocumentType{DocumentType: type_}
+
+    return repositoryModel.Insert(ctx, repo.db, boil.Infer())
+}
+
+func (repo *PsqlDocumentRepository) DeleteType(ctx context.Context, type_ string) error {
+    repositoryModel := DocumentType{DocumentType: type_}
+
+    _, err := repositoryModel.Delete(ctx, repo.db)
+
+    return err
+}
+
+func (repo *PsqlDocumentRepository) UpdateType(ctx context.Context, oldType string, newType string) error {
+    repositoryModel, err := DocumentTypes(DocumentTypeWhere.DocumentType.EQ(oldType)).One(ctx, repo.db)
+    if err != nil {
+        return err
+    }
+
+    repositoryModel.DocumentType = newType
+
+    _, err = repositoryModel.Update(ctx, repo.db, boil.Infer())
+
+    return err
+}

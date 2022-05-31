@@ -38,9 +38,9 @@ type BookmarkRepository interface {
 	CountWhere(ctx context.Context, columnFilter domain.BookmarkFilter) (numRecords int64, err error)
 	CountAll(ctx context.Context) (numRecords int64, err error)
 	DoesExist(ctx context.Context, domainModel *domain.Bookmark) (doesExist bool, errerror)
-	DoesExistWhere(ctx context.Context, columnFilter *domain.BookmarkFilter) (doesExist bool, err error)
-	GetWhere(ctx context.Context, columnFilter domain.BookmarkFilter) (records []*domain.Bookmark, error)
-	GetFirstWhere(ctx context.Context, columnFilter domain.BookmarkFilter) (record *domain.Bookmark, error)
+	DoesExistWhere(ctx context.Context, columnFilter domain.BookmarkFilter) (doesExist bool, err error)
+	GetWhere(ctx context.Context, columnFilter domain.BookmarkFilter) (records []*domain.Bookmark, err error)
+	GetFirstWhere(ctx context.Context, columnFilter domain.BookmarkFilter) (record *domain.Bookmark, err error)
 	GetAll(ctx context.Context) (records []*domain.Bookmark, err error)
     
     AddType(ctx context.Context, type_ string) error

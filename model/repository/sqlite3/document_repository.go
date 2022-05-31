@@ -572,3 +572,30 @@ func (repo *Sqlite3DocumentRepository) GetAll(ctx context.Context) ([]*domain.Do
 
     return domainModels, err
 }
+
+func (repo *Sqlite3DocumentRepository) AddType(ctx context.Context, type_ string) error {
+    repositoryModel := DocumentType{DocumentType: type_}
+
+    return repositoryModel.Insert(ctx, repo.db, boil.Infer())
+}
+
+func (repo *Sqlite3DocumentRepository) DeleteType(ctx context.Context, type_ string) error {
+    repositoryModel := DocumentType{DocumentType: type_}
+
+    _, err := repositoryModel.Delete(ctx, repo.db)
+
+    return err
+}
+
+func (repo *Sqlite3DocumentRepository) UpdateType(ctx context.Context, oldType string, newType string) error {
+    repositoryModel, err := DocumentTypes(DocumentTypeWhere.DocumentType.EQ(oldType)).One(ctx, repo.db)
+    if err != nil {
+        return err
+    }
+
+    repositoryModel.DocumentType = newType
+
+    _, err = repositoryModel.Update(ctx, repo.db, boil.Infer())
+
+    return err
+}
