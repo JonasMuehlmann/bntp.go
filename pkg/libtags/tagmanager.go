@@ -21,8 +21,11 @@
 package libtags
 
 import (
+	"context"
+
 	domain "github.com/JonasMuehlmann/bntp.go/model/domain"
 	repository "github.com/JonasMuehlmann/bntp.go/model/repository"
+	log "github.com/sirupsen/logrus"
 
 	bntp "github.com/JonasMuehlmann/bntp.go/pkg"
 )
@@ -30,4 +33,113 @@ import (
 type TagManager struct {
 	repository repository.TagRepository
 	hooks      bntp.Hooks[domain.Tag]
+}
+
+// TODO: Execute hooks
+func (m *TagManager) Add(ctx context.Context, tags []*domain.Tag) error {
+	err := m.repository.Add(ctx, tags)
+	if err != nil {
+		log.Error(err)
+	}
+
+	return err
+}
+
+func (m *TagManager) Replace(ctx context.Context, tags []*domain.Tag) error {
+	err := m.repository.Replace(ctx, tags)
+	if err != nil {
+		log.Error(err)
+	}
+
+	return err
+}
+
+func (m *TagManager) UpdateWhere(ctx context.Context, tagFilter domain.TagFilter, tagUpdater domain.TagUpdater) (numAffectedRecords int64, err error) {
+	numAffectedRecords, err = m.repository.UpdateWhere(ctx, tagFilter, tagUpdater)
+	if err != nil {
+		log.Error(err)
+	}
+
+	return
+}
+
+func (m *TagManager) Delete(ctx context.Context, tags []*domain.Tag) error {
+	err := m.repository.Delete(ctx, tags)
+	if err != nil {
+		log.Error(err)
+	}
+
+	return err
+}
+
+func (m *TagManager) DeleteWhere(ctx context.Context, tagFilter domain.TagFilter) (numAffectedRecords int64, err error) {
+	numAffectedRecords, err = m.repository.DeleteWhere(ctx, tagFilter)
+	if err != nil {
+		log.Error(err)
+	}
+
+	return
+}
+
+func (m *TagManager) CountWhere(ctx context.Context, tagFilter domain.TagFilter) (numRecords int64, err error) {
+	numRecords, err = m.repository.CountWhere(ctx, tagFilter)
+	if err != nil {
+		log.Error(err)
+	}
+
+	return
+}
+
+func (m *TagManager) CountAll(ctx context.Context) (numRecords int64, err error) {
+	numRecords, err = m.repository.CountAll(ctx)
+	if err != nil {
+		log.Error(err)
+	}
+
+	return
+}
+
+func (m *TagManager) DoesExist(ctx context.Context, tag *domain.Tag) (doesExist bool, err error) {
+	doesExist, err = m.repository.DoesExist(ctx, tag)
+	if err != nil {
+		log.Error(err)
+	}
+
+	return
+}
+
+func (m *TagManager) DoesExistWhere(ctx context.Context, tagFilter domain.TagFilter) (doesExist bool, err error) {
+	doesExist, err = m.repository.DoesExistWhere(ctx, tagFilter)
+	if err != nil {
+		log.Error(err)
+	}
+
+	return
+}
+
+func (m *TagManager) GetWhere(ctx context.Context, tagFilter domain.TagFilter) (records []*domain.Tag, err error) {
+	records, err = m.repository.GetWhere(ctx, tagFilter)
+	if err != nil {
+		log.Error(err)
+	}
+
+	return
+}
+
+func (m *TagManager) GetFirstWhere(ctx context.Context, tagFilter domain.TagFilter) (record *domain.Tag, err error) {
+	record, err = m.repository.GetFirstWhere(ctx, tagFilter)
+	if err != nil {
+		log.Error(err)
+	}
+
+	return
+}
+
+func (m *TagManager) GetAll(ctx context.Context) (records []*domain.Tag, err error) {
+	records, err = m.repository.GetAll(ctx)
+	if err != nil {
+		log.Error(err)
+	}
+
+	return
 }

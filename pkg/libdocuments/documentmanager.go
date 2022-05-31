@@ -40,8 +40,8 @@ func (m *DocumentManager) New(...any) (DocumentManager, error) {
 }
 
 // TODO: Execute hooks
-func (m *DocumentManager) Add(ctx context.Context, bookmarks []*domain.Document) error {
-	err := m.repository.Add(ctx, bookmarks)
+func (m *DocumentManager) Add(ctx context.Context, documents []*domain.Document) error {
+	err := m.repository.Add(ctx, documents)
 	if err != nil {
 		log.Error(err)
 	}
@@ -49,8 +49,8 @@ func (m *DocumentManager) Add(ctx context.Context, bookmarks []*domain.Document)
 	return err
 }
 
-func (m *DocumentManager) Replace(ctx context.Context, bookmarks []*domain.Document) error {
-	err := m.repository.Replace(ctx, bookmarks)
+func (m *DocumentManager) Replace(ctx context.Context, documents []*domain.Document) error {
+	err := m.repository.Replace(ctx, documents)
 	if err != nil {
 		log.Error(err)
 	}
@@ -58,8 +58,8 @@ func (m *DocumentManager) Replace(ctx context.Context, bookmarks []*domain.Docum
 	return err
 }
 
-func (m *DocumentManager) UpdateWhere(ctx context.Context, bookmarkFilter domain.DocumentFilter, bookmarkUpdater domain.DocumentUpdater) (numAffectedRecords int64, err error) {
-	numAffectedRecords, err = m.repository.UpdateWhere(ctx, bookmarkFilter, bookmarkUpdater)
+func (m *DocumentManager) UpdateWhere(ctx context.Context, documentFilter domain.DocumentFilter, documentUpdater domain.DocumentUpdater) (numAffectedRecords int64, err error) {
+	numAffectedRecords, err = m.repository.UpdateWhere(ctx, documentFilter, documentUpdater)
 	if err != nil {
 		log.Error(err)
 	}
@@ -67,8 +67,8 @@ func (m *DocumentManager) UpdateWhere(ctx context.Context, bookmarkFilter domain
 	return
 }
 
-func (m *DocumentManager) Delete(ctx context.Context, bookmarks []*domain.Document) error {
-	err := m.repository.Delete(ctx, bookmarks)
+func (m *DocumentManager) Delete(ctx context.Context, documents []*domain.Document) error {
+	err := m.repository.Delete(ctx, documents)
 	if err != nil {
 		log.Error(err)
 	}
@@ -76,8 +76,8 @@ func (m *DocumentManager) Delete(ctx context.Context, bookmarks []*domain.Docume
 	return err
 }
 
-func (m *DocumentManager) DeleteWhere(ctx context.Context, bookmarkFilter domain.DocumentFilter) (numAffectedRecords int64, err error) {
-	numAffectedRecords, err = m.repository.DeleteWhere(ctx, bookmarkFilter)
+func (m *DocumentManager) DeleteWhere(ctx context.Context, documentFilter domain.DocumentFilter) (numAffectedRecords int64, err error) {
+	numAffectedRecords, err = m.repository.DeleteWhere(ctx, documentFilter)
 	if err != nil {
 		log.Error(err)
 	}
@@ -85,8 +85,8 @@ func (m *DocumentManager) DeleteWhere(ctx context.Context, bookmarkFilter domain
 	return
 }
 
-func (m *DocumentManager) CountWhere(ctx context.Context, bookmarkFilter domain.DocumentFilter) (numRecords int64, err error) {
-	numRecords, err = m.repository.CountWhere(ctx, bookmarkFilter)
+func (m *DocumentManager) CountWhere(ctx context.Context, documentFilter domain.DocumentFilter) (numRecords int64, err error) {
+	numRecords, err = m.repository.CountWhere(ctx, documentFilter)
 	if err != nil {
 		log.Error(err)
 	}
@@ -103,8 +103,8 @@ func (m *DocumentManager) CountAll(ctx context.Context) (numRecords int64, err e
 	return
 }
 
-func (m *DocumentManager) DoesExist(ctx context.Context, bookmark *domain.Document) (doesExist bool, err error) {
-	doesExist, err = m.repository.DoesExist(ctx, bookmark)
+func (m *DocumentManager) DoesExist(ctx context.Context, document *domain.Document) (doesExist bool, err error) {
+	doesExist, err = m.repository.DoesExist(ctx, document)
 	if err != nil {
 		log.Error(err)
 	}
@@ -112,8 +112,8 @@ func (m *DocumentManager) DoesExist(ctx context.Context, bookmark *domain.Docume
 	return
 }
 
-func (m *DocumentManager) DoesExistWhere(ctx context.Context, bookmarkFilter domain.DocumentFilter) (doesExist bool, err error) {
-	doesExist, err = m.repository.DoesExistWhere(ctx, bookmarkFilter)
+func (m *DocumentManager) DoesExistWhere(ctx context.Context, documentFilter domain.DocumentFilter) (doesExist bool, err error) {
+	doesExist, err = m.repository.DoesExistWhere(ctx, documentFilter)
 	if err != nil {
 		log.Error(err)
 	}
@@ -121,8 +121,8 @@ func (m *DocumentManager) DoesExistWhere(ctx context.Context, bookmarkFilter dom
 	return
 }
 
-func (m *DocumentManager) GetWhere(ctx context.Context, bookmarkFilter domain.DocumentFilter) (records []*domain.Document, err error) {
-	records, err = m.repository.GetWhere(ctx, bookmarkFilter)
+func (m *DocumentManager) GetWhere(ctx context.Context, documentFilter domain.DocumentFilter) (records []*domain.Document, err error) {
+	records, err = m.repository.GetWhere(ctx, documentFilter)
 	if err != nil {
 		log.Error(err)
 	}
@@ -130,8 +130,8 @@ func (m *DocumentManager) GetWhere(ctx context.Context, bookmarkFilter domain.Do
 	return
 }
 
-func (m *DocumentManager) GetFirstWhere(ctx context.Context, bookmarkFilter domain.DocumentFilter) (record *domain.Document, err error) {
-	record, err = m.repository.GetFirstWhere(ctx, bookmarkFilter)
+func (m *DocumentManager) GetFirstWhere(ctx context.Context, documentFilter domain.DocumentFilter) (record *domain.Document, err error) {
+	record, err = m.repository.GetFirstWhere(ctx, documentFilter)
 	if err != nil {
 		log.Error(err)
 	}
