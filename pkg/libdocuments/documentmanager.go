@@ -39,6 +39,7 @@ func (m *DocumentManager) New(...any) (DocumentManager, error) {
 	panic("Not implemented")
 }
 
+// TODO: Allow skipping certain hooks.
 // TODO: Execute hooks
 func (m *DocumentManager) Add(ctx context.Context, documents []*domain.Document) error {
 	err := m.repository.Add(ctx, documents)

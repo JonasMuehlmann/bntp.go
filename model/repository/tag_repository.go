@@ -23,7 +23,8 @@
 package repository
 
 import (
-    "context"
+	"context"
+
 	"github.com/JonasMuehlmann/bntp.go/model/domain"
 )
 
@@ -37,10 +38,9 @@ type TagRepository interface {
 	DeleteWhere(ctx context.Context, columnFilter domain.TagFilter) (numAffectedRecords int64, err error)
 	CountWhere(ctx context.Context, columnFilter domain.TagFilter) (numRecords int64, err error)
 	CountAll(ctx context.Context) (numRecords int64, err error)
-	DoesExist(ctx context.Context, domainModel *domain.Tag) (doesExist bool, errerror)
+	DoesExist(ctx context.Context, domainModel *domain.Tag) (doesExist bool, err error)
 	DoesExistWhere(ctx context.Context, columnFilter domain.TagFilter) (doesExist bool, err error)
 	GetWhere(ctx context.Context, columnFilter domain.TagFilter) (records []*domain.Tag, err error)
 	GetFirstWhere(ctx context.Context, columnFilter domain.TagFilter) (record *domain.Tag, err error)
 	GetAll(ctx context.Context) (records []*domain.Tag, err error)
-    
 }

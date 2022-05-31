@@ -35,7 +35,8 @@ type TagManager struct {
 	hooks      bntp.Hooks[domain.Tag]
 }
 
-// TODO: Execute hooks
+// TODO: Allow skipping certain hooks.
+// TODO: Execute hooks.
 func (m *TagManager) Add(ctx context.Context, tags []*domain.Tag) error {
 	err := m.repository.Add(ctx, tags)
 	if err != nil {

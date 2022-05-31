@@ -37,7 +37,7 @@ type DocumentRepository interface {
 	DeleteWhere(ctx context.Context, columnFilter domain.DocumentFilter) (numAffectedRecords int64, err error)
 	CountWhere(ctx context.Context, columnFilter domain.DocumentFilter) (numRecords int64, err error)
 	CountAll(ctx context.Context) (numRecords int64, err error)
-	DoesExist(ctx context.Context, domainModel *domain.Document) (doesExist bool, errerror)
+	DoesExist(ctx context.Context, domainModel *domain.Document) (doesExist bool, err error)
 	DoesExistWhere(ctx context.Context, columnFilter domain.DocumentFilter) (doesExist bool, err error)
 	GetWhere(ctx context.Context, columnFilter domain.DocumentFilter) (records []*domain.Document, err error)
 	GetFirstWhere(ctx context.Context, columnFilter domain.DocumentFilter) (record *domain.Document, err error)

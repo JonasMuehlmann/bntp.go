@@ -37,7 +37,7 @@ type {{.EntityName}}Repository interface {
 	DeleteWhere(ctx context.Context, columnFilter domain.{{.EntityName}}Filter) (numAffectedRecords int64, err error)
 	CountWhere(ctx context.Context, columnFilter domain.{{.EntityName}}Filter) (numRecords int64, err error)
 	CountAll(ctx context.Context) (numRecords int64, err error)
-	DoesExist(ctx context.Context, domainModel *domain.{{.EntityName}}) (doesExist bool, errerror)
+	DoesExist(ctx context.Context, domainModel *domain.{{.EntityName}}) (doesExist bool, err error)
 	DoesExistWhere(ctx context.Context, columnFilter domain.{{.EntityName}}Filter) (doesExist bool, err error)
 	GetWhere(ctx context.Context, columnFilter domain.{{.EntityName}}Filter) (records []*domain.{{.EntityName}}, err error)
 	GetFirstWhere(ctx context.Context, columnFilter domain.{{.EntityName}}Filter) (record *domain.{{.EntityName}}, err error)

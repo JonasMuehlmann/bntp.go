@@ -37,7 +37,7 @@ type BookmarkRepository interface {
 	DeleteWhere(ctx context.Context, columnFilter domain.BookmarkFilter) (numAffectedRecords int64, err error)
 	CountWhere(ctx context.Context, columnFilter domain.BookmarkFilter) (numRecords int64, err error)
 	CountAll(ctx context.Context) (numRecords int64, err error)
-	DoesExist(ctx context.Context, domainModel *domain.Bookmark) (doesExist bool, errerror)
+	DoesExist(ctx context.Context, domainModel *domain.Bookmark) (doesExist bool, err error)
 	DoesExistWhere(ctx context.Context, columnFilter domain.BookmarkFilter) (doesExist bool, err error)
 	GetWhere(ctx context.Context, columnFilter domain.BookmarkFilter) (records []*domain.Bookmark, err error)
 	GetFirstWhere(ctx context.Context, columnFilter domain.BookmarkFilter) (record *domain.Bookmark, err error)

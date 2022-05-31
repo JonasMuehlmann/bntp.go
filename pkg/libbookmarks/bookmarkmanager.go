@@ -30,7 +30,6 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-// TODO: Allow skipping certain hooks.
 type BookmarkManager struct {
 	hooks      bntp.Hooks[domain.Bookmark]
 	repository repository.BookmarkRepository
@@ -40,7 +39,8 @@ func (m *BookmarkManager) New(...any) (BookmarkManager, error) {
 	panic("Not implemented")
 }
 
-// TODO: Execute hooks
+// TODO: Allow skipping certain hooks.
+// TODO: Execute hooks.
 func (m *BookmarkManager) Add(ctx context.Context, bookmarks []*domain.Bookmark) error {
 	err := m.repository.Add(ctx, bookmarks)
 	if err != nil {
