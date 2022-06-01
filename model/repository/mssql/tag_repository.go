@@ -484,7 +484,7 @@ func (repo *MssqlTagRepository) GetWhere(ctx context.Context, domainColumnFilter
     }
 
 
-    domainModels, err := goaoi.TransformCopySlice(repositoryModels, GetBookmarkSqlRepositoryToDomainModel(repo.db))
+    domainModels, err := goaoi.TransformCopySlice(repositoryModels, GetTagSqlRepositoryToDomainModel(repo.db))
 
     return domainModels, err
 }

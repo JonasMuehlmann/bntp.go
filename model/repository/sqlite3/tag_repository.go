@@ -484,7 +484,7 @@ func (repo *Sqlite3TagRepository) GetWhere(ctx context.Context, domainColumnFilt
     }
 
 
-    domainModels, err := goaoi.TransformCopySlice(repositoryModels, GetBookmarkSqlRepositoryToDomainModel(repo.db))
+    domainModels, err := goaoi.TransformCopySlice(repositoryModels, GetTagSqlRepositoryToDomainModel(repo.db))
 
     return domainModels, err
 }
