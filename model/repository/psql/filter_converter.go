@@ -463,7 +463,7 @@ func DocumentSqlRepositoryToDomainFilter(db *sql.DB, sqlRepositoryFilter *Docume
     return
 }
 
-func TagDomainToSqlRepositoryFilter(db *sql.DB, domainFilter domain.TagFilter) (sqlRepositoryFilter *TagFilter, err error)  {
+func TagDomainToSqlRepositoryFilter(db *sql.DB, domainFilter *domain.TagFilter) (sqlRepositoryFilter *TagFilter, err error)  {
     sqlRepositoryFilter = new(TagFilter)
 
     sqlRepositoryFilter.ID = domainFilter.ID

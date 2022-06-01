@@ -609,7 +609,7 @@ func DocumentSqlRepositoryToDomainFilter(db *sql.DB, sqlRepositoryFilter *{{.Ent
     return
 }
 
-func TagDomainToSqlRepositoryFilter(db *sql.DB, domainFilter domain.{{.Entities.Tag}}Filter) (sqlRepositoryFilter *{{.Entities.Tag}}Filter, err error)  {
+func TagDomainToSqlRepositoryFilter(db *sql.DB, domainFilter *domain.{{.Entities.Tag}}Filter) (sqlRepositoryFilter *{{.Entities.Tag}}Filter, err error)  {
     sqlRepositoryFilter = new({{.Entities.Tag}}Filter)
 
     sqlRepositoryFilter.ID = domainFilter.ID
