@@ -197,7 +197,7 @@ func BookmarkDomainToSqlRepositoryFilter(db *sql.DB, domainFilter *domain.{{.Ent
     return
 }
 
-func BookmarkSqlRepositoryToDomainFilter(db *sql.DB, sqlRepositoryFilter *{{.Entities.Bookmark}}Filter) (domainFilter domain.{{.Entities.Bookmark}}Filter, err error) {
+func BookmarkSqlRepositoryToDomainFilter(db *sql.DB, sqlRepositoryFilter *{{.Entities.Bookmark}}Filter) (domainFilter *domain.{{.Entities.Bookmark}}Filter, err error) {
     domainFilter = new(domain.{{.Entities.Bookmark}}Filter)
 
     domainFilter.URL = sqlRepositoryFilter.URL
