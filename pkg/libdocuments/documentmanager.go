@@ -25,6 +25,7 @@ import (
 
 	domain "github.com/JonasMuehlmann/bntp.go/model/domain"
 	repository "github.com/JonasMuehlmann/bntp.go/model/repository"
+	"github.com/JonasMuehlmann/goaoi"
 	log "github.com/sirupsen/logrus"
 
 	bntp "github.com/JonasMuehlmann/bntp.go/pkg"
@@ -40,137 +41,400 @@ func (m *DocumentManager) New(...any) (DocumentManager, error) {
 }
 
 // TODO: Allow skipping certain hooks.
-// TODO: Execute hooks
+// TODO: Execute hooks.
 func (m *DocumentManager) Add(ctx context.Context, documents []*domain.Document) error {
-	err := m.repository.Add(ctx, documents)
+	err := goaoi.ForeachSlice(documents, m.hooks.PartiallySpecializeExecuteHooks(ctx, bntp.BeforeAnyHook|bntp.BeforeAddHook))
+	if err != nil {
+		err = bntp.HookExecutionError{Inner: err}
+		log.Error(err)
+
+		return err
+	}
+
+	err = m.repository.Add(ctx, documents)
 	if err != nil {
 		log.Error(err)
+	}
+
+	err = goaoi.ForeachSlice(documents, m.hooks.PartiallySpecializeExecuteHooks(ctx, bntp.AfterAnyHook|bntp.AfterAddHook))
+	if err != nil {
+		err = bntp.HookExecutionError{Inner: err}
+		log.Error(err)
+
+		return err
 	}
 
 	return err
 }
 
 func (m *DocumentManager) Replace(ctx context.Context, documents []*domain.Document) error {
-	err := m.repository.Replace(ctx, documents)
+	err := goaoi.ForeachSlice(documents, m.hooks.PartiallySpecializeExecuteHooks(ctx, bntp.BeforeAnyHook|bntp.BeforeUpdateHook))
+	if err != nil {
+		err = bntp.HookExecutionError{Inner: err}
+		log.Error(err)
+
+		return err
+	}
+
+	err = m.repository.Replace(ctx, documents)
 	if err != nil {
 		log.Error(err)
+	}
+
+	err = goaoi.ForeachSlice(documents, m.hooks.PartiallySpecializeExecuteHooks(ctx, bntp.AfterAnyHook|bntp.AfterUpdateHook))
+	if err != nil {
+		err = bntp.HookExecutionError{Inner: err}
+		log.Error(err)
+
+		return err
 	}
 
 	return err
 }
 
 func (m *DocumentManager) UpdateWhere(ctx context.Context, documentFilter *domain.DocumentFilter, documentUpdater *domain.DocumentUpdater) (numAffectedRecords int64, err error) {
+	documents := []*domain.Document{}
+
+	err = goaoi.ForeachSlice(documents, m.hooks.PartiallySpecializeExecuteHooks(ctx, bntp.BeforeAnyHook|bntp.BeforeUpdateHook))
+	if err != nil {
+		err = bntp.HookExecutionError{Inner: err}
+		log.Error(err)
+
+		return
+	}
+
 	numAffectedRecords, err = m.repository.UpdateWhere(ctx, documentFilter, documentUpdater)
 	if err != nil {
 		log.Error(err)
+	}
+
+	err = goaoi.ForeachSlice(documents, m.hooks.PartiallySpecializeExecuteHooks(ctx, bntp.AfterAnyHook|bntp.AfterUpdateHook))
+	if err != nil {
+		err = bntp.HookExecutionError{Inner: err}
+		log.Error(err)
+
+		return err
 	}
 
 	return
 }
 
 func (m *DocumentManager) Delete(ctx context.Context, documents []*domain.Document) error {
-	err := m.repository.Delete(ctx, documents)
+	err := goaoi.ForeachSlice(documents, m.hooks.PartiallySpecializeExecuteHooks(ctx, bntp.BeforeAnyHook|bntp.BeforeDeleteHook))
+	if err != nil {
+		err = bntp.HookExecutionError{Inner: err}
+		log.Error(err)
+
+		return err
+	}
+
+	err = m.repository.Delete(ctx, documents)
 	if err != nil {
 		log.Error(err)
+	}
+
+	err = goaoi.ForeachSlice(documents, m.hooks.PartiallySpecializeExecuteHooks(ctx, bntp.AfterAnyHook|bntp.AfterDeleteHook))
+	if err != nil {
+		err = bntp.HookExecutionError{Inner: err}
+		log.Error(err)
+
+		return err
 	}
 
 	return err
 }
 
 func (m *DocumentManager) DeleteWhere(ctx context.Context, documentFilter *domain.DocumentFilter) (numAffectedRecords int64, err error) {
+	documents := []*domain.Document{}
+
+	err = goaoi.ForeachSlice(documents, m.hooks.PartiallySpecializeExecuteHooks(ctx, bntp.BeforeAnyHook|bntp.BeforeDeleteHook))
+	if err != nil {
+		err = bntp.HookExecutionError{Inner: err}
+		log.Error(err)
+
+		return
+	}
+
 	numAffectedRecords, err = m.repository.DeleteWhere(ctx, documentFilter)
 	if err != nil {
 		log.Error(err)
+	}
+
+	err = goaoi.ForeachSlice(documents, m.hooks.PartiallySpecializeExecuteHooks(ctx, bntp.AfterAnyHook|bntp.AfterDeleteHook))
+	if err != nil {
+		err = bntp.HookExecutionError{Inner: err}
+		log.Error(err)
+
+		return
 	}
 
 	return
 }
 
 func (m *DocumentManager) CountWhere(ctx context.Context, documentFilter *domain.DocumentFilter) (numRecords int64, err error) {
+	documents := []*domain.Document{}
+
+	err = goaoi.ForeachSlice(documents, m.hooks.PartiallySpecializeExecuteHooks(ctx, bntp.BeforeAnyHook|bntp.BeforeSelectHook))
+	if err != nil {
+		err = bntp.HookExecutionError{Inner: err}
+		log.Error(err)
+
+		return
+	}
+
 	numRecords, err = m.repository.CountWhere(ctx, documentFilter)
 	if err != nil {
 		log.Error(err)
+	}
+
+	err = goaoi.ForeachSlice(documents, m.hooks.PartiallySpecializeExecuteHooks(ctx, bntp.AfterAnyHook|bntp.AfterSelectHook))
+	if err != nil {
+		err = bntp.HookExecutionError{Inner: err}
+		log.Error(err)
+
+		return
 	}
 
 	return
 }
 
 func (m *DocumentManager) CountAll(ctx context.Context) (numRecords int64, err error) {
+	documents := []*domain.Document{}
+
+	err = goaoi.ForeachSlice(documents, m.hooks.PartiallySpecializeExecuteHooks(ctx, bntp.BeforeAnyHook|bntp.BeforeSelectHook))
+	if err != nil {
+		err = bntp.HookExecutionError{Inner: err}
+		log.Error(err)
+
+		return
+	}
+
 	numRecords, err = m.repository.CountAll(ctx)
 	if err != nil {
 		log.Error(err)
+	}
+
+	err = goaoi.ForeachSlice(documents, m.hooks.PartiallySpecializeExecuteHooks(ctx, bntp.AfterAnyHook|bntp.AfterSelectHook))
+	if err != nil {
+		err = bntp.HookExecutionError{Inner: err}
+		log.Error(err)
+
+		return
 	}
 
 	return
 }
 
 func (m *DocumentManager) DoesExist(ctx context.Context, document *domain.Document) (doesExist bool, err error) {
+	documents := []*domain.Document{document}
+
+	err = goaoi.ForeachSlice(documents, m.hooks.PartiallySpecializeExecuteHooks(ctx, bntp.BeforeAnyHook|bntp.BeforeSelectHook))
+	if err != nil {
+		err = bntp.HookExecutionError{Inner: err}
+		log.Error(err)
+
+		return
+	}
+
 	doesExist, err = m.repository.DoesExist(ctx, document)
 	if err != nil {
 		log.Error(err)
+	}
+
+	err = goaoi.ForeachSlice(documents, m.hooks.PartiallySpecializeExecuteHooks(ctx, bntp.AfterAnyHook|bntp.AfterSelectHook))
+	if err != nil {
+		err = bntp.HookExecutionError{Inner: err}
+		log.Error(err)
+
+		return
 	}
 
 	return
 }
 
 func (m *DocumentManager) DoesExistWhere(ctx context.Context, documentFilter *domain.DocumentFilter) (doesExist bool, err error) {
+	documents := []*domain.Document{}
+
+	err = goaoi.ForeachSlice(documents, m.hooks.PartiallySpecializeExecuteHooks(ctx, bntp.BeforeAnyHook|bntp.BeforeSelectHook))
+	if err != nil {
+		err = bntp.HookExecutionError{Inner: err}
+		log.Error(err)
+
+		return
+	}
+
 	doesExist, err = m.repository.DoesExistWhere(ctx, documentFilter)
 	if err != nil {
 		log.Error(err)
+	}
+
+	err = goaoi.ForeachSlice(documents, m.hooks.PartiallySpecializeExecuteHooks(ctx, bntp.AfterAnyHook|bntp.AfterSelectHook))
+	if err != nil {
+		err = bntp.HookExecutionError{Inner: err}
+		log.Error(err)
+
+		return
 	}
 
 	return
 }
 
 func (m *DocumentManager) GetWhere(ctx context.Context, documentFilter *domain.DocumentFilter) (records []*domain.Document, err error) {
+	documents := []*domain.Document{}
+
+	err = goaoi.ForeachSlice(documents, m.hooks.PartiallySpecializeExecuteHooks(ctx, bntp.BeforeAnyHook|bntp.BeforeSelectHook))
+	if err != nil {
+		err = bntp.HookExecutionError{Inner: err}
+		log.Error(err)
+
+		return
+	}
+
 	records, err = m.repository.GetWhere(ctx, documentFilter)
 	if err != nil {
 		log.Error(err)
+	}
+	err = goaoi.ForeachSlice(documents, m.hooks.PartiallySpecializeExecuteHooks(ctx, bntp.AfterAnyHook|bntp.AfterSelectHook))
+	if err != nil {
+		err = bntp.HookExecutionError{Inner: err}
+		log.Error(err)
+
+		return
 	}
 
 	return
 }
 
 func (m *DocumentManager) GetFirstWhere(ctx context.Context, documentFilter *domain.DocumentFilter) (record *domain.Document, err error) {
+	documents := []*domain.Document{}
+
+	err = goaoi.ForeachSlice(documents, m.hooks.PartiallySpecializeExecuteHooks(ctx, bntp.BeforeAnyHook|bntp.BeforeSelectHook))
+	if err != nil {
+		err = bntp.HookExecutionError{Inner: err}
+		log.Error(err)
+
+		return
+	}
+
 	record, err = m.repository.GetFirstWhere(ctx, documentFilter)
 	if err != nil {
 		log.Error(err)
+	}
+
+	err = goaoi.ForeachSlice(documents, m.hooks.PartiallySpecializeExecuteHooks(ctx, bntp.AfterAnyHook|bntp.AfterSelectHook))
+	if err != nil {
+		err = bntp.HookExecutionError{Inner: err}
+		log.Error(err)
+
+		return
 	}
 
 	return
 }
 
 func (m *DocumentManager) GetAll(ctx context.Context) (records []*domain.Document, err error) {
+	documents := []*domain.Document{}
+
+	err = goaoi.ForeachSlice(documents, m.hooks.PartiallySpecializeExecuteHooks(ctx, bntp.BeforeAnyHook|bntp.BeforeSelectHook))
+	if err != nil {
+		err = bntp.HookExecutionError{Inner: err}
+		log.Error(err)
+
+		return
+	}
+
 	records, err = m.repository.GetAll(ctx)
 	if err != nil {
 		log.Error(err)
+	}
+
+	err = goaoi.ForeachSlice(documents, m.hooks.PartiallySpecializeExecuteHooks(ctx, bntp.AfterAnyHook|bntp.AfterSelectHook))
+	if err != nil {
+		err = bntp.HookExecutionError{Inner: err}
+		log.Error(err)
+
+		return
 	}
 
 	return
 }
 
 func (m *DocumentManager) AddType(ctx context.Context, type_ string) error {
-	err := m.repository.AddType(ctx, type_)
+	documents := []*domain.Document{}
+
+	err := goaoi.ForeachSlice(documents, m.hooks.PartiallySpecializeExecuteHooks(ctx, bntp.BeforeAnyHook|bntp.BeforeAddHook))
+	if err != nil {
+		err = bntp.HookExecutionError{Inner: err}
+		log.Error(err)
+
+		return err
+	}
+
+	err = m.repository.AddType(ctx, type_)
 	if err != nil {
 		log.Error(err)
+	}
+
+	err = goaoi.ForeachSlice(documents, m.hooks.PartiallySpecializeExecuteHooks(ctx, bntp.AfterAnyHook|bntp.AfterAddHook))
+	if err != nil {
+		err = bntp.HookExecutionError{Inner: err}
+		log.Error(err)
+
+		return err
 	}
 
 	return err
 }
 
 func (m *DocumentManager) DeleteType(ctx context.Context, type_ string) error {
-	err := m.repository.DeleteType(ctx, type_)
+	documents := []*domain.Document{}
+
+	err := goaoi.ForeachSlice(documents, m.hooks.PartiallySpecializeExecuteHooks(ctx, bntp.BeforeAnyHook|bntp.BeforeDeleteHook))
+	if err != nil {
+		err = bntp.HookExecutionError{Inner: err}
+		log.Error(err)
+
+		return err
+	}
+
+	err = m.repository.DeleteType(ctx, type_)
 	if err != nil {
 		log.Error(err)
+	}
+
+	err = goaoi.ForeachSlice(documents, m.hooks.PartiallySpecializeExecuteHooks(ctx, bntp.AfterAnyHook|bntp.AfterDeleteHook))
+	if err != nil {
+		err = bntp.HookExecutionError{Inner: err}
+		log.Error(err)
+
+		return err
 	}
 
 	return err
 }
 
 func (m *DocumentManager) UpdateType(ctx context.Context, oldType string, newType string) error {
-	err := m.repository.UpdateType(ctx, oldType, newType)
+	documents := []*domain.Document{}
+
+	err := goaoi.ForeachSlice(documents, m.hooks.PartiallySpecializeExecuteHooks(ctx, bntp.BeforeAnyHook|bntp.BeforeUpdateHook))
+	if err != nil {
+		err = bntp.HookExecutionError{Inner: err}
+		log.Error(err)
+
+		return err
+	}
+
+	err = m.repository.UpdateType(ctx, oldType, newType)
 	if err != nil {
 		log.Error(err)
+	}
+
+	err = goaoi.ForeachSlice(documents, m.hooks.PartiallySpecializeExecuteHooks(ctx, bntp.AfterAnyHook|bntp.AfterUpdateHook))
+	if err != nil {
+		err = bntp.HookExecutionError{Inner: err}
+		log.Error(err)
+
+		return err
 	}
 
 	return err

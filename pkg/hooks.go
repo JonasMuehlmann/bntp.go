@@ -21,15 +21,31 @@
 package bntp
 
 import (
+	"context"
 	"errors"
+	"fmt"
+
+	"github.com/JonasMuehlmann/goaoi"
 )
 
-var BadHookPointError = errors.New("The hook point does not exist")
+var BadHookPointError = errors.New("the hook point does not exist")
 
-type hookPoint int
+type HookExecutionError struct {
+	Inner error
+}
+
+func (err HookExecutionError) Error() string {
+	return fmt.Sprintf("Error Executing hooks: %v", err.Inner)
+}
+
+func (err HookExecutionError) Unwrap() error {
+	return err.Inner
+}
+
+type HookPoint int
 
 const (
-	BeforeAddHook hookPoint = iota
+	BeforeAddHook HookPoint = 1 << iota
 	AfterAddHook
 
 	BeforeSelectHook
@@ -47,31 +63,59 @@ const (
 	BeforeAnyHook
 	AfterAnyHook
 
-	AfterError
-	AfterDeadline
-	AfterTimeout
-	AfterCancel
+	// TODO: Handle these hooks in managers.
+	AfterErrorHook
+	AfterDeadlineHook
+	AfterTimeoutHook
+	AfterCancelHook
 
 	_end
 )
 
-type Hooks[TEntityHook any] struct {
+type Hooks[TEntity any] struct {
 	// Outer dimension is a fixed size array because there is a fixed number of hookpoints
-	hooks [_end - 1][]TEntityHook
+	hooks [_end - 1][]func(context.Context, *TEntity) error
 }
 
-func (hooks Hooks[TEntityHook]) AddHook(point hookPoint, hook TEntityHook) error {
-	if point > 0 && point < _end {
-		hooks.hooks[point] = append(hooks.hooks[point], hook)
+func (hooks *Hooks[TEntity]) AddHook(point HookPoint, hook func(context.Context, *TEntity) error) error {
+	if point < 0 || point > _end {
+		return BadHookPointError
 	}
 
-	return BadHookPointError
+	for hp := 0; hp < int(_end); hp <<= 1 {
+		hooks.hooks[hp] = append(hooks.hooks[hp], hook)
+	}
+
+	return nil
 }
 
-func (hooks Hooks[TEntityHook]) ClearHooks(point hookPoint) error {
-	if point > 0 && point < _end {
-		hooks.hooks[point] = nil
+func (hooks *Hooks[TEntity]) ClearHooks(point HookPoint) error {
+	if point < 0 || point > _end {
+		return BadHookPointError
 	}
 
-	return BadHookPointError
+	for hp := 0; hp < int(_end); hp <<= 1 {
+		hooks.hooks[hp] = nil
+	}
+
+	return nil
+}
+
+func (hooks *Hooks[TEntity]) ExecuteHooks(ctx context.Context, point HookPoint, entity *TEntity) error {
+	if point < 0 || point > _end {
+		return BadHookPointError
+	}
+
+	for hp := 0; hp < int(_end); hp <<= 1 {
+		err := goaoi.ForeachSlice(hooks.hooks[point], func(hook func(context.Context, *TEntity) error) error { return hook(ctx, entity) })
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (hooks *Hooks[TEntity]) PartiallySpecializeExecuteHooks(ctx context.Context, point HookPoint) func(entity *TEntity) error {
+	return func(entity *TEntity) error { return hooks.ExecuteHooks(ctx, point, entity) }
 }
