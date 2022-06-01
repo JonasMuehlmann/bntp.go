@@ -144,7 +144,7 @@ func BookmarkDomainToSqlRepositoryFilter(db *sql.DB, domainFilter *domain.Bookma
     return
 }
 
-func BookmarkSqlRepositoryToDomainFilter(db *sql.DB, sqlRepositoryFilter *BookmarkFilter) (domainFilter domain.BookmarkFilter, err error) {
+func BookmarkSqlRepositoryToDomainFilter(db *sql.DB, sqlRepositoryFilter *BookmarkFilter) (domainFilter *domain.BookmarkFilter, err error) {
     domainFilter = new(domain.BookmarkFilter)
 
     domainFilter.URL = sqlRepositoryFilter.URL
