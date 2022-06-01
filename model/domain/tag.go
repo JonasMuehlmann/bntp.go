@@ -28,10 +28,10 @@ import (
 )
 
 type Tag struct {
-	Tag        string `json:"tag" toml:"tag" yaml:"tag"`
-	ParentPath []*Tag `json:"parentPath" toml:"parentPath" yaml:"parentPath"`
-	Subtags    []*Tag `json:"subtags" toml:"subtags" yaml:"subtags"`
 	ID         int64  `json:"id" toml:"id" yaml:"id"`
+	ParentPath []*Tag `json:"parentPath" toml:"parentPath" yaml:"parentPath"`
+	Tag        string `json:"tag" toml:"tag" yaml:"tag"`
+	Subtags    []*Tag `json:"subtags" toml:"subtags" yaml:"subtags"`
 }
 
 type TagField string
@@ -56,8 +56,8 @@ type TagFilter struct {
 }
 
 type TagUpdater struct {
-	Tag        optional.Optional[model.UpdateOperation[string]]
-	ParentPath optional.Optional[model.UpdateOperation[[]*Tag]]
-	Subtags    optional.Optional[model.UpdateOperation[[]*Tag]]
 	ID         optional.Optional[model.UpdateOperation[int64]]
+	ParentPath optional.Optional[model.UpdateOperation[[]*Tag]]
+	Tag        optional.Optional[model.UpdateOperation[string]]
+	Subtags    optional.Optional[model.UpdateOperation[[]*Tag]]
 }

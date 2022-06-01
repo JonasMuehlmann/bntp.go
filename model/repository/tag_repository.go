@@ -23,7 +23,8 @@
 package repository
 
 import (
-    "context"
+	"context"
+
 	"github.com/JonasMuehlmann/bntp.go/model/domain"
 )
 
@@ -42,5 +43,4 @@ type TagRepository interface {
 	GetWhere(ctx context.Context, columnFilter *domain.TagFilter) (records []*domain.Tag, err error)
 	GetFirstWhere(ctx context.Context, columnFilter *domain.TagFilter) (record *domain.Tag, err error)
 	GetAll(ctx context.Context) (records []*domain.Tag, err error)
-    
 }
