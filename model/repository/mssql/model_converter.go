@@ -32,7 +32,7 @@ import (
 )
 
 func BookmarkDomainToSqlRepositoryModel(db *sql.DB, domainModel *domain.Bookmark) ( sqlRepositoryModel *Bookmark, err error)  {
-    sqlRepositoryModel = &Bookmark{}
+    sqlRepositoryModel = new(Bookmark)
 
     sqlRepositoryModel.URL = domainModel.URL
     sqlRepositoryModel.ID = domainModel.ID
@@ -101,7 +101,7 @@ func BookmarkDomainToSqlRepositoryModel(db *sql.DB, domainModel *domain.Bookmark
 }
 
 func BookmarkSqlRepositoryToDomainModel(db *sql.DB, sqlRepositoryModel *Bookmark) (domainModel *domain.Bookmark, err error) {
-    domainModel = &domain.Bookmark{}
+    domainModel = new(domain.Bookmark)
 
     domainModel.URL = sqlRepositoryModel.URL
     domainModel.ID = sqlRepositoryModel.ID
@@ -145,7 +145,7 @@ func BookmarkSqlRepositoryToDomainModel(db *sql.DB, sqlRepositoryModel *Bookmark
 }
 
 func DocumentDomainToSqlRepositoryModel(db *sql.DB, domainModel *domain.Document) (sqlRepositoryModel *Document, err error)  {
-    sqlRepositoryModel = &Document{}
+    sqlRepositoryModel = new(Document)
 
     sqlRepositoryModel.Path = domainModel.Path
     sqlRepositoryModel.ID = domainModel.ID
@@ -222,7 +222,7 @@ func DocumentDomainToSqlRepositoryModel(db *sql.DB, domainModel *domain.Document
 }
 
 func DocumentSqlRepositoryToDomainModel(db *sql.DB, sqlRepositoryModel *Document) (domainModel *domain.Document, err error) {
-    domainModel = &domain.Document{}
+    domainModel = new(domain.Document)
 
     domainModel.Path = sqlRepositoryModel.Path
     domainModel.ID = sqlRepositoryModel.ID
@@ -279,7 +279,7 @@ func DocumentSqlRepositoryToDomainModel(db *sql.DB, sqlRepositoryModel *Document
 }
 
 func TagDomainToSqlRepositoryModel(db *sql.DB, domainModel *domain.Tag) (sqlRepositoryModel *Tag, err error)  {
-    sqlRepositoryModel = &Tag{}
+    sqlRepositoryModel = new(Tag)
 
     sqlRepositoryModel.ID = domainModel.ID
     sqlRepositoryModel.Tag = domainModel.Tag
@@ -316,7 +316,7 @@ func TagDomainToSqlRepositoryModel(db *sql.DB, domainModel *domain.Tag) (sqlRepo
 }
 
 func  tagDomainToRepositoryParentPathModel(db *sql.DB, domainModel *domain.Tag,distance int) (sqlRepositoryModel *TagParentPath, err error)  {
-    sqlRepositoryModel = &TagParentPath{}
+    sqlRepositoryModel = new(TagParentPath)
 
     sqlRepositoryModel.TagID = domainModel.ID
     sqlRepositoryModel.ParentTagID = domainModel.ID
@@ -326,7 +326,7 @@ func  tagDomainToRepositoryParentPathModel(db *sql.DB, domainModel *domain.Tag,d
 }
 
 func TagSqlRepositoryToDomainModel(db *sql.DB, sqlRepositoryModel *Tag) (domainModel *domain.Tag, err error) {
-    domainModel = &domain.Tag{}
+    domainModel = new(domain.Tag)
 
     domainModel.ID = sqlRepositoryModel.ID
     domainModel.Tag = sqlRepositoryModel.Tag

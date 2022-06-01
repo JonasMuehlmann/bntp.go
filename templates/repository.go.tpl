@@ -32,17 +32,17 @@ type {{.EntityName}}Repository interface {
 
 	Add(ctx context.Context, domainModels []*domain.{{.EntityName}}) error
 	Replace(ctx context.Context, domainModels []*domain.{{.EntityName}}) error
-	UpdateWhere(ctx context.Context, columnFilter domain.{{.EntityName}}Filter, columnUpdaters domain.{{.EntityName}}Updater) (numAffectedRecords int64, err error)
+	UpdateWhere(ctx context.Context, columnFilter *domain.{{.EntityName}}Filter, columnUpdaters *domain.{{.EntityName}}Updater) (numAffectedRecords int64, err error)
 	Delete(ctx context.Context, domainModels []*domain.{{.EntityName}}) error
-	DeleteWhere(ctx context.Context, columnFilter domain.{{.EntityName}}Filter) (numAffectedRecords int64, err error)
-	CountWhere(ctx context.Context, columnFilter domain.{{.EntityName}}Filter) (numRecords int64, err error)
+	DeleteWhere(ctx context.Context, columnFilter *domain.{{.EntityName}}Filter) (numAffectedRecords int64, err error)
+	CountWhere(ctx context.Context, columnFilter *domain.{{.EntityName}}Filter) (numRecords int64, err error)
 	CountAll(ctx context.Context) (numRecords int64, err error)
 	DoesExist(ctx context.Context, domainModel *domain.{{.EntityName}}) (doesExist bool, err error)
-	DoesExistWhere(ctx context.Context, columnFilter domain.{{.EntityName}}Filter) (doesExist bool, err error)
-	GetWhere(ctx context.Context, columnFilter domain.{{.EntityName}}Filter) (records []*domain.{{.EntityName}}, err error)
-	GetFirstWhere(ctx context.Context, columnFilter domain.{{.EntityName}}Filter) (record *domain.{{.EntityName}}, err error)
+	DoesExistWhere(ctx context.Context, columnFilter *domain.{{.EntityName}}Filter) (doesExist bool, err error)
+	GetWhere(ctx context.Context, columnFilter *domain.{{.EntityName}}Filter) (records []*domain.{{.EntityName}}, err error)
+	GetFirstWhere(ctx context.Context, columnFilter *domain.{{.EntityName}}Filter) (record *domain.{{.EntityName}}, err error)
 	GetAll(ctx context.Context) (records []*domain.{{.EntityName}}, err error)
-    {{if or (eq .EntityName "Bookmark") (eq .EntityName "Bookmark")}}
+    {{if or (eq .EntityName "Bookmark") (eq .EntityName "Document")}}
     AddType(ctx context.Context, type_ string) error
     DeleteType(ctx context.Context, type_ string) error
     UpdateType(ctx context.Context, oldType string, newType string) error

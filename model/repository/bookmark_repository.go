@@ -32,15 +32,15 @@ type BookmarkRepository interface {
 
 	Add(ctx context.Context, domainModels []*domain.Bookmark) error
 	Replace(ctx context.Context, domainModels []*domain.Bookmark) error
-	UpdateWhere(ctx context.Context, columnFilter domain.BookmarkFilter, columnUpdaters domain.BookmarkUpdater) (numAffectedRecords int64, err error)
+	UpdateWhere(ctx context.Context, columnFilter *domain.BookmarkFilter, columnUpdaters *domain.BookmarkUpdater) (numAffectedRecords int64, err error)
 	Delete(ctx context.Context, domainModels []*domain.Bookmark) error
-	DeleteWhere(ctx context.Context, columnFilter domain.BookmarkFilter) (numAffectedRecords int64, err error)
-	CountWhere(ctx context.Context, columnFilter domain.BookmarkFilter) (numRecords int64, err error)
+	DeleteWhere(ctx context.Context, columnFilter *domain.BookmarkFilter) (numAffectedRecords int64, err error)
+	CountWhere(ctx context.Context, columnFilter *domain.BookmarkFilter) (numRecords int64, err error)
 	CountAll(ctx context.Context) (numRecords int64, err error)
 	DoesExist(ctx context.Context, domainModel *domain.Bookmark) (doesExist bool, err error)
-	DoesExistWhere(ctx context.Context, columnFilter domain.BookmarkFilter) (doesExist bool, err error)
-	GetWhere(ctx context.Context, columnFilter domain.BookmarkFilter) (records []*domain.Bookmark, err error)
-	GetFirstWhere(ctx context.Context, columnFilter domain.BookmarkFilter) (record *domain.Bookmark, err error)
+	DoesExistWhere(ctx context.Context, columnFilter *domain.BookmarkFilter) (doesExist bool, err error)
+	GetWhere(ctx context.Context, columnFilter *domain.BookmarkFilter) (records []*domain.Bookmark, err error)
+	GetFirstWhere(ctx context.Context, columnFilter *domain.BookmarkFilter) (record *domain.Bookmark, err error)
 	GetAll(ctx context.Context) (records []*domain.Bookmark, err error)
     
     AddType(ctx context.Context, type_ string) error

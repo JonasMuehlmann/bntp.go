@@ -59,7 +59,7 @@ func (m *DocumentManager) Replace(ctx context.Context, documents []*domain.Docum
 	return err
 }
 
-func (m *DocumentManager) UpdateWhere(ctx context.Context, documentFilter domain.DocumentFilter, documentUpdater domain.DocumentUpdater) (numAffectedRecords int64, err error) {
+func (m *DocumentManager) UpdateWhere(ctx context.Context, documentFilter *domain.DocumentFilter, documentUpdater *domain.DocumentUpdater) (numAffectedRecords int64, err error) {
 	numAffectedRecords, err = m.repository.UpdateWhere(ctx, documentFilter, documentUpdater)
 	if err != nil {
 		log.Error(err)
@@ -77,7 +77,7 @@ func (m *DocumentManager) Delete(ctx context.Context, documents []*domain.Docume
 	return err
 }
 
-func (m *DocumentManager) DeleteWhere(ctx context.Context, documentFilter domain.DocumentFilter) (numAffectedRecords int64, err error) {
+func (m *DocumentManager) DeleteWhere(ctx context.Context, documentFilter *domain.DocumentFilter) (numAffectedRecords int64, err error) {
 	numAffectedRecords, err = m.repository.DeleteWhere(ctx, documentFilter)
 	if err != nil {
 		log.Error(err)
@@ -86,7 +86,7 @@ func (m *DocumentManager) DeleteWhere(ctx context.Context, documentFilter domain
 	return
 }
 
-func (m *DocumentManager) CountWhere(ctx context.Context, documentFilter domain.DocumentFilter) (numRecords int64, err error) {
+func (m *DocumentManager) CountWhere(ctx context.Context, documentFilter *domain.DocumentFilter) (numRecords int64, err error) {
 	numRecords, err = m.repository.CountWhere(ctx, documentFilter)
 	if err != nil {
 		log.Error(err)
@@ -113,7 +113,7 @@ func (m *DocumentManager) DoesExist(ctx context.Context, document *domain.Docume
 	return
 }
 
-func (m *DocumentManager) DoesExistWhere(ctx context.Context, documentFilter domain.DocumentFilter) (doesExist bool, err error) {
+func (m *DocumentManager) DoesExistWhere(ctx context.Context, documentFilter *domain.DocumentFilter) (doesExist bool, err error) {
 	doesExist, err = m.repository.DoesExistWhere(ctx, documentFilter)
 	if err != nil {
 		log.Error(err)
@@ -122,7 +122,7 @@ func (m *DocumentManager) DoesExistWhere(ctx context.Context, documentFilter dom
 	return
 }
 
-func (m *DocumentManager) GetWhere(ctx context.Context, documentFilter domain.DocumentFilter) (records []*domain.Document, err error) {
+func (m *DocumentManager) GetWhere(ctx context.Context, documentFilter *domain.DocumentFilter) (records []*domain.Document, err error) {
 	records, err = m.repository.GetWhere(ctx, documentFilter)
 	if err != nil {
 		log.Error(err)
@@ -131,7 +131,7 @@ func (m *DocumentManager) GetWhere(ctx context.Context, documentFilter domain.Do
 	return
 }
 
-func (m *DocumentManager) GetFirstWhere(ctx context.Context, documentFilter domain.DocumentFilter) (record *domain.Document, err error) {
+func (m *DocumentManager) GetFirstWhere(ctx context.Context, documentFilter *domain.DocumentFilter) (record *domain.Document, err error) {
 	record, err = m.repository.GetFirstWhere(ctx, documentFilter)
 	if err != nil {
 		log.Error(err)

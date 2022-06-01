@@ -381,7 +381,7 @@ func (repo * Sqlite3BookmarkRepository) New(args ...any) (Sqlite3BookmarkReposit
         panic("not implemented") // TODO: Implement
 }
 
-func (repo *Sqlite3BookmarkRepository) Add(ctx context.Context, domainModels []domain.Bookmark) error {
+func (repo *Sqlite3BookmarkRepository) Add(ctx context.Context, domainModels []*domain.Bookmark) error {
     repositoryModels, err := goaoi.TransformCopySlice(domainModels, GetBookmarkDomainToSqlRepositoryModel(repo.db))
 	if err != nil {
 		return err
@@ -404,7 +404,7 @@ func (repo *Sqlite3BookmarkRepository) Add(ctx context.Context, domainModels []d
     return nil
 }
 
-func (repo *Sqlite3BookmarkRepository) Replace(ctx context.Context, domainModels []domain.Bookmark) error {
+func (repo *Sqlite3BookmarkRepository) Replace(ctx context.Context, domainModels []*domain.Bookmark) error {
     repositoryModels, err := goaoi.TransformCopySlice(domainModels, GetBookmarkDomainToSqlRepositoryModel(repo.db))
 	if err != nil {
 		return err
@@ -427,7 +427,7 @@ func (repo *Sqlite3BookmarkRepository) Replace(ctx context.Context, domainModels
     return nil
 }
 
-func (repo *Sqlite3BookmarkRepository) UpdateWhere(ctx context.Context, domainColumnFilter domain.BookmarkFilter, domainColumnUpdater domain.BookmarkUpdater) (numAffectedRecords int64, err error) {
+func (repo *Sqlite3BookmarkRepository) UpdateWhere(ctx context.Context, domainColumnFilter *domain.BookmarkFilter, domainColumnUpdater *domain.BookmarkUpdater) (numAffectedRecords int64, err error) {
     // NOTE: This kind of update is inefficient, since we do a read just to do a write later, but at the moment there is no better way
     // Either SQLboiler adds support for this usecase or (preferably), we use the caching and hook system to avoid database interaction, when it is not needed
 
@@ -470,7 +470,7 @@ func (repo *Sqlite3BookmarkRepository) UpdateWhere(ctx context.Context, domainCo
     return
 }
 
-func (repo *Sqlite3BookmarkRepository) Delete(ctx context.Context, domainModels []domain.Bookmark) error {
+func (repo *Sqlite3BookmarkRepository) Delete(ctx context.Context, domainModels []*domain.Bookmark) error {
     repositoryModels, err := goaoi.TransformCopySlice(domainModels, GetBookmarkDomainToSqlRepositoryModel(repo.db))
 	if err != nil {
 		return err
@@ -493,7 +493,7 @@ func (repo *Sqlite3BookmarkRepository) Delete(ctx context.Context, domainModels 
     return nil
 }
 
-func (repo *Sqlite3BookmarkRepository) DeleteWhere(ctx context.Context, domainColumnFilter domain.BookmarkFilter) (numAffectedRecords int64, err error) {
+func (repo *Sqlite3BookmarkRepository) DeleteWhere(ctx context.Context, domainColumnFilter *domain.BookmarkFilter) (numAffectedRecords int64, err error) {
     columnFilter, err := BookmarkDomainToSqlRepositoryFilter(repo.db, domainColumnFilter)
     if err != nil {
         return
@@ -515,7 +515,7 @@ func (repo *Sqlite3BookmarkRepository) DeleteWhere(ctx context.Context, domainCo
     return
 }
 
-func (repo *Sqlite3BookmarkRepository) CountWhere(ctx context.Context, domainColumnFilter domain.BookmarkFilter) (int64, error) {
+func (repo *Sqlite3BookmarkRepository) CountWhere(ctx context.Context, domainColumnFilter *domain.BookmarkFilter) (int64, error) {
     columnFilter, err := BookmarkDomainToSqlRepositoryFilter(repo.db, domainColumnFilter)
     if err != nil {
         return 0, err
@@ -542,7 +542,7 @@ func (repo *Sqlite3BookmarkRepository) DoesExist(ctx context.Context, domainMode
 	return BookmarkExists(ctx, repo.db, repositoryModel.ID)
 }
 
-func (repo *Sqlite3BookmarkRepository) DoesExistWhere(ctx context.Context, domainColumnFilter domain.BookmarkFilter) (bool, error) {
+func (repo *Sqlite3BookmarkRepository) DoesExistWhere(ctx context.Context, domainColumnFilter *domain.BookmarkFilter) (bool, error) {
     columnFilter, err := BookmarkDomainToSqlRepositoryFilter(repo.db, domainColumnFilter)
     if err != nil {
         return false, err
@@ -555,7 +555,7 @@ func (repo *Sqlite3BookmarkRepository) DoesExistWhere(ctx context.Context, domai
 	return Bookmarks(queryFilters...).Exists(ctx, repo.db)
 }
 
-func (repo *Sqlite3BookmarkRepository) GetWhere(ctx context.Context, domainColumnFilter domain.BookmarkFilter) ([]*domain.Bookmark, error) {
+func (repo *Sqlite3BookmarkRepository) GetWhere(ctx context.Context, domainColumnFilter *domain.BookmarkFilter) ([]*domain.Bookmark, error) {
     columnFilter, err := BookmarkDomainToSqlRepositoryFilter(repo.db, domainColumnFilter)
     if err != nil {
         return []*domain.Bookmark{}, err
@@ -571,7 +571,7 @@ func (repo *Sqlite3BookmarkRepository) GetWhere(ctx context.Context, domainColum
     return domainModels, err
 }
 
-func (repo *Sqlite3BookmarkRepository) GetFirstWhere(ctx context.Context, domainColumnFilter domain.BookmarkFilter) (*domain.Bookmark, error) {
+func (repo *Sqlite3BookmarkRepository) GetFirstWhere(ctx context.Context, domainColumnFilter *domain.BookmarkFilter) (*domain.Bookmark, error) {
     columnFilter, err := BookmarkDomainToSqlRepositoryFilter(repo.db, domainColumnFilter)
     if err != nil {
         return nil, err

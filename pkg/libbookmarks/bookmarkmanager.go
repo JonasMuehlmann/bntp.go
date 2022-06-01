@@ -59,7 +59,7 @@ func (m *BookmarkManager) Replace(ctx context.Context, bookmarks []*domain.Bookm
 	return err
 }
 
-func (m *BookmarkManager) UpdateWhere(ctx context.Context, bookmarkFilter domain.BookmarkFilter, bookmarkUpdater domain.BookmarkUpdater) (numAffectedRecords int64, err error) {
+func (m *BookmarkManager) UpdateWhere(ctx context.Context, bookmarkFilter *domain.BookmarkFilter, bookmarkUpdater *domain.BookmarkUpdater) (numAffectedRecords int64, err error) {
 	numAffectedRecords, err = m.repository.UpdateWhere(ctx, bookmarkFilter, bookmarkUpdater)
 	if err != nil {
 		log.Error(err)
@@ -77,7 +77,7 @@ func (m *BookmarkManager) Delete(ctx context.Context, bookmarks []*domain.Bookma
 	return err
 }
 
-func (m *BookmarkManager) DeleteWhere(ctx context.Context, bookmarkFilter domain.BookmarkFilter) (numAffectedRecords int64, err error) {
+func (m *BookmarkManager) DeleteWhere(ctx context.Context, bookmarkFilter *domain.BookmarkFilter) (numAffectedRecords int64, err error) {
 	numAffectedRecords, err = m.repository.DeleteWhere(ctx, bookmarkFilter)
 	if err != nil {
 		log.Error(err)
@@ -86,7 +86,7 @@ func (m *BookmarkManager) DeleteWhere(ctx context.Context, bookmarkFilter domain
 	return
 }
 
-func (m *BookmarkManager) CountWhere(ctx context.Context, bookmarkFilter domain.BookmarkFilter) (numRecords int64, err error) {
+func (m *BookmarkManager) CountWhere(ctx context.Context, bookmarkFilter *domain.BookmarkFilter) (numRecords int64, err error) {
 	numRecords, err = m.repository.CountWhere(ctx, bookmarkFilter)
 	if err != nil {
 		log.Error(err)
@@ -113,7 +113,7 @@ func (m *BookmarkManager) DoesExist(ctx context.Context, bookmark *domain.Bookma
 	return
 }
 
-func (m *BookmarkManager) DoesExistWhere(ctx context.Context, bookmarkFilter domain.BookmarkFilter) (doesExist bool, err error) {
+func (m *BookmarkManager) DoesExistWhere(ctx context.Context, bookmarkFilter *domain.BookmarkFilter) (doesExist bool, err error) {
 	doesExist, err = m.repository.DoesExistWhere(ctx, bookmarkFilter)
 	if err != nil {
 		log.Error(err)
@@ -122,7 +122,7 @@ func (m *BookmarkManager) DoesExistWhere(ctx context.Context, bookmarkFilter dom
 	return
 }
 
-func (m *BookmarkManager) GetWhere(ctx context.Context, bookmarkFilter domain.BookmarkFilter) (records []*domain.Bookmark, err error) {
+func (m *BookmarkManager) GetWhere(ctx context.Context, bookmarkFilter *domain.BookmarkFilter) (records []*domain.Bookmark, err error) {
 	records, err = m.repository.GetWhere(ctx, bookmarkFilter)
 	if err != nil {
 		log.Error(err)
@@ -131,7 +131,7 @@ func (m *BookmarkManager) GetWhere(ctx context.Context, bookmarkFilter domain.Bo
 	return
 }
 
-func (m *BookmarkManager) GetFirstWhere(ctx context.Context, bookmarkFilter domain.BookmarkFilter) (record *domain.Bookmark, err error) {
+func (m *BookmarkManager) GetFirstWhere(ctx context.Context, bookmarkFilter *domain.BookmarkFilter) (record *domain.Bookmark, err error) {
 	record, err = m.repository.GetFirstWhere(ctx, bookmarkFilter)
 	if err != nil {
 		log.Error(err)

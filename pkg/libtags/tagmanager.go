@@ -55,7 +55,7 @@ func (m *TagManager) Replace(ctx context.Context, tags []*domain.Tag) error {
 	return err
 }
 
-func (m *TagManager) UpdateWhere(ctx context.Context, tagFilter domain.TagFilter, tagUpdater domain.TagUpdater) (numAffectedRecords int64, err error) {
+func (m *TagManager) UpdateWhere(ctx context.Context, tagFilter *domain.TagFilter, tagUpdater *domain.TagUpdater) (numAffectedRecords int64, err error) {
 	numAffectedRecords, err = m.repository.UpdateWhere(ctx, tagFilter, tagUpdater)
 	if err != nil {
 		log.Error(err)
@@ -73,7 +73,7 @@ func (m *TagManager) Delete(ctx context.Context, tags []*domain.Tag) error {
 	return err
 }
 
-func (m *TagManager) DeleteWhere(ctx context.Context, tagFilter domain.TagFilter) (numAffectedRecords int64, err error) {
+func (m *TagManager) DeleteWhere(ctx context.Context, tagFilter *domain.TagFilter) (numAffectedRecords int64, err error) {
 	numAffectedRecords, err = m.repository.DeleteWhere(ctx, tagFilter)
 	if err != nil {
 		log.Error(err)
@@ -82,7 +82,7 @@ func (m *TagManager) DeleteWhere(ctx context.Context, tagFilter domain.TagFilter
 	return
 }
 
-func (m *TagManager) CountWhere(ctx context.Context, tagFilter domain.TagFilter) (numRecords int64, err error) {
+func (m *TagManager) CountWhere(ctx context.Context, tagFilter *domain.TagFilter) (numRecords int64, err error) {
 	numRecords, err = m.repository.CountWhere(ctx, tagFilter)
 	if err != nil {
 		log.Error(err)
@@ -109,7 +109,7 @@ func (m *TagManager) DoesExist(ctx context.Context, tag *domain.Tag) (doesExist 
 	return
 }
 
-func (m *TagManager) DoesExistWhere(ctx context.Context, tagFilter domain.TagFilter) (doesExist bool, err error) {
+func (m *TagManager) DoesExistWhere(ctx context.Context, tagFilter *domain.TagFilter) (doesExist bool, err error) {
 	doesExist, err = m.repository.DoesExistWhere(ctx, tagFilter)
 	if err != nil {
 		log.Error(err)
@@ -118,7 +118,7 @@ func (m *TagManager) DoesExistWhere(ctx context.Context, tagFilter domain.TagFil
 	return
 }
 
-func (m *TagManager) GetWhere(ctx context.Context, tagFilter domain.TagFilter) (records []*domain.Tag, err error) {
+func (m *TagManager) GetWhere(ctx context.Context, tagFilter *domain.TagFilter) (records []*domain.Tag, err error) {
 	records, err = m.repository.GetWhere(ctx, tagFilter)
 	if err != nil {
 		log.Error(err)
@@ -127,7 +127,7 @@ func (m *TagManager) GetWhere(ctx context.Context, tagFilter domain.TagFilter) (
 	return
 }
 
-func (m *TagManager) GetFirstWhere(ctx context.Context, tagFilter domain.TagFilter) (record *domain.Tag, err error) {
+func (m *TagManager) GetFirstWhere(ctx context.Context, tagFilter *domain.TagFilter) (record *domain.Tag, err error) {
 	record, err = m.repository.GetFirstWhere(ctx, tagFilter)
 	if err != nil {
 		log.Error(err)

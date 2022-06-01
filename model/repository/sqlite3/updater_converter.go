@@ -31,8 +31,8 @@ import (
     "context"
 )
 
-func BookmarkDomainToSqlRepositoryUpdater(db *sql.DB, domainUpdater domain.BookmarkUpdater) (sqlRepositoryUpdater BookmarkUpdater, err error)  {
-    sqlRepositoryUpdater = BookmarkUpdater{}
+func BookmarkDomainToSqlRepositoryUpdater(db *sql.DB, domainUpdater *domain.BookmarkUpdater) (sqlRepositoryUpdater *BookmarkUpdater, err error)  {
+    sqlRepositoryUpdater = new(BookmarkUpdater)
 
 	if domainUpdater.CreatedAt.HasValue {
         
@@ -143,8 +143,8 @@ func BookmarkDomainToSqlRepositoryUpdater(db *sql.DB, domainUpdater domain.Bookm
 
 }
 
-func DocumentDomainToSqlRepositoryUpdater(db *sql.DB, domainUpdater domain.DocumentUpdater) (sqlRepositoryUpdater DocumentUpdater, err error)  {
-    sqlRepositoryUpdater = DocumentUpdater{}
+func DocumentDomainToSqlRepositoryUpdater(db *sql.DB, domainUpdater *domain.DocumentUpdater) (sqlRepositoryUpdater *DocumentUpdater, err error)  {
+    sqlRepositoryUpdater = new(DocumentUpdater)
 
 	if domainUpdater.DocumentType.HasValue {
         var convertedUpdater *DocumentType
@@ -255,8 +255,8 @@ func DocumentDomainToSqlRepositoryUpdater(db *sql.DB, domainUpdater domain.Docum
     return
 }
 
-func TagDomainToSqlRepositoryUpdater(db *sql.DB, domainUpdater domain.TagUpdater) (sqlRepositoryUpdater TagUpdater, err error)  {
-    sqlRepositoryUpdater = TagUpdater{}
+func TagDomainToSqlRepositoryUpdater(db *sql.DB, domainUpdater *domain.TagUpdater) (sqlRepositoryUpdater *TagUpdater, err error)  {
+    sqlRepositoryUpdater = new(TagUpdater)
 
 	if domainUpdater.Tag.HasValue {
         sqlRepositoryUpdater.Tag.Push(model.UpdateOperation[string]{Operator: domainUpdater.Tag.Wrappee.Operator, Operand: sqlRepositoryUpdater.Tag.Wrappee.Operand})

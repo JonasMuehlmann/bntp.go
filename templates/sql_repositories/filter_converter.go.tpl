@@ -34,8 +34,8 @@ import (
 )
 
 
-func BookmarkDomainToSqlRepositoryFilter(db *sql.DB, domainFilter domain.{{.Entities.Bookmark}}Filter) (sqlRepositoryFilter {{.Entities.Bookmark}}Filter, err error)  {
-    sqlRepositoryFilter = {{.Entities.Bookmark}}Filter{}
+func BookmarkDomainToSqlRepositoryFilter(db *sql.DB, domainFilter *domain.{{.Entities.Bookmark}}Filter) (sqlRepositoryFilter *{{.Entities.Bookmark}}Filter, err error)  {
+    sqlRepositoryFilter = new({{.Entities.Bookmark}}Filter)
 
     sqlRepositoryFilter.URL = domainFilter.URL
     sqlRepositoryFilter.ID = domainFilter.ID
@@ -197,8 +197,8 @@ func BookmarkDomainToSqlRepositoryFilter(db *sql.DB, domainFilter domain.{{.Enti
     return
 }
 
-func BookmarkSqlRepositoryToDomainFilter(db *sql.DB, sqlRepositoryFilter {{.Entities.Bookmark}}Filter) (domainFilter domain.{{.Entities.Bookmark}}Filter, err error) {
-    domainFilter = domain.{{.Entities.Bookmark}}Filter{}
+func BookmarkSqlRepositoryToDomainFilter(db *sql.DB, sqlRepositoryFilter *{{.Entities.Bookmark}}Filter) (domainFilter domain.{{.Entities.Bookmark}}Filter, err error) {
+    domainFilter = new(domain.{{.Entities.Bookmark}}Filter)
 
     domainFilter.URL = sqlRepositoryFilter.URL
     domainFilter.ID = sqlRepositoryFilter.ID
@@ -343,8 +343,8 @@ func BookmarkSqlRepositoryToDomainFilter(db *sql.DB, sqlRepositoryFilter {{.Enti
     return
 }
 
-func DocumentDomainToSqlRepositoryFilter(db *sql.DB, domainFilter domain.{{.Entities.Document}}Filter) (sqlRepositoryFilter {{.Entities.Document}}Filter, err error)  {
-    sqlRepositoryFilter = {{.Entities.Document}}Filter{}
+func DocumentDomainToSqlRepositoryFilter(db *sql.DB, domainFilter *domain.{{.Entities.Document}}Filter) (sqlRepositoryFilter *{{.Entities.Document}}Filter, err error)  {
+    sqlRepositoryFilter = new({{.Entities.Document}}Filter)
 
     sqlRepositoryFilter.Path = domainFilter.Path
     sqlRepositoryFilter.ID = domainFilter.ID
@@ -475,8 +475,8 @@ func DocumentDomainToSqlRepositoryFilter(db *sql.DB, domainFilter domain.{{.Enti
     return
 }
 
-func DocumentSqlRepositoryToDomainFilter(db *sql.DB, sqlRepositoryFilter {{.Entities.Document}}Filter) (domainFilter domain.{{.Entities.Document}}Filter, err error) {
-    domainFilter = domain.{{.Entities.Document}}Filter{}
+func DocumentSqlRepositoryToDomainFilter(db *sql.DB, sqlRepositoryFilter *{{.Entities.Document}}Filter) (domainFilter *domain.{{.Entities.Document}}Filter, err error) {
+    domainFilter = new(domain.{{.Entities.Document}}Filter)
 
     domainFilter.Path = sqlRepositoryFilter.Path
     domainFilter.ID = sqlRepositoryFilter.ID
@@ -609,8 +609,8 @@ func DocumentSqlRepositoryToDomainFilter(db *sql.DB, sqlRepositoryFilter {{.Enti
     return
 }
 
-func TagDomainToSqlRepositoryFilter(db *sql.DB, domainFilter domain.{{.Entities.Tag}}Filter) (sqlRepositoryFilter {{.Entities.Tag}}Filter, err error)  {
-    sqlRepositoryFilter = {{.Entities.Tag}}Filter{}
+func TagDomainToSqlRepositoryFilter(db *sql.DB, domainFilter domain.{{.Entities.Tag}}Filter) (sqlRepositoryFilter *{{.Entities.Tag}}Filter, err error)  {
+    sqlRepositoryFilter = new({{.Entities.Tag}}Filter)
 
     sqlRepositoryFilter.ID = domainFilter.ID
     sqlRepositoryFilter.Tag = domainFilter.Tag
@@ -644,8 +644,8 @@ func TagDomainToSqlRepositoryFilter(db *sql.DB, domainFilter domain.{{.Entities.
     return
 }
 
-func TagSqlRepositoryToDomainFilter(db *sql.DB, sqlRepositoryFilter {{.Entities.Tag}}Filter) (domainFilter domain.{{.Entities.Tag}}Filter, err error) {
-    domainFilter = domain.{{.Entities.Tag}}Filter{}
+func TagSqlRepositoryToDomainFilter(db *sql.DB, sqlRepositoryFilter *{{.Entities.Tag}}Filter) (domainFilter *domain.{{.Entities.Tag}}Filter, err error) {
+    domainFilter = new(domain.{{.Entities.Tag}}Filter)
 
     domainFilter.ID = sqlRepositoryFilter.ID
     domainFilter.Tag = sqlRepositoryFilter.Tag

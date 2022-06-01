@@ -32,15 +32,19 @@ type DocumentRepository interface {
 
 	Add(ctx context.Context, domainModels []*domain.Document) error
 	Replace(ctx context.Context, domainModels []*domain.Document) error
-	UpdateWhere(ctx context.Context, columnFilter domain.DocumentFilter, columnUpdaters domain.DocumentUpdater) (numAffectedRecords int64, err error)
+	UpdateWhere(ctx context.Context, columnFilter *domain.DocumentFilter, columnUpdaters *domain.DocumentUpdater) (numAffectedRecords int64, err error)
 	Delete(ctx context.Context, domainModels []*domain.Document) error
-	DeleteWhere(ctx context.Context, columnFilter domain.DocumentFilter) (numAffectedRecords int64, err error)
-	CountWhere(ctx context.Context, columnFilter domain.DocumentFilter) (numRecords int64, err error)
+	DeleteWhere(ctx context.Context, columnFilter *domain.DocumentFilter) (numAffectedRecords int64, err error)
+	CountWhere(ctx context.Context, columnFilter *domain.DocumentFilter) (numRecords int64, err error)
 	CountAll(ctx context.Context) (numRecords int64, err error)
 	DoesExist(ctx context.Context, domainModel *domain.Document) (doesExist bool, err error)
-	DoesExistWhere(ctx context.Context, columnFilter domain.DocumentFilter) (doesExist bool, err error)
-	GetWhere(ctx context.Context, columnFilter domain.DocumentFilter) (records []*domain.Document, err error)
-	GetFirstWhere(ctx context.Context, columnFilter domain.DocumentFilter) (record *domain.Document, err error)
+	DoesExistWhere(ctx context.Context, columnFilter *domain.DocumentFilter) (doesExist bool, err error)
+	GetWhere(ctx context.Context, columnFilter *domain.DocumentFilter) (records []*domain.Document, err error)
+	GetFirstWhere(ctx context.Context, columnFilter *domain.DocumentFilter) (record *domain.Document, err error)
 	GetAll(ctx context.Context) (records []*domain.Document, err error)
+    
+    AddType(ctx context.Context, type_ string) error
+    DeleteType(ctx context.Context, type_ string) error
+    UpdateType(ctx context.Context, oldType string, newType string) error
     
 }

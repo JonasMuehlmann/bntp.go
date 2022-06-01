@@ -23,8 +23,7 @@
 package repository
 
 import (
-	"context"
-
+    "context"
 	"github.com/JonasMuehlmann/bntp.go/model/domain"
 )
 
@@ -33,14 +32,15 @@ type TagRepository interface {
 
 	Add(ctx context.Context, domainModels []*domain.Tag) error
 	Replace(ctx context.Context, domainModels []*domain.Tag) error
-	UpdateWhere(ctx context.Context, columnFilter domain.TagFilter, columnUpdaters domain.TagUpdater) (numAffectedRecords int64, err error)
+	UpdateWhere(ctx context.Context, columnFilter *domain.TagFilter, columnUpdaters *domain.TagUpdater) (numAffectedRecords int64, err error)
 	Delete(ctx context.Context, domainModels []*domain.Tag) error
-	DeleteWhere(ctx context.Context, columnFilter domain.TagFilter) (numAffectedRecords int64, err error)
-	CountWhere(ctx context.Context, columnFilter domain.TagFilter) (numRecords int64, err error)
+	DeleteWhere(ctx context.Context, columnFilter *domain.TagFilter) (numAffectedRecords int64, err error)
+	CountWhere(ctx context.Context, columnFilter *domain.TagFilter) (numRecords int64, err error)
 	CountAll(ctx context.Context) (numRecords int64, err error)
 	DoesExist(ctx context.Context, domainModel *domain.Tag) (doesExist bool, err error)
-	DoesExistWhere(ctx context.Context, columnFilter domain.TagFilter) (doesExist bool, err error)
-	GetWhere(ctx context.Context, columnFilter domain.TagFilter) (records []*domain.Tag, err error)
-	GetFirstWhere(ctx context.Context, columnFilter domain.TagFilter) (record *domain.Tag, err error)
+	DoesExistWhere(ctx context.Context, columnFilter *domain.TagFilter) (doesExist bool, err error)
+	GetWhere(ctx context.Context, columnFilter *domain.TagFilter) (records []*domain.Tag, err error)
+	GetFirstWhere(ctx context.Context, columnFilter *domain.TagFilter) (record *domain.Tag, err error)
 	GetAll(ctx context.Context) (records []*domain.Tag, err error)
+    
 }

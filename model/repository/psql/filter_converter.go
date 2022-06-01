@@ -34,8 +34,8 @@ import (
 )
 
 
-func BookmarkDomainToSqlRepositoryFilter(db *sql.DB, domainFilter domain.BookmarkFilter) (sqlRepositoryFilter BookmarkFilter, err error)  {
-    sqlRepositoryFilter = BookmarkFilter{}
+func BookmarkDomainToSqlRepositoryFilter(db *sql.DB, domainFilter *domain.BookmarkFilter) (sqlRepositoryFilter *BookmarkFilter, err error)  {
+    sqlRepositoryFilter = new(BookmarkFilter)
 
     sqlRepositoryFilter.URL = domainFilter.URL
     sqlRepositoryFilter.ID = domainFilter.ID
@@ -144,8 +144,8 @@ func BookmarkDomainToSqlRepositoryFilter(db *sql.DB, domainFilter domain.Bookmar
     return
 }
 
-func BookmarkSqlRepositoryToDomainFilter(db *sql.DB, sqlRepositoryFilter BookmarkFilter) (domainFilter domain.BookmarkFilter, err error) {
-    domainFilter = domain.BookmarkFilter{}
+func BookmarkSqlRepositoryToDomainFilter(db *sql.DB, sqlRepositoryFilter *BookmarkFilter) (domainFilter domain.BookmarkFilter, err error) {
+    domainFilter = new(domain.BookmarkFilter)
 
     domainFilter.URL = sqlRepositoryFilter.URL
     domainFilter.ID = sqlRepositoryFilter.ID
@@ -259,8 +259,8 @@ func BookmarkSqlRepositoryToDomainFilter(db *sql.DB, sqlRepositoryFilter Bookmar
     return
 }
 
-func DocumentDomainToSqlRepositoryFilter(db *sql.DB, domainFilter domain.DocumentFilter) (sqlRepositoryFilter DocumentFilter, err error)  {
-    sqlRepositoryFilter = DocumentFilter{}
+func DocumentDomainToSqlRepositoryFilter(db *sql.DB, domainFilter *domain.DocumentFilter) (sqlRepositoryFilter *DocumentFilter, err error)  {
+    sqlRepositoryFilter = new(DocumentFilter)
 
     sqlRepositoryFilter.Path = domainFilter.Path
     sqlRepositoryFilter.ID = domainFilter.ID
@@ -360,8 +360,8 @@ func DocumentDomainToSqlRepositoryFilter(db *sql.DB, domainFilter domain.Documen
     return
 }
 
-func DocumentSqlRepositoryToDomainFilter(db *sql.DB, sqlRepositoryFilter DocumentFilter) (domainFilter domain.DocumentFilter, err error) {
-    domainFilter = domain.DocumentFilter{}
+func DocumentSqlRepositoryToDomainFilter(db *sql.DB, sqlRepositoryFilter *DocumentFilter) (domainFilter *domain.DocumentFilter, err error) {
+    domainFilter = new(domain.DocumentFilter)
 
     domainFilter.Path = sqlRepositoryFilter.Path
     domainFilter.ID = sqlRepositoryFilter.ID
@@ -463,8 +463,8 @@ func DocumentSqlRepositoryToDomainFilter(db *sql.DB, sqlRepositoryFilter Documen
     return
 }
 
-func TagDomainToSqlRepositoryFilter(db *sql.DB, domainFilter domain.TagFilter) (sqlRepositoryFilter TagFilter, err error)  {
-    sqlRepositoryFilter = TagFilter{}
+func TagDomainToSqlRepositoryFilter(db *sql.DB, domainFilter domain.TagFilter) (sqlRepositoryFilter *TagFilter, err error)  {
+    sqlRepositoryFilter = new(TagFilter)
 
     sqlRepositoryFilter.ID = domainFilter.ID
     sqlRepositoryFilter.Tag = domainFilter.Tag
@@ -498,8 +498,8 @@ func TagDomainToSqlRepositoryFilter(db *sql.DB, domainFilter domain.TagFilter) (
     return
 }
 
-func TagSqlRepositoryToDomainFilter(db *sql.DB, sqlRepositoryFilter TagFilter) (domainFilter domain.TagFilter, err error) {
-    domainFilter = domain.TagFilter{}
+func TagSqlRepositoryToDomainFilter(db *sql.DB, sqlRepositoryFilter *TagFilter) (domainFilter *domain.TagFilter, err error) {
+    domainFilter = new(domain.TagFilter)
 
     domainFilter.ID = sqlRepositoryFilter.ID
     domainFilter.Tag = sqlRepositoryFilter.Tag

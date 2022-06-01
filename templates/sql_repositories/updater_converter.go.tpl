@@ -31,8 +31,8 @@ import (
     "context"
 )
 
-func BookmarkDomainToSqlRepositoryUpdater(db *sql.DB, domainUpdater domain.{{.Entities.Bookmark}}Updater) (sqlRepositoryUpdater {{.Entities.Bookmark}}Updater, err error)  {
-    sqlRepositoryUpdater = {{.Entities.Bookmark}}Updater{}
+func BookmarkDomainToSqlRepositoryUpdater(db *sql.DB, domainUpdater *domain.{{.Entities.Bookmark}}Updater) (sqlRepositoryUpdater *{{.Entities.Bookmark}}Updater, err error)  {
+    sqlRepositoryUpdater = new({{.Entities.Bookmark}}Updater)
 
 	if domainUpdater.CreatedAt.HasValue {
         {{ if eq .DatabaseName "sqlite3" }}
@@ -149,8 +149,8 @@ func BookmarkDomainToSqlRepositoryUpdater(db *sql.DB, domainUpdater domain.{{.En
 
 }
 
-func DocumentDomainToSqlRepositoryUpdater(db *sql.DB, domainUpdater domain.{{.Entities.Document}}Updater) (sqlRepositoryUpdater {{.Entities.Document}}Updater, err error)  {
-    sqlRepositoryUpdater = {{.Entities.Document}}Updater{}
+func DocumentDomainToSqlRepositoryUpdater(db *sql.DB, domainUpdater *domain.{{.Entities.Document}}Updater) (sqlRepositoryUpdater *{{.Entities.Document}}Updater, err error)  {
+    sqlRepositoryUpdater = new({{.Entities.Document}}Updater)
 
 	if domainUpdater.DocumentType.HasValue {
         var convertedUpdater *DocumentType
@@ -267,8 +267,8 @@ func DocumentDomainToSqlRepositoryUpdater(db *sql.DB, domainUpdater domain.{{.En
     return
 }
 
-func TagDomainToSqlRepositoryUpdater(db *sql.DB, domainUpdater domain.{{.Entities.Tag}}Updater) (sqlRepositoryUpdater {{.Entities.Tag}}Updater, err error)  {
-    sqlRepositoryUpdater = {{.Entities.Tag}}Updater{}
+func TagDomainToSqlRepositoryUpdater(db *sql.DB, domainUpdater *domain.{{.Entities.Tag}}Updater) (sqlRepositoryUpdater *{{.Entities.Tag}}Updater, err error)  {
+    sqlRepositoryUpdater = new({{.Entities.Tag}}Updater)
 
 	if domainUpdater.Tag.HasValue {
         sqlRepositoryUpdater.Tag.Push(model.UpdateOperation[string]{Operator: domainUpdater.Tag.Wrappee.Operator, Operand: sqlRepositoryUpdater.Tag.Wrappee.Operand})
