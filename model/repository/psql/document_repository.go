@@ -345,7 +345,7 @@ func (repo * PsqlDocumentRepository) New(args ...any) (PsqlDocumentRepository, e
         panic("not implemented") // TODO: Implement
 }
 
-func (repo *PsqlDocumentRepository) Add(ctx context.Context, domainModels []domain.Document) error {
+func (repo *PsqlDocumentRepository) Add(ctx context.Context, domainModels []*domain.Document) error {
     repositoryModels, err := goaoi.TransformCopySlice(domainModels, GetDocumentDomainToSqlRepositoryModel(repo.db))
 	if err != nil {
 		return err
@@ -368,7 +368,7 @@ func (repo *PsqlDocumentRepository) Add(ctx context.Context, domainModels []doma
     return nil
 }
 
-func (repo *PsqlDocumentRepository) Replace(ctx context.Context, domainModels []domain.Document) error {
+func (repo *PsqlDocumentRepository) Replace(ctx context.Context, domainModels []*domain.Document) error {
     repositoryModels, err := goaoi.TransformCopySlice(domainModels, GetDocumentDomainToSqlRepositoryModel(repo.db))
 	if err != nil {
 		return err
@@ -391,7 +391,7 @@ func (repo *PsqlDocumentRepository) Replace(ctx context.Context, domainModels []
     return nil
 }
 
-func (repo *PsqlDocumentRepository) UpdateWhere(ctx context.Context, domainColumnFilter domain.DocumentFilter, domainColumnUpdater domain.DocumentUpdater) (numAffectedRecords int64, err error) {
+func (repo *PsqlDocumentRepository) UpdateWhere(ctx context.Context, domainColumnFilter *domain.DocumentFilter, domainColumnUpdater *domain.DocumentUpdater) (numAffectedRecords int64, err error) {
     // NOTE: This kind of update is inefficient, since we do a read just to do a write later, but at the moment there is no better way
     // Either SQLboiler adds support for this usecase or (preferably), we use the caching and hook system to avoid database interaction, when it is not needed
 
@@ -435,7 +435,7 @@ func (repo *PsqlDocumentRepository) UpdateWhere(ctx context.Context, domainColum
     return
 }
 
-func (repo *PsqlDocumentRepository) Delete(ctx context.Context, domainModels []domain.Document) error {
+func (repo *PsqlDocumentRepository) Delete(ctx context.Context, domainModels []*domain.Document) error {
     repositoryModels, err := goaoi.TransformCopySlice(domainModels, GetDocumentDomainToSqlRepositoryModel(repo.db))
 	if err != nil {
 		return err
@@ -458,7 +458,7 @@ func (repo *PsqlDocumentRepository) Delete(ctx context.Context, domainModels []d
     return nil
 }
 
-func (repo *PsqlDocumentRepository) DeleteWhere(ctx context.Context, domainColumnFilter domain.DocumentFilter) (numAffectedRecords int64, err error) {
+func (repo *PsqlDocumentRepository) DeleteWhere(ctx context.Context, domainColumnFilter *domain.DocumentFilter) (numAffectedRecords int64, err error) {
     columnFilter, err := DocumentDomainToSqlRepositoryFilter(repo.db, domainColumnFilter)
     if err != nil {
         return
@@ -483,7 +483,7 @@ func (repo *PsqlDocumentRepository) DeleteWhere(ctx context.Context, domainColum
     return
 }
 
-func (repo *PsqlDocumentRepository) CountWhere(ctx context.Context, domainColumnFilter domain.DocumentFilter) (int64, error) {
+func (repo *PsqlDocumentRepository) CountWhere(ctx context.Context, domainColumnFilter *domain.DocumentFilter) (int64, error) {
     columnFilter, err := DocumentDomainToSqlRepositoryFilter(repo.db, domainColumnFilter)
     if err != nil {
         return 0, err
@@ -509,7 +509,7 @@ func (repo *PsqlDocumentRepository) DoesExist(ctx context.Context, domainModel *
 	return DocumentExists(ctx, repo.db, repositoryModel.ID)
 }
 
-func (repo *PsqlDocumentRepository) DoesExistWhere(ctx context.Context, domainColumnFilter domain.DocumentFilter) (bool, error) {
+func (repo *PsqlDocumentRepository) DoesExistWhere(ctx context.Context, domainColumnFilter *domain.DocumentFilter) (bool, error) {
     columnFilter, err := DocumentDomainToSqlRepositoryFilter(repo.db, domainColumnFilter)
     if err != nil {
         return false, err
@@ -522,7 +522,7 @@ func (repo *PsqlDocumentRepository) DoesExistWhere(ctx context.Context, domainCo
 	return Documents(queryFilters...).Exists(ctx, repo.db)
 }
 
-func (repo *PsqlDocumentRepository) GetWhere(ctx context.Context, domainColumnFilter domain.DocumentFilter) ([]*domain.Document, error) {
+func (repo *PsqlDocumentRepository) GetWhere(ctx context.Context, domainColumnFilter *domain.DocumentFilter) ([]*domain.Document, error) {
     columnFilter, err := DocumentDomainToSqlRepositoryFilter(repo.db, domainColumnFilter)
     if err != nil {
         return []*domain.Document{}, err
@@ -539,7 +539,7 @@ func (repo *PsqlDocumentRepository) GetWhere(ctx context.Context, domainColumnFi
     return domainModels, err
 }
 
-func (repo *PsqlDocumentRepository) GetFirstWhere(ctx context.Context, domainColumnFilter domain.DocumentFilter) (*domain.Document, error) {
+func (repo *PsqlDocumentRepository) GetFirstWhere(ctx context.Context, domainColumnFilter *domain.DocumentFilter) (*domain.Document, error) {
     columnFilter, err := DocumentDomainToSqlRepositoryFilter(repo.db, domainColumnFilter)
     if err != nil {
         return nil, err

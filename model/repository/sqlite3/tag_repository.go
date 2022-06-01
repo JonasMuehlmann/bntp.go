@@ -294,7 +294,7 @@ func (repo * Sqlite3TagRepository) New(args ...any) (Sqlite3TagRepository, error
         panic("not implemented") // TODO: Implement
 }
 
-func (repo *Sqlite3TagRepository) Add(ctx context.Context, domainModels []domain.Tag) error {
+func (repo *Sqlite3TagRepository) Add(ctx context.Context, domainModels []*domain.Tag) error {
     repositoryModels, err := goaoi.TransformCopySlice(domainModels, GetTagDomainToSqlRepositoryModel(repo.db))
 	if err != nil {
 		return err
@@ -317,7 +317,7 @@ func (repo *Sqlite3TagRepository) Add(ctx context.Context, domainModels []domain
     return nil
 }
 
-func (repo *Sqlite3TagRepository) Replace(ctx context.Context, domainModels []domain.Tag) error {
+func (repo *Sqlite3TagRepository) Replace(ctx context.Context, domainModels []*domain.Tag) error {
     repositoryModels, err := goaoi.TransformCopySlice(domainModels, GetTagDomainToSqlRepositoryModel(repo.db))
 	if err != nil {
 		return err
@@ -340,7 +340,7 @@ func (repo *Sqlite3TagRepository) Replace(ctx context.Context, domainModels []do
     return nil
 }
 
-func (repo *Sqlite3TagRepository) UpdateWhere(ctx context.Context, domainColumnFilter domain.TagFilter, domainColumnUpdater domain.TagUpdater) (numAffectedRecords int64, err error) {
+func (repo *Sqlite3TagRepository) UpdateWhere(ctx context.Context, domainColumnFilter *domain.TagFilter, domainColumnUpdater *domain.TagUpdater) (numAffectedRecords int64, err error) {
     // NOTE: This kind of update is inefficient, since we do a read just to do a write later, but at the moment there is no better way
     // Either SQLboiler adds support for this usecase or (preferably), we use the caching and hook system to avoid database interaction, when it is not needed
 
@@ -384,7 +384,7 @@ func (repo *Sqlite3TagRepository) UpdateWhere(ctx context.Context, domainColumnF
     return
 }
 
-func (repo *Sqlite3TagRepository) Delete(ctx context.Context, domainModels []domain.Tag) error {
+func (repo *Sqlite3TagRepository) Delete(ctx context.Context, domainModels []*domain.Tag) error {
     repositoryModels, err := goaoi.TransformCopySlice(domainModels, GetTagDomainToSqlRepositoryModel(repo.db))
 	if err != nil {
 		return err
@@ -407,7 +407,7 @@ func (repo *Sqlite3TagRepository) Delete(ctx context.Context, domainModels []dom
     return nil
 }
 
-func (repo *Sqlite3TagRepository) DeleteWhere(ctx context.Context, domainColumnFilter domain.TagFilter) (numAffectedRecords int64, err error) {
+func (repo *Sqlite3TagRepository) DeleteWhere(ctx context.Context, domainColumnFilter *domain.TagFilter) (numAffectedRecords int64, err error) {
     columnFilter, err := TagDomainToSqlRepositoryFilter(repo.db, domainColumnFilter)
     if err != nil {
         return
@@ -429,7 +429,7 @@ func (repo *Sqlite3TagRepository) DeleteWhere(ctx context.Context, domainColumnF
     return
 }
 
-func (repo *Sqlite3TagRepository) CountWhere(ctx context.Context, domainColumnFilter domain.TagFilter) (int64, error) {
+func (repo *Sqlite3TagRepository) CountWhere(ctx context.Context, domainColumnFilter *domain.TagFilter) (int64, error) {
     columnFilter, err := TagDomainToSqlRepositoryFilter(repo.db, domainColumnFilter)
     if err != nil {
         return 0, err
@@ -455,7 +455,7 @@ func (repo *Sqlite3TagRepository) DoesExist(ctx context.Context, domainModel *do
 	return TagExists(ctx, repo.db, repositoryModel.ID)
 }
 
-func (repo *Sqlite3TagRepository) DoesExistWhere(ctx context.Context, domainColumnFilter domain.TagFilter) (bool, error) {
+func (repo *Sqlite3TagRepository) DoesExistWhere(ctx context.Context, domainColumnFilter *domain.TagFilter) (bool, error) {
     columnFilter, err := TagDomainToSqlRepositoryFilter(repo.db, domainColumnFilter)
     if err != nil {
         return false, err
@@ -468,7 +468,7 @@ func (repo *Sqlite3TagRepository) DoesExistWhere(ctx context.Context, domainColu
 	return Tags(queryFilters...).Exists(ctx, repo.db)
 }
 
-func (repo *Sqlite3TagRepository) GetWhere(ctx context.Context, domainColumnFilter domain.TagFilter) ([]*domain.Tag, error) {
+func (repo *Sqlite3TagRepository) GetWhere(ctx context.Context, domainColumnFilter *domain.TagFilter) ([]*domain.Tag, error) {
     columnFilter, err := TagDomainToSqlRepositoryFilter(repo.db, domainColumnFilter)
     if err != nil {
         return []*domain.Tag{}, err
@@ -489,7 +489,7 @@ func (repo *Sqlite3TagRepository) GetWhere(ctx context.Context, domainColumnFilt
     return domainModels, err
 }
 
-func (repo *Sqlite3TagRepository) GetFirstWhere(ctx context.Context, domainColumnFilter domain.TagFilter) (*domain.Tag, error) {
+func (repo *Sqlite3TagRepository) GetFirstWhere(ctx context.Context, domainColumnFilter *domain.TagFilter) (*domain.Tag, error) {
     columnFilter, err := TagDomainToSqlRepositoryFilter(repo.db, domainColumnFilter)
     if err != nil {
         return nil, err

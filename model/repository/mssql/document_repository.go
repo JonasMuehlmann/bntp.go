@@ -345,7 +345,7 @@ func (repo * MssqlDocumentRepository) New(args ...any) (MssqlDocumentRepository,
         panic("not implemented") // TODO: Implement
 }
 
-func (repo *MssqlDocumentRepository) Add(ctx context.Context, domainModels []domain.Document) error {
+func (repo *MssqlDocumentRepository) Add(ctx context.Context, domainModels []*domain.Document) error {
     repositoryModels, err := goaoi.TransformCopySlice(domainModels, GetDocumentDomainToSqlRepositoryModel(repo.db))
 	if err != nil {
 		return err
@@ -368,7 +368,7 @@ func (repo *MssqlDocumentRepository) Add(ctx context.Context, domainModels []dom
     return nil
 }
 
-func (repo *MssqlDocumentRepository) Replace(ctx context.Context, domainModels []domain.Document) error {
+func (repo *MssqlDocumentRepository) Replace(ctx context.Context, domainModels []*domain.Document) error {
     repositoryModels, err := goaoi.TransformCopySlice(domainModels, GetDocumentDomainToSqlRepositoryModel(repo.db))
 	if err != nil {
 		return err
@@ -391,7 +391,7 @@ func (repo *MssqlDocumentRepository) Replace(ctx context.Context, domainModels [
     return nil
 }
 
-func (repo *MssqlDocumentRepository) UpdateWhere(ctx context.Context, domainColumnFilter domain.DocumentFilter, domainColumnUpdater domain.DocumentUpdater) (numAffectedRecords int64, err error) {
+func (repo *MssqlDocumentRepository) UpdateWhere(ctx context.Context, domainColumnFilter *domain.DocumentFilter, domainColumnUpdater *domain.DocumentUpdater) (numAffectedRecords int64, err error) {
     // NOTE: This kind of update is inefficient, since we do a read just to do a write later, but at the moment there is no better way
     // Either SQLboiler adds support for this usecase or (preferably), we use the caching and hook system to avoid database interaction, when it is not needed
 
@@ -435,7 +435,7 @@ func (repo *MssqlDocumentRepository) UpdateWhere(ctx context.Context, domainColu
     return
 }
 
-func (repo *MssqlDocumentRepository) Delete(ctx context.Context, domainModels []domain.Document) error {
+func (repo *MssqlDocumentRepository) Delete(ctx context.Context, domainModels []*domain.Document) error {
     repositoryModels, err := goaoi.TransformCopySlice(domainModels, GetDocumentDomainToSqlRepositoryModel(repo.db))
 	if err != nil {
 		return err
@@ -458,7 +458,7 @@ func (repo *MssqlDocumentRepository) Delete(ctx context.Context, domainModels []
     return nil
 }
 
-func (repo *MssqlDocumentRepository) DeleteWhere(ctx context.Context, domainColumnFilter domain.DocumentFilter) (numAffectedRecords int64, err error) {
+func (repo *MssqlDocumentRepository) DeleteWhere(ctx context.Context, domainColumnFilter *domain.DocumentFilter) (numAffectedRecords int64, err error) {
     columnFilter, err := DocumentDomainToSqlRepositoryFilter(repo.db, domainColumnFilter)
     if err != nil {
         return
@@ -483,7 +483,7 @@ func (repo *MssqlDocumentRepository) DeleteWhere(ctx context.Context, domainColu
     return
 }
 
-func (repo *MssqlDocumentRepository) CountWhere(ctx context.Context, domainColumnFilter domain.DocumentFilter) (int64, error) {
+func (repo *MssqlDocumentRepository) CountWhere(ctx context.Context, domainColumnFilter *domain.DocumentFilter) (int64, error) {
     columnFilter, err := DocumentDomainToSqlRepositoryFilter(repo.db, domainColumnFilter)
     if err != nil {
         return 0, err
@@ -509,7 +509,7 @@ func (repo *MssqlDocumentRepository) DoesExist(ctx context.Context, domainModel 
 	return DocumentExists(ctx, repo.db, repositoryModel.ID)
 }
 
-func (repo *MssqlDocumentRepository) DoesExistWhere(ctx context.Context, domainColumnFilter domain.DocumentFilter) (bool, error) {
+func (repo *MssqlDocumentRepository) DoesExistWhere(ctx context.Context, domainColumnFilter *domain.DocumentFilter) (bool, error) {
     columnFilter, err := DocumentDomainToSqlRepositoryFilter(repo.db, domainColumnFilter)
     if err != nil {
         return false, err
@@ -522,7 +522,7 @@ func (repo *MssqlDocumentRepository) DoesExistWhere(ctx context.Context, domainC
 	return Documents(queryFilters...).Exists(ctx, repo.db)
 }
 
-func (repo *MssqlDocumentRepository) GetWhere(ctx context.Context, domainColumnFilter domain.DocumentFilter) ([]*domain.Document, error) {
+func (repo *MssqlDocumentRepository) GetWhere(ctx context.Context, domainColumnFilter *domain.DocumentFilter) ([]*domain.Document, error) {
     columnFilter, err := DocumentDomainToSqlRepositoryFilter(repo.db, domainColumnFilter)
     if err != nil {
         return []*domain.Document{}, err
@@ -539,7 +539,7 @@ func (repo *MssqlDocumentRepository) GetWhere(ctx context.Context, domainColumnF
     return domainModels, err
 }
 
-func (repo *MssqlDocumentRepository) GetFirstWhere(ctx context.Context, domainColumnFilter domain.DocumentFilter) (*domain.Document, error) {
+func (repo *MssqlDocumentRepository) GetFirstWhere(ctx context.Context, domainColumnFilter *domain.DocumentFilter) (*domain.Document, error) {
     columnFilter, err := DocumentDomainToSqlRepositoryFilter(repo.db, domainColumnFilter)
     if err != nil {
         return nil, err

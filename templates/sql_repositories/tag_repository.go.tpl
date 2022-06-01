@@ -55,7 +55,7 @@ func (repo * {{$StructName}}) New(args ...any) ({{$StructName}}, error) {
         panic("not implemented") // TODO: Implement
 }
 
-func (repo *{{$StructName}}) Add(ctx context.Context, domainModels []domain.Tag) error {
+func (repo *{{$StructName}}) Add(ctx context.Context, domainModels []*domain.Tag) error {
     repositoryModels, err := goaoi.TransformCopySlice(domainModels, GetTagDomainToSqlRepositoryModel(repo.db))
 	if err != nil {
 		return err
@@ -78,7 +78,7 @@ func (repo *{{$StructName}}) Add(ctx context.Context, domainModels []domain.Tag)
     return nil
 }
 
-func (repo *{{$StructName}}) Replace(ctx context.Context, domainModels []domain.Tag) error {
+func (repo *{{$StructName}}) Replace(ctx context.Context, domainModels []*domain.Tag) error {
     repositoryModels, err := goaoi.TransformCopySlice(domainModels, GetTagDomainToSqlRepositoryModel(repo.db))
 	if err != nil {
 		return err
@@ -101,7 +101,7 @@ func (repo *{{$StructName}}) Replace(ctx context.Context, domainModels []domain.
     return nil
 }
 
-func (repo *{{$StructName}}) UpdateWhere(ctx context.Context, domainColumnFilter domain.TagFilter, domainColumnUpdater domain.TagUpdater) (numAffectedRecords int64, err error) {
+func (repo *{{$StructName}}) UpdateWhere(ctx context.Context, domainColumnFilter *domain.TagFilter, domainColumnUpdater *domain.TagUpdater) (numAffectedRecords int64, err error) {
     // NOTE: This kind of update is inefficient, since we do a read just to do a write later, but at the moment there is no better way
     // Either SQLboiler adds support for this usecase or (preferably), we use the caching and hook system to avoid database interaction, when it is not needed
 
@@ -145,7 +145,7 @@ func (repo *{{$StructName}}) UpdateWhere(ctx context.Context, domainColumnFilter
     return
 }
 
-func (repo *{{$StructName}}) Delete(ctx context.Context, domainModels []domain.Tag) error {
+func (repo *{{$StructName}}) Delete(ctx context.Context, domainModels []*domain.Tag) error {
     repositoryModels, err := goaoi.TransformCopySlice(domainModels, GetTagDomainToSqlRepositoryModel(repo.db))
 	if err != nil {
 		return err
@@ -168,7 +168,7 @@ func (repo *{{$StructName}}) Delete(ctx context.Context, domainModels []domain.T
     return nil
 }
 
-func (repo *{{$StructName}}) DeleteWhere(ctx context.Context, domainColumnFilter domain.TagFilter) (numAffectedRecords int64, err error) {
+func (repo *{{$StructName}}) DeleteWhere(ctx context.Context, domainColumnFilter *domain.TagFilter) (numAffectedRecords int64, err error) {
     columnFilter, err := TagDomainToSqlRepositoryFilter(repo.db, domainColumnFilter)
     if err != nil {
         return
@@ -190,7 +190,7 @@ func (repo *{{$StructName}}) DeleteWhere(ctx context.Context, domainColumnFilter
     return
 }
 
-func (repo *{{$StructName}}) CountWhere(ctx context.Context, domainColumnFilter domain.TagFilter) (int64, error) {
+func (repo *{{$StructName}}) CountWhere(ctx context.Context, domainColumnFilter *domain.TagFilter) (int64, error) {
     columnFilter, err := TagDomainToSqlRepositoryFilter(repo.db, domainColumnFilter)
     if err != nil {
         return 0, err
@@ -216,7 +216,7 @@ func (repo *{{$StructName}}) DoesExist(ctx context.Context, domainModel *domain.
 	return TagExists(ctx, repo.db, repositoryModel.ID)
 }
 
-func (repo *{{$StructName}}) DoesExistWhere(ctx context.Context, domainColumnFilter domain.TagFilter) (bool, error) {
+func (repo *{{$StructName}}) DoesExistWhere(ctx context.Context, domainColumnFilter *domain.TagFilter) (bool, error) {
     columnFilter, err := TagDomainToSqlRepositoryFilter(repo.db, domainColumnFilter)
     if err != nil {
         return false, err
@@ -229,7 +229,7 @@ func (repo *{{$StructName}}) DoesExistWhere(ctx context.Context, domainColumnFil
 	return Tags(queryFilters...).Exists(ctx, repo.db)
 }
 
-func (repo *{{$StructName}}) GetWhere(ctx context.Context, domainColumnFilter domain.TagFilter) ([]*domain.Tag, error) {
+func (repo *{{$StructName}}) GetWhere(ctx context.Context, domainColumnFilter *domain.TagFilter) ([]*domain.Tag, error) {
     columnFilter, err := TagDomainToSqlRepositoryFilter(repo.db, domainColumnFilter)
     if err != nil {
         return []*domain.Tag{}, err
@@ -250,7 +250,7 @@ func (repo *{{$StructName}}) GetWhere(ctx context.Context, domainColumnFilter do
     return domainModels, err
 }
 
-func (repo *{{$StructName}}) GetFirstWhere(ctx context.Context, domainColumnFilter domain.TagFilter) (*domain.Tag, error) {
+func (repo *{{$StructName}}) GetFirstWhere(ctx context.Context, domainColumnFilter *domain.TagFilter) (*domain.Tag, error) {
     columnFilter, err := TagDomainToSqlRepositoryFilter(repo.db, domainColumnFilter)
     if err != nil {
         return nil, err
