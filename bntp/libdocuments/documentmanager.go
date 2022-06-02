@@ -33,7 +33,9 @@ import (
 
 type DocumentManager struct {
 	Repository repository.DocumentRepository
-	Hooks      *bntp.Hooks[domain.Document]
+	// TODO: Reimplement libdocuments (file operations) here
+	ContentRepository repository.ContentFileRepository
+	Hooks             *bntp.Hooks[domain.Document]
 }
 
 func New(hooks *bntp.Hooks[domain.Document], repository repository.DocumentRepository) (DocumentManager, error) {
