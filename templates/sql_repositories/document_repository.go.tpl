@@ -52,8 +52,24 @@ func GetDocumentSqlRepositoryToDomainModel(db *sql.DB) func(repositoryModel *Doc
     }
 }
 
-func (repo * {{$StructName}}) New(args ...any) ({{$StructName}}, error) {
-        panic("not implemented") // TODO: Implement
+type {{$StructName}}ConstructorArgs struct {
+    DB *sql.DB
+}
+
+func  New(args any) (repo {{$StructName}}, err error) {
+    repo = {{$StructName}}{}
+
+    constructorArgs, ok := args.({{$StructName}}ConstructorArgs)
+    if !ok {
+        err = fmt.Errorf("expected type %T but got %T", {{$StructName}}ConstructorArgs{}, args)
+
+        return
+    }
+
+
+    repo.db = constructorArgs.DB
+
+    return
 }
 
 func (repo *{{$StructName}}) Add(ctx context.Context, domainModels []*domain.Document) error {

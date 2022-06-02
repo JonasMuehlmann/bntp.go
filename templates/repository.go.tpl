@@ -28,7 +28,7 @@ import (
 )
 
 type {{.EntityName}}Repository interface {
-	New(args ...any) ({{.EntityName}}Repository, error)
+	New(args any) (repo {{.EntityName}}Repository, err error)
 
 	Add(ctx context.Context, domainModels []*domain.{{.EntityName}}) error
 	Replace(ctx context.Context, domainModels []*domain.{{.EntityName}}) error
