@@ -56,18 +56,15 @@ type {{$StructName}}ConstructorArgs struct {
     DB *sql.DB
 }
 
-func (repo *{{$StructName}}) New(args any) (repo {{$StructName}}, err error) {
+func (repo *{{$StructName}}) New(args any) (*{{$StructName}}, error) {
     constructorArgs, ok := args.({{$StructName}}ConstructorArgs)
     if !ok {
-        err = fmt.Errorf("expected type %T but got %T", {{$StructName}}ConstructorArgs{}, args)
-
-        return
+        return, repo, fmt.Errorf("expected type %T but got %T", {{$StructName}}ConstructorArgs{}, args)
     }
-
 
     repo.db = constructorArgs.DB
 
-    return
+    return repo, nil
 }
 
 func (repo *{{$StructName}}) Add(ctx context.Context, domainModels []*domain.Document) error {

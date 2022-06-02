@@ -381,18 +381,15 @@ type PsqlBookmarkRepositoryConstructorArgs struct {
     DB *sql.DB
 }
 
-func (repo *PsqlBookmarkRepository) New(args any) (repo PsqlBookmarkRepository, err error) {
+func (repo *PsqlBookmarkRepository) New(args any) (*PsqlBookmarkRepository, error) {
     constructorArgs, ok := args.(PsqlBookmarkRepositoryConstructorArgs)
     if !ok {
-        err = fmt.Errorf("expected type %T but got %T", PsqlBookmarkRepositoryConstructorArgs{}, args)
-
-        return
+        return repo, fmt.Errorf("expected type %T but got %T", PsqlBookmarkRepositoryConstructorArgs{}, args)
     }
-
 
     repo.db = constructorArgs.DB
 
-    return
+    return repo, nil
 }
 
 func (repo *PsqlBookmarkRepository) Add(ctx context.Context, domainModels []*domain.Bookmark) error {

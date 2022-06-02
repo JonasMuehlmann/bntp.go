@@ -345,18 +345,15 @@ type MysqlDocumentRepositoryConstructorArgs struct {
     DB *sql.DB
 }
 
-func (repo *MysqlDocumentRepository) New(args any) (repo MysqlDocumentRepository, err error) {
+func (repo *MysqlDocumentRepository) New(args any) (*MysqlDocumentRepository, error) {
     constructorArgs, ok := args.(MysqlDocumentRepositoryConstructorArgs)
     if !ok {
-        err = fmt.Errorf("expected type %T but got %T", MysqlDocumentRepositoryConstructorArgs{}, args)
-
-        return
+        return, repo, fmt.Errorf("expected type %T but got %T", MysqlDocumentRepositoryConstructorArgs{}, args)
     }
-
 
     repo.db = constructorArgs.DB
 
-    return
+    return repo, nil
 }
 
 func (repo *MysqlDocumentRepository) Add(ctx context.Context, domainModels []*domain.Document) error {

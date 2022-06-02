@@ -294,19 +294,15 @@ type MssqlTagRepositoryConstructorArgs struct {
     DB *sql.DB
 }
 
-func (repo *MssqlTagRepository) New(args any) (MssqlTagRepository, err error) {
+func (repo *MssqlTagRepository) New(args any) (*MssqlTagRepository, error) {
     constructorArgs, ok := args.(MssqlTagRepositoryConstructorArgs)
     if !ok {
-        err = fmt.Errorf("expected type %T but got %T", MssqlTagRepositoryConstructorArgsa{}, args)
-
-        return
+        return fmt.Errorf("expected type %T but got %T", MssqlTagRepositoryConstructorArgs{}, args)
     }
-
-
 
     repo.db = constructorArgs.DB
 
-    return
+    return repo, nil
 }
 
 func (repo *MssqlTagRepository) Add(ctx context.Context, domainModels []*domain.Tag) error {

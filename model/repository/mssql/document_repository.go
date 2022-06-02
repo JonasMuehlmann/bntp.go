@@ -345,18 +345,15 @@ type MssqlDocumentRepositoryConstructorArgs struct {
     DB *sql.DB
 }
 
-func (repo *MssqlDocumentRepository) New(args any) (repo MssqlDocumentRepository, err error) {
+func (repo *MssqlDocumentRepository) New(args any) (*MssqlDocumentRepository, error) {
     constructorArgs, ok := args.(MssqlDocumentRepositoryConstructorArgs)
     if !ok {
-        err = fmt.Errorf("expected type %T but got %T", MssqlDocumentRepositoryConstructorArgs{}, args)
-
-        return
+        return, repo, fmt.Errorf("expected type %T but got %T", MssqlDocumentRepositoryConstructorArgs{}, args)
     }
-
 
     repo.db = constructorArgs.DB
 
-    return
+    return repo, nil
 }
 
 func (repo *MssqlDocumentRepository) Add(ctx context.Context, domainModels []*domain.Document) error {

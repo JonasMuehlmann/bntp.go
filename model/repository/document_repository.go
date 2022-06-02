@@ -28,7 +28,7 @@ import (
 )
 
 type DocumentRepository interface {
-	New(args any) (repo DocumentRepository, err error)
+	New(args any) (*DocumentRepository, error)
 
 	Add(ctx context.Context, domainModels []*domain.Document) error
 	Replace(ctx context.Context, domainModels []*domain.Document) error

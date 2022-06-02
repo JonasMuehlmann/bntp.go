@@ -28,7 +28,7 @@ import (
 )
 
 type TagRepository interface {
-	New(args any) (repo TagRepository, err error)
+	New(args any) (*TagRepository, error)
 
 	Add(ctx context.Context, domainModels []*domain.Tag) error
 	Replace(ctx context.Context, domainModels []*domain.Tag) error

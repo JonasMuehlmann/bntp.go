@@ -294,19 +294,15 @@ type PsqlTagRepositoryConstructorArgs struct {
     DB *sql.DB
 }
 
-func (repo *PsqlTagRepository) New(args any) (PsqlTagRepository, err error) {
+func (repo *PsqlTagRepository) New(args any) (*PsqlTagRepository, error) {
     constructorArgs, ok := args.(PsqlTagRepositoryConstructorArgs)
     if !ok {
-        err = fmt.Errorf("expected type %T but got %T", PsqlTagRepositoryConstructorArgsa{}, args)
-
-        return
+        return fmt.Errorf("expected type %T but got %T", PsqlTagRepositoryConstructorArgs{}, args)
     }
-
-
 
     repo.db = constructorArgs.DB
 
-    return
+    return repo, nil
 }
 
 func (repo *PsqlTagRepository) Add(ctx context.Context, domainModels []*domain.Tag) error {

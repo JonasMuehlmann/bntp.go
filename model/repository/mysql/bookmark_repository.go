@@ -381,18 +381,15 @@ type MysqlBookmarkRepositoryConstructorArgs struct {
     DB *sql.DB
 }
 
-func (repo *MysqlBookmarkRepository) New(args any) (repo MysqlBookmarkRepository, err error) {
+func (repo *MysqlBookmarkRepository) New(args any) (*MysqlBookmarkRepository, error) {
     constructorArgs, ok := args.(MysqlBookmarkRepositoryConstructorArgs)
     if !ok {
-        err = fmt.Errorf("expected type %T but got %T", MysqlBookmarkRepositoryConstructorArgs{}, args)
-
-        return
+        return repo, fmt.Errorf("expected type %T but got %T", MysqlBookmarkRepositoryConstructorArgs{}, args)
     }
-
 
     repo.db = constructorArgs.DB
 
-    return
+    return repo, nil
 }
 
 func (repo *MysqlBookmarkRepository) Add(ctx context.Context, domainModels []*domain.Bookmark) error {

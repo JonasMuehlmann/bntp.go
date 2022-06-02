@@ -28,7 +28,7 @@ import (
 )
 
 type BookmarkRepository interface {
-	New(args any) (repo BookmarkRepository, err error)
+	New(args any) (*BookmarkRepository, error)
 
 	Add(ctx context.Context, domainModels []*domain.Bookmark) error
 	Replace(ctx context.Context, domainModels []*domain.Bookmark) error

@@ -294,19 +294,15 @@ type MysqlTagRepositoryConstructorArgs struct {
     DB *sql.DB
 }
 
-func (repo *MysqlTagRepository) New(args any) (MysqlTagRepository, err error) {
+func (repo *MysqlTagRepository) New(args any) (*MysqlTagRepository, error) {
     constructorArgs, ok := args.(MysqlTagRepositoryConstructorArgs)
     if !ok {
-        err = fmt.Errorf("expected type %T but got %T", MysqlTagRepositoryConstructorArgsa{}, args)
-
-        return
+        return fmt.Errorf("expected type %T but got %T", MysqlTagRepositoryConstructorArgs{}, args)
     }
-
-
 
     repo.db = constructorArgs.DB
 
-    return
+    return repo, nil
 }
 
 func (repo *MysqlTagRepository) Add(ctx context.Context, domainModels []*domain.Tag) error {
