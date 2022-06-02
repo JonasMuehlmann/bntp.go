@@ -33,7 +33,15 @@ import (
 
 type TagManager struct {
 	Repository repository.TagRepository
-	Hooks      bntp.Hooks[domain.Tag]
+	Hooks      *bntp.Hooks[domain.Tag]
+}
+
+func New(hooks *bntp.Hooks[domain.Tag], repository repository.TagRepository) (TagManager, error) {
+	m := TagManager{}
+	m.Repository = repository
+	m.Hooks = hooks
+
+	return m, nil
 }
 
 // TODO: Allow skipping certain hooks.

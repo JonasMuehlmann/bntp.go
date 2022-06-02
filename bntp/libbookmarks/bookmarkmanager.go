@@ -32,12 +32,16 @@ import (
 )
 
 type BookmarkManager struct {
-	Hooks      bntp.Hooks[domain.Bookmark]
+	Hooks      *bntp.Hooks[domain.Bookmark]
 	Repository repository.BookmarkRepository
 }
 
-func (m *BookmarkManager) New(...any) (BookmarkManager, error) {
-	panic("Not implemented")
+func New(hooks *bntp.Hooks[domain.Bookmark], repository repository.BookmarkRepository) (BookmarkManager, error) {
+	m := BookmarkManager{}
+	m.Repository = repository
+	m.Hooks = hooks
+
+	return m, nil
 }
 
 // TODO: Allow skipping certain hooks.

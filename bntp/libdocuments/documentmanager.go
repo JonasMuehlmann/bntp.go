@@ -33,11 +33,15 @@ import (
 
 type DocumentManager struct {
 	Repository repository.DocumentRepository
-	Hooks      bntp.Hooks[domain.Document]
+	Hooks      *bntp.Hooks[domain.Document]
 }
 
-func (m *DocumentManager) New(...any) (DocumentManager, error) {
-	panic("Not implemented")
+func New(hooks *bntp.Hooks[domain.Document], repository repository.DocumentRepository) (DocumentManager, error) {
+	m := DocumentManager{}
+	m.Repository = repository
+	m.Hooks = hooks
+
+	return m, nil
 }
 
 // TODO: Allow skipping certain hooks.
