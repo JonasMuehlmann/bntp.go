@@ -85,9 +85,9 @@ jobs:
          go generate ./...
          
          goimports -w ./**/*.go
-         fieldalignment -fix ./pkg/... ./model/... || true
+         fieldalignment -fix ./bntp/... ./model/... || true
          gofmt -w ./**/*.go
          
     - uses: stefanzweifel/git-auto-commit-action@v4
       with:
-        file_pattern: ./internal/** ./pkg/** ./model/**
+        file_pattern: ./internal/** ./bntp/** ./model/**
