@@ -294,9 +294,7 @@ type Sqlite3TagRepositoryConstructorArgs struct {
     DB *sql.DB
 }
 
-func  New(args any) (Sqlite3TagRepository, err error) {
-    repo = Sqlite3TagRepository{}
-
+func (repo *Sqlite3TagRepository) New(args any) (Sqlite3TagRepository, err error) {
     constructorArgs, ok := args.(Sqlite3TagRepositoryConstructorArgs)
     if !ok {
         err = fmt.Errorf("expected type %T but got %T", Sqlite3TagRepositoryConstructorArgsa{}, args)

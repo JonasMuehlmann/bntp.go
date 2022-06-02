@@ -56,9 +56,7 @@ type {{$StructName}}ConstructorArgs struct {
     DB *sql.DB
 }
 
-func  New(args any) (repo {{$StructName}}, err error) {
-    repo = {{$StructName}}{}
-
+func (repo *{{$StructName}}) New(args any) (repo {{$StructName}}, err error) {
     constructorArgs, ok := args.({{$StructName}}ConstructorArgs)
     if !ok {
         err = fmt.Errorf("expected type %T but got %T", {{$StructName}}ConstructorArgs{}, args)

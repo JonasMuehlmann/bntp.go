@@ -345,9 +345,7 @@ type PsqlDocumentRepositoryConstructorArgs struct {
     DB *sql.DB
 }
 
-func  New(args any) (repo PsqlDocumentRepository, err error) {
-    repo = PsqlDocumentRepository{}
-
+func (repo *PsqlDocumentRepository) New(args any) (repo PsqlDocumentRepository, err error) {
     constructorArgs, ok := args.(PsqlDocumentRepositoryConstructorArgs)
     if !ok {
         err = fmt.Errorf("expected type %T but got %T", PsqlDocumentRepositoryConstructorArgs{}, args)

@@ -381,9 +381,7 @@ type MssqlBookmarkRepositoryConstructorArgs struct {
     DB *sql.DB
 }
 
-func  New(args any) (repo MssqlBookmarkRepository, err error) {
-    repo = MssqlBookmarkRepository{}
-
+func (repo *MssqlBookmarkRepository) New(args any) (repo MssqlBookmarkRepository, err error) {
     constructorArgs, ok := args.(MssqlBookmarkRepositoryConstructorArgs)
     if !ok {
         err = fmt.Errorf("expected type %T but got %T", MssqlBookmarkRepositoryConstructorArgs{}, args)

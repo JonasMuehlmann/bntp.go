@@ -381,9 +381,7 @@ type Sqlite3BookmarkRepositoryConstructorArgs struct {
     DB *sql.DB
 }
 
-func  New(args any) (repo Sqlite3BookmarkRepository, err error) {
-    repo = Sqlite3BookmarkRepository{}
-
+func (repo *Sqlite3BookmarkRepository) New(args any) (repo Sqlite3BookmarkRepository, err error) {
     constructorArgs, ok := args.(Sqlite3BookmarkRepositoryConstructorArgs)
     if !ok {
         err = fmt.Errorf("expected type %T but got %T", Sqlite3BookmarkRepositoryConstructorArgs{}, args)

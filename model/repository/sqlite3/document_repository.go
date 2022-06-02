@@ -345,9 +345,7 @@ type Sqlite3DocumentRepositoryConstructorArgs struct {
     DB *sql.DB
 }
 
-func  New(args any) (repo Sqlite3DocumentRepository, err error) {
-    repo = Sqlite3DocumentRepository{}
-
+func (repo *Sqlite3DocumentRepository) New(args any) (repo Sqlite3DocumentRepository, err error) {
     constructorArgs, ok := args.(Sqlite3DocumentRepositoryConstructorArgs)
     if !ok {
         err = fmt.Errorf("expected type %T but got %T", Sqlite3DocumentRepositoryConstructorArgs{}, args)
