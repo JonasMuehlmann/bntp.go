@@ -4,9 +4,9 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/JonasMuehlmann/bntp.go/pkg/helpers"
-	"github.com/JonasMuehlmann/bntp.go/pkg/libbookmarks"
-	"github.com/JonasMuehlmann/bntp.go/pkg/libtags"
+	"github.com/JonasMuehlmann/bntp.go/bntp/helpers"
+	"github.com/JonasMuehlmann/bntp.go/bntp/libbookmarks"
+	"github.com/JonasMuehlmann/bntp.go/bntp/libtags"
 	"github.com/JonasMuehlmann/bntp.go/test"
 	"github.com/JonasMuehlmann/optional.go"
 	"github.com/stretchr/testify/assert"

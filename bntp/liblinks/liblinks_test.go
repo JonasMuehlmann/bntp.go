@@ -3,8 +3,8 @@ package liblinks_test
 import (
 	"testing"
 
-	"github.com/JonasMuehlmann/bntp.go/pkg/libdocuments"
-	"github.com/JonasMuehlmann/bntp.go/pkg/liblinks"
+	"github.com/JonasMuehlmann/bntp.go/bntp/libdocuments"
+	"github.com/JonasMuehlmann/bntp.go/bntp/liblinks"
 	"github.com/JonasMuehlmann/bntp.go/test"
 	"github.com/stretchr/testify/assert"
 )

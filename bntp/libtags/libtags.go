@@ -27,7 +27,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/JonasMuehlmann/bntp.go/pkg/helpers"
+	"github.com/JonasMuehlmann/bntp.go/bntp/helpers"
 	"github.com/jmoiron/sqlx"
 	"gopkg.in/yaml.v3"
 )
