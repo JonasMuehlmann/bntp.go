@@ -297,7 +297,7 @@ type PsqlTagRepositoryConstructorArgs struct {
 func (repo *PsqlTagRepository) New(args any) (*PsqlTagRepository, error) {
     constructorArgs, ok := args.(PsqlTagRepositoryConstructorArgs)
     if !ok {
-        return fmt.Errorf("expected type %T but got %T", PsqlTagRepositoryConstructorArgs{}, args)
+        return repo, fmt.Errorf("expected type %T but got %T", PsqlTagRepositoryConstructorArgs{}, args)
     }
 
     repo.db = constructorArgs.DB

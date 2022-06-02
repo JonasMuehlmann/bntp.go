@@ -297,7 +297,7 @@ type MysqlTagRepositoryConstructorArgs struct {
 func (repo *MysqlTagRepository) New(args any) (*MysqlTagRepository, error) {
     constructorArgs, ok := args.(MysqlTagRepositoryConstructorArgs)
     if !ok {
-        return fmt.Errorf("expected type %T but got %T", MysqlTagRepositoryConstructorArgs{}, args)
+        return repo, fmt.Errorf("expected type %T but got %T", MysqlTagRepositoryConstructorArgs{}, args)
     }
 
     repo.db = constructorArgs.DB
