@@ -348,7 +348,7 @@ type MysqlDocumentRepositoryConstructorArgs struct {
 func (repo *MysqlDocumentRepository) New(args any) (*MysqlDocumentRepository, error) {
     constructorArgs, ok := args.(MysqlDocumentRepositoryConstructorArgs)
     if !ok {
-        return, repo, fmt.Errorf("expected type %T but got %T", MysqlDocumentRepositoryConstructorArgs{}, args)
+        return repo, fmt.Errorf("expected type %T but got %T", MysqlDocumentRepositoryConstructorArgs{}, args)
     }
 
     repo.db = constructorArgs.DB

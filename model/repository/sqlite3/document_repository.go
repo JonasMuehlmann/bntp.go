@@ -348,7 +348,7 @@ type Sqlite3DocumentRepositoryConstructorArgs struct {
 func (repo *Sqlite3DocumentRepository) New(args any) (*Sqlite3DocumentRepository, error) {
     constructorArgs, ok := args.(Sqlite3DocumentRepositoryConstructorArgs)
     if !ok {
-        return, repo, fmt.Errorf("expected type %T but got %T", Sqlite3DocumentRepositoryConstructorArgs{}, args)
+        return repo, fmt.Errorf("expected type %T but got %T", Sqlite3DocumentRepositoryConstructorArgs{}, args)
     }
 
     repo.db = constructorArgs.DB

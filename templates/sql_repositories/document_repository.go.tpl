@@ -59,7 +59,7 @@ type {{$StructName}}ConstructorArgs struct {
 func (repo *{{$StructName}}) New(args any) (*{{$StructName}}, error) {
     constructorArgs, ok := args.({{$StructName}}ConstructorArgs)
     if !ok {
-        return, repo, fmt.Errorf("expected type %T but got %T", {{$StructName}}ConstructorArgs{}, args)
+        return repo, fmt.Errorf("expected type %T but got %T", {{$StructName}}ConstructorArgs{}, args)
     }
 
     repo.db = constructorArgs.DB
