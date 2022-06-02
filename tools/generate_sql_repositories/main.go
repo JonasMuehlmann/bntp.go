@@ -288,9 +288,6 @@ func buildQueryModListFromFilter{{$EntityName}}(setFilters list.List) queryModSl
 	return queryModList
 }`
 
-// TODO: Add template for type safe config struct per provider for New() methods
-// It could embed a generic RepositoryConfig into repository specific configurations e.g. Sqlite3RepositoryConfig
-
 func main() {
 	for _, database := range databases {
 		for _, entity := range entities {

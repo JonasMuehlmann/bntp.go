@@ -40,15 +40,6 @@ func BookmarkDomainToSqlRepositoryFilter(db *sql.DB, domainFilter *domain.{{.Ent
     sqlRepositoryFilter.URL = domainFilter.URL
     sqlRepositoryFilter.ID = domainFilter.ID
 
-
-    // NOTE: Current problem: How to construct correct Operand type with correct generic parameter?
-    // The selection of the right Operand type is dynamic, but the instantioation of it's generic parameter must be static - impossible?
-
-    // Attempts to solve:
-    // - Define conversion helper struct mirroring filter struct but with array of all possible operand types already instantiated, fields can be copied and their operand set
-    // - Remove Operand structs and replace them with array of values and enum flag to indicate operand type
-    // - Reflection black magic?
-
     //**********************    Set Timestamps    **********************//
     {{ if eq .DatabaseName "sqlite3"}}
     if domainFilter.CreatedAt.HasValue {

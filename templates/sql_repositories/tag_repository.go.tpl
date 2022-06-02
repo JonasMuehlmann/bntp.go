@@ -113,9 +113,6 @@ func (repo *{{$StructName}}) Replace(ctx context.Context, domainModels []*domain
 }
 
 func (repo *{{$StructName}}) UpdateWhere(ctx context.Context, domainColumnFilter *domain.TagFilter, domainColumnUpdater *domain.TagUpdater) (numAffectedRecords int64, err error) {
-    // NOTE: This kind of update is inefficient, since we do a read just to do a write later, but at the moment there is no better way
-    // Either SQLboiler adds support for this usecase or (preferably), we use the caching and hook system to avoid database interaction, when it is not needed
-
 	var modelsToUpdate TagSlice
 
     columnFilter, err := TagDomainToSqlRepositoryFilter(repo.db, domainColumnFilter)
