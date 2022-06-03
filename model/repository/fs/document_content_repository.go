@@ -28,11 +28,11 @@ import (
 	"github.com/spf13/afero"
 )
 
-type LocalFSDocumentContentRepository struct {
+type FSDocumentContentRepository struct {
 	fs afero.Fs
 }
 
-func (repo *LocalFSDocumentContentRepository) New(args any) (commonRepo.DocumentContentRepository, error) {
+func (repo *FSDocumentContentRepository) New(args any) (commonRepo.DocumentContentRepository, error) {
 	fs, ok := args.(afero.Fs)
 	if !ok {
 		return repo, fmt.Errorf("expected type %T but got %T", repo.fs, args)
@@ -43,7 +43,7 @@ func (repo *LocalFSDocumentContentRepository) New(args any) (commonRepo.Document
 	return repo, nil
 }
 
-func (repo *LocalFSDocumentContentRepository) Add(ctx context.Context, path string, content string) error {
+func (repo *FSDocumentContentRepository) Add(ctx context.Context, path string, content string) error {
 	file, err := repo.fs.Create(path)
 	if err != nil {
 		return err
@@ -57,7 +57,7 @@ func (repo *LocalFSDocumentContentRepository) Add(ctx context.Context, path stri
 	return nil
 }
 
-func (repo *LocalFSDocumentContentRepository) Update(ctx context.Context, path string, newContent string) error {
+func (repo *FSDocumentContentRepository) Update(ctx context.Context, path string, newContent string) error {
 	file, err := repo.fs.Open(path)
 	if err != nil {
 		return err
@@ -71,15 +71,15 @@ func (repo *LocalFSDocumentContentRepository) Update(ctx context.Context, path s
 	return nil
 }
 
-func (repo *LocalFSDocumentContentRepository) Move(ctx context.Context, oldPath string, newPath string) error {
+func (repo *FSDocumentContentRepository) Move(ctx context.Context, oldPath string, newPath string) error {
 	return repo.fs.Rename(oldPath, newPath)
 }
 
-func (repo *LocalFSDocumentContentRepository) Delete(ctx context.Context, path string) error {
+func (repo *FSDocumentContentRepository) Delete(ctx context.Context, path string) error {
 	return repo.fs.Remove(path)
 }
 
-func (repo *LocalFSDocumentContentRepository) Get(ctx context.Context, path string) (content string, err error) {
+func (repo *FSDocumentContentRepository) Get(ctx context.Context, path string) (content string, err error) {
 	file, err := repo.fs.Open(path)
 	if err != nil {
 		return "", err
