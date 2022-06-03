@@ -32,7 +32,7 @@ done
 REPOSITORIES=(libbookmarks libdocuments liblinks libtags)
 
 # Users won't need these tests anymore
-rm ./model/repository/sql/**/*_test.go
+rm ./model/repository/**/*_test.go
 for db in "${DBS[@]}"; do
-    rm model/repository/sql/**/child_tags.go
+    rm model/repository/**/child_tags.go
 done
