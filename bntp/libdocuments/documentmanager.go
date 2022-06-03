@@ -24,7 +24,7 @@ import (
 	"context"
 
 	domain "github.com/JonasMuehlmann/bntp.go/model/domain"
-	repository "github.com/JonasMuehlmann/bntp.go/model/repository/sql"
+	repository "github.com/JonasMuehlmann/bntp.go/model/repository"
 	"github.com/JonasMuehlmann/goaoi"
 	log "github.com/sirupsen/logrus"
 

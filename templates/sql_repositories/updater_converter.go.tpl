@@ -25,7 +25,7 @@ package repository
 import (
 	"github.com/JonasMuehlmann/bntp.go/model"
 	"github.com/JonasMuehlmann/bntp.go/model/domain"
-	 repoCommon "github.com/JonasMuehlmann/bntp.go/model/repository/sql"
+	 repoCommon "github.com/JonasMuehlmann/bntp.go/model/repository"
     "github.com/volatiletech/null/v8"
     "database/sql"
     "context"
