@@ -26,7 +26,7 @@ import (
 	"github.com/JonasMuehlmann/optional.go"
 	"github.com/JonasMuehlmann/bntp.go/model/domain"
 	"github.com/JonasMuehlmann/bntp.go/model"
-	repoCommon "github.com/JonasMuehlmann/bntp.go/model/repository"
+	repoCommon "github.com/JonasMuehlmann/bntp.go/model/repository/sql"
     "github.com/volatiletech/null/v8"
     "context"
     "database/sql"
