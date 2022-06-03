@@ -50,8 +50,6 @@ github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03
 github.com/BurntSushi/xgb v0.0.0-20160522181843-27f122750802/go.mod h1:IVnqGOEym/WlBOVXweHU+Q+/VP0lqqI8lqeDx9IjBqo=
 github.com/DATA-DOG/go-sqlmock v1.4.1 h1:ThlnYciV1iM/V0OSF/dtkqWb6xo5qITT1TJBG1MRDJM=
 github.com/DATA-DOG/go-sqlmock v1.4.1/go.mod h1:f/Ixk793poVmq4qj/V1dPUg2JEAKC73Q5eFN3EC/SaM=
-github.com/JonasMuehlmann/goaoi v1.2.0 h1:bXWeREfN6iG6dQ05QV+CSZx+/Xc3/2zOu4OxNK5Lc8Y=
-github.com/JonasMuehlmann/goaoi v1.2.0/go.mod h1:ONdn8kX+he6Lcz5qA+xJrkbEWr+W2xi3Z69YzebNptw=
 github.com/JonasMuehlmann/goaoi v1.3.0 h1:u28DljpDSpS39bnXafWtTmrlogqAnY5e9nbBGwCMCHU=
 github.com/JonasMuehlmann/goaoi v1.3.0/go.mod h1:ONdn8kX+he6Lcz5qA+xJrkbEWr+W2xi3Z69YzebNptw=
 github.com/JonasMuehlmann/optional.go v1.2.0 h1:mLkNHwjCle1NKJl6JVO3mHwk7Dd44nieKx/tdmEtgNI=

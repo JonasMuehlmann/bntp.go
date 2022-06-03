@@ -24,7 +24,7 @@ import (
 	"os"
 	"text/template"
 
-	repository "github.com/JonasMuehlmann/bntp.go/model/repositoryite3"
+	repository "github.com/JonasMuehlmann/bntp.go/model/repository/sqlite3"
 
 	"github.com/JonasMuehlmann/bntp.go/tools"
 	"github.com/JonasMuehlmann/goaoi"

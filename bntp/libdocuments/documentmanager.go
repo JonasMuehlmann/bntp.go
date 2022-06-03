@@ -33,8 +33,8 @@ import (
 
 type DocumentManager struct {
 	Repository repository.DocumentRepository
-	// TODO: Reimplement libdocuments (file operations) here
-	ContentRepository repository.ContentFileRepository
+	// TODO: Reimplement libdocuments (file operations) here and in document_content_manager.go
+	ContentRepository repository.DocumentContentRepository
 	Hooks             *bntp.Hooks[domain.Document]
 }
 
