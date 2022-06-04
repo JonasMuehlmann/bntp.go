@@ -12,7 +12,7 @@ go install github.com/volatiletech/sqlboiler/v4/drivers/sqlboiler-sqlite3@latest
 DBS=("sqlite3" "mysql" "psql" "mssql")
 
 for db in "${DBS[@]}"; do
-    new_dir=./model/repository/sq/$db
+    new_dir=./model/repository/$db
     mkdir -p $new_dir
 
     sqlboiler --output $new_dir $db
