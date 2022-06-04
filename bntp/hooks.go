@@ -119,3 +119,8 @@ func (hooks *Hooks[TEntity]) ExecuteHooks(ctx context.Context, point HookPoint, 
 func (hooks *Hooks[TEntity]) PartiallySpecializeExecuteHooks(ctx context.Context, point HookPoint) func(entity *TEntity) error {
 	return func(entity *TEntity) error { return hooks.ExecuteHooks(ctx, point, entity) }
 }
+
+// NOTE: This is not great but finding a better solution is hard with this language.
+func (hooks *Hooks[TEntity]) PartiallySpecializeExecuteHooksForNoPointer(ctx context.Context, point HookPoint) func(entity TEntity) error {
+	return func(entity TEntity) error { return hooks.ExecuteHooks(ctx, point, &entity) }
+}
