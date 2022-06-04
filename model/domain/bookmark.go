@@ -107,3 +107,44 @@ type BookmarkUpdater struct {
 	IsRead       optional.Optional[model.UpdateOperation[bool]]
 	BookmarkType optional.Optional[model.UpdateOperation[optional.Optional[string]]]
 }
+
+const (
+	BookmarkFilterUntitled = "BookmarkFilterUntitled"
+	BookmarkFilterUntagged = "BookmarkFilterUntagged"
+	BookmarkFilterInboxed  = "BookmarkFilterInboxed"
+	BookmarkFilterDeleted  = "BookmarkFilterDeleted"
+)
+
+var PredefinedBookmarkFilters = map[string]BookmarkFilter{
+	BookmarkFilterUntitled: {Title: optional.Make(model.FilterOperation[optional.Optional[string]]{
+		Operand: model.ScalarOperand[optional.Optional[string]]{
+			Operand: optional.Optional[string]{},
+		},
+		Operator: model.FilterEqual,
+	})},
+	BookmarkFilterUntagged: {Tags: optional.Make(model.FilterOperation[*Tag]{
+		Operand: model.ScalarOperand[*Tag]{
+			Operand: nil,
+		},
+		Operator: model.FilterEqual,
+	})},
+	BookmarkFilterInboxed: {
+		Title: optional.Make(model.FilterOperation[optional.Optional[string]]{
+			Operand: model.ScalarOperand[optional.Optional[string]]{
+				Operand: optional.Optional[string]{},
+			},
+			Operator: model.FilterEqual,
+		}),
+		Tags: optional.Make(model.FilterOperation[*Tag]{
+			Operand: model.ScalarOperand[*Tag]{
+				Operand: nil,
+			},
+			Operator: model.FilterEqual,
+		})},
+	BookmarkFilterDeleted: {DeletedAt: optional.Make(model.FilterOperation[optional.Optional[time.Time]]{
+		Operand: model.ScalarOperand[optional.Optional[time.Time]]{
+			Operand: optional.Optional[time.Time]{},
+		},
+		Operator: model.FilterEqual,
+	})},
+}
