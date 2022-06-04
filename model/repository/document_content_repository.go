@@ -20,7 +20,11 @@
 
 package repository
 
-import "context"
+import (
+	"context"
+
+	"github.com/barweiss/go-tuple"
+)
 
 type DocumentContent struct {
 	Path    string
@@ -30,11 +34,11 @@ type DocumentContent struct {
 type DocumentContentRepository interface {
 	New(args any) (DocumentContentRepository, error)
 
-	Add(ctx context.Context, path string, content string) error
-	Update(ctx context.Context, path string, newContent string) error
-	Move(ctx context.Context, oldPath string, newPath string) error
-	Delete(ctx context.Context, path string) error
-	Get(ctx context.Context, path string) (content string, err error)
+	Add(ctx context.Context, pathContents []tuple.T2[string, string]) error
+	Update(ctx context.Context, pathContents []tuple.T2[string, string]) error
+	Move(ctx context.Context, pathChanges []tuple.T2[string, string]) error
+	Delete(ctx context.Context, paths []string) error
+	Get(ctx context.Context, paths []string) (contents []string, err error)
 	// GetAll(context.Context) (records []DocumentContent, err error)
 	// DoesExist(ctx context.Context, path string) (doesExist bool, err error)
 	// CountAll(ctx context.Context) (numRecords int64, err error)

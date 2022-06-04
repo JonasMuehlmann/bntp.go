@@ -36,7 +36,7 @@ type TagManager struct {
 	Hooks      *bntp.Hooks[domain.Tag]
 }
 
-func New(hooks *bntp.Hooks[domain.Tag], repository repository.TagRepository) (TagManager, error) {
+func NewTagmanager(hooks *bntp.Hooks[domain.Tag], repository repository.TagRepository) (TagManager, error) {
 	m := TagManager{}
 	m.Repository = repository
 	m.Hooks = hooks
@@ -82,6 +82,8 @@ func (m *TagManager) Replace(ctx context.Context, tags []*domain.Tag) error {
 	err = m.Repository.Replace(ctx, tags)
 	if err != nil {
 		log.Error(err)
+
+		return err
 	}
 
 	err = goaoi.ForeachSlice(tags, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.AfterAnyHook|bntp.AfterUpdateHook))
@@ -109,6 +111,8 @@ func (m *TagManager) UpdateWhere(ctx context.Context, tagFilter *domain.TagFilte
 	numAffectedRecords, err = m.Repository.UpdateWhere(ctx, tagFilter, tagUpdater)
 	if err != nil {
 		log.Error(err)
+
+		return
 	}
 
 	err = goaoi.ForeachSlice(tags, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.AfterAnyHook|bntp.AfterUpdateHook))
@@ -134,6 +138,8 @@ func (m *TagManager) Delete(ctx context.Context, tags []*domain.Tag) error {
 	err = m.Repository.Delete(ctx, tags)
 	if err != nil {
 		log.Error(err)
+
+		return err
 	}
 
 	err = goaoi.ForeachSlice(tags, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.AfterAnyHook|bntp.AfterDeleteHook))
@@ -161,6 +167,8 @@ func (m *TagManager) DeleteWhere(ctx context.Context, tagFilter *domain.TagFilte
 	numAffectedRecords, err = m.Repository.DeleteWhere(ctx, tagFilter)
 	if err != nil {
 		log.Error(err)
+
+		return
 	}
 
 	err = goaoi.ForeachSlice(tags, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.AfterAnyHook|bntp.AfterDeleteHook))
@@ -188,6 +196,8 @@ func (m *TagManager) CountWhere(ctx context.Context, tagFilter *domain.TagFilter
 	numRecords, err = m.Repository.CountWhere(ctx, tagFilter)
 	if err != nil {
 		log.Error(err)
+
+		return
 	}
 
 	err = goaoi.ForeachSlice(tags, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.AfterAnyHook|bntp.AfterSelectHook))
@@ -215,6 +225,8 @@ func (m *TagManager) CountAll(ctx context.Context) (numRecords int64, err error)
 	numRecords, err = m.Repository.CountAll(ctx)
 	if err != nil {
 		log.Error(err)
+
+		return
 	}
 
 	err = goaoi.ForeachSlice(tags, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.AfterAnyHook|bntp.AfterSelectHook))
@@ -242,6 +254,8 @@ func (m *TagManager) DoesExist(ctx context.Context, tag *domain.Tag) (doesExist 
 	doesExist, err = m.Repository.DoesExist(ctx, tag)
 	if err != nil {
 		log.Error(err)
+
+		return
 	}
 
 	err = goaoi.ForeachSlice(tags, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.AfterAnyHook|bntp.AfterSelectHook))
@@ -269,6 +283,8 @@ func (m *TagManager) DoesExistWhere(ctx context.Context, tagFilter *domain.TagFi
 	doesExist, err = m.Repository.DoesExistWhere(ctx, tagFilter)
 	if err != nil {
 		log.Error(err)
+
+		return
 	}
 
 	err = goaoi.ForeachSlice(tags, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.AfterAnyHook|bntp.AfterSelectHook))
@@ -296,6 +312,8 @@ func (m *TagManager) GetWhere(ctx context.Context, tagFilter *domain.TagFilter) 
 	records, err = m.Repository.GetWhere(ctx, tagFilter)
 	if err != nil {
 		log.Error(err)
+
+		return
 	}
 
 	err = goaoi.ForeachSlice(tags, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.AfterAnyHook|bntp.AfterSelectHook))
@@ -323,6 +341,8 @@ func (m *TagManager) GetFirstWhere(ctx context.Context, tagFilter *domain.TagFil
 	record, err = m.Repository.GetFirstWhere(ctx, tagFilter)
 	if err != nil {
 		log.Error(err)
+
+		return
 	}
 
 	err = goaoi.ForeachSlice(tags, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.AfterAnyHook|bntp.AfterSelectHook))
@@ -350,6 +370,8 @@ func (m *TagManager) GetAll(ctx context.Context) (records []*domain.Tag, err err
 	records, err = m.Repository.GetAll(ctx)
 	if err != nil {
 		log.Error(err)
+
+		return
 	}
 
 	err = goaoi.ForeachSlice(tags, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.AfterAnyHook|bntp.AfterSelectHook))

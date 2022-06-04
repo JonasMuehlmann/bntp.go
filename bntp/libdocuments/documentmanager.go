@@ -33,12 +33,10 @@ import (
 
 type DocumentManager struct {
 	Repository repository.DocumentRepository
-	// TODO: Reimplement libdocuments (file operations) here and in document_content_manager.go
-	ContentRepository repository.DocumentContentRepository
-	Hooks             *bntp.Hooks[domain.Document]
+	Hooks      *bntp.Hooks[domain.Document]
 }
 
-func New(hooks *bntp.Hooks[domain.Document], repository repository.DocumentRepository) (DocumentManager, error) {
+func NewDocumentManager(hooks *bntp.Hooks[domain.Document], repository repository.DocumentRepository) (DocumentManager, error) {
 	m := DocumentManager{}
 	m.Repository = repository
 	m.Hooks = hooks
@@ -59,6 +57,8 @@ func (m *DocumentManager) Add(ctx context.Context, documents []*domain.Document)
 	err = m.Repository.Add(ctx, documents)
 	if err != nil {
 		log.Error(err)
+
+		return err
 	}
 
 	err = goaoi.ForeachSlice(documents, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.AfterAnyHook|bntp.AfterAddHook))
@@ -84,6 +84,8 @@ func (m *DocumentManager) Replace(ctx context.Context, documents []*domain.Docum
 	err = m.Repository.Replace(ctx, documents)
 	if err != nil {
 		log.Error(err)
+
+		return err
 	}
 
 	err = goaoi.ForeachSlice(documents, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.AfterAnyHook|bntp.AfterUpdateHook))
@@ -111,6 +113,8 @@ func (m *DocumentManager) UpdateWhere(ctx context.Context, documentFilter *domai
 	numAffectedRecords, err = m.Repository.UpdateWhere(ctx, documentFilter, documentUpdater)
 	if err != nil {
 		log.Error(err)
+
+		return
 	}
 
 	err = goaoi.ForeachSlice(documents, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.AfterAnyHook|bntp.AfterUpdateHook))
@@ -118,7 +122,7 @@ func (m *DocumentManager) UpdateWhere(ctx context.Context, documentFilter *domai
 		err = bntp.HookExecutionError{Inner: err}
 		log.Error(err)
 
-		return err
+		return
 	}
 
 	return
@@ -163,6 +167,8 @@ func (m *DocumentManager) DeleteWhere(ctx context.Context, documentFilter *domai
 	numAffectedRecords, err = m.Repository.DeleteWhere(ctx, documentFilter)
 	if err != nil {
 		log.Error(err)
+
+		return
 	}
 
 	err = goaoi.ForeachSlice(documents, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.AfterAnyHook|bntp.AfterDeleteHook))
@@ -190,6 +196,8 @@ func (m *DocumentManager) CountWhere(ctx context.Context, documentFilter *domain
 	numRecords, err = m.Repository.CountWhere(ctx, documentFilter)
 	if err != nil {
 		log.Error(err)
+
+		return
 	}
 
 	err = goaoi.ForeachSlice(documents, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.AfterAnyHook|bntp.AfterSelectHook))
@@ -217,6 +225,8 @@ func (m *DocumentManager) CountAll(ctx context.Context) (numRecords int64, err e
 	numRecords, err = m.Repository.CountAll(ctx)
 	if err != nil {
 		log.Error(err)
+
+		return
 	}
 
 	err = goaoi.ForeachSlice(documents, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.AfterAnyHook|bntp.AfterSelectHook))
@@ -244,6 +254,8 @@ func (m *DocumentManager) DoesExist(ctx context.Context, document *domain.Docume
 	doesExist, err = m.Repository.DoesExist(ctx, document)
 	if err != nil {
 		log.Error(err)
+
+		return
 	}
 
 	err = goaoi.ForeachSlice(documents, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.AfterAnyHook|bntp.AfterSelectHook))
@@ -271,6 +283,8 @@ func (m *DocumentManager) DoesExistWhere(ctx context.Context, documentFilter *do
 	doesExist, err = m.Repository.DoesExistWhere(ctx, documentFilter)
 	if err != nil {
 		log.Error(err)
+
+		return
 	}
 
 	err = goaoi.ForeachSlice(documents, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.AfterAnyHook|bntp.AfterSelectHook))
@@ -298,6 +312,8 @@ func (m *DocumentManager) GetWhere(ctx context.Context, documentFilter *domain.D
 	records, err = m.Repository.GetWhere(ctx, documentFilter)
 	if err != nil {
 		log.Error(err)
+
+		return
 	}
 	err = goaoi.ForeachSlice(documents, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.AfterAnyHook|bntp.AfterSelectHook))
 	if err != nil {
@@ -324,6 +340,8 @@ func (m *DocumentManager) GetFirstWhere(ctx context.Context, documentFilter *dom
 	record, err = m.Repository.GetFirstWhere(ctx, documentFilter)
 	if err != nil {
 		log.Error(err)
+
+		return
 	}
 
 	err = goaoi.ForeachSlice(documents, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.AfterAnyHook|bntp.AfterSelectHook))
@@ -351,6 +369,8 @@ func (m *DocumentManager) GetAll(ctx context.Context) (records []*domain.Documen
 	records, err = m.Repository.GetAll(ctx)
 	if err != nil {
 		log.Error(err)
+
+		return
 	}
 
 	err = goaoi.ForeachSlice(documents, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.AfterAnyHook|bntp.AfterSelectHook))
@@ -378,6 +398,8 @@ func (m *DocumentManager) AddType(ctx context.Context, type_ string) error {
 	err = m.Repository.AddType(ctx, type_)
 	if err != nil {
 		log.Error(err)
+
+		return err
 	}
 
 	err = goaoi.ForeachSlice(documents, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.AfterAnyHook|bntp.AfterAddHook))
@@ -405,6 +427,8 @@ func (m *DocumentManager) DeleteType(ctx context.Context, type_ string) error {
 	err = m.Repository.DeleteType(ctx, type_)
 	if err != nil {
 		log.Error(err)
+
+		return err
 	}
 
 	err = goaoi.ForeachSlice(documents, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.AfterAnyHook|bntp.AfterDeleteHook))
@@ -432,6 +456,8 @@ func (m *DocumentManager) UpdateType(ctx context.Context, oldType string, newTyp
 	err = m.Repository.UpdateType(ctx, oldType, newType)
 	if err != nil {
 		log.Error(err)
+
+		return err
 	}
 
 	err = goaoi.ForeachSlice(documents, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.AfterAnyHook|bntp.AfterUpdateHook))

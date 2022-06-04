@@ -25,6 +25,8 @@ import (
 	"fmt"
 
 	commonRepo "github.com/JonasMuehlmann/bntp.go/model/repository"
+	"github.com/JonasMuehlmann/goaoi"
+	"github.com/barweiss/go-tuple"
 	"github.com/spf13/afero"
 )
 
@@ -43,58 +45,74 @@ func (repo *FSDocumentContentRepository) New(args any) (commonRepo.DocumentConte
 	return repo, nil
 }
 
-func (repo *FSDocumentContentRepository) Add(ctx context.Context, path string, content string) error {
-	file, err := repo.fs.Create(path)
-	if err != nil {
+func (repo *FSDocumentContentRepository) Add(ctx context.Context, pathContents []tuple.T2[string, string]) error {
+	transformer := func(pathContent tuple.T2[string, string]) error {
+		file, err := repo.fs.Create(pathContent.V1)
+		if err != nil {
+			return err
+		}
+
+		_, err = file.WriteString(pathContent.V2)
+		if err != nil {
+			return err
+		}
+
+		return nil
+	}
+
+	return goaoi.ForeachSlice(pathContents, transformer)
+}
+
+func (repo *FSDocumentContentRepository) Update(ctx context.Context, pathContents []tuple.T2[string, string]) error {
+	transformer := func(pathChange tuple.T2[string, string]) error {
+		file, err := repo.fs.Open(pathChange.V1)
+		if err != nil {
+			return err
+		}
+
+		_, err = file.WriteString(pathChange.V2)
+		if err != nil {
+			return err
+		}
+
 		return err
 	}
 
-	_, err = file.WriteString(content)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return goaoi.ForeachSlice(pathContents, transformer)
 }
 
-func (repo *FSDocumentContentRepository) Update(ctx context.Context, path string, newContent string) error {
-	file, err := repo.fs.Open(path)
-	if err != nil {
-		return err
+func (repo *FSDocumentContentRepository) Move(ctx context.Context, pathChanges []tuple.T2[string, string]) error {
+	transformer := func(pathChange tuple.T2[string, string]) error {
+		return repo.fs.Rename(pathChange.V1, pathChange.V2)
 	}
 
-	_, err = file.WriteString(newContent)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return goaoi.ForeachSlice(pathChanges, transformer)
 }
 
-func (repo *FSDocumentContentRepository) Move(ctx context.Context, oldPath string, newPath string) error {
-	return repo.fs.Rename(oldPath, newPath)
+func (repo *FSDocumentContentRepository) Delete(ctx context.Context, paths []string) error {
+	return goaoi.ForeachSlice(paths, repo.fs.Remove)
 }
 
-func (repo *FSDocumentContentRepository) Delete(ctx context.Context, path string) error {
-	return repo.fs.Remove(path)
-}
+func (repo *FSDocumentContentRepository) Get(ctx context.Context, paths []string) (contents []string, err error) {
+	transformer := func(path string) (content string, err error) {
+		file, err := repo.fs.Open(path)
+		if err != nil {
+			return "", err
+		}
 
-func (repo *FSDocumentContentRepository) Get(ctx context.Context, path string) (content string, err error) {
-	file, err := repo.fs.Open(path)
-	if err != nil {
-		return "", err
+		stat, err := file.Stat()
+		if err != nil {
+			return "", err
+		}
+
+		buffer := make([]byte, 0, stat.Size())
+		_, err = file.Read(buffer)
+		if err != nil {
+			return "", err
+		}
+
+		return string(buffer), nil
 	}
 
-	stat, err := file.Stat()
-	if err != nil {
-		return "", err
-	}
-
-	buffer := make([]byte, 0, stat.Size())
-	_, err = file.Read(buffer)
-	if err != nil {
-		return "", err
-	}
-
-	return string(buffer), nil
+	return goaoi.TransformCopySlice(paths, transformer)
 }
