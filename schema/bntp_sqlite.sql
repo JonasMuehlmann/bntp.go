@@ -18,7 +18,7 @@ CREATE TABLE dirty_entries
 CREATE TABLE tags
 (
     id         INTEGER    PRIMARY KEY NOT NULL,
-    parent_tag INTEGER REFERENCES tags(id),
+    parent_tag INTEGER    REFERENCES tags(id),
     tag        TEXT       NOT NULL UNIQUE,
     depth      INTEGER    NOT NULL DEFAULT 0
 );

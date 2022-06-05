@@ -19,11 +19,11 @@ for db in "${DBS[@]}"; do
     sqlboiler --output $new_dir $db
     sed -i 's/t.Parallel()//' $new_dir/*
     # Workaround for sqlboiler bug
-    sed -i 's/tagParentPathAllColumns.*=.*/tagParentPathAllColumns            = []string{"tag_id", "parent_tag_id", "distance"}/' $new_dir/tag_parent_paths.go
-    sed -i 's/tagParentPathColumnsWithoutDefault.*=.*/tagParentPathColumnsWithoutDefault = []string{"tag_id", "parent_tag_id", "distance"}/' $new_dir/tag_parent_paths.go
-    sed -i 's/tagParentPathColumnsWithDefault.*=.*/tagParentPathColumnsWithDefault    = []string{}/' $new_dir/tag_parent_paths.go
-    sed -i 's/tagParentPathPrimaryKeyColumns.*=.*/tagParentPathPrimaryKeyColumns = []string{"tag_id", "parent_tag_id"}/' $new_dir/tag_parent_paths.go
-    sed -i 's/tagParentPathGeneratedColumns.*=.*/tagParentPathGeneratedColumns     = []string{}/' $new_dir/tag_parent_paths.go
+    # sed -i 's/tagParentPathAllColumns.*=.*/tagParentPathAllColumns            = []string{"tag_id", "parent_tag_id", "distance"}/' $new_dir/tag_parent_paths.go
+    # sed -i 's/tagParentPathColumnsWithoutDefault.*=.*/tagParentPathColumnsWithoutDefault = []string{"tag_id", "parent_tag_id", "distance"}/' $new_dir/tag_parent_paths.go
+    # sed -i 's/tagParentPathColumnsWithDefault.*=.*/tagParentPathColumnsWithDefault    = []string{}/' $new_dir/tag_parent_paths.go
+    # sed -i 's/tagParentPathPrimaryKeyColumns.*=.*/tagParentPathPrimaryKeyColumns = []string{"tag_id", "parent_tag_id"}/' $new_dir/tag_parent_paths.go
+    # sed -i 's/tagParentPathGeneratedColumns.*=.*/tagParentPathGeneratedColumns     = []string{}/' $new_dir/tag_parent_paths.go
     if [[ $db == "sqlite3" ]]; then
         cp bntp_test.db $new_dir
     fi
