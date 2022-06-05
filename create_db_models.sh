@@ -12,6 +12,8 @@ go install github.com/volatiletech/sqlboiler/v4/drivers/sqlboiler-sqlite3@latest
 DBS=("sqlite3" "mysql" "psql" "mssql")
 
 for db in "${DBS[@]}"; do
+    echo "\n\n\ncurrent db:${db}\n\n\n"
+
     new_dir=./model/repository/$db
     mkdir -p $new_dir
 
@@ -28,8 +30,6 @@ for db in "${DBS[@]}"; do
     go get -t github.com/JonasMuehlmann/bntp.go/$new_dir
     go test -v $new_dir
 done
-
-REPOSITORIES=(libbookmarks libdocuments liblinks libtags)
 
 # Users won't need these tests anymore
 rm ./model/repository/**/*_test.go
