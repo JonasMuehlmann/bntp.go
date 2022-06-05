@@ -12,7 +12,7 @@ go install github.com/volatiletech/sqlboiler/v4/drivers/sqlboiler-sqlite3@latest
 DBS=("sqlite3" "mysql" "psql" "mssql")
 
 for db in "${DBS[@]}"; do
-    printf "\n\n\ncurrent db:${db}\n\n\n"
+    printf "\n\n\ncurrentdb: %s\n\n\n" "${db}"
 
     new_dir=./model/repository/$db
     mkdir -p $new_dir
