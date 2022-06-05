@@ -16,7 +16,6 @@ pkgname = "repository"
   [types.replace]
     type = "null.Int64"
 
-
 [auto-columns]
 created = "createdAt"
 updated = "updatedAt"
