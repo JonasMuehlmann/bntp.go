@@ -62,3 +62,23 @@ type {{$.StructName}}Updater struct {
     {{.FieldName}} optional.Optional[model.UpdateOperation[{{.FieldType}}]]
     {{end}}
 }
+
+const (
+    {{.StructName}}FilterUntagged = "{{.StructName}}FilterUntagged"
+    {{.StructName}}FilterDeleted = "{{.StructName}}FilterDeleted"
+)
+
+var Predefined{{.StructName}}Filters = map[string]{{.StructName}}Filter {
+    {{.StructName}}FilterUntagged: {Tags: optional.Make(model.FilterOperation[*Tag]{
+        Operand: model.ScalarOperand[*Tag]{
+            Operand: nil,
+        },
+        Operator: model.FilterEqual,
+    })},
+    {{.StructName}}FilterDeleted: {DeletedAt: optional.Make(model.FilterOperation[optional.Optional[time.Time]]{
+        Operand: model.ScalarOperand[optional.Optional[time.Time]]{
+            Operand: optional.Optional[time.Time]{},
+        },
+        Operator: model.FilterEqual,
+    })},
+}

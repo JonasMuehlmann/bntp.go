@@ -77,19 +77,19 @@ const (
 )
 
 var Predefined{{.StructName}}Filters = map[string]{{.StructName}}Filter {
-    BookmarkFilterUntitled: {Title: optional.Make(model.FilterOperation[optional.Optional[string]]{
+    {{.StructName}}FilterUntitled: {Title: optional.Make(model.FilterOperation[optional.Optional[string]]{
         Operand: model.ScalarOperand[optional.Optional[string]]{
             Operand: optional.Optional[string]{},
         },
         Operator: model.FilterEqual,
     })},
-    BookmarkFilterUntagged: {Tags: optional.Make(model.FilterOperation[*Tag]{
+    {{.StructName}}FilterUntagged: {Tags: optional.Make(model.FilterOperation[*Tag]{
         Operand: model.ScalarOperand[*Tag]{
             Operand: nil,
         },
         Operator: model.FilterEqual,
     })},
-    BookmarkFilterInboxed: {
+    {{.StructName}}FilterInboxed: {
         Title: optional.Make(model.FilterOperation[optional.Optional[string]]{
             Operand: model.ScalarOperand[optional.Optional[string]]{
                 Operand: optional.Optional[string]{},
@@ -102,7 +102,7 @@ var Predefined{{.StructName}}Filters = map[string]{{.StructName}}Filter {
             },
             Operator: model.FilterEqual,
     })},
-    BookmarkFilterDeleted: {DeletedAt: optional.Make(model.FilterOperation[optional.Optional[time.Time]]{
+    {{.StructName}}FilterDeleted: {DeletedAt: optional.Make(model.FilterOperation[optional.Optional[time.Time]]{
         Operand: model.ScalarOperand[optional.Optional[time.Time]]{
             Operand: optional.Optional[time.Time]{},
         },
