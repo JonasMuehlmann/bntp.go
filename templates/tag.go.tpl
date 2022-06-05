@@ -62,19 +62,19 @@ type {{$.StructName}}Updater struct {
 
 const (
     {{.StructName}}FilterLeaf = "{{.StructName}}FilterLeaf"
-    {{.StructName}}FilteRoot = "{{.StructName}}FilterRoot"
+    {{.StructName}}FilterRoot = "{{.StructName}}FilterRoot"
 )
 
 var Predefined{{.StructName}}Filters = map[string]{{.StructName}}Filter {
-    {{.StructName}}FilterLeaf: {ParentPath: optional.Make(model.FilterOperation[optional.Optional[*Tag]]{
-        Operand: model.ScalarOperand[optional.Optional[*Tag]]{
-            Operand: optional.Optional[*Tag]{},
+    {{.StructName}}FilterLeaf: {ParentPath: optional.Make(model.FilterOperation[*Tag]{
+        Operand: model.ScalarOperand[*Tag]{
+            Operand: nil,
         },
         Operator: model.FilterEqual,
     })},
-    {{.StructName}}FilterRoot: {Subtags: optional.Make(model.FilterOperation[optional.Optional[*Tag]]{
-        Operand: model.ScalarOperand[optional.Optional[*Tag]]{
-            Operand: optional.Optional[*Tag]{},
+    {{.StructName}}FilterRoot: {Subtags: optional.Make(model.FilterOperation[*Tag]{
+        Operand: model.ScalarOperand[*Tag]{
+            Operand: nil,
         },
         Operator: model.FilterEqual,
     })},
