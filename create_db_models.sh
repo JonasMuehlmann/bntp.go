@@ -12,13 +12,18 @@ go install github.com/volatiletech/sqlboiler/v4/drivers/sqlboiler-sqlite3@latest
 DBS=("sqlite3" "mysql" "psql" "mssql")
 
 for db in "${DBS[@]}"; do
-    printf "\n\n\ncurrentdb: %s\n\n\n" "${db}"
 
     new_dir=./model/repository/$db
     mkdir -p $new_dir
 
     sqlboiler --output $new_dir $db
     sed -i 's/t.Parallel()//' $new_dir/*
+    # Workaround for sqlboiler bug
+    sed -i 's/tagParentPathAllColumns.*/tagParentPathAllColumns            = []string{"tag_id", "parent_tag_id", "distance"}/' $new_dir/tag_parent_paths.go
+    sed -i 's/tagParentPathColumnsWithoutDefault.*/tagParentPathColumnsWithoutDefault = []string{"tag_id", "parent_tag_id", "distance"}/' $new_dir/tag_parent_paths.go
+    sed -i 's/tagParentPathColumnsWithDefault.*/tagParentPathColumnsWithDefault    = []string{}/' $new_dir/tag_parent_paths.go
+    sed -i 's/tagParentPathPrimaryKeyColumns.*/tagParentPathGeneratedColumns      = []string{}/' $new_dir/tag_parent_paths.go
+    sed -i 's/tagParentPathGeneratedColumns.*/tagParentPathPrimaryKeyColumns     = []string{"tag_id", "parent_tag_id"}/' $new_dir/tag_parent_paths.go
     if [[ $db == "sqlite3" ]]; then
         cp bntp_test.db $new_dir
     fi
@@ -28,6 +33,7 @@ for db in "${DBS[@]}"; do
     fi
     go mod tidy
     go get -t github.com/JonasMuehlmann/bntp.go/$new_dir
+    printf "\n\n\ncurrent db: %s\n\n\n" "${db}"
     go test -v $new_dir
 done
 
