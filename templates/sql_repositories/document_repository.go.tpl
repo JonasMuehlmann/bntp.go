@@ -35,6 +35,9 @@ import (
     "github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/null/v8"
 	"container/list"
+    {{ if ne .DatabaseName "sqlite3" }}
+    "time"
+    {{end}}
 )
 
 {{template "structDefinition" .}}
