@@ -651,7 +651,7 @@ func (bookmarkL) LoadTags(ctx context.Context, e boil.ContextExecutor, singular 
 	}
 
 	query := NewQuery(
-		qm.Select("\"tags\".\"id\", \"tags\".\"parent_tag\", \"tags\".\"tag\", \"tags\".\"depth\", \"a\".\"bookmark_id\""),
+		qm.Select("\"tags\".\"id\", \"tags\".\"tag\", \"tags\".\"parent_tag\", \"tags\".\"path\", \"tags\".\"children\", \"a\".\"bookmark_id\""),
 		qm.From("\"tags\""),
 		qm.InnerJoin("\"bookmark_contexts\" as \"a\" on \"tags\".\"id\" = \"a\".\"tag_id\""),
 		qm.WhereIn("\"a\".\"bookmark_id\" in ?", args...),
@@ -672,7 +672,7 @@ func (bookmarkL) LoadTags(ctx context.Context, e boil.ContextExecutor, singular 
 		one := new(Tag)
 		var localJoinCol int64
 
-		err = results.Scan(&one.ID, &one.ParentTag, &one.Tag, &one.Depth, &localJoinCol)
+		err = results.Scan(&one.ID, &one.Tag, &one.ParentTag, &one.Path, &one.Children, &localJoinCol)
 		if err != nil {
 			return errors.Wrap(err, "failed to scan eager loaded results for tags")
 		}

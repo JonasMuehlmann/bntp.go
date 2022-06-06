@@ -25,9 +25,10 @@ import (
 // Tag is an object representing the database table.
 type Tag struct {
 	ID        int64    `boil:"id" json:"id" toml:"id" yaml:"id"`
-	ParentTag null.Int `boil:"parent_tag" json:"parent_tag,omitempty" toml:"parent_tag" yaml:"parent_tag,omitempty"`
 	Tag       string   `boil:"tag" json:"tag" toml:"tag" yaml:"tag"`
-	Depth     int64    `boil:"depth" json:"depth" toml:"depth" yaml:"depth"`
+	ParentTag null.Int `boil:"parent_tag" json:"parent_tag,omitempty" toml:"parent_tag" yaml:"parent_tag,omitempty"`
+	Path      string   `boil:"path" json:"path" toml:"path" yaml:"path"`
+	Children  string   `boil:"children" json:"children" toml:"children" yaml:"children"`
 
 	R *tagR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L tagL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -35,40 +36,46 @@ type Tag struct {
 
 var TagColumns = struct {
 	ID        string
-	ParentTag string
 	Tag       string
-	Depth     string
+	ParentTag string
+	Path      string
+	Children  string
 }{
 	ID:        "id",
-	ParentTag: "parent_tag",
 	Tag:       "tag",
-	Depth:     "depth",
+	ParentTag: "parent_tag",
+	Path:      "path",
+	Children:  "children",
 }
 
 var TagTableColumns = struct {
 	ID        string
-	ParentTag string
 	Tag       string
-	Depth     string
+	ParentTag string
+	Path      string
+	Children  string
 }{
 	ID:        "tags.id",
-	ParentTag: "tags.parent_tag",
 	Tag:       "tags.tag",
-	Depth:     "tags.depth",
+	ParentTag: "tags.parent_tag",
+	Path:      "tags.path",
+	Children:  "tags.children",
 }
 
 // Generated where
 
 var TagWhere = struct {
 	ID        whereHelperint64
-	ParentTag whereHelpernull_Int
 	Tag       whereHelperstring
-	Depth     whereHelperint64
+	ParentTag whereHelpernull_Int
+	Path      whereHelperstring
+	Children  whereHelperstring
 }{
 	ID:        whereHelperint64{field: "[dbo].[tags].[id]"},
-	ParentTag: whereHelpernull_Int{field: "[dbo].[tags].[parent_tag]"},
 	Tag:       whereHelperstring{field: "[dbo].[tags].[tag]"},
-	Depth:     whereHelperint64{field: "[dbo].[tags].[depth]"},
+	ParentTag: whereHelpernull_Int{field: "[dbo].[tags].[parent_tag]"},
+	Path:      whereHelperstring{field: "[dbo].[tags].[path]"},
+	Children:  whereHelperstring{field: "[dbo].[tags].[children]"},
 }
 
 // TagRels is where relationship names are stored.
@@ -129,9 +136,9 @@ func (r *tagR) GetParentTagTags() TagSlice {
 type tagL struct{}
 
 var (
-	tagAllColumns            = []string{"id", "parent_tag", "tag", "depth"}
-	tagColumnsWithoutDefault = []string{"id", "parent_tag", "tag"}
-	tagColumnsWithDefault    = []string{"depth"}
+	tagAllColumns            = []string{"id", "tag", "parent_tag", "path", "children"}
+	tagColumnsWithoutDefault = []string{"id", "tag", "parent_tag", "path", "children"}
+	tagColumnsWithDefault    = []string{}
 	tagPrimaryKeyColumns     = []string{"id"}
 	tagGeneratedColumns      = []string{}
 )
