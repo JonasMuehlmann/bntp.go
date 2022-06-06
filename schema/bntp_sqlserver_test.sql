@@ -18,9 +18,14 @@ CREATE TABLE dirty_entries
 CREATE TABLE tags
 (
     id         INTEGER    PRIMARY KEY,
-    parent_tag INTEGER    ,
     tag        VARCHAR(255)       NOT NULL UNIQUE,
-    depth      INTEGER    NOT NULL DEFAULT 0
+    parent_tag INTEGER    ,
+    -- Stores list of parent ids from root to self
+    -- e.g. "1;2;3"
+    path       VARCHAR(255)       NOT NULL,
+    -- Stores lis of children ids
+    -- e.g. "1;2;3"
+    children   VARCHAR(255)       NOT NULL
 );
 
 CREATE TABLE bookmark_types
