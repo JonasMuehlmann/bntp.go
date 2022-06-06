@@ -5,9 +5,11 @@ go 1.18
 require (
 	github.com/JonasMuehlmann/goaoi v1.3.0
 	github.com/barweiss/go-tuple v1.0.2
+	github.com/denisenkom/go-mssqldb v0.10.0
 	github.com/friendsofgo/errors v0.9.2
 	github.com/go-playground/validator/v10 v10.10.1
 	github.com/jmoiron/sqlx v1.3.4
+	github.com/kat-co/vala v0.0.0-20170210184112-42e1d8b61f12
 	github.com/mattn/go-sqlite3 v1.14.12
 	github.com/rclone/rclone v1.58.1
 	github.com/sirupsen/logrus v1.8.1
@@ -17,6 +19,7 @@ require (
 	github.com/stoewer/go-strcase v1.2.0
 	github.com/stretchr/testify v1.7.1
 	github.com/volatiletech/null/v8 v8.1.2
+	github.com/volatiletech/randomize v0.0.1
 	github.com/volatiletech/sqlboiler/v4 v4.10.2
 	github.com/volatiletech/strmangle v0.0.3
 	golang.org/x/exp v0.0.0-20220414153411-bcd21879b8fd
@@ -56,6 +59,7 @@ require (
 	github.com/gofrs/uuid v3.2.0+incompatible // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang-jwt/jwt/v4 v4.1.0 // indirect
+	github.com/golang-sql/civil v0.0.0-20190719163853-cb61b32ac6fe // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
@@ -113,7 +117,6 @@ require (
 	github.com/tklauser/numcpus v0.3.0 // indirect
 	github.com/vivint/infectious v0.0.0-20200605153912-25a574ae18a3 // indirect
 	github.com/volatiletech/inflect v0.0.1 // indirect
-	github.com/volatiletech/randomize v0.0.1 // indirect
 	github.com/xanzy/ssh-agent v0.3.1 // indirect
 	github.com/youmark/pkcs8 v0.0.0-20201027041543-1326539a0a0a // indirect
 	github.com/yunify/qingstor-sdk-go/v3 v3.2.0 // indirect
