@@ -40,6 +40,3 @@ done
 
 # Users won't need these tests anymore
 rm ./model/repository/**/*_test.go
-for db in "${DBS[@]}"; do
-    rm model/repository/**/child_tags.go
-done
