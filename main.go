@@ -6,7 +6,7 @@ package main
 //go:generate go run ./tools/generate_repository_interfaces
 //go:generate go run ./tools/generate_sql_repository_filter_converters
 //go:generate go run ./tools/generate_sql_repository_model_converters
-//go:generate go run ./tools/generate_sql_repository_updaters_converters
+//go:generate go run ./tools/generate_sql_repository_updater_converters
 //go:generate go run ./tools/generate_sql_repositories
 
 import "github.com/JonasMuehlmann/bntp.go/cmd"
