@@ -17,23 +17,10 @@ CREATE TABLE dirty_entries
 
 CREATE TABLE tags
 (
-    id  INTEGER PRIMARY KEY,
-    tag VARCHAR(255)                NOT NULL UNIQUE
-);
-
-CREATE TABLE child_tags
-(
-    parent_tag_id INTEGER NOT NULL ,
-    child_tag_id  INTEGER NOT NULL ,
-    PRIMARY KEY (parent_tag_id, child_tag_id)
-);
-
-CREATE TABLE tag_parent_paths
-(
-    tag_id        INTEGER NOT NULL ,
-    parent_tag_id INTEGER NOT NULL ,
-    distance      INTEGER NOT NULL,
-    PRIMARY KEY (parent_tag_id, tag_id)
+    id         INTEGER    PRIMARY KEY,
+    parent_tag INTEGER    ,
+    tag        VARCHAR(255)       NOT NULL UNIQUE,
+    depth      INTEGER    NOT NULL DEFAULT 0
 );
 
 CREATE TABLE bookmark_types
