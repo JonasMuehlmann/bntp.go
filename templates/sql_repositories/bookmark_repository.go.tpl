@@ -43,15 +43,15 @@ import (
 {{template "structDefinition" .}}
 {{template "repositoryHelperTypes" .}}
 
-func GetBookmarkDomainToSqlRepositoryModel(db *sql.DB) func(domainModel *domain.Bookmark) (sqlRepositoryModel *Bookmark, err error) {
+func GetBookmarkDomainToSqlRepositoryModel(ctx context.Context, db *sql.DB) func(domainModel *domain.Bookmark) (sqlRepositoryModel *Bookmark, err error) {
     return func(domainModel *domain.Bookmark) (sqlRepositoryModel *Bookmark, err error) {
-        return BookmarkDomainToSqlRepositoryModel(db, domainModel)
+        return BookmarkDomainToSqlRepositoryModel(ctx, db, domainModel)
     }
 }
 
-func GetBookmarkSqlRepositoryToDomainModel(db *sql.DB) func(repositoryModel *Bookmark) (domainModel *domain.Bookmark, err error) {
+func GetBookmarkSqlRepositoryToDomainModel(ctx context.Context, db *sql.DB) func(repositoryModel *Bookmark) (domainModel *domain.Bookmark, err error) {
     return func(sqlRepositoryModel *Bookmark) (domainModel *domain.Bookmark, err error) {
-        return BookmarkSqlRepositoryToDomainModel(db,sqlRepositoryModel)
+        return BookmarkSqlRepositoryToDomainModel(ctx, db,sqlRepositoryModel)
     }
 }
 
@@ -219,7 +219,7 @@ func (repo *{{$StructName}}) CountAll(ctx context.Context) (int64, error) {
 }
 
 func (repo *{{$StructName}}) DoesExist(ctx context.Context, domainModel *domain.Bookmark) (bool, error) {
-    repositoryModel, err := BookmarkDomainToSqlRepositoryModel(repo.db, domainModel)
+    repositoryModel, err := BookmarkDomainToSqlRepositoryModel(ctx, repo.db, domainModel)
     if err != nil {
         return false, err
     }
@@ -274,7 +274,7 @@ func (repo *{{$StructName}}) GetFirstWhere(ctx context.Context, domainColumnFilt
         return domainModel, err
     }
 
-    domainModel, err =BookmarkSqlRepositoryToDomainModel(repo.db, repositoryModel)
+    domainModel, err =BookmarkSqlRepositoryToDomainModel(ctx, repo.db, repositoryModel)
 
     return domainModel, err
 }

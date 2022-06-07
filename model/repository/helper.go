@@ -21,6 +21,7 @@
 package repository
 
 import (
+	"context"
 	"database/sql"
 	"time"
 
@@ -98,8 +99,8 @@ func IntToBool(i int64) (bool, error) {
 	return i > 0, nil
 }
 
-func MakeDomainToRepositoryEntityConverter[TIn any, TOut any](db *sql.DB, converter func(db *sql.DB, entity *TIn) (*TOut, error)) func(entity *TIn) (*TOut, error) {
+func MakeDomainToRepositoryEntityConverter[TIn any, TOut any](ctx context.Context, db *sql.DB, converter func(ctx context.Context, db *sql.DB, entity *TIn) (*TOut, error)) func(entity *TIn) (*TOut, error) {
 	return func(entity *TIn) (*TOut, error) {
-		return converter(db, entity)
+		return converter(ctx, db, entity)
 	}
 }

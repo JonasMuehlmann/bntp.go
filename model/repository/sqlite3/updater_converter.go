@@ -89,7 +89,7 @@ func BookmarkDomainToSqlRepositoryUpdater(ctx context.Context, db *sql.DB, domai
         convertedUpdater := make(TagSlice, 0, len(domainUpdater.Tags.Wrappee.Operand))
 
         for _, tag := range domainUpdater.Tags.Wrappee.Operand {
-            convertedTag, err = TagDomainToSqlRepositoryModel(db, tag)
+            convertedTag, err = TagDomainToSqlRepositoryModel(ctx, db, tag)
             if err != nil {
                 return
             }
@@ -205,7 +205,7 @@ func DocumentDomainToSqlRepositoryUpdater(ctx context.Context, db *sql.DB, domai
         convertedUpdater := make(TagSlice, 0, len(domainUpdater.Tags.Wrappee.Operand))
 
         for _, tag := range domainUpdater.Tags.Wrappee.Operand {
-            convertedTag, err = TagDomainToSqlRepositoryModel(db, tag)
+            convertedTag, err = TagDomainToSqlRepositoryModel(ctx, db, tag)
             if err != nil {
                 return
             }
@@ -221,7 +221,7 @@ func DocumentDomainToSqlRepositoryUpdater(ctx context.Context, db *sql.DB, domai
         convertedUpdater := make(DocumentSlice, 0, len(domainUpdater.LinkedDocuments.Wrappee.Operand))
 
         for _, document := range domainUpdater.LinkedDocuments.Wrappee.Operand {
-            convertedDocument, err =DocumentDomainToSqlRepositoryModel(db, document)
+            convertedDocument, err =DocumentDomainToSqlRepositoryModel(ctx, db, document)
             if err != nil {
                 return
             }
@@ -237,7 +237,7 @@ func DocumentDomainToSqlRepositoryUpdater(ctx context.Context, db *sql.DB, domai
         convertedUpdater := make(DocumentSlice, 0, len(domainUpdater.BacklinkedDocuments.Wrappee.Operand))
 
         for _, document := range domainUpdater.BacklinkedDocuments.Wrappee.Operand {
-            convertedDocument, err =DocumentDomainToSqlRepositoryModel(db, document)
+            convertedDocument, err =DocumentDomainToSqlRepositoryModel(ctx, db, document)
             if err != nil {
                 return
             }
@@ -267,7 +267,7 @@ func TagDomainToSqlRepositoryUpdater(ctx context.Context, db *sql.DB, domainUpda
         convertedUpdater := make(TagSlice, 0, len(domainUpdater.ParentPath.Wrappee.Operand))
 
         for _, tag := range domainUpdater.ParentPath.Wrappee.Operand {
-            convertedTag, err = TagDomainToSqlRepositoryModel(db, tag)
+            convertedTag, err = TagDomainToSqlRepositoryModel(ctx, db, tag)
             if err != nil {
                 return
             }
@@ -283,7 +283,7 @@ func TagDomainToSqlRepositoryUpdater(ctx context.Context, db *sql.DB, domainUpda
         convertedUpdater := make(TagSlice, 0, len(domainUpdater.Subtags.Wrappee.Operand))
 
         for _, tag := range domainUpdater.Subtags.Wrappee.Operand {
-            convertedTag, err = TagDomainToSqlRepositoryModel(db, tag)
+            convertedTag, err = TagDomainToSqlRepositoryModel(ctx, db, tag)
             if err != nil {
                 return
             }

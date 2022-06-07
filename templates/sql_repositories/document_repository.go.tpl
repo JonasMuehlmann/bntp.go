@@ -43,15 +43,15 @@ import (
 {{template "structDefinition" .}}
 {{template "repositoryHelperTypes" .}}
 
-func GetDocumentDomainToSqlRepositoryModel(db *sql.DB) func(domainModel *domain.Document) (sqlRepositoryModel *Document, err error) {
+func GetDocumentDomainToSqlRepositoryModel(ctx context.Context, db *sql.DB) func(domainModel *domain.Document) (sqlRepositoryModel *Document, err error) {
     return func(domainModel *domain.Document) (sqlRepositoryModel *Document, err error) {
-        return DocumentDomainToSqlRepositoryModel(db, domainModel)
+        return DocumentDomainToSqlRepositoryModel(ctx, db, domainModel)
     }
 }
 
-func GetDocumentSqlRepositoryToDomainModel(db *sql.DB) func(repositoryModel *Document) (domainModel *domain.Document, err error) {
+func GetDocumentSqlRepositoryToDomainModel(ctx context.Context, db *sql.DB) func(repositoryModel *Document) (domainModel *domain.Document, err error) {
     return func(sqlRepositoryModel *Document) (domainModel *domain.Document, err error) {
-        return DocumentSqlRepositoryToDomainModel(db,sqlRepositoryModel)
+        return DocumentSqlRepositoryToDomainModel(ctx, db,sqlRepositoryModel)
     }
 }
 
@@ -223,7 +223,7 @@ func (repo *{{$StructName}}) CountAll(ctx context.Context) (int64, error) {
 }
 
 func (repo *{{$StructName}}) DoesExist(ctx context.Context, domainModel *domain.Document) (bool, error) {
-    repositoryModel, err := DocumentDomainToSqlRepositoryModel(repo.db, domainModel)
+    repositoryModel, err := DocumentDomainToSqlRepositoryModel(ctx, repo.db, domainModel)
     if err != nil {
         return false, err
     }
@@ -278,7 +278,7 @@ func (repo *{{$StructName}}) GetFirstWhere(ctx context.Context, domainColumnFilt
         return domainModel, err
     }
 
-    domainModel, err = DocumentSqlRepositoryToDomainModel(repo.db, repositoryModel)
+    domainModel, err = DocumentSqlRepositoryToDomainModel(ctx, repo.db, repositoryModel)
 
     return domainModel, err
 }

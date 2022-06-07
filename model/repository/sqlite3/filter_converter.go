@@ -120,7 +120,7 @@ func BookmarkDomainToSqlRepositoryFilter(ctx context.Context, db *sql.DB, domain
     if domainFilter.Tags.HasValue {
         var convertedFilter model.FilterOperation[*Tag]
 
-        convertedFilter, err = model.ConvertFilter[*Tag,*domain.Tag](domainFilter.Tags.Wrappee, repoCommon.MakeDomainToRepositoryEntityConverter[domain.Tag, Tag](db, TagDomainToSqlRepositoryModel))
+        convertedFilter, err = model.ConvertFilter[*Tag,*domain.Tag](domainFilter.Tags.Wrappee, repoCommon.MakeDomainToRepositoryEntityConverter[domain.Tag, Tag](ctx, db, TagDomainToSqlRepositoryModel))
         if err != nil {
             return
         }
@@ -290,7 +290,7 @@ func BookmarkSqlRepositoryToDomainFilter(ctx context.Context, db *sql.DB, sqlRep
     if sqlRepositoryFilter.Tags.HasValue {
         var convertedFilter model.FilterOperation[*domain.Tag]
 
-        convertedFilter, err = model.ConvertFilter[*domain.Tag,*Tag](sqlRepositoryFilter.Tags.Wrappee, repoCommon.MakeDomainToRepositoryEntityConverter[Tag, domain.Tag](db, TagSqlRepositoryToDomainModel))
+        convertedFilter, err = model.ConvertFilter[*domain.Tag,*Tag](sqlRepositoryFilter.Tags.Wrappee, repoCommon.MakeDomainToRepositoryEntityConverter[Tag, domain.Tag](ctx, db, TagSqlRepositoryToDomainModel))
         if err != nil {
             return
         }
@@ -346,7 +346,7 @@ func DocumentDomainToSqlRepositoryFilter(ctx context.Context, db *sql.DB, domain
     if domainFilter.Tags.HasValue {
         var convertedFilter model.FilterOperation[*Tag]
 
-        convertedFilter, err = model.ConvertFilter[*Tag,*domain.Tag](domainFilter.Tags.Wrappee, repoCommon.MakeDomainToRepositoryEntityConverter[domain.Tag, Tag](db, TagDomainToSqlRepositoryModel))
+        convertedFilter, err = model.ConvertFilter[*Tag,*domain.Tag](domainFilter.Tags.Wrappee, repoCommon.MakeDomainToRepositoryEntityConverter[domain.Tag, Tag](ctx, db, TagDomainToSqlRepositoryModel))
         if err != nil {
             return
         }
@@ -397,7 +397,7 @@ func DocumentDomainToSqlRepositoryFilter(ctx context.Context, db *sql.DB, domain
     if domainFilter.LinkedDocuments.HasValue {
         var convertedFilter model.FilterOperation[*Document]
 
-        convertedFilter, err = model.ConvertFilter[*Document,*domain.Document](domainFilter.LinkedDocuments.Wrappee, repoCommon.MakeDomainToRepositoryEntityConverter[domain.Document,Document](db, DocumentDomainToSqlRepositoryModel))
+        convertedFilter, err = model.ConvertFilter[*Document,*domain.Document](domainFilter.LinkedDocuments.Wrappee, repoCommon.MakeDomainToRepositoryEntityConverter[domain.Document,Document](ctx, db, DocumentDomainToSqlRepositoryModel))
         if err != nil {
             return
         }
@@ -407,7 +407,7 @@ func DocumentDomainToSqlRepositoryFilter(ctx context.Context, db *sql.DB, domain
     if domainFilter.BacklinkedDocuments.HasValue {
         var convertedFilter model.FilterOperation[*Document]
 
-        convertedFilter, err = model.ConvertFilter[*Document,*domain.Document](domainFilter.BacklinkedDocuments.Wrappee, repoCommon.MakeDomainToRepositoryEntityConverter[domain.Document,Document](db, DocumentDomainToSqlRepositoryModel))
+        convertedFilter, err = model.ConvertFilter[*Document,*domain.Document](domainFilter.BacklinkedDocuments.Wrappee, repoCommon.MakeDomainToRepositoryEntityConverter[domain.Document,Document](ctx, db, DocumentDomainToSqlRepositoryModel))
         if err != nil {
             return
         }
@@ -503,7 +503,7 @@ func DocumentSqlRepositoryToDomainFilter(ctx context.Context, db *sql.DB, sqlRep
     if sqlRepositoryFilter.Tags.HasValue {
         var convertedFilter model.FilterOperation[*domain.Tag]
 
-        convertedFilter, err = model.ConvertFilter[*domain.Tag,*Tag](sqlRepositoryFilter.Tags.Wrappee, repoCommon.MakeDomainToRepositoryEntityConverter[Tag, domain.Tag](db, TagSqlRepositoryToDomainModel))
+        convertedFilter, err = model.ConvertFilter[*domain.Tag,*Tag](sqlRepositoryFilter.Tags.Wrappee, repoCommon.MakeDomainToRepositoryEntityConverter[Tag, domain.Tag](ctx, db, TagSqlRepositoryToDomainModel))
         if err != nil {
             return
         }
@@ -515,7 +515,7 @@ func DocumentSqlRepositoryToDomainFilter(ctx context.Context, db *sql.DB, sqlRep
     if sqlRepositoryFilter.SourceDocuments.HasValue {
         var convertedFilter model.FilterOperation[*domain.Document]
 
-        convertedFilter, err = model.ConvertFilter[*domain.Document,*Document](sqlRepositoryFilter.SourceDocuments.Wrappee, repoCommon.MakeDomainToRepositoryEntityConverter[Document, domain.Document](db, DocumentSqlRepositoryToDomainModel))
+        convertedFilter, err = model.ConvertFilter[*domain.Document,*Document](sqlRepositoryFilter.SourceDocuments.Wrappee, repoCommon.MakeDomainToRepositoryEntityConverter[Document, domain.Document](ctx, db, DocumentSqlRepositoryToDomainModel))
         if err != nil {
             return
         }
@@ -526,7 +526,7 @@ func DocumentSqlRepositoryToDomainFilter(ctx context.Context, db *sql.DB, sqlRep
     if sqlRepositoryFilter.DestinationDocuments.HasValue {
         var convertedFilter model.FilterOperation[*domain.Document]
 
-        convertedFilter, err = model.ConvertFilter[*domain.Document,*Document](sqlRepositoryFilter.DestinationDocuments.Wrappee, repoCommon.MakeDomainToRepositoryEntityConverter[Document, domain.Document](db, DocumentSqlRepositoryToDomainModel))
+        convertedFilter, err = model.ConvertFilter[*domain.Document,*Document](sqlRepositoryFilter.DestinationDocuments.Wrappee, repoCommon.MakeDomainToRepositoryEntityConverter[Document, domain.Document](ctx, db, DocumentSqlRepositoryToDomainModel))
         if err != nil {
             return
         }
@@ -548,7 +548,7 @@ func TagDomainToSqlRepositoryFilter(ctx context.Context, db *sql.DB, domainFilte
     if domainFilter.ParentPath.HasValue {
         var convertedFilter model.FilterOperation[*Tag]
 
-        convertedFilter, err = model.ConvertFilter[*Tag,*domain.Tag](domainFilter.ParentPath.Wrappee, repoCommon.MakeDomainToRepositoryEntityConverter[domain.Tag, Tag](db, TagDomainToSqlRepositoryModel))
+        convertedFilter, err = model.ConvertFilter[*Tag,*domain.Tag](domainFilter.ParentPath.Wrappee, repoCommon.MakeDomainToRepositoryEntityConverter[domain.Tag, Tag](ctx, db, TagDomainToSqlRepositoryModel))
         if err != nil {
             return
         }
@@ -560,7 +560,7 @@ func TagDomainToSqlRepositoryFilter(ctx context.Context, db *sql.DB, domainFilte
     if domainFilter.Subtags.HasValue {
         var convertedFilter model.FilterOperation[*Tag]
 
-        convertedFilter, err = model.ConvertFilter[*Tag,*domain.Tag](domainFilter.Subtags.Wrappee, repoCommon.MakeDomainToRepositoryEntityConverter[domain.Tag, Tag](db, TagDomainToSqlRepositoryModel))
+        convertedFilter, err = model.ConvertFilter[*Tag,*domain.Tag](domainFilter.Subtags.Wrappee, repoCommon.MakeDomainToRepositoryEntityConverter[domain.Tag, Tag](ctx, db, TagDomainToSqlRepositoryModel))
         if err != nil {
             return
         }
@@ -582,7 +582,7 @@ func TagSqlRepositoryToDomainFilter(ctx context.Context, db *sql.DB, sqlReposito
     if sqlRepositoryFilter.ParentTagTags.HasValue {
         var convertedFilter model.FilterOperation[*domain.Tag]
 
-        convertedFilter, err = model.ConvertFilter[*domain.Tag,*Tag]( sqlRepositoryFilter.ParentTagTags.Wrappee, repoCommon.MakeDomainToRepositoryEntityConverter[Tag, domain.Tag](db, TagSqlRepositoryToDomainModel))
+        convertedFilter, err = model.ConvertFilter[*domain.Tag,*Tag]( sqlRepositoryFilter.ParentTagTags.Wrappee, repoCommon.MakeDomainToRepositoryEntityConverter[Tag, domain.Tag](ctx, db, TagSqlRepositoryToDomainModel))
         if err != nil {
             return
         }
@@ -594,7 +594,7 @@ func TagSqlRepositoryToDomainFilter(ctx context.Context, db *sql.DB, sqlReposito
     if sqlRepositoryFilter.ChildTagTags.HasValue {
         var convertedFilter model.FilterOperation[*domain.Tag]
 
-        convertedFilter, err = model.ConvertFilter[*domain.Tag,*Tag]( sqlRepositoryFilter.ChildTagTags.Wrappee, repoCommon.MakeDomainToRepositoryEntityConverter[Tag, domain.Tag](db, TagSqlRepositoryToDomainModel))
+        convertedFilter, err = model.ConvertFilter[*domain.Tag,*Tag]( sqlRepositoryFilter.ChildTagTags.Wrappee, repoCommon.MakeDomainToRepositoryEntityConverter[Tag, domain.Tag](ctx, db, TagSqlRepositoryToDomainModel))
         if err != nil {
             return
         }

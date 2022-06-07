@@ -40,15 +40,15 @@ import (
 {{template "structDefinition" .}}
 {{template "repositoryHelperTypes" .}}
 
-func GetTagDomainToSqlRepositoryModel(db *sql.DB) func(domainModel *domain.Tag) (sqlRepositoryModel *Tag, err error) {
+func GetTagDomainToSqlRepositoryModel(ctx context.Context, db *sql.DB) func(domainModel *domain.Tag) (sqlRepositoryModel *Tag, err error) {
     return func(domainModel *domain.Tag) (sqlRepositoryModel *Tag, err error) {
-        return TagDomainToSqlRepositoryModel(db, domainModel)
+        return TagDomainToSqlRepositoryModel(ctx,db, domainModel)
     }
 }
 
-func GetTagSqlRepositoryToDomainModel(db *sql.DB) func(repositoryModel *Tag) (domainModel *domain.Tag, err error) {
+func GetTagSqlRepositoryToDomainModel(ctx context.Context, db *sql.DB) func(repositoryModel *Tag) (domainModel *domain.Tag, err error) {
     return func(sqlRepositoryModel *Tag) (domainModel *domain.Tag, err error) {
-        return TagSqlRepositoryToDomainModel(db,sqlRepositoryModel)
+        return TagSqlRepositoryToDomainModel(ctx,db,sqlRepositoryModel)
     }
 }
 
@@ -217,7 +217,7 @@ func (repo *{{$StructName}}) CountAll(ctx context.Context) (int64, error) {
 }
 
 func (repo *{{$StructName}}) DoesExist(ctx context.Context, domainModel *domain.Tag) (bool, error) {
-    repositoryModel, err := TagDomainToSqlRepositoryModel(repo.db, domainModel)
+    repositoryModel, err := TagDomainToSqlRepositoryModel(ctx, repo.db, domainModel)
     if err != nil {
         return false, err
     }
@@ -274,7 +274,7 @@ func (repo *{{$StructName}}) GetFirstWhere(ctx context.Context, domainColumnFilt
         return nil, err
     }
 
-    return TagSqlRepositoryToDomainModel(repo.db, repositoryModel)
+    return TagSqlRepositoryToDomainModel(ctx, repo.db, repositoryModel)
 }
 
 func (repo *{{$StructName}}) GetAll(ctx context.Context) ([]*domain.Tag, error) {

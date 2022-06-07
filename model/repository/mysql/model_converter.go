@@ -204,7 +204,7 @@ func DocumentDomainToSqlRepositoryModel(ctx context.Context, db *sql.DB, domainM
     sqlRepositoryModel.R.DestinationDocuments  = make(DocumentSlice, 0, len(domainModel.BacklinkedDocuments))
 
     for _ , link := range domainModel.LinkedDocuments {
-        repositoryDocument, err = DocumentDomainToSqlRepositoryModel(db, link)
+        repositoryDocument, err = DocumentDomainToSqlRepositoryModel(ctx, db, link)
         if err != nil {
             return
         }
@@ -213,7 +213,7 @@ func DocumentDomainToSqlRepositoryModel(ctx context.Context, db *sql.DB, domainM
     }
 
     for _ , backlink := range domainModel.BacklinkedDocuments {
-        repositoryDocument, err = DocumentDomainToSqlRepositoryModel(db, backlink)
+        repositoryDocument, err = DocumentDomainToSqlRepositoryModel(ctx, db, backlink)
         if err != nil {
             return
         }
@@ -246,7 +246,7 @@ func DocumentSqlRepositoryToDomainModel(ctx context.Context, db *sql.DB, sqlRepo
 
 	domainModel.Tags = make([]*domain.Tag, 0, len(sqlRepositoryModel.R.Tags))
     for _, repositoryTag := range sqlRepositoryModel.R.Tags {
-    domainTag, err = TagSqlRepositoryToDomainModel(db, repositoryTag)
+    domainTag, err = TagSqlRepositoryToDomainModel(ctx, db, repositoryTag)
         if err != nil {
             return
         }
@@ -261,7 +261,7 @@ func DocumentSqlRepositoryToDomainModel(ctx context.Context, db *sql.DB, sqlRepo
     domainModel.BacklinkedDocuments = make([]*domain.Document, 0, len(sqlRepositoryModel.R.DestinationDocuments))
 
     for _ , link := range sqlRepositoryModel.R.SourceDocuments {
-        domainDocument, err = DocumentSqlRepositoryToDomainModel(db, link)
+        domainDocument, err = DocumentSqlRepositoryToDomainModel(ctx, db, link)
         if err != nil {
             return
         }
@@ -270,7 +270,7 @@ func DocumentSqlRepositoryToDomainModel(ctx context.Context, db *sql.DB, sqlRepo
     }
 
     for _ , backlink := range sqlRepositoryModel.R.DestinationDocuments {
-        domainDocument, err = DocumentSqlRepositoryToDomainModel(db, backlink)
+        domainDocument, err = DocumentSqlRepositoryToDomainModel(ctx, db, backlink)
         if err != nil {
             return
         }
@@ -333,7 +333,7 @@ for _, parentTagIDRaw := range strings.Split(sqlRepositoryModel.Path, ";")[:len(
         return
     }
 
-    domainParentTag, err = TagSqlRepositoryToDomainModel(db, parentTag)
+    domainParentTag, err = TagSqlRepositoryToDomainModel(ctx, db, parentTag)
     if err != nil {
         return
     }
@@ -357,7 +357,7 @@ for _, childTagIDRaw := range strings.Split(sqlRepositoryModel.Children, ";")[:l
         return
     }
 
-    domainChildTag, err = TagSqlRepositoryToDomainModel(db, childTag)
+    domainChildTag, err = TagSqlRepositoryToDomainModel(ctx, db, childTag)
     if err != nil {
         return
     }
