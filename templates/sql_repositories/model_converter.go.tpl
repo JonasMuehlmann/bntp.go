@@ -29,6 +29,8 @@ import (
     "context"
     "database/sql"
     "time"
+    "strconv"
+    "strings"
 )
 
 func BookmarkDomainToSqlRepositoryModel(db *sql.DB, domainModel *domain.{{.Entities.Bookmark}}) ( sqlRepositoryModel *{{.Entities.Bookmark}}, err error)  {
@@ -348,83 +350,88 @@ func DocumentSqlRepositoryToDomainModel(db *sql.DB, sqlRepositoryModel *{{.Entit
 }
 
 func TagDomainToSqlRepositoryModel(db *sql.DB, domainModel *domain.{{.Entities.Tag}}) (sqlRepositoryModel *{{.Entities.Tag}}, err error)  {
+// TODO: make sure to insert all tags in ParentPath and Subtags into db
     sqlRepositoryModel = new({{.Entities.Tag}})
 
     sqlRepositoryModel.ID = domainModel.ID
     sqlRepositoryModel.Tag = domainModel.Tag
 
 
-    //**********************    Set parent path    *********************//
-    var repositoryTag *Tag
-    var repositoryParentPathTag *TagParentPath
-
-    sqlRepositoryModel.R.ParentTagTagParentPaths = make(TagParentPathSlice, 0, len(domainModel.ParentPath))
-    sqlRepositoryModel.R.ChildTagTags = make(TagSlice, 0, len(domainModel.Subtags))
-
-    for distance, domainTag := range domainModel.ParentPath {
-        repositoryParentPathTag, err = tagDomainToRepositoryParentPathModel(db, domainTag, distance)
-        if err != nil {
-            return
-        }
-
-        sqlRepositoryModel.R.ParentTagTagParentPaths = append(sqlRepositoryModel.R.ParentTagTagParentPaths, repositoryParentPathTag)
+//***********************    Set ParentTag    **********************//
+    if len(domainModel.ParentPath) > 0 {
+        sqlRepositoryModel.ParentTag = null.NewInt64(domainModel.ParentPath[len(domainModel.ParentPath) - 1].ID, true)
     }
 
-    //**********************    Set child tags *********************//
-    for _, domainTag := range domainModel.Subtags {
-        repositoryTag, err = TagDomainToSqlRepositoryModel(db, domainTag)
-        if err != nil {
-            return
-        }
+//*************************    Set Path    *************************//
+for _, tag := range domainModel.ParentPath {
+    sqlRepositoryModel.Path += strconv.FormatInt(tag.ID, 10) + ";"
+}
 
-        sqlRepositoryModel.R.ChildTagTags = append(sqlRepositoryModel.R.ChildTagTags, repositoryTag)
-    }
+sqlRepositoryModel.Path += strconv.FormatInt(domainModel.ID, 10)
 
+//************************    Set Children  ************************//
+for _, tag := range domainModel.Subtags {
+    sqlRepositoryModel.Children += strconv.FormatInt(tag.ID, 10) + ";"
+}
 
     return
 }
 
-func  tagDomainToRepositoryParentPathModel(db *sql.DB, domainModel *domain.{{.Entities.Tag}},distance int) (sqlRepositoryModel *TagParentPath, err error)  {
-    sqlRepositoryModel = new(TagParentPath)
-
-    sqlRepositoryModel.TagID = domainModel.ID
-    sqlRepositoryModel.ParentTagID = domainModel.ID
-    sqlRepositoryModel.Distance = int64(distance)
-
-    return
-}
-
+// TODO: These functions should be context aware
 func TagSqlRepositoryToDomainModel(db *sql.DB, sqlRepositoryModel *{{.Entities.Tag}}) (domainModel *domain.{{.Entities.Tag}}, err error) {
+// TODO: make sure to insert all tags in ParentPath and Subtags into db
     domainModel = new(domain.{{.Entities.Tag}})
 
     domainModel.ID = sqlRepositoryModel.ID
     domainModel.Tag = sqlRepositoryModel.Tag
 
-    //**********************    Set parent path    *********************//
-    var domainTag *domain.{{.Entities.Tag}}
+//***********************    Set ParentPath    **********************//
+var parentTagID int64
+var parentTag *{{.Entities.Tag}}
+var domainParentTag *domain.{{.Entities.Tag}}
 
-    domainModel.ParentPath   = make([]*domain.{{.Entities.Tag}}, 0, len(sqlRepositoryModel.R.ParentTagTagParentPaths))
-
-    for _, repositoryParentPathTag := range sqlRepositoryModel.R.ParentTagTagParentPaths  {
-        domainTag, err = TagSqlRepositoryToDomainModel(db,  repositoryParentPathTag.R.Tag)
-        if err != nil {
-            return
-        }
-
-        domainModel.ParentPath[repositoryParentPathTag.Distance] = domainTag
+for _, parentTagIDRaw := range strings.Split(sqlRepositoryModel.Path, ";")[:len(sqlRepositoryModel.Path)-2]{
+    parentTagID, err = strconv.ParseInt(parentTagIDRaw, 10, 64)
+    if err != nil {
+        return
     }
 
-    //**********************    Set child tags *********************//
-    domainModel.Subtags = make([]*domain.{{.Entities.Tag}}, 0, len(sqlRepositoryModel.R.ChildTagTags))
-
-    for _, repositoryTag := range sqlRepositoryModel.R.ChildTagTags {
-        domainTag, err = TagSqlRepositoryToDomainModel(db, repositoryTag)
-        if err != nil {
-            return
-        }
-
-        domainModel.Subtags = append(domainModel.Subtags, domainTag)
+    parentTag, err = Tags(TagWhere.ID.EQ(parentTagID)).One(context.Background(), db)
+    if err != nil {
+        return
     }
+
+    domainParentTag, err = TagSqlRepositoryToDomainModel(db, parentTag)
+    if err != nil {
+        return
+    }
+
+    domainModel.ParentPath = append(domainModel.ParentPath, domainParentTag)
+}
+
+//************************    Set Subtags ************************//
+var childTagID int64
+var childTag *{{.Entities.Tag}}
+var domainChildTag *domain.{{.Entities.Tag}}
+
+for _, childTagIDRaw := range strings.Split(sqlRepositoryModel.Children, ";")[:len(sqlRepositoryModel.Children)-2]{
+    childTagID, err = strconv.ParseInt(childTagIDRaw, 10, 64)
+    if err != nil {
+        return
+    }
+
+    childTag, err = Tags(TagWhere.ID.EQ(childTagID)).One(context.Background(), db)
+    if err != nil {
+        return
+    }
+
+    domainChildTag, err = TagSqlRepositoryToDomainModel(db, childTag)
+    if err != nil {
+        return
+    }
+
+    domainModel.Subtags = append(domainModel.Subtags, domainChildTag)
+}
 
     return
 }
