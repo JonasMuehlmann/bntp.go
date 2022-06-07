@@ -388,7 +388,7 @@ func (repo *PsqlBookmarkRepository) New(args any) (*PsqlBookmarkRepository, erro
 }
 
 func (repo *PsqlBookmarkRepository) Add(ctx context.Context, domainModels []*domain.Bookmark) error {
-	repositoryModels, err := goaoi.TransformCopySlice(domainModels, GetBookmarkDomainToSqlRepositoryModel(repo.db))
+	repositoryModels, err := goaoi.TransformCopySlice(domainModels, GetBookmarkDomainToSqlRepositoryModel(ctx, repo.db))
 	if err != nil {
 		return err
 	}
@@ -411,7 +411,7 @@ func (repo *PsqlBookmarkRepository) Add(ctx context.Context, domainModels []*dom
 }
 
 func (repo *PsqlBookmarkRepository) Replace(ctx context.Context, domainModels []*domain.Bookmark) error {
-	repositoryModels, err := goaoi.TransformCopySlice(domainModels, GetBookmarkDomainToSqlRepositoryModel(repo.db))
+	repositoryModels, err := goaoi.TransformCopySlice(domainModels, GetBookmarkDomainToSqlRepositoryModel(ctx, repo.db))
 	if err != nil {
 		return err
 	}
@@ -473,7 +473,7 @@ func (repo *PsqlBookmarkRepository) UpdateWhere(ctx context.Context, domainColum
 }
 
 func (repo *PsqlBookmarkRepository) Delete(ctx context.Context, domainModels []*domain.Bookmark) error {
-	repositoryModels, err := goaoi.TransformCopySlice(domainModels, GetBookmarkDomainToSqlRepositoryModel(repo.db))
+	repositoryModels, err := goaoi.TransformCopySlice(domainModels, GetBookmarkDomainToSqlRepositoryModel(ctx, repo.db))
 	if err != nil {
 		return err
 	}
@@ -567,7 +567,7 @@ func (repo *PsqlBookmarkRepository) GetWhere(ctx context.Context, domainColumnFi
 	queryFilters := buildQueryModListFromFilterBookmark(setFilters)
 
 	repositoryModels, err := Bookmarks(queryFilters...).All(ctx, repo.db)
-	domainModels, err := goaoi.TransformCopySlice(repositoryModels, GetBookmarkSqlRepositoryToDomainModel(repo.db))
+	domainModels, err := goaoi.TransformCopySlice(repositoryModels, GetBookmarkSqlRepositoryToDomainModel(ctx, repo.db))
 
 	return domainModels, err
 }
@@ -600,7 +600,7 @@ func (repo *PsqlBookmarkRepository) GetAll(ctx context.Context) ([]*domain.Bookm
 		return []*domain.Bookmark{}, err
 	}
 
-	domainModels, err := goaoi.TransformCopySlice(repositoryModels, GetBookmarkSqlRepositoryToDomainModel(repo.db))
+	domainModels, err := goaoi.TransformCopySlice(repositoryModels, GetBookmarkSqlRepositoryToDomainModel(ctx, repo.db))
 
 	return domainModels, err
 }

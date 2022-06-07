@@ -352,7 +352,7 @@ func (repo *MssqlDocumentRepository) New(args any) (*MssqlDocumentRepository, er
 }
 
 func (repo *MssqlDocumentRepository) Add(ctx context.Context, domainModels []*domain.Document) error {
-	repositoryModels, err := goaoi.TransformCopySlice(domainModels, GetDocumentDomainToSqlRepositoryModel(repo.db))
+	repositoryModels, err := goaoi.TransformCopySlice(domainModels, GetDocumentDomainToSqlRepositoryModel(ctx, repo.db))
 	if err != nil {
 		return err
 	}
@@ -375,7 +375,7 @@ func (repo *MssqlDocumentRepository) Add(ctx context.Context, domainModels []*do
 }
 
 func (repo *MssqlDocumentRepository) Replace(ctx context.Context, domainModels []*domain.Document) error {
-	repositoryModels, err := goaoi.TransformCopySlice(domainModels, GetDocumentDomainToSqlRepositoryModel(repo.db))
+	repositoryModels, err := goaoi.TransformCopySlice(domainModels, GetDocumentDomainToSqlRepositoryModel(ctx, repo.db))
 	if err != nil {
 		return err
 	}
@@ -437,7 +437,7 @@ func (repo *MssqlDocumentRepository) UpdateWhere(ctx context.Context, domainColu
 }
 
 func (repo *MssqlDocumentRepository) Delete(ctx context.Context, domainModels []*domain.Document) error {
-	repositoryModels, err := goaoi.TransformCopySlice(domainModels, GetDocumentDomainToSqlRepositoryModel(repo.db))
+	repositoryModels, err := goaoi.TransformCopySlice(domainModels, GetDocumentDomainToSqlRepositoryModel(ctx, repo.db))
 	if err != nil {
 		return err
 	}
@@ -535,7 +535,7 @@ func (repo *MssqlDocumentRepository) GetWhere(ctx context.Context, domainColumnF
 
 	repositoryModels, err := Documents(queryFilters...).All(ctx, repo.db)
 
-	domainModels, err := goaoi.TransformCopySlice(repositoryModels, GetDocumentSqlRepositoryToDomainModel(repo.db))
+	domainModels, err := goaoi.TransformCopySlice(repositoryModels, GetDocumentSqlRepositoryToDomainModel(ctx, repo.db))
 
 	return domainModels, err
 }
@@ -569,7 +569,7 @@ func (repo *MssqlDocumentRepository) GetAll(ctx context.Context) ([]*domain.Docu
 		return []*domain.Document{}, err
 	}
 
-	domainModels, err := goaoi.TransformCopySlice(repositoryModels, GetDocumentSqlRepositoryToDomainModel(repo.db))
+	domainModels, err := goaoi.TransformCopySlice(repositoryModels, GetDocumentSqlRepositoryToDomainModel(ctx, repo.db))
 
 	return domainModels, err
 }

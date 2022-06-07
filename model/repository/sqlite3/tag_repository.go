@@ -336,7 +336,7 @@ func (repo *Sqlite3TagRepository) New(args any) (*Sqlite3TagRepository, error) {
 }
 
 func (repo *Sqlite3TagRepository) Add(ctx context.Context, domainModels []*domain.Tag) error {
-	repositoryModels, err := goaoi.TransformCopySlice(domainModels, GetTagDomainToSqlRepositoryModel(repo.db))
+	repositoryModels, err := goaoi.TransformCopySlice(domainModels, GetTagDomainToSqlRepositoryModel(ctx, repo.db))
 	if err != nil {
 		return err
 	}
@@ -359,7 +359,7 @@ func (repo *Sqlite3TagRepository) Add(ctx context.Context, domainModels []*domai
 }
 
 func (repo *Sqlite3TagRepository) Replace(ctx context.Context, domainModels []*domain.Tag) error {
-	repositoryModels, err := goaoi.TransformCopySlice(domainModels, GetTagDomainToSqlRepositoryModel(repo.db))
+	repositoryModels, err := goaoi.TransformCopySlice(domainModels, GetTagDomainToSqlRepositoryModel(ctx, repo.db))
 	if err != nil {
 		return err
 	}
@@ -421,7 +421,7 @@ func (repo *Sqlite3TagRepository) UpdateWhere(ctx context.Context, domainColumnF
 }
 
 func (repo *Sqlite3TagRepository) Delete(ctx context.Context, domainModels []*domain.Tag) error {
-	repositoryModels, err := goaoi.TransformCopySlice(domainModels, GetTagDomainToSqlRepositoryModel(repo.db))
+	repositoryModels, err := goaoi.TransformCopySlice(domainModels, GetTagDomainToSqlRepositoryModel(ctx, repo.db))
 	if err != nil {
 		return err
 	}
@@ -519,7 +519,7 @@ func (repo *Sqlite3TagRepository) GetWhere(ctx context.Context, domainColumnFilt
 		return []*domain.Tag{}, err
 	}
 
-	domainModels, err := goaoi.TransformCopySlice(repositoryModels, GetTagSqlRepositoryToDomainModel(repo.db))
+	domainModels, err := goaoi.TransformCopySlice(repositoryModels, GetTagSqlRepositoryToDomainModel(ctx, repo.db))
 
 	return domainModels, err
 }
@@ -548,7 +548,7 @@ func (repo *Sqlite3TagRepository) GetAll(ctx context.Context) ([]*domain.Tag, er
 		return []*domain.Tag{}, err
 	}
 
-	domainModels, err := goaoi.TransformCopySlice(repositoryModels, GetTagSqlRepositoryToDomainModel(repo.db))
+	domainModels, err := goaoi.TransformCopySlice(repositoryModels, GetTagSqlRepositoryToDomainModel(ctx, repo.db))
 
 	return domainModels, err
 }

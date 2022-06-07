@@ -336,7 +336,7 @@ func (repo *PsqlTagRepository) New(args any) (*PsqlTagRepository, error) {
 }
 
 func (repo *PsqlTagRepository) Add(ctx context.Context, domainModels []*domain.Tag) error {
-	repositoryModels, err := goaoi.TransformCopySlice(domainModels, GetTagDomainToSqlRepositoryModel(repo.db))
+	repositoryModels, err := goaoi.TransformCopySlice(domainModels, GetTagDomainToSqlRepositoryModel(ctx, repo.db))
 	if err != nil {
 		return err
 	}
@@ -359,7 +359,7 @@ func (repo *PsqlTagRepository) Add(ctx context.Context, domainModels []*domain.T
 }
 
 func (repo *PsqlTagRepository) Replace(ctx context.Context, domainModels []*domain.Tag) error {
-	repositoryModels, err := goaoi.TransformCopySlice(domainModels, GetTagDomainToSqlRepositoryModel(repo.db))
+	repositoryModels, err := goaoi.TransformCopySlice(domainModels, GetTagDomainToSqlRepositoryModel(ctx, repo.db))
 	if err != nil {
 		return err
 	}
@@ -421,7 +421,7 @@ func (repo *PsqlTagRepository) UpdateWhere(ctx context.Context, domainColumnFilt
 }
 
 func (repo *PsqlTagRepository) Delete(ctx context.Context, domainModels []*domain.Tag) error {
-	repositoryModels, err := goaoi.TransformCopySlice(domainModels, GetTagDomainToSqlRepositoryModel(repo.db))
+	repositoryModels, err := goaoi.TransformCopySlice(domainModels, GetTagDomainToSqlRepositoryModel(ctx, repo.db))
 	if err != nil {
 		return err
 	}
@@ -519,7 +519,7 @@ func (repo *PsqlTagRepository) GetWhere(ctx context.Context, domainColumnFilter 
 		return []*domain.Tag{}, err
 	}
 
-	domainModels, err := goaoi.TransformCopySlice(repositoryModels, GetTagSqlRepositoryToDomainModel(repo.db))
+	domainModels, err := goaoi.TransformCopySlice(repositoryModels, GetTagSqlRepositoryToDomainModel(ctx, repo.db))
 
 	return domainModels, err
 }
@@ -548,7 +548,7 @@ func (repo *PsqlTagRepository) GetAll(ctx context.Context) ([]*domain.Tag, error
 		return []*domain.Tag{}, err
 	}
 
-	domainModels, err := goaoi.TransformCopySlice(repositoryModels, GetTagSqlRepositoryToDomainModel(repo.db))
+	domainModels, err := goaoi.TransformCopySlice(repositoryModels, GetTagSqlRepositoryToDomainModel(ctx, repo.db))
 
 	return domainModels, err
 }

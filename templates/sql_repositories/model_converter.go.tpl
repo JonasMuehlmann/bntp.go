@@ -33,7 +33,7 @@ import (
     "strings"
 )
 
-func BookmarkDomainToSqlRepositoryModel(db *sql.DB, domainModel *domain.{{.Entities.Bookmark}}) ( sqlRepositoryModel *{{.Entities.Bookmark}}, err error)  {
+func BookmarkDomainToSqlRepositoryModel(ctx context.Context, db *sql.DB, domainModel *domain.{{.Entities.Bookmark}}) ( sqlRepositoryModel *{{.Entities.Bookmark}}, err error)  {
     sqlRepositoryModel = new({{.Entities.Bookmark}})
 
     sqlRepositoryModel.URL = domainModel.URL
@@ -41,6 +41,7 @@ func BookmarkDomainToSqlRepositoryModel(db *sql.DB, domainModel *domain.{{.Entit
 
 
     //**********************    Set Timestamps    **********************//
+    // TODO: Extract constant here
     {{ if eq .DatabaseName "sqlite3"}}
     sqlRepositoryModel.CreatedAt = domainModel.CreatedAt.Format("2006-01-02 15:04:05")
     sqlRepositoryModel.UpdatedAt = domainModel.UpdatedAt.Format("2006-01-02 15:04:05")
@@ -88,7 +89,7 @@ func BookmarkDomainToSqlRepositoryModel(db *sql.DB, domainModel *domain.{{.Entit
 
     sqlRepositoryModel.R.Tags = make(TagSlice, 0, len(domainModel.Tags))
 	for _,  domainTag := range domainModel.Tags {
-		repositoryTag, err = Tags(TagWhere.Tag.EQ(domainTag.Tag)).One(context.Background(), db)
+		repositoryTag, err = Tags(TagWhere.Tag.EQ(domainTag.Tag)).One(ctx, db)
 		if err != nil {
 			return
 		}
@@ -102,7 +103,7 @@ func BookmarkDomainToSqlRepositoryModel(db *sql.DB, domainModel *domain.{{.Entit
         var repositoryBookmarkType *BookmarkType
 
 		sqlRepositoryModel.R.BookmarkType.Type = domainModel.BookmarkType.Wrappee
-		repositoryBookmarkType, err = BookmarkTypes(BookmarkTypeWhere.Type.EQ(domainModel.BookmarkType.Wrappee)).One(context.Background(), db)
+		repositoryBookmarkType, err = BookmarkTypes(BookmarkTypeWhere.Type.EQ(domainModel.BookmarkType.Wrappee)).One(ctx, db)
 		if err != nil {
 			return
 		}
@@ -118,7 +119,7 @@ func BookmarkDomainToSqlRepositoryModel(db *sql.DB, domainModel *domain.{{.Entit
     return
 }
 
-func BookmarkSqlRepositoryToDomainModel(db *sql.DB, sqlRepositoryModel *{{.Entities.Bookmark}}) (domainModel *domain.{{.Entities.Bookmark}}, err error) {
+func BookmarkSqlRepositoryToDomainModel(ctx context.Context, db *sql.DB, sqlRepositoryModel *{{.Entities.Bookmark}}) (domainModel *domain.{{.Entities.Bookmark}}, err error) {
     domainModel = new(domain.{{.Entities.Bookmark}})
 
     domainModel.URL = sqlRepositoryModel.URL
@@ -186,7 +187,7 @@ func BookmarkSqlRepositoryToDomainModel(db *sql.DB, sqlRepositoryModel *{{.Entit
     return
 }
 
-func DocumentDomainToSqlRepositoryModel(db *sql.DB, domainModel *domain.{{.Entities.Document}}) (sqlRepositoryModel *{{.Entities.Document}}, err error)  {
+func DocumentDomainToSqlRepositoryModel(ctx context.Context, db *sql.DB, domainModel *domain.{{.Entities.Document}}) (sqlRepositoryModel *{{.Entities.Document}}, err error)  {
     sqlRepositoryModel = new({{.Entities.Document}})
 
     sqlRepositoryModel.Path = domainModel.Path
@@ -217,7 +218,7 @@ func DocumentDomainToSqlRepositoryModel(db *sql.DB, domainModel *domain.{{.Entit
 
 	sqlRepositoryModel.R.Tags = make(TagSlice, 0, len(domainModel.Tags))
 	for _, modelTag := range domainModel.Tags {
-		repositoryTag, err = Tags(TagWhere.Tag.EQ(modelTag.Tag)).One(context.Background(), db)
+		repositoryTag, err = Tags(TagWhere.Tag.EQ(modelTag.Tag)).One(ctx, db)
 		if err != nil {
 			return
 		}
@@ -230,7 +231,7 @@ func DocumentDomainToSqlRepositoryModel(db *sql.DB, domainModel *domain.{{.Entit
 
 	if domainModel.DocumentType.HasValue {
 		sqlRepositoryModel.R.DocumentType.DocumentType = domainModel.DocumentType.Wrappee
-		repositoryDocumentType, err = DocumentTypes(DocumentTypeWhere.DocumentType.EQ(domainModel.DocumentType.Wrappee)).One(context.Background(), db)
+		repositoryDocumentType, err = DocumentTypes(DocumentTypeWhere.DocumentType.EQ(domainModel.DocumentType.Wrappee)).One(ctx, db)
 		if err != nil {
 			return
 		}
@@ -271,7 +272,7 @@ func DocumentDomainToSqlRepositoryModel(db *sql.DB, domainModel *domain.{{.Entit
     return
 }
 
-func DocumentSqlRepositoryToDomainModel(db *sql.DB, sqlRepositoryModel *{{.Entities.Document}}) (domainModel *domain.{{.Entities.Document}}, err error) {
+func DocumentSqlRepositoryToDomainModel(ctx context.Context, db *sql.DB, sqlRepositoryModel *{{.Entities.Document}}) (domainModel *domain.{{.Entities.Document}}, err error) {
     domainModel = new(domain.{{.Entities.Document}})
 
     domainModel.Path = sqlRepositoryModel.Path
@@ -349,7 +350,7 @@ func DocumentSqlRepositoryToDomainModel(db *sql.DB, sqlRepositoryModel *{{.Entit
     return
 }
 
-func TagDomainToSqlRepositoryModel(db *sql.DB, domainModel *domain.{{.Entities.Tag}}) (sqlRepositoryModel *{{.Entities.Tag}}, err error)  {
+func TagDomainToSqlRepositoryModel(ctx context.Context, db *sql.DB, domainModel *domain.{{.Entities.Tag}}) (sqlRepositoryModel *{{.Entities.Tag}}, err error)  {
 // TODO: make sure to insert all tags in ParentPath and Subtags into db
     sqlRepositoryModel = new({{.Entities.Tag}})
 
@@ -378,7 +379,7 @@ for _, tag := range domainModel.Subtags {
 }
 
 // TODO: These functions should be context aware
-func TagSqlRepositoryToDomainModel(db *sql.DB, sqlRepositoryModel *{{.Entities.Tag}}) (domainModel *domain.{{.Entities.Tag}}, err error) {
+func TagSqlRepositoryToDomainModel(ctx context.Context, db *sql.DB, sqlRepositoryModel *{{.Entities.Tag}}) (domainModel *domain.{{.Entities.Tag}}, err error) {
 // TODO: make sure to insert all tags in ParentPath and Subtags into db
     domainModel = new(domain.{{.Entities.Tag}})
 
@@ -396,7 +397,7 @@ for _, parentTagIDRaw := range strings.Split(sqlRepositoryModel.Path, ";")[:len(
         return
     }
 
-    parentTag, err = Tags(TagWhere.ID.EQ(parentTagID)).One(context.Background(), db)
+    parentTag, err = Tags(TagWhere.ID.EQ(parentTagID)).One(ctx, db)
     if err != nil {
         return
     }
@@ -420,7 +421,7 @@ for _, childTagIDRaw := range strings.Split(sqlRepositoryModel.Children, ";")[:l
         return
     }
 
-    childTag, err = Tags(TagWhere.ID.EQ(childTagID)).One(context.Background(), db)
+    childTag, err = Tags(TagWhere.ID.EQ(childTagID)).One(ctx, db)
     if err != nil {
         return
     }
