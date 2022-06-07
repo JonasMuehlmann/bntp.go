@@ -400,7 +400,7 @@ func (repo *PsqlDocumentRepository) Replace(ctx context.Context, domainModels []
 func (repo *PsqlDocumentRepository) UpdateWhere(ctx context.Context, domainColumnFilter *domain.DocumentFilter, domainColumnUpdater *domain.DocumentUpdater) (numAffectedRecords int64, err error) {
 	var modelsToUpdate DocumentSlice
 
-	columnFilter, err := DocumentDomainToSqlRepositoryFilter(repo.db, domainColumnFilter)
+	columnFilter, err := DocumentDomainToSqlRepositoryFilter(ctx, repo.db, domainColumnFilter)
 	if err != nil {
 		return
 	}
@@ -460,7 +460,7 @@ func (repo *PsqlDocumentRepository) Delete(ctx context.Context, domainModels []*
 }
 
 func (repo *PsqlDocumentRepository) DeleteWhere(ctx context.Context, domainColumnFilter *domain.DocumentFilter) (numAffectedRecords int64, err error) {
-	columnFilter, err := DocumentDomainToSqlRepositoryFilter(repo.db, domainColumnFilter)
+	columnFilter, err := DocumentDomainToSqlRepositoryFilter(ctx, repo.db, domainColumnFilter)
 	if err != nil {
 		return
 	}
@@ -485,7 +485,7 @@ func (repo *PsqlDocumentRepository) DeleteWhere(ctx context.Context, domainColum
 }
 
 func (repo *PsqlDocumentRepository) CountWhere(ctx context.Context, domainColumnFilter *domain.DocumentFilter) (int64, error) {
-	columnFilter, err := DocumentDomainToSqlRepositoryFilter(repo.db, domainColumnFilter)
+	columnFilter, err := DocumentDomainToSqlRepositoryFilter(ctx, repo.db, domainColumnFilter)
 	if err != nil {
 		return 0, err
 	}
@@ -511,7 +511,7 @@ func (repo *PsqlDocumentRepository) DoesExist(ctx context.Context, domainModel *
 }
 
 func (repo *PsqlDocumentRepository) DoesExistWhere(ctx context.Context, domainColumnFilter *domain.DocumentFilter) (bool, error) {
-	columnFilter, err := DocumentDomainToSqlRepositoryFilter(repo.db, domainColumnFilter)
+	columnFilter, err := DocumentDomainToSqlRepositoryFilter(ctx, repo.db, domainColumnFilter)
 	if err != nil {
 		return false, err
 	}
@@ -524,7 +524,7 @@ func (repo *PsqlDocumentRepository) DoesExistWhere(ctx context.Context, domainCo
 }
 
 func (repo *PsqlDocumentRepository) GetWhere(ctx context.Context, domainColumnFilter *domain.DocumentFilter) ([]*domain.Document, error) {
-	columnFilter, err := DocumentDomainToSqlRepositoryFilter(repo.db, domainColumnFilter)
+	columnFilter, err := DocumentDomainToSqlRepositoryFilter(ctx, repo.db, domainColumnFilter)
 	if err != nil {
 		return []*domain.Document{}, err
 	}
@@ -541,7 +541,7 @@ func (repo *PsqlDocumentRepository) GetWhere(ctx context.Context, domainColumnFi
 }
 
 func (repo *PsqlDocumentRepository) GetFirstWhere(ctx context.Context, domainColumnFilter *domain.DocumentFilter) (*domain.Document, error) {
-	columnFilter, err := DocumentDomainToSqlRepositoryFilter(repo.db, domainColumnFilter)
+	columnFilter, err := DocumentDomainToSqlRepositoryFilter(ctx, repo.db, domainColumnFilter)
 	if err != nil {
 		return nil, err
 	}

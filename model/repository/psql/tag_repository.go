@@ -384,7 +384,7 @@ func (repo *PsqlTagRepository) Replace(ctx context.Context, domainModels []*doma
 func (repo *PsqlTagRepository) UpdateWhere(ctx context.Context, domainColumnFilter *domain.TagFilter, domainColumnUpdater *domain.TagUpdater) (numAffectedRecords int64, err error) {
 	var modelsToUpdate TagSlice
 
-	columnFilter, err := TagDomainToSqlRepositoryFilter(repo.db, domainColumnFilter)
+	columnFilter, err := TagDomainToSqlRepositoryFilter(ctx, repo.db, domainColumnFilter)
 	if err != nil {
 		return
 	}
@@ -444,7 +444,7 @@ func (repo *PsqlTagRepository) Delete(ctx context.Context, domainModels []*domai
 }
 
 func (repo *PsqlTagRepository) DeleteWhere(ctx context.Context, domainColumnFilter *domain.TagFilter) (numAffectedRecords int64, err error) {
-	columnFilter, err := TagDomainToSqlRepositoryFilter(repo.db, domainColumnFilter)
+	columnFilter, err := TagDomainToSqlRepositoryFilter(ctx, repo.db, domainColumnFilter)
 	if err != nil {
 		return
 	}
@@ -466,7 +466,7 @@ func (repo *PsqlTagRepository) DeleteWhere(ctx context.Context, domainColumnFilt
 }
 
 func (repo *PsqlTagRepository) CountWhere(ctx context.Context, domainColumnFilter *domain.TagFilter) (int64, error) {
-	columnFilter, err := TagDomainToSqlRepositoryFilter(repo.db, domainColumnFilter)
+	columnFilter, err := TagDomainToSqlRepositoryFilter(ctx, repo.db, domainColumnFilter)
 	if err != nil {
 		return 0, err
 	}
@@ -492,7 +492,7 @@ func (repo *PsqlTagRepository) DoesExist(ctx context.Context, domainModel *domai
 }
 
 func (repo *PsqlTagRepository) DoesExistWhere(ctx context.Context, domainColumnFilter *domain.TagFilter) (bool, error) {
-	columnFilter, err := TagDomainToSqlRepositoryFilter(repo.db, domainColumnFilter)
+	columnFilter, err := TagDomainToSqlRepositoryFilter(ctx, repo.db, domainColumnFilter)
 	if err != nil {
 		return false, err
 	}
@@ -505,7 +505,7 @@ func (repo *PsqlTagRepository) DoesExistWhere(ctx context.Context, domainColumnF
 }
 
 func (repo *PsqlTagRepository) GetWhere(ctx context.Context, domainColumnFilter *domain.TagFilter) ([]*domain.Tag, error) {
-	columnFilter, err := TagDomainToSqlRepositoryFilter(repo.db, domainColumnFilter)
+	columnFilter, err := TagDomainToSqlRepositoryFilter(ctx, repo.db, domainColumnFilter)
 	if err != nil {
 		return []*domain.Tag{}, err
 	}
@@ -525,7 +525,7 @@ func (repo *PsqlTagRepository) GetWhere(ctx context.Context, domainColumnFilter 
 }
 
 func (repo *PsqlTagRepository) GetFirstWhere(ctx context.Context, domainColumnFilter *domain.TagFilter) (*domain.Tag, error) {
-	columnFilter, err := TagDomainToSqlRepositoryFilter(repo.db, domainColumnFilter)
+	columnFilter, err := TagDomainToSqlRepositoryFilter(ctx, repo.db, domainColumnFilter)
 	if err != nil {
 		return nil, err
 	}

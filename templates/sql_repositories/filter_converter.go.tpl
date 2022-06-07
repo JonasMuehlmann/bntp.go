@@ -34,7 +34,7 @@ import (
 )
 
 
-func BookmarkDomainToSqlRepositoryFilter(db *sql.DB, domainFilter *domain.{{.Entities.Bookmark}}Filter) (sqlRepositoryFilter *{{.Entities.Bookmark}}Filter, err error)  {
+func BookmarkDomainToSqlRepositoryFilter(ctx context.Context, db *sql.DB, domainFilter *domain.{{.Entities.Bookmark}}Filter) (sqlRepositoryFilter *{{.Entities.Bookmark}}Filter, err error)  {
     sqlRepositoryFilter = new({{.Entities.Bookmark}}Filter)
 
     sqlRepositoryFilter.URL = domainFilter.URL
@@ -158,7 +158,7 @@ func BookmarkDomainToSqlRepositoryFilter(db *sql.DB, domainFilter *domain.{{.Ent
             }
 
 
-            bookmarkType, err := BookmarkTypes(BookmarkTypeWhere.Type.EQ(type_.Wrappee)).One(context.Background(), db)
+            bookmarkType, err := BookmarkTypes(BookmarkTypeWhere.Type.EQ(type_.Wrappee)).One(ctx, db)
 
             return bookmarkType, err
         })
@@ -172,7 +172,7 @@ func BookmarkDomainToSqlRepositoryFilter(db *sql.DB, domainFilter *domain.{{.Ent
             }
 
 
-            bookmarkType, err := BookmarkTypes(BookmarkTypeWhere.Type.EQ(type_.Wrappee)).One(context.Background(), db)
+            bookmarkType, err := BookmarkTypes(BookmarkTypeWhere.Type.EQ(type_.Wrappee)).One(ctx, db)
 
             return null.NewInt64(bookmarkType.ID, true), err
         })
@@ -188,7 +188,7 @@ func BookmarkDomainToSqlRepositoryFilter(db *sql.DB, domainFilter *domain.{{.Ent
     return
 }
 
-func BookmarkSqlRepositoryToDomainFilter(db *sql.DB, sqlRepositoryFilter *{{.Entities.Bookmark}}Filter) (domainFilter *domain.{{.Entities.Bookmark}}Filter, err error) {
+func BookmarkSqlRepositoryToDomainFilter(ctx context.Context, db *sql.DB, sqlRepositoryFilter *{{.Entities.Bookmark}}Filter) (domainFilter *domain.{{.Entities.Bookmark}}Filter, err error) {
     domainFilter = new(domain.{{.Entities.Bookmark}}Filter)
 
     domainFilter.URL = sqlRepositoryFilter.URL
@@ -200,7 +200,7 @@ func BookmarkSqlRepositoryToDomainFilter(db *sql.DB, sqlRepositoryFilter *{{.Ent
 
         convertedFilter, err = model.ConvertFilter[optional.Optional[string], null.Int64](sqlRepositoryFilter.BookmarkTypeID.Wrappee, func(typeID null.Int64) (optional.Optional[string], error) {
             if typeID.Valid {
-                bookmarkType, err := BookmarkTypes(BookmarkTypeWhere.ID.EQ(typeID.Int64)).One(context.Background(), db)
+                bookmarkType, err := BookmarkTypes(BookmarkTypeWhere.ID.EQ(typeID.Int64)).One(ctx, db)
                 if err != nil {
                     return optional.Optional[string]{}, err
                 }
@@ -334,7 +334,7 @@ func BookmarkSqlRepositoryToDomainFilter(db *sql.DB, sqlRepositoryFilter *{{.Ent
     return
 }
 
-func DocumentDomainToSqlRepositoryFilter(db *sql.DB, domainFilter *domain.{{.Entities.Document}}Filter) (sqlRepositoryFilter *{{.Entities.Document}}Filter, err error)  {
+func DocumentDomainToSqlRepositoryFilter(ctx context.Context, db *sql.DB, domainFilter *domain.{{.Entities.Document}}Filter) (sqlRepositoryFilter *{{.Entities.Document}}Filter, err error)  {
     sqlRepositoryFilter = new({{.Entities.Document}}Filter)
 
     sqlRepositoryFilter.Path = domainFilter.Path
@@ -413,7 +413,7 @@ func DocumentDomainToSqlRepositoryFilter(db *sql.DB, domainFilter *domain.{{.Ent
             }
 
 
-            bookmarkType, err := DocumentTypes(DocumentTypeWhere.DocumentType.EQ(type_.Wrappee)).One(context.Background(), db)
+            bookmarkType, err := DocumentTypes(DocumentTypeWhere.DocumentType.EQ(type_.Wrappee)).One(ctx, db)
 
             return bookmarkType, err
         })
@@ -427,7 +427,7 @@ func DocumentDomainToSqlRepositoryFilter(db *sql.DB, domainFilter *domain.{{.Ent
             }
 
 
-            bookmarkType, err := DocumentTypes(DocumentTypeWhere.DocumentType.EQ(type_.Wrappee)).One(context.Background(), db)
+            bookmarkType, err := DocumentTypes(DocumentTypeWhere.DocumentType.EQ(type_.Wrappee)).One(ctx, db)
 
             return null.NewInt64(bookmarkType.ID, true), err
         })
@@ -466,7 +466,7 @@ func DocumentDomainToSqlRepositoryFilter(db *sql.DB, domainFilter *domain.{{.Ent
     return
 }
 
-func DocumentSqlRepositoryToDomainFilter(db *sql.DB, sqlRepositoryFilter *{{.Entities.Document}}Filter) (domainFilter *domain.{{.Entities.Document}}Filter, err error) {
+func DocumentSqlRepositoryToDomainFilter(ctx context.Context, db *sql.DB, sqlRepositoryFilter *{{.Entities.Document}}Filter) (domainFilter *domain.{{.Entities.Document}}Filter, err error) {
     domainFilter = new(domain.{{.Entities.Document}}Filter)
 
     domainFilter.Path = sqlRepositoryFilter.Path
@@ -478,7 +478,7 @@ func DocumentSqlRepositoryToDomainFilter(db *sql.DB, sqlRepositoryFilter *{{.Ent
 
         convertedFilter, err = model.ConvertFilter[optional.Optional[string], null.Int64](sqlRepositoryFilter.DocumentTypeID.Wrappee, func(typeID null.Int64) (optional.Optional[string], error) {
             if typeID.Valid {
-                documentType, err := DocumentTypes(DocumentTypeWhere.ID.EQ(typeID.Int64)).One(context.Background(), db)
+                documentType, err := DocumentTypes(DocumentTypeWhere.ID.EQ(typeID.Int64)).One(ctx, db)
                 if err != nil {
                     return optional.Optional[string]{}, err
                 }
@@ -600,7 +600,7 @@ func DocumentSqlRepositoryToDomainFilter(db *sql.DB, sqlRepositoryFilter *{{.Ent
     return
 }
 
-func TagDomainToSqlRepositoryFilter(db *sql.DB, domainFilter *domain.{{.Entities.Tag}}Filter) (sqlRepositoryFilter *{{.Entities.Tag}}Filter, err error)  {
+func TagDomainToSqlRepositoryFilter(ctx context.Context, db *sql.DB, domainFilter *domain.{{.Entities.Tag}}Filter) (sqlRepositoryFilter *{{.Entities.Tag}}Filter, err error)  {
     sqlRepositoryFilter = new({{.Entities.Tag}}Filter)
 
     sqlRepositoryFilter.ID = domainFilter.ID
@@ -635,7 +635,7 @@ func TagDomainToSqlRepositoryFilter(db *sql.DB, domainFilter *domain.{{.Entities
     return
 }
 
-func TagSqlRepositoryToDomainFilter(db *sql.DB, sqlRepositoryFilter *{{.Entities.Tag}}Filter) (domainFilter *domain.{{.Entities.Tag}}Filter, err error) {
+func TagSqlRepositoryToDomainFilter(ctx context.Context, db *sql.DB, sqlRepositoryFilter *{{.Entities.Tag}}Filter) (domainFilter *domain.{{.Entities.Tag}}Filter, err error) {
     domainFilter = new(domain.{{.Entities.Tag}}Filter)
 
     domainFilter.ID = sqlRepositoryFilter.ID

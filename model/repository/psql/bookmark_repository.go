@@ -436,7 +436,7 @@ func (repo *PsqlBookmarkRepository) Replace(ctx context.Context, domainModels []
 func (repo *PsqlBookmarkRepository) UpdateWhere(ctx context.Context, domainColumnFilter *domain.BookmarkFilter, domainColumnUpdater *domain.BookmarkUpdater) (numAffectedRecords int64, err error) {
 	var modelsToUpdate BookmarkSlice
 
-	columnFilter, err := BookmarkDomainToSqlRepositoryFilter(repo.db, domainColumnFilter)
+	columnFilter, err := BookmarkDomainToSqlRepositoryFilter(ctx, repo.db, domainColumnFilter)
 	if err != nil {
 		return
 	}
@@ -496,7 +496,7 @@ func (repo *PsqlBookmarkRepository) Delete(ctx context.Context, domainModels []*
 }
 
 func (repo *PsqlBookmarkRepository) DeleteWhere(ctx context.Context, domainColumnFilter *domain.BookmarkFilter) (numAffectedRecords int64, err error) {
-	columnFilter, err := BookmarkDomainToSqlRepositoryFilter(repo.db, domainColumnFilter)
+	columnFilter, err := BookmarkDomainToSqlRepositoryFilter(ctx, repo.db, domainColumnFilter)
 	if err != nil {
 		return
 	}
@@ -518,7 +518,7 @@ func (repo *PsqlBookmarkRepository) DeleteWhere(ctx context.Context, domainColum
 }
 
 func (repo *PsqlBookmarkRepository) CountWhere(ctx context.Context, domainColumnFilter *domain.BookmarkFilter) (int64, error) {
-	columnFilter, err := BookmarkDomainToSqlRepositoryFilter(repo.db, domainColumnFilter)
+	columnFilter, err := BookmarkDomainToSqlRepositoryFilter(ctx, repo.db, domainColumnFilter)
 	if err != nil {
 		return 0, err
 	}
@@ -544,7 +544,7 @@ func (repo *PsqlBookmarkRepository) DoesExist(ctx context.Context, domainModel *
 }
 
 func (repo *PsqlBookmarkRepository) DoesExistWhere(ctx context.Context, domainColumnFilter *domain.BookmarkFilter) (bool, error) {
-	columnFilter, err := BookmarkDomainToSqlRepositoryFilter(repo.db, domainColumnFilter)
+	columnFilter, err := BookmarkDomainToSqlRepositoryFilter(ctx, repo.db, domainColumnFilter)
 	if err != nil {
 		return false, err
 	}
@@ -557,7 +557,7 @@ func (repo *PsqlBookmarkRepository) DoesExistWhere(ctx context.Context, domainCo
 }
 
 func (repo *PsqlBookmarkRepository) GetWhere(ctx context.Context, domainColumnFilter *domain.BookmarkFilter) ([]*domain.Bookmark, error) {
-	columnFilter, err := BookmarkDomainToSqlRepositoryFilter(repo.db, domainColumnFilter)
+	columnFilter, err := BookmarkDomainToSqlRepositoryFilter(ctx, repo.db, domainColumnFilter)
 	if err != nil {
 		return []*domain.Bookmark{}, err
 	}
@@ -573,7 +573,7 @@ func (repo *PsqlBookmarkRepository) GetWhere(ctx context.Context, domainColumnFi
 }
 
 func (repo *PsqlBookmarkRepository) GetFirstWhere(ctx context.Context, domainColumnFilter *domain.BookmarkFilter) (*domain.Bookmark, error) {
-	columnFilter, err := BookmarkDomainToSqlRepositoryFilter(repo.db, domainColumnFilter)
+	columnFilter, err := BookmarkDomainToSqlRepositoryFilter(ctx, repo.db, domainColumnFilter)
 	if err != nil {
 		return nil, err
 	}

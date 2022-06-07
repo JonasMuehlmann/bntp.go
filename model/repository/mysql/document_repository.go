@@ -385,7 +385,7 @@ func (repo *MysqlDocumentRepository) Replace(ctx context.Context, domainModels [
 func (repo *MysqlDocumentRepository) UpdateWhere(ctx context.Context, domainColumnFilter *domain.DocumentFilter, domainColumnUpdater *domain.DocumentUpdater) (numAffectedRecords int64, err error) {
 	var modelsToUpdate DocumentSlice
 
-	columnFilter, err := DocumentDomainToSqlRepositoryFilter(repo.db, domainColumnFilter)
+	columnFilter, err := DocumentDomainToSqlRepositoryFilter(ctx, repo.db, domainColumnFilter)
 	if err != nil {
 		return
 	}
@@ -445,7 +445,7 @@ func (repo *MysqlDocumentRepository) Delete(ctx context.Context, domainModels []
 }
 
 func (repo *MysqlDocumentRepository) DeleteWhere(ctx context.Context, domainColumnFilter *domain.DocumentFilter) (numAffectedRecords int64, err error) {
-	columnFilter, err := DocumentDomainToSqlRepositoryFilter(repo.db, domainColumnFilter)
+	columnFilter, err := DocumentDomainToSqlRepositoryFilter(ctx, repo.db, domainColumnFilter)
 	if err != nil {
 		return
 	}
@@ -470,7 +470,7 @@ func (repo *MysqlDocumentRepository) DeleteWhere(ctx context.Context, domainColu
 }
 
 func (repo *MysqlDocumentRepository) CountWhere(ctx context.Context, domainColumnFilter *domain.DocumentFilter) (int64, error) {
-	columnFilter, err := DocumentDomainToSqlRepositoryFilter(repo.db, domainColumnFilter)
+	columnFilter, err := DocumentDomainToSqlRepositoryFilter(ctx, repo.db, domainColumnFilter)
 	if err != nil {
 		return 0, err
 	}
@@ -496,7 +496,7 @@ func (repo *MysqlDocumentRepository) DoesExist(ctx context.Context, domainModel 
 }
 
 func (repo *MysqlDocumentRepository) DoesExistWhere(ctx context.Context, domainColumnFilter *domain.DocumentFilter) (bool, error) {
-	columnFilter, err := DocumentDomainToSqlRepositoryFilter(repo.db, domainColumnFilter)
+	columnFilter, err := DocumentDomainToSqlRepositoryFilter(ctx, repo.db, domainColumnFilter)
 	if err != nil {
 		return false, err
 	}
@@ -509,7 +509,7 @@ func (repo *MysqlDocumentRepository) DoesExistWhere(ctx context.Context, domainC
 }
 
 func (repo *MysqlDocumentRepository) GetWhere(ctx context.Context, domainColumnFilter *domain.DocumentFilter) ([]*domain.Document, error) {
-	columnFilter, err := DocumentDomainToSqlRepositoryFilter(repo.db, domainColumnFilter)
+	columnFilter, err := DocumentDomainToSqlRepositoryFilter(ctx, repo.db, domainColumnFilter)
 	if err != nil {
 		return []*domain.Document{}, err
 	}
@@ -526,7 +526,7 @@ func (repo *MysqlDocumentRepository) GetWhere(ctx context.Context, domainColumnF
 }
 
 func (repo *MysqlDocumentRepository) GetFirstWhere(ctx context.Context, domainColumnFilter *domain.DocumentFilter) (*domain.Document, error) {
-	columnFilter, err := DocumentDomainToSqlRepositoryFilter(repo.db, domainColumnFilter)
+	columnFilter, err := DocumentDomainToSqlRepositoryFilter(ctx, repo.db, domainColumnFilter)
 	if err != nil {
 		return nil, err
 	}

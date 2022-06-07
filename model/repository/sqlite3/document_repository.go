@@ -398,7 +398,7 @@ func (repo *Sqlite3DocumentRepository) Replace(ctx context.Context, domainModels
 func (repo *Sqlite3DocumentRepository) UpdateWhere(ctx context.Context, domainColumnFilter *domain.DocumentFilter, domainColumnUpdater *domain.DocumentUpdater) (numAffectedRecords int64, err error) {
 	var modelsToUpdate DocumentSlice
 
-	columnFilter, err := DocumentDomainToSqlRepositoryFilter(repo.db, domainColumnFilter)
+	columnFilter, err := DocumentDomainToSqlRepositoryFilter(ctx, repo.db, domainColumnFilter)
 	if err != nil {
 		return
 	}
@@ -458,7 +458,7 @@ func (repo *Sqlite3DocumentRepository) Delete(ctx context.Context, domainModels 
 }
 
 func (repo *Sqlite3DocumentRepository) DeleteWhere(ctx context.Context, domainColumnFilter *domain.DocumentFilter) (numAffectedRecords int64, err error) {
-	columnFilter, err := DocumentDomainToSqlRepositoryFilter(repo.db, domainColumnFilter)
+	columnFilter, err := DocumentDomainToSqlRepositoryFilter(ctx, repo.db, domainColumnFilter)
 	if err != nil {
 		return
 	}
@@ -483,7 +483,7 @@ func (repo *Sqlite3DocumentRepository) DeleteWhere(ctx context.Context, domainCo
 }
 
 func (repo *Sqlite3DocumentRepository) CountWhere(ctx context.Context, domainColumnFilter *domain.DocumentFilter) (int64, error) {
-	columnFilter, err := DocumentDomainToSqlRepositoryFilter(repo.db, domainColumnFilter)
+	columnFilter, err := DocumentDomainToSqlRepositoryFilter(ctx, repo.db, domainColumnFilter)
 	if err != nil {
 		return 0, err
 	}
@@ -509,7 +509,7 @@ func (repo *Sqlite3DocumentRepository) DoesExist(ctx context.Context, domainMode
 }
 
 func (repo *Sqlite3DocumentRepository) DoesExistWhere(ctx context.Context, domainColumnFilter *domain.DocumentFilter) (bool, error) {
-	columnFilter, err := DocumentDomainToSqlRepositoryFilter(repo.db, domainColumnFilter)
+	columnFilter, err := DocumentDomainToSqlRepositoryFilter(ctx, repo.db, domainColumnFilter)
 	if err != nil {
 		return false, err
 	}
@@ -522,7 +522,7 @@ func (repo *Sqlite3DocumentRepository) DoesExistWhere(ctx context.Context, domai
 }
 
 func (repo *Sqlite3DocumentRepository) GetWhere(ctx context.Context, domainColumnFilter *domain.DocumentFilter) ([]*domain.Document, error) {
-	columnFilter, err := DocumentDomainToSqlRepositoryFilter(repo.db, domainColumnFilter)
+	columnFilter, err := DocumentDomainToSqlRepositoryFilter(ctx, repo.db, domainColumnFilter)
 	if err != nil {
 		return []*domain.Document{}, err
 	}
@@ -539,7 +539,7 @@ func (repo *Sqlite3DocumentRepository) GetWhere(ctx context.Context, domainColum
 }
 
 func (repo *Sqlite3DocumentRepository) GetFirstWhere(ctx context.Context, domainColumnFilter *domain.DocumentFilter) (*domain.Document, error) {
-	columnFilter, err := DocumentDomainToSqlRepositoryFilter(repo.db, domainColumnFilter)
+	columnFilter, err := DocumentDomainToSqlRepositoryFilter(ctx, repo.db, domainColumnFilter)
 	if err != nil {
 		return nil, err
 	}

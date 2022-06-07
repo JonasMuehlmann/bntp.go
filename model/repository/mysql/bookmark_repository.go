@@ -427,7 +427,7 @@ func (repo *MysqlBookmarkRepository) Replace(ctx context.Context, domainModels [
 func (repo *MysqlBookmarkRepository) UpdateWhere(ctx context.Context, domainColumnFilter *domain.BookmarkFilter, domainColumnUpdater *domain.BookmarkUpdater) (numAffectedRecords int64, err error) {
 	var modelsToUpdate BookmarkSlice
 
-	columnFilter, err := BookmarkDomainToSqlRepositoryFilter(repo.db, domainColumnFilter)
+	columnFilter, err := BookmarkDomainToSqlRepositoryFilter(ctx, repo.db, domainColumnFilter)
 	if err != nil {
 		return
 	}
@@ -487,7 +487,7 @@ func (repo *MysqlBookmarkRepository) Delete(ctx context.Context, domainModels []
 }
 
 func (repo *MysqlBookmarkRepository) DeleteWhere(ctx context.Context, domainColumnFilter *domain.BookmarkFilter) (numAffectedRecords int64, err error) {
-	columnFilter, err := BookmarkDomainToSqlRepositoryFilter(repo.db, domainColumnFilter)
+	columnFilter, err := BookmarkDomainToSqlRepositoryFilter(ctx, repo.db, domainColumnFilter)
 	if err != nil {
 		return
 	}
@@ -509,7 +509,7 @@ func (repo *MysqlBookmarkRepository) DeleteWhere(ctx context.Context, domainColu
 }
 
 func (repo *MysqlBookmarkRepository) CountWhere(ctx context.Context, domainColumnFilter *domain.BookmarkFilter) (int64, error) {
-	columnFilter, err := BookmarkDomainToSqlRepositoryFilter(repo.db, domainColumnFilter)
+	columnFilter, err := BookmarkDomainToSqlRepositoryFilter(ctx, repo.db, domainColumnFilter)
 	if err != nil {
 		return 0, err
 	}
@@ -535,7 +535,7 @@ func (repo *MysqlBookmarkRepository) DoesExist(ctx context.Context, domainModel 
 }
 
 func (repo *MysqlBookmarkRepository) DoesExistWhere(ctx context.Context, domainColumnFilter *domain.BookmarkFilter) (bool, error) {
-	columnFilter, err := BookmarkDomainToSqlRepositoryFilter(repo.db, domainColumnFilter)
+	columnFilter, err := BookmarkDomainToSqlRepositoryFilter(ctx, repo.db, domainColumnFilter)
 	if err != nil {
 		return false, err
 	}
@@ -548,7 +548,7 @@ func (repo *MysqlBookmarkRepository) DoesExistWhere(ctx context.Context, domainC
 }
 
 func (repo *MysqlBookmarkRepository) GetWhere(ctx context.Context, domainColumnFilter *domain.BookmarkFilter) ([]*domain.Bookmark, error) {
-	columnFilter, err := BookmarkDomainToSqlRepositoryFilter(repo.db, domainColumnFilter)
+	columnFilter, err := BookmarkDomainToSqlRepositoryFilter(ctx, repo.db, domainColumnFilter)
 	if err != nil {
 		return []*domain.Bookmark{}, err
 	}
@@ -564,7 +564,7 @@ func (repo *MysqlBookmarkRepository) GetWhere(ctx context.Context, domainColumnF
 }
 
 func (repo *MysqlBookmarkRepository) GetFirstWhere(ctx context.Context, domainColumnFilter *domain.BookmarkFilter) (*domain.Bookmark, error) {
-	columnFilter, err := BookmarkDomainToSqlRepositoryFilter(repo.db, domainColumnFilter)
+	columnFilter, err := BookmarkDomainToSqlRepositoryFilter(ctx, repo.db, domainColumnFilter)
 	if err != nil {
 		return nil, err
 	}
