@@ -374,7 +374,7 @@ func (repo *MysqlTagRepository) UpdateWhere(ctx context.Context, domainColumnFil
 		return
 	}
 
-	columnUpdater, err := TagDomainToSqlRepositoryUpdater(repo.db, domainColumnUpdater)
+	columnUpdater, err := TagDomainToSqlRepositoryUpdater(ctx, repo.db, domainColumnUpdater)
 	if err != nil {
 		return
 	}

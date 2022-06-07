@@ -403,7 +403,7 @@ func (repo *Sqlite3DocumentRepository) UpdateWhere(ctx context.Context, domainCo
 		return
 	}
 
-	columnUpdater, err := DocumentDomainToSqlRepositoryUpdater(repo.db, domainColumnUpdater)
+	columnUpdater, err := DocumentDomainToSqlRepositoryUpdater(ctx, repo.db, domainColumnUpdater)
 	if err != nil {
 		return
 	}

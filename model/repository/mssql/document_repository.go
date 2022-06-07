@@ -405,7 +405,7 @@ func (repo *MssqlDocumentRepository) UpdateWhere(ctx context.Context, domainColu
 		return
 	}
 
-	columnUpdater, err := DocumentDomainToSqlRepositoryUpdater(repo.db, domainColumnUpdater)
+	columnUpdater, err := DocumentDomainToSqlRepositoryUpdater(ctx, repo.db, domainColumnUpdater)
 	if err != nil {
 		return
 	}

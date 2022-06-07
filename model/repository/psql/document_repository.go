@@ -405,7 +405,7 @@ func (repo *PsqlDocumentRepository) UpdateWhere(ctx context.Context, domainColum
 		return
 	}
 
-	columnUpdater, err := DocumentDomainToSqlRepositoryUpdater(repo.db, domainColumnUpdater)
+	columnUpdater, err := DocumentDomainToSqlRepositoryUpdater(ctx, repo.db, domainColumnUpdater)
 	if err != nil {
 		return
 	}

@@ -432,7 +432,7 @@ func (repo *MysqlBookmarkRepository) UpdateWhere(ctx context.Context, domainColu
 		return
 	}
 
-	columnUpdater, err := BookmarkDomainToSqlRepositoryUpdater(repo.db, domainColumnUpdater)
+	columnUpdater, err := BookmarkDomainToSqlRepositoryUpdater(ctx, repo.db, domainColumnUpdater)
 	if err != nil {
 		return
 	}

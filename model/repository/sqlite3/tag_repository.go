@@ -389,7 +389,7 @@ func (repo *Sqlite3TagRepository) UpdateWhere(ctx context.Context, domainColumnF
 		return
 	}
 
-	columnUpdater, err := TagDomainToSqlRepositoryUpdater(repo.db, domainColumnUpdater)
+	columnUpdater, err := TagDomainToSqlRepositoryUpdater(ctx, repo.db, domainColumnUpdater)
 	if err != nil {
 		return
 	}

@@ -121,7 +121,7 @@ func (repo *{{$StructName}}) UpdateWhere(ctx context.Context, domainColumnFilter
         return
     }
 
-    columnUpdater, err := TagDomainToSqlRepositoryUpdater(repo.db, domainColumnUpdater)
+    columnUpdater, err := TagDomainToSqlRepositoryUpdater(ctx, repo.db, domainColumnUpdater)
     if err != nil {
         return
     }

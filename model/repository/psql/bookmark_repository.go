@@ -441,7 +441,7 @@ func (repo *PsqlBookmarkRepository) UpdateWhere(ctx context.Context, domainColum
 		return
 	}
 
-	columnUpdater, err := BookmarkDomainToSqlRepositoryUpdater(repo.db, domainColumnUpdater)
+	columnUpdater, err := BookmarkDomainToSqlRepositoryUpdater(ctx, repo.db, domainColumnUpdater)
 	if err != nil {
 		return
 	}

@@ -31,7 +31,7 @@ import (
     "context"
 )
 
-func BookmarkDomainToSqlRepositoryUpdater(db *sql.DB, domainUpdater *domain.{{.Entities.Bookmark}}Updater) (sqlRepositoryUpdater *{{.Entities.Bookmark}}Updater, err error)  {
+func BookmarkDomainToSqlRepositoryUpdater(ctx context.Context, db *sql.DB, domainUpdater *domain.{{.Entities.Bookmark}}Updater) (sqlRepositoryUpdater *{{.Entities.Bookmark}}Updater, err error)  {
     sqlRepositoryUpdater = new({{.Entities.Bookmark}}Updater)
 
 	if domainUpdater.CreatedAt.HasValue {
@@ -149,7 +149,7 @@ func BookmarkDomainToSqlRepositoryUpdater(db *sql.DB, domainUpdater *domain.{{.E
 
 }
 
-func DocumentDomainToSqlRepositoryUpdater(db *sql.DB, domainUpdater *domain.{{.Entities.Document}}Updater) (sqlRepositoryUpdater *{{.Entities.Document}}Updater, err error)  {
+func DocumentDomainToSqlRepositoryUpdater(ctx context.Context, db *sql.DB, domainUpdater *domain.{{.Entities.Document}}Updater) (sqlRepositoryUpdater *{{.Entities.Document}}Updater, err error)  {
     sqlRepositoryUpdater = new({{.Entities.Document}}Updater)
 
 	if domainUpdater.DocumentType.HasValue {
@@ -267,7 +267,7 @@ func DocumentDomainToSqlRepositoryUpdater(db *sql.DB, domainUpdater *domain.{{.E
     return
 }
 
-func TagDomainToSqlRepositoryUpdater(db *sql.DB, domainUpdater *domain.{{.Entities.Tag}}Updater) (sqlRepositoryUpdater *{{.Entities.Tag}}Updater, err error)  {
+func TagDomainToSqlRepositoryUpdater(ctx context.Context, db *sql.DB, domainUpdater *domain.{{.Entities.Tag}}Updater) (sqlRepositoryUpdater *{{.Entities.Tag}}Updater, err error)  {
     sqlRepositoryUpdater = new({{.Entities.Tag}}Updater)
 
 	if domainUpdater.Tag.HasValue {
