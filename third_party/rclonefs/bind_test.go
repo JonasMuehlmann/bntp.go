@@ -9,7 +9,6 @@ import (
 	"testing"
 )
 
-
 func walkPrintFn(path string, info os.FileInfo, err error) error {
 	if err != nil {
 		return err
@@ -38,8 +37,8 @@ func TestNewBindPathFs(t *testing.T) {
 	_ = afero.WriteFile(fsRoot, "/tmp/test/hello.go", []byte("fsRoot"), os.ModePerm)
 
 	bindFs := NewBindPathFs(map[string]afero.Fs{
-		"/": fsRoot,
-		"/home": fsHome,
+		"/":          fsRoot,
+		"/home":      fsHome,
 		"/home/root": fsRoot,
 	})
 
@@ -63,27 +62,26 @@ func TestNewBindPathFs(t *testing.T) {
 	t.Logf("list all files inside home filesystem")
 	_ = afero.Walk(fsHome, "/", walkPrintFn)
 
-
 	osFs := afero.NewOsFs()
 	bindOSFs := NewBindPathFs(map[string]afero.Fs{
-		"/": osFs,
+		"/":     osFs,
 		"/home": osFs,
 	})
 
-	if tmpFile, err := bindOSFs.Open("/tmp/xx"); err==nil{
+	if tmpFile, err := bindOSFs.Open("/tmp/xx"); err == nil {
 		defer tmpFile.Close()
 		t.Logf("root bind file name %s", tmpFile.Name())
 
-		if osTmpFile, ok := tmpFile.(*os.File); ok{
+		if osTmpFile, ok := tmpFile.(*os.File); ok {
 			t.Logf("success with real os file name %s", osTmpFile.Name())
 		}
 	}
 
-	if tmpFile, err := bindOSFs.Open("/home/tmp/xx"); err==nil{
+	if tmpFile, err := bindOSFs.Open("/home/tmp/xx"); err == nil {
 		defer tmpFile.Close()
 		t.Logf("bindOSFs file name %s", tmpFile.Name())
 
-		if osTmpFile, ok := tmpFile.(*os.File); ok{
+		if osTmpFile, ok := tmpFile.(*os.File); ok {
 			t.Errorf("should not happen %s", osTmpFile.Name())
 		}
 	}

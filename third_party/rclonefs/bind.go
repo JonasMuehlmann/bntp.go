@@ -26,8 +26,8 @@ func NewRCloneFs(section string) afero.Fs {
 // bindPointLayer is read only filesystem which only contain bind directory hierarchical
 type BindPathFs struct {
 	bindPointLayer afero.Fs
-	pathPrefix []string
-	bindFs []afero.Fs
+	pathPrefix     []string
+	bindFs         []afero.Fs
 }
 
 type BindPathFile struct {
@@ -41,9 +41,9 @@ func (f *BindPathFile) Name() string {
 
 // NewBindPathFile return a file with a modified file path if necessary
 func NewBindPathFile(f afero.File, path string) afero.File {
-	if filepath.Clean(path)==filepath.Clean(f.Name()){
+	if filepath.Clean(path) == filepath.Clean(f.Name()) {
 		return f
-	}else{
+	} else {
 		return &BindPathFile{File: f, path: filepath.Clean(path)}
 	}
 }
@@ -54,10 +54,10 @@ func NewBindPathFs(binds map[string]afero.Fs) afero.Fs {
 	pathPrefix := make([]string, 0, len(binds))
 	bindMap := make(map[string]string)
 
-	for k := range binds{
+	for k := range binds {
 		cleanPath := filepath.Clean(k)
 		bindMap[cleanPath] = k
-		if len(bindMap) == len(pathPrefix){
+		if len(bindMap) == len(pathPrefix) {
 			panic(fmt.Errorf("path %s is a duplicate of existing %s", k, cleanPath))
 		}
 
@@ -72,27 +72,27 @@ func NewBindPathFs(binds map[string]afero.Fs) afero.Fs {
 
 	rootLayer := afero.NewMemMapFs()
 
-	for _, k := range pathPrefix{
+	for _, k := range pathPrefix {
 		bindFs = append(bindFs, binds[bindMap[k]])
 		_ = rootLayer.MkdirAll(k, os.ModeDir)
 	}
 
 	return &BindPathFs{
 		bindPointLayer: afero.NewReadOnlyFs(rootLayer),
-		pathPrefix: pathPrefix,
-		bindFs: bindFs,
+		pathPrefix:     pathPrefix,
+		bindFs:         bindFs,
 	}
 }
 
 func (b *BindPathFs) realPath(name string) (fsIndex int, path string, err error) {
 	cleanPath := filepath.Clean(name)
-	for i, prefix := range b.pathPrefix{
-		if strings.HasPrefix(cleanPath, prefix){
+	for i, prefix := range b.pathPrefix {
+		if strings.HasPrefix(cleanPath, prefix) {
 			newPath := cleanPath[len(prefix):]
-			if prefix=="/"{
+			if prefix == "/" {
 				newPath = cleanPath
 			}
-			if newPath==""{
+			if newPath == "" {
 				newPath = "/"
 			}
 			return i, newPath, nil
@@ -105,7 +105,7 @@ func (b *BindPathFs) realPath(name string) (fsIndex int, path string, err error)
 func (b *BindPathFs) Chtimes(name string, atime, mtime time.Time) (err error) {
 	if bindFs, n, err := b.realPath(name); err != nil {
 		return &os.PathError{Op: "chtimes", Path: name, Err: err}
-	}else{
+	} else {
 		// we may lost the exact filename if error return
 		return b.bindFs[bindFs].Chtimes(n, atime, mtime)
 	}
@@ -114,7 +114,7 @@ func (b *BindPathFs) Chtimes(name string, atime, mtime time.Time) (err error) {
 func (b *BindPathFs) Chmod(name string, mode os.FileMode) (err error) {
 	if bindFs, n, err := b.realPath(name); err != nil {
 		return &os.PathError{Op: "chmod", Path: name, Err: err}
-	}else{
+	} else {
 		return b.bindFs[bindFs].Chmod(n, mode)
 	}
 }
@@ -122,7 +122,7 @@ func (b *BindPathFs) Chmod(name string, mode os.FileMode) (err error) {
 func (b *BindPathFs) Chown(name string, uid, gid int) (err error) {
 	if bindFs, n, err := b.realPath(name); err != nil {
 		return &os.PathError{Op: "chown", Path: name, Err: err}
-	}else{
+	} else {
 		return b.bindFs[bindFs].Chown(n, uid, gid)
 	}
 }
@@ -134,7 +134,7 @@ func (b *BindPathFs) Name() string {
 func (b *BindPathFs) Stat(name string) (fi os.FileInfo, err error) {
 	if bindFs, n, err := b.realPath(name); err != nil {
 		return nil, &os.PathError{Op: "stat", Path: name, Err: err}
-	}else{
+	} else {
 		return b.bindFs[bindFs].Stat(n)
 	}
 }
@@ -142,11 +142,11 @@ func (b *BindPathFs) Stat(name string) (fi os.FileInfo, err error) {
 func (b *BindPathFs) Rename(oldName, newName string) (err error) {
 	if bindFsOld, oldPath, err := b.realPath(oldName); err != nil {
 		return &os.PathError{Op: "rename", Path: oldName, Err: err}
-	}else if bindFsNew, newPath, err := b.realPath(newName); err != nil {
+	} else if bindFsNew, newPath, err := b.realPath(newName); err != nil {
 		return &os.PathError{Op: "rename", Path: newName, Err: err}
-	}else if bindFsOld==bindFsNew{
+	} else if bindFsOld == bindFsNew {
 		return b.bindFs[bindFsOld].Rename(oldPath, newPath)
-	}else{
+	} else {
 		bindFsOld := b.bindFs[bindFsOld]
 		bindFsNew := b.bindFs[bindFsNew]
 
@@ -186,7 +186,7 @@ func (b *BindPathFs) Rename(oldName, newName string) (err error) {
 func (b *BindPathFs) RemoveAll(name string) (err error) {
 	if bindFs, n, err := b.realPath(name); err != nil {
 		return &os.PathError{Op: "remove_all", Path: name, Err: err}
-	}else{
+	} else {
 		return b.bindFs[bindFs].RemoveAll(n)
 	}
 }
@@ -194,7 +194,7 @@ func (b *BindPathFs) RemoveAll(name string) (err error) {
 func (b *BindPathFs) Remove(name string) (err error) {
 	if bindFs, n, err := b.realPath(name); err != nil {
 		return &os.PathError{Op: "remove", Path: name, Err: err}
-	}else{
+	} else {
 		return b.bindFs[bindFs].Remove(n)
 	}
 }
@@ -202,7 +202,7 @@ func (b *BindPathFs) Remove(name string) (err error) {
 func (b *BindPathFs) OpenFile(name string, flag int, mode os.FileMode) (f afero.File, err error) {
 	if bindFs, n, err := b.realPath(name); err != nil {
 		return nil, &os.PathError{Op: "openfile", Path: name, Err: err}
-	}else{
+	} else {
 		file, err := b.bindFs[bindFs].OpenFile(n, flag, mode)
 		if err != nil {
 			return nil, err
@@ -213,27 +213,27 @@ func (b *BindPathFs) OpenFile(name string, flag int, mode os.FileMode) (f afero.
 
 func (b *BindPathFs) Open(name string) (f afero.File, err error) {
 	var unionFile afero.File = nil
-	if ok, err := afero.Exists(b.bindPointLayer, name); err==nil && ok{
+	if ok, err := afero.Exists(b.bindPointLayer, name); err == nil && ok {
 		unionFile, err = b.bindPointLayer.Open(name)
 	}
 	if bindFs, n, err := b.realPath(name); err != nil {
-		if unionFile!=nil{
+		if unionFile != nil {
 			return unionFile, nil
-		}else{
+		} else {
 			return nil, &os.PathError{Op: "open", Path: name, Err: err}
 		}
-	}else{
+	} else {
 		file, err := b.bindFs[bindFs].Open(n)
 		if err != nil {
 			return nil, err
 		}
-		if unionFile!=nil{
+		if unionFile != nil {
 			// todo: we need a merger for UnionFile to handle Layer file overwrite Base directory case
 			return &afero.UnionFile{
-				Base: unionFile,
+				Base:  unionFile,
 				Layer: NewBindPathFile(file, name),
 			}, nil
-		}else{
+		} else {
 			return NewBindPathFile(file, name), nil
 		}
 	}
@@ -242,7 +242,7 @@ func (b *BindPathFs) Open(name string) (f afero.File, err error) {
 func (b *BindPathFs) Mkdir(name string, mode os.FileMode) (err error) {
 	if bindFs, n, err := b.realPath(name); err != nil {
 		return &os.PathError{Op: "mkdir", Path: name, Err: err}
-	}else{
+	} else {
 		return b.bindFs[bindFs].Mkdir(n, mode)
 	}
 }
@@ -250,7 +250,7 @@ func (b *BindPathFs) Mkdir(name string, mode os.FileMode) (err error) {
 func (b *BindPathFs) MkdirAll(name string, mode os.FileMode) (err error) {
 	if bindFs, n, err := b.realPath(name); err != nil {
 		return &os.PathError{Op: "mkdir", Path: name, Err: err}
-	}else{
+	} else {
 		return b.bindFs[bindFs].MkdirAll(n, mode)
 	}
 }
@@ -258,7 +258,7 @@ func (b *BindPathFs) MkdirAll(name string, mode os.FileMode) (err error) {
 func (b *BindPathFs) Create(name string) (f afero.File, err error) {
 	if bindFs, n, err := b.realPath(name); err != nil {
 		return nil, &os.PathError{Op: "create", Path: name, Err: err}
-	}else{
+	} else {
 		file, err := b.bindFs[bindFs].Create(n)
 		if err != nil {
 			return nil, err

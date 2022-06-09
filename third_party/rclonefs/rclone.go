@@ -66,7 +66,7 @@ func (s Fs) MkdirAll(path string, perm os.FileMode) error {
 
 	if j > 1 {
 		// Create parent
-		if err = s.MkdirAll(path[0:j-1], perm); err!=nil{
+		if err = s.MkdirAll(path[0:j-1], perm); err != nil {
 			return err
 		}
 	}
@@ -77,7 +77,7 @@ func (s Fs) MkdirAll(path string, perm os.FileMode) error {
 		// double-checking that directory doesn't exist.
 		if dir, err1 := s.Stat(path); err1 == nil && dir.IsDir() {
 			return nil
-		}else{
+		} else {
 			return err
 		}
 	}
@@ -126,15 +126,15 @@ func (s Fs) RemoveAll(path string) error {
 
 		if info.IsDir() {
 			dirList = append(dirList, path)
-		}else{
+		} else {
 			fileList = append(fileList, path)
 		}
 		return nil
 	}
 
-	if err := afero.Walk(s, path, listWalkFn); err==nil{
-		for _, f := range fileList{
-			if e := s.Remove(f); e!=nil && !os.IsNotExist(e){
+	if err := afero.Walk(s, path, listWalkFn); err == nil {
+		for _, f := range fileList {
+			if e := s.Remove(f); e != nil && !os.IsNotExist(e) {
 				return e
 			}
 		}
@@ -143,12 +143,12 @@ func (s Fs) RemoveAll(path string) error {
 			return len(dirList[i]) > len(dirList[j])
 		})
 
-		for _, d := range dirList{
-			if e := s.Remove(d); e!=nil && !os.IsNotExist(e){
+		for _, d := range dirList {
+			if e := s.Remove(d); e != nil && !os.IsNotExist(e) {
 				return e
 			}
 		}
-	}else {
+	} else {
 		return err
 	}
 
@@ -179,7 +179,7 @@ func (s Fs) Chtimes(name string, atime time.Time, mtime time.Time) error {
 
 func SetConfigPath(path string) error {
 	err := config.SetConfigPath(path)
-	if err!=nil{
+	if err != nil {
 		return err
 	}
 	//config.ClearConfigPassword()

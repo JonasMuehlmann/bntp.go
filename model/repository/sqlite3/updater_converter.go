@@ -23,280 +23,281 @@
 package repository
 
 import (
+	"context"
+	"database/sql"
 	"github.com/JonasMuehlmann/bntp.go/model"
 	"github.com/JonasMuehlmann/bntp.go/model/domain"
-	 repoCommon "github.com/JonasMuehlmann/bntp.go/model/repository"
-    "github.com/volatiletech/null/v8"
-    "database/sql"
-    "context"
+	repoCommon "github.com/JonasMuehlmann/bntp.go/model/repository"
+	"github.com/volatiletech/null/v8"
 )
 
-func BookmarkDomainToSqlRepositoryUpdater(ctx context.Context, db *sql.DB, domainUpdater *domain.BookmarkUpdater) (sqlRepositoryUpdater *BookmarkUpdater, err error)  {
-    sqlRepositoryUpdater = new(BookmarkUpdater)
+func BookmarkDomainToSqlRepositoryUpdater(ctx context.Context, db *sql.DB, domainUpdater *domain.BookmarkUpdater) (sqlRepositoryUpdater *BookmarkUpdater, err error) {
+	sqlRepositoryUpdater = new(BookmarkUpdater)
 
 	if domainUpdater.CreatedAt.HasValue {
-        
-        var convertedUpdater string
-        convertedUpdater, err = repoCommon.TimeToStr(domainUpdater.CreatedAt.Wrappee.Operand)
-        if err != nil {
-            return
-        }
 
-        sqlRepositoryUpdater.CreatedAt.Push(model.UpdateOperation[string]{Operator: domainUpdater.CreatedAt.Wrappee.Operator, Operand: convertedUpdater})
-        
-    }
+		var convertedUpdater string
+		convertedUpdater, err = repoCommon.TimeToStr(domainUpdater.CreatedAt.Wrappee.Operand)
+		if err != nil {
+			return
+		}
+
+		sqlRepositoryUpdater.CreatedAt.Push(model.UpdateOperation[string]{Operator: domainUpdater.CreatedAt.Wrappee.Operator, Operand: convertedUpdater})
+
+	}
 
 	if domainUpdater.UpdatedAt.HasValue {
-        
-        var convertedUpdater string
-        convertedUpdater, err = repoCommon.TimeToStr(domainUpdater.UpdatedAt.Wrappee.Operand)
-        if err != nil {
-            return
-        }
 
-        sqlRepositoryUpdater.UpdatedAt.Push(model.UpdateOperation[string]{Operator: domainUpdater.UpdatedAt.Wrappee.Operator, Operand: convertedUpdater})
-        
-    }
+		var convertedUpdater string
+		convertedUpdater, err = repoCommon.TimeToStr(domainUpdater.UpdatedAt.Wrappee.Operand)
+		if err != nil {
+			return
+		}
+
+		sqlRepositoryUpdater.UpdatedAt.Push(model.UpdateOperation[string]{Operator: domainUpdater.UpdatedAt.Wrappee.Operator, Operand: convertedUpdater})
+
+	}
 
 	if domainUpdater.DeletedAt.HasValue {
-        
-        var convertedUpdater null.String
-        convertedUpdater, err = repoCommon.OptionalTimeToNullStr(domainUpdater.DeletedAt.Wrappee.Operand)
-        if err != nil {
-            return
-        }
 
-        sqlRepositoryUpdater.DeletedAt.Push(model.UpdateOperation[null.String]{Operator: domainUpdater.UpdatedAt.Wrappee.Operator, Operand: convertedUpdater})
-        
-    }
+		var convertedUpdater null.String
+		convertedUpdater, err = repoCommon.OptionalTimeToNullStr(domainUpdater.DeletedAt.Wrappee.Operand)
+		if err != nil {
+			return
+		}
+
+		sqlRepositoryUpdater.DeletedAt.Push(model.UpdateOperation[null.String]{Operator: domainUpdater.UpdatedAt.Wrappee.Operator, Operand: convertedUpdater})
+
+	}
 
 	if domainUpdater.URL.HasValue {
-        sqlRepositoryUpdater.URL.Push(model.UpdateOperation[string]{Operator: domainUpdater.URL.Wrappee.Operator, Operand: sqlRepositoryUpdater.URL.Wrappee.Operand})
-    }
+		sqlRepositoryUpdater.URL.Push(model.UpdateOperation[string]{Operator: domainUpdater.URL.Wrappee.Operator, Operand: sqlRepositoryUpdater.URL.Wrappee.Operand})
+	}
 
 	if domainUpdater.Title.HasValue {
-        var convertedUpdater null.String
-        convertedUpdater, err = repoCommon.OptionalStringToNullString(domainUpdater.Title.Wrappee.Operand)
-        if err != nil {
-            return
-        }
+		var convertedUpdater null.String
+		convertedUpdater, err = repoCommon.OptionalStringToNullString(domainUpdater.Title.Wrappee.Operand)
+		if err != nil {
+			return
+		}
 
-        sqlRepositoryUpdater.DeletedAt.Push(model.UpdateOperation[null.String]{Operator: domainUpdater.Title.Wrappee.Operator, Operand: convertedUpdater})
-    }
+		sqlRepositoryUpdater.DeletedAt.Push(model.UpdateOperation[null.String]{Operator: domainUpdater.Title.Wrappee.Operator, Operand: convertedUpdater})
+	}
 
 	if domainUpdater.Tags.HasValue {
-        var convertedTag *Tag
-        convertedUpdater := make(TagSlice, 0, len(domainUpdater.Tags.Wrappee.Operand))
+		var convertedTag *Tag
+		convertedUpdater := make(TagSlice, 0, len(domainUpdater.Tags.Wrappee.Operand))
 
-        for _, tag := range domainUpdater.Tags.Wrappee.Operand {
-            convertedTag, err = TagDomainToSqlRepositoryModel(ctx, db, tag)
-            if err != nil {
-                return
-            }
+		for _, tag := range domainUpdater.Tags.Wrappee.Operand {
+			convertedTag, err = TagDomainToSqlRepositoryModel(ctx, db, tag)
+			if err != nil {
+				return
+			}
 
-            convertedUpdater = append(convertedUpdater, convertedTag)
-        }
+			convertedUpdater = append(convertedUpdater, convertedTag)
+		}
 
-        sqlRepositoryUpdater.Tags.Push(model.UpdateOperation[TagSlice]{Operator: domainUpdater.Tags.Wrappee.Operator, Operand: convertedUpdater})
-    }
+		sqlRepositoryUpdater.Tags.Push(model.UpdateOperation[TagSlice]{Operator: domainUpdater.Tags.Wrappee.Operator, Operand: convertedUpdater})
+	}
 
 	if domainUpdater.ID.HasValue {
-        sqlRepositoryUpdater.ID.Push(model.UpdateOperation[int64]{Operator: domainUpdater.ID.Wrappee.Operator, Operand: sqlRepositoryUpdater.ID.Wrappee.Operand})
-    }
+		sqlRepositoryUpdater.ID.Push(model.UpdateOperation[int64]{Operator: domainUpdater.ID.Wrappee.Operator, Operand: sqlRepositoryUpdater.ID.Wrappee.Operand})
+	}
 
 	if domainUpdater.IsCollection.HasValue {
-        var convertedUpdater int64
-        convertedUpdater, err = repoCommon.BoolToInt(domainUpdater.IsCollection.Wrappee.Operand)
-        if err != nil {
-            return
-        }
+		var convertedUpdater int64
+		convertedUpdater, err = repoCommon.BoolToInt(domainUpdater.IsCollection.Wrappee.Operand)
+		if err != nil {
+			return
+		}
 
-        sqlRepositoryUpdater.IsCollection.Push(model.UpdateOperation[int64]{Operator: domainUpdater.IsCollection.Wrappee.Operator, Operand: convertedUpdater})
-    }
+		sqlRepositoryUpdater.IsCollection.Push(model.UpdateOperation[int64]{Operator: domainUpdater.IsCollection.Wrappee.Operator, Operand: convertedUpdater})
+	}
 
 	if domainUpdater.IsRead.HasValue {
-        var convertedUpdater int64
-        convertedUpdater, err = repoCommon.BoolToInt(domainUpdater.IsRead.Wrappee.Operand)
-        if err != nil {
-            return
-        }
+		var convertedUpdater int64
+		convertedUpdater, err = repoCommon.BoolToInt(domainUpdater.IsRead.Wrappee.Operand)
+		if err != nil {
+			return
+		}
 
-        sqlRepositoryUpdater.IsRead.Push(model.UpdateOperation[int64]{Operator: domainUpdater.IsRead.Wrappee.Operator, Operand: convertedUpdater})
-    }
+		sqlRepositoryUpdater.IsRead.Push(model.UpdateOperation[int64]{Operator: domainUpdater.IsRead.Wrappee.Operator, Operand: convertedUpdater})
+	}
 
 	if domainUpdater.BookmarkType.HasValue {
-        var convertedUpdater *BookmarkType
-        if domainUpdater.BookmarkType.Wrappee.Operand.HasValue {
-            convertedUpdater, err = BookmarkTypes(BookmarkTypeWhere.Type.EQ(domainUpdater.BookmarkType.Wrappee.Operand.Wrappee)).One(context.Background(), db)
-            if err != nil {
-                return
-            }
-        } else {
-            convertedUpdater = nil
-        }
+		var convertedUpdater *BookmarkType
+		if domainUpdater.BookmarkType.Wrappee.Operand.HasValue {
+			convertedUpdater, err = BookmarkTypes(BookmarkTypeWhere.Type.EQ(domainUpdater.BookmarkType.Wrappee.Operand.Wrappee)).One(context.Background(), db)
+			if err != nil {
+				return
+			}
+		} else {
+			convertedUpdater = nil
+		}
 
-        sqlRepositoryUpdater.BookmarkType.Push(model.UpdateOperation[*BookmarkType]{Operator: domainUpdater.BookmarkType.Wrappee.Operator, Operand: convertedUpdater})
-    }
+		sqlRepositoryUpdater.BookmarkType.Push(model.UpdateOperation[*BookmarkType]{Operator: domainUpdater.BookmarkType.Wrappee.Operator, Operand: convertedUpdater})
+	}
 
-
-    return
+	return
 
 }
 
-func DocumentDomainToSqlRepositoryUpdater(ctx context.Context, db *sql.DB, domainUpdater *domain.DocumentUpdater) (sqlRepositoryUpdater *DocumentUpdater, err error)  {
-    sqlRepositoryUpdater = new(DocumentUpdater)
+func DocumentDomainToSqlRepositoryUpdater(ctx context.Context, db *sql.DB, domainUpdater *domain.DocumentUpdater) (sqlRepositoryUpdater *DocumentUpdater, err error) {
+	sqlRepositoryUpdater = new(DocumentUpdater)
 
 	if domainUpdater.DocumentType.HasValue {
-        var convertedUpdater *DocumentType
-        if domainUpdater.DocumentType.Wrappee.Operand.HasValue {
-            convertedUpdater, err = DocumentTypes(DocumentTypeWhere.DocumentType.EQ(domainUpdater.DocumentType.Wrappee.Operand.Wrappee)).One(context.Background(), db)
-            if err != nil {
-                return
+		var convertedUpdater *DocumentType
+		if domainUpdater.DocumentType.Wrappee.Operand.HasValue {
+			convertedUpdater, err = DocumentTypes(DocumentTypeWhere.DocumentType.EQ(domainUpdater.DocumentType.Wrappee.Operand.Wrappee)).One(context.Background(), db)
+			if err != nil {
+				return
+			}
+		} else {
+			convertedUpdater = nil
 		}
-        } else {
-            convertedUpdater = nil
-        }
 
-        sqlRepositoryUpdater.DocumentType.Push(model.UpdateOperation[*DocumentType]{Operator: domainUpdater.DocumentType.Wrappee.Operator, Operand: convertedUpdater})
-    }
+		sqlRepositoryUpdater.DocumentType.Push(model.UpdateOperation[*DocumentType]{Operator: domainUpdater.DocumentType.Wrappee.Operator, Operand: convertedUpdater})
+	}
 
 	if domainUpdater.Path.HasValue {
-        sqlRepositoryUpdater.Path.Push(model.UpdateOperation[string]{Operator: domainUpdater.Path.Wrappee.Operator, Operand: sqlRepositoryUpdater.Path.Wrappee.Operand})
-    }
+		sqlRepositoryUpdater.Path.Push(model.UpdateOperation[string]{Operator: domainUpdater.Path.Wrappee.Operator, Operand: sqlRepositoryUpdater.Path.Wrappee.Operand})
+	}
 
 	if domainUpdater.CreatedAt.HasValue {
-        
-        var convertedUpdater string
-        convertedUpdater, err = repoCommon.TimeToStr(domainUpdater.CreatedAt.Wrappee.Operand)
-        if err != nil {
-            return
-        }
 
-        sqlRepositoryUpdater.CreatedAt.Push(model.UpdateOperation[string]{Operator: domainUpdater.CreatedAt.Wrappee.Operator, Operand: convertedUpdater})
-        
-    }
+		var convertedUpdater string
+		convertedUpdater, err = repoCommon.TimeToStr(domainUpdater.CreatedAt.Wrappee.Operand)
+		if err != nil {
+			return
+		}
+
+		sqlRepositoryUpdater.CreatedAt.Push(model.UpdateOperation[string]{Operator: domainUpdater.CreatedAt.Wrappee.Operator, Operand: convertedUpdater})
+
+	}
 
 	if domainUpdater.UpdatedAt.HasValue {
-        
-        var convertedUpdater string
-        convertedUpdater, err = repoCommon.TimeToStr(domainUpdater.UpdatedAt.Wrappee.Operand)
-        if err != nil {
-            return
-        }
 
-        sqlRepositoryUpdater.UpdatedAt.Push(model.UpdateOperation[string]{Operator: domainUpdater.UpdatedAt.Wrappee.Operator, Operand: convertedUpdater})
-        
-    }
+		var convertedUpdater string
+		convertedUpdater, err = repoCommon.TimeToStr(domainUpdater.UpdatedAt.Wrappee.Operand)
+		if err != nil {
+			return
+		}
+
+		sqlRepositoryUpdater.UpdatedAt.Push(model.UpdateOperation[string]{Operator: domainUpdater.UpdatedAt.Wrappee.Operator, Operand: convertedUpdater})
+
+	}
 
 	if domainUpdater.DeletedAt.HasValue {
-        
-        var convertedUpdater null.String
-        convertedUpdater, err = repoCommon.OptionalTimeToNullStr(domainUpdater.DeletedAt.Wrappee.Operand)
-        if err != nil {
-            return
-        }
 
-        sqlRepositoryUpdater.DeletedAt.Push(model.UpdateOperation[null.String]{Operator: domainUpdater.UpdatedAt.Wrappee.Operator, Operand: convertedUpdater})
-        
-    }
+		var convertedUpdater null.String
+		convertedUpdater, err = repoCommon.OptionalTimeToNullStr(domainUpdater.DeletedAt.Wrappee.Operand)
+		if err != nil {
+			return
+		}
+
+		sqlRepositoryUpdater.DeletedAt.Push(model.UpdateOperation[null.String]{Operator: domainUpdater.UpdatedAt.Wrappee.Operator, Operand: convertedUpdater})
+
+	}
 
 	if domainUpdater.Tags.HasValue {
-        var convertedTag *Tag
-        convertedUpdater := make(TagSlice, 0, len(domainUpdater.Tags.Wrappee.Operand))
+		var convertedTag *Tag
+		convertedUpdater := make(TagSlice, 0, len(domainUpdater.Tags.Wrappee.Operand))
 
-        for _, tag := range domainUpdater.Tags.Wrappee.Operand {
-            convertedTag, err = TagDomainToSqlRepositoryModel(ctx, db, tag)
-            if err != nil {
-                return
-            }
+		for _, tag := range domainUpdater.Tags.Wrappee.Operand {
+			convertedTag, err = TagDomainToSqlRepositoryModel(ctx, db, tag)
+			if err != nil {
+				return
+			}
 
-            convertedUpdater = append(convertedUpdater, convertedTag)
-        }
+			convertedUpdater = append(convertedUpdater, convertedTag)
+		}
 
-        sqlRepositoryUpdater.Tags.Push(model.UpdateOperation[TagSlice]{Operator: domainUpdater.Tags.Wrappee.Operator, Operand: convertedUpdater})
-    }
+		sqlRepositoryUpdater.Tags.Push(model.UpdateOperation[TagSlice]{Operator: domainUpdater.Tags.Wrappee.Operator, Operand: convertedUpdater})
+	}
 
 	if domainUpdater.LinkedDocuments.HasValue {
-        var convertedDocument *Document
-        convertedUpdater := make(DocumentSlice, 0, len(domainUpdater.LinkedDocuments.Wrappee.Operand))
+		var convertedDocument *Document
+		convertedUpdater := make(DocumentSlice, 0, len(domainUpdater.LinkedDocuments.Wrappee.Operand))
 
-        for _, document := range domainUpdater.LinkedDocuments.Wrappee.Operand {
-            convertedDocument, err =DocumentDomainToSqlRepositoryModel(ctx, db, document)
-            if err != nil {
-                return
-            }
+		for _, document := range domainUpdater.LinkedDocuments.Wrappee.Operand {
+			convertedDocument, err = DocumentDomainToSqlRepositoryModel(ctx, db, document)
+			if err != nil {
+				return
+			}
 
-            convertedUpdater = append(convertedUpdater, convertedDocument)
-        }
+			convertedUpdater = append(convertedUpdater, convertedDocument)
+		}
 
-        sqlRepositoryUpdater.DestinationDocuments.Push(model.UpdateOperation[DocumentSlice]{Operator: domainUpdater.LinkedDocuments.Wrappee.Operator, Operand: convertedUpdater})
-    }
+		sqlRepositoryUpdater.DestinationDocuments.Push(model.UpdateOperation[DocumentSlice]{Operator: domainUpdater.LinkedDocuments.Wrappee.Operator, Operand: convertedUpdater})
+	}
 
 	if domainUpdater.BacklinkedDocuments.HasValue {
-        var convertedDocument *Document
-        convertedUpdater := make(DocumentSlice, 0, len(domainUpdater.BacklinkedDocuments.Wrappee.Operand))
+		var convertedDocument *Document
+		convertedUpdater := make(DocumentSlice, 0, len(domainUpdater.BacklinkedDocuments.Wrappee.Operand))
 
-        for _, document := range domainUpdater.BacklinkedDocuments.Wrappee.Operand {
-            convertedDocument, err =DocumentDomainToSqlRepositoryModel(ctx, db, document)
-            if err != nil {
-                return
-            }
+		for _, document := range domainUpdater.BacklinkedDocuments.Wrappee.Operand {
+			convertedDocument, err = DocumentDomainToSqlRepositoryModel(ctx, db, document)
+			if err != nil {
+				return
+			}
 
-            convertedUpdater = append(convertedUpdater, convertedDocument)
-        }
+			convertedUpdater = append(convertedUpdater, convertedDocument)
+		}
 
-        sqlRepositoryUpdater.SourceDocuments.Push(model.UpdateOperation[DocumentSlice]{Operator: domainUpdater.BacklinkedDocuments.Wrappee.Operator, Operand: convertedUpdater})
-    }
+		sqlRepositoryUpdater.SourceDocuments.Push(model.UpdateOperation[DocumentSlice]{Operator: domainUpdater.BacklinkedDocuments.Wrappee.Operator, Operand: convertedUpdater})
+	}
 
 	if domainUpdater.ID.HasValue {
-        sqlRepositoryUpdater.ID.Push(model.UpdateOperation[int64]{Operator: domainUpdater.ID.Wrappee.Operator, Operand: sqlRepositoryUpdater.ID.Wrappee.Operand})
-    }
+		sqlRepositoryUpdater.ID.Push(model.UpdateOperation[int64]{Operator: domainUpdater.ID.Wrappee.Operator, Operand: sqlRepositoryUpdater.ID.Wrappee.Operand})
+	}
 
-    return
+	return
 }
 
-func TagDomainToSqlRepositoryUpdater(ctx context.Context, db *sql.DB, domainUpdater *domain.TagUpdater) (sqlRepositoryUpdater *TagUpdater, err error)  {
-    sqlRepositoryUpdater = new(TagUpdater)
+func TagDomainToSqlRepositoryUpdater(ctx context.Context, db *sql.DB, domainUpdater *domain.TagUpdater) (sqlRepositoryUpdater *TagUpdater, err error) {
+	sqlRepositoryUpdater = new(TagUpdater)
 
+	//**************************    Set tag    *************************//
 	if domainUpdater.Tag.HasValue {
-        sqlRepositoryUpdater.Tag.Push(model.UpdateOperation[string]{Operator: domainUpdater.Tag.Wrappee.Operator, Operand: sqlRepositoryUpdater.Tag.Wrappee.Operand})
-    }
+		sqlRepositoryUpdater.Tag.Push(model.UpdateOperation[string]{Operator: domainUpdater.Tag.Wrappee.Operator, Operand: sqlRepositoryUpdater.Tag.Wrappee.Operand})
+	}
 
+	//***********    Set ParentTag, ParentTagTag and Path    ***********//
 	if domainUpdater.ParentPath.HasValue {
-        var convertedTag *Tag
-        convertedUpdater := make(TagSlice, 0, len(domainUpdater.ParentPath.Wrappee.Operand))
+		var convertedTag *Tag
+		tag := domainUpdater.ParentPath.Wrappee.Operand[len(domainUpdater.ParentPath.Wrappee.Operand)-1]
+		convertedTag, err = TagDomainToSqlRepositoryModel(ctx, db, tag)
+		if err != nil {
+			return
+		}
 
-        for _, tag := range domainUpdater.ParentPath.Wrappee.Operand {
-            convertedTag, err = TagDomainToSqlRepositoryModel(ctx, db, tag)
-            if err != nil {
-                return
-            }
+		sqlRepositoryUpdater.ParentTagTag.Push(model.UpdateOperation[*Tag]{Operator: domainUpdater.ParentPath.Wrappee.Operator, Operand: convertedTag})
+		sqlRepositoryUpdater.ParentTag.Push(model.UpdateOperation[null.Int64]{Operator: domainUpdater.ParentPath.Wrappee.Operator, Operand: null.NewInt64(convertedTag.ID, true)})
 
-            convertedUpdater = append(convertedUpdater, convertedTag)
-        }
+		pathIDs := make([]string, 0, len(domainUpdater.ParentPath.Wrappee.Operand)+1)
+		for _, tag := range domainUpdater.ParentPath.Wrappee.Operand {
+			pathIDs = append(pathIDs, strconv.FormatInt(tag.ID, 10))
+		}
 
-        sqlRepositoryUpdater.ParentTagTags.Push(model.UpdateOperation[TagSlice]{Operator: domainUpdater.ParentPath.Wrappee.Operator, Operand: convertedUpdater})
-    }
+		pathIDs = append(pathIDs, strconv.FormatInt(tag.ID, 10))
 
+		sqlRepositoryUpdater.Path.Push(model.UpdateOperation[string]{Operator: domainUpdater.ParentPath.Wrappee.Operator, Operand: strings.Join(pathIDs, ";")})
+	}
+
+	//***********************    Set Children    ***********************//
 	if domainUpdater.Subtags.HasValue {
-        var convertedTag *Tag
-        convertedUpdater := make(TagSlice, 0, len(domainUpdater.Subtags.Wrappee.Operand))
+		pathIDs := make([]string, 0, len(domainUpdater.Subtags.Wrappee.Operand)+1)
+		for _, tag := range domainUpdater.Subtags.Wrappee.Operand {
+			pathIDs = append(pathIDs, strconv.FormatInt(tag.ID, 10))
+		}
 
-        for _, tag := range domainUpdater.Subtags.Wrappee.Operand {
-            convertedTag, err = TagDomainToSqlRepositoryModel(ctx, db, tag)
-            if err != nil {
-                return
-            }
+		sqlRepositoryUpdater.Children.Push(model.UpdateOperation[string]{Operator: domainUpdater.Subtags.Wrappee.Operator, Operand: strings.Join(pathIDs, ";")})
+	}
 
-            convertedUpdater = append(convertedUpdater, convertedTag)
-        }
-
-        sqlRepositoryUpdater.ChildTagTags.Push(model.UpdateOperation[TagSlice]{Operator: domainUpdater.Subtags.Wrappee.Operator, Operand: convertedUpdater})
-    }
-
+	//**************************    Set ID    **************************//
 	if domainUpdater.ID.HasValue {
-        sqlRepositoryUpdater.ID.Push(model.UpdateOperation[int64]{Operator: domainUpdater.ID.Wrappee.Operator, Operand: sqlRepositoryUpdater.ID.Wrappee.Operand})
-    }
+		sqlRepositoryUpdater.ID.Push(model.UpdateOperation[int64]{Operator: domainUpdater.ID.Wrappee.Operator, Operand: sqlRepositoryUpdater.ID.Wrappee.Operand})
+	}
 
-    return
+	return
 }

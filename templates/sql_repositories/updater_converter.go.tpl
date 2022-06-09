@@ -268,47 +268,49 @@ func DocumentDomainToSqlRepositoryUpdater(ctx context.Context, db *sql.DB, domai
 }
 
 func TagDomainToSqlRepositoryUpdater(ctx context.Context, db *sql.DB, domainUpdater *domain.{{.Entities.Tag}}Updater) (sqlRepositoryUpdater *{{.Entities.Tag}}Updater, err error)  {
-    sqlRepositoryUpdater = new({{.Entities.Tag}}Updater)
+	sqlRepositoryUpdater = new(TagUpdater)
 
+	//**************************    Set tag    *************************//
 	if domainUpdater.Tag.HasValue {
-        sqlRepositoryUpdater.Tag.Push(model.UpdateOperation[string]{Operator: domainUpdater.Tag.Wrappee.Operator, Operand: sqlRepositoryUpdater.Tag.Wrappee.Operand})
-    }
+		sqlRepositoryUpdater.Tag.Push(model.UpdateOperation[string]{Operator: domainUpdater.Tag.Wrappee.Operator, Operand: sqlRepositoryUpdater.Tag.Wrappee.Operand})
+	}
 
+	//***********    Set ParentTag, ParentTagTag and Path    ***********//
 	if domainUpdater.ParentPath.HasValue {
-        var convertedTag *Tag
-        convertedUpdater := make(TagSlice, 0, len(domainUpdater.ParentPath.Wrappee.Operand))
+		var convertedTag *Tag
+		tag := domainUpdater.ParentPath.Wrappee.Operand[len(domainUpdater.ParentPath.Wrappee.Operand)-1]
+		convertedTag, err = TagDomainToSqlRepositoryModel(ctx, db, tag)
+		if err != nil {
+			return
+		}
 
-        for _, tag := range domainUpdater.ParentPath.Wrappee.Operand {
-            convertedTag, err = TagDomainToSqlRepositoryModel(ctx, db, tag)
-            if err != nil {
-                return
-            }
+		sqlRepositoryUpdater.ParentTagTag.Push(model.UpdateOperation[*Tag]{Operator: domainUpdater.ParentPath.Wrappee.Operator, Operand: convertedTag})
+		sqlRepositoryUpdater.ParentTag.Push(model.UpdateOperation[null.Int64]{Operator: domainUpdater.ParentPath.Wrappee.Operator, Operand: null.NewInt64(convertedTag.ID, true)})
 
-            convertedUpdater = append(convertedUpdater, convertedTag)
-        }
+		pathIDs := make([]string, 0, len(domainUpdater.ParentPath.Wrappee.Operand)+1)
+		for _, tag := range domainUpdater.ParentPath.Wrappee.Operand {
+			pathIDs = append(pathIDs, strconv.FormatInt(tag.ID, 10))
+		}
 
-        sqlRepositoryUpdater.ParentTagTags.Push(model.UpdateOperation[TagSlice]{Operator: domainUpdater.ParentPath.Wrappee.Operator, Operand: convertedUpdater})
-    }
+		pathIDs = append(pathIDs, strconv.FormatInt(tag.ID, 10))
 
+		sqlRepositoryUpdater.Path.Push(model.UpdateOperation[string]{Operator: domainUpdater.ParentPath.Wrappee.Operator, Operand: strings.Join(pathIDs, ";")})
+	}
+
+	//***********************    Set Children    ***********************//
 	if domainUpdater.Subtags.HasValue {
-        var convertedTag *Tag
-        convertedUpdater := make(TagSlice, 0, len(domainUpdater.Subtags.Wrappee.Operand))
+		pathIDs := make([]string, 0, len(domainUpdater.Subtags.Wrappee.Operand)+1)
+		for _, tag := range domainUpdater.Subtags.Wrappee.Operand {
+			pathIDs = append(pathIDs, strconv.FormatInt(tag.ID, 10))
+		}
 
-        for _, tag := range domainUpdater.Subtags.Wrappee.Operand {
-            convertedTag, err = TagDomainToSqlRepositoryModel(ctx, db, tag)
-            if err != nil {
-                return
-            }
+		sqlRepositoryUpdater.Children.Push(model.UpdateOperation[string]{Operator: domainUpdater.Subtags.Wrappee.Operator, Operand: strings.Join(pathIDs, ";")})
+	}
 
-            convertedUpdater = append(convertedUpdater, convertedTag)
-        }
-
-        sqlRepositoryUpdater.ChildTagTags.Push(model.UpdateOperation[TagSlice]{Operator: domainUpdater.Subtags.Wrappee.Operator, Operand: convertedUpdater})
-    }
-
+	//**************************    Set ID    **************************//
 	if domainUpdater.ID.HasValue {
-        sqlRepositoryUpdater.ID.Push(model.UpdateOperation[int64]{Operator: domainUpdater.ID.Wrappee.Operator, Operand: sqlRepositoryUpdater.ID.Wrappee.Operand})
-    }
+		sqlRepositoryUpdater.ID.Push(model.UpdateOperation[int64]{Operator: domainUpdater.ID.Wrappee.Operator, Operand: sqlRepositoryUpdater.ID.Wrappee.Operand})
+	}
 
-    return
+	return
 }
