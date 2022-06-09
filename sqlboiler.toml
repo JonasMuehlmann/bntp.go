@@ -2,20 +2,6 @@ wipe = true
 add-soft-delete = true
 pkgname = "repository"
 
-[[types]]
-  [types.match]
-    type = "int"
-
-  [types.replace]
-    type = "int64"
-
-[[types]]
-  [types.match]
-    type = "null.Int"
-
-  [types.replace]
-    type = "null.Int64"
-
 [auto-columns]
 created = "createdAt"
 updated = "updatedAt"
