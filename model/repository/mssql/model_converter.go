@@ -42,7 +42,6 @@ func BookmarkDomainToSqlRepositoryModel(ctx context.Context, db *sql.DB, domainM
 	sqlRepositoryModel.ID = domainModel.ID
 
 	//**********************    Set Timestamps    **********************//
-	// TODO: Extract constant here
 
 	sqlRepositoryModel.CreatedAt = domainModel.CreatedAt
 	sqlRepositoryModel.UpdatedAt = domainModel.UpdatedAt

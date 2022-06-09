@@ -29,6 +29,8 @@ import (
 	"github.com/sirupsen/logrus/hooks/writer"
 )
 
+const DateFormat string = "helper.DateFormat"
+
 var Logger log.Logger
 
 func NewDefaultLogger(logFile string, consoleLogLevel log.Level, fileLogLevel log.Level) *log.Logger {

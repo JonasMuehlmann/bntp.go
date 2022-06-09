@@ -25,21 +25,22 @@ import (
 	"database/sql"
 	"time"
 
+	"github.com/JonasMuehlmann/bntp.go/internal/helper"
 	"github.com/JonasMuehlmann/optional.go"
 	"github.com/volatiletech/null/v8"
 )
 
 func TimeToStr(time time.Time) (string, error) {
-	return time.Format("2006-01-02 15:04:05"), nil
+	return time.Format(helper.DateFormat), nil
 }
 
 func StrToTime(time_ string) (time.Time, error) {
-	return time.Parse("2006-01-02 15:04:05", time_)
+	return time.Parse(helper.DateFormat, time_)
 }
 
 func OptionalTimeToNullStr(time optional.Optional[time.Time]) (null.String, error) {
 	if time.HasValue {
-		return null.StringFrom(time.Wrappee.Format("2006-01-02 15:04:05")), nil
+		return null.StringFrom(time.Wrappee.Format(helper.DateFormat)), nil
 	}
 
 	return null.String{}, nil
@@ -47,7 +48,7 @@ func OptionalTimeToNullStr(time optional.Optional[time.Time]) (null.String, erro
 
 func NullStrToOptionalTime(time_ null.String) (optional.Optional[time.Time], error) {
 	if time_.Valid {
-		t, err := time.Parse("2006-01-02 15:04:05", time_.String)
+		t, err := time.Parse(helper.DateFormat, time_.String)
 
 		return optional.Make(t), err
 	}

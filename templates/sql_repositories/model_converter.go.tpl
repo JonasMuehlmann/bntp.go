@@ -30,6 +30,7 @@ import (
     "database/sql"
     "strconv"
     "strings"
+	"github.com/JonasMuehlmann/bntp.go/internal/helper"
     {{ if eq .DatabaseName "sqlite3" }}
     "time"
     {{ else }}
@@ -45,14 +46,13 @@ func BookmarkDomainToSqlRepositoryModel(ctx context.Context, db *sql.DB, domainM
 
 
     //**********************    Set Timestamps    **********************//
-    // TODO: Extract constant here
     {{ if eq .DatabaseName "sqlite3"}}
-    sqlRepositoryModel.CreatedAt = domainModel.CreatedAt.Format("2006-01-02 15:04:05")
-    sqlRepositoryModel.UpdatedAt = domainModel.UpdatedAt.Format("2006-01-02 15:04:05")
+    sqlRepositoryModel.CreatedAt = domainModel.CreatedAt.Format(helper.DateFormat)
+    sqlRepositoryModel.UpdatedAt = domainModel.UpdatedAt.Format(helper.DateFormat)
 
     if domainModel.DeletedAt.HasValue {
         sqlRepositoryModel.DeletedAt.Valid = true
-        sqlRepositoryModel.DeletedAt.String = domainModel.DeletedAt.Wrappee.Format("2006-01-02 15:04:05")
+        sqlRepositoryModel.DeletedAt.String = domainModel.DeletedAt.Wrappee.Format(helper.DateFormat)
     }
     {{else}}
     sqlRepositoryModel.CreatedAt = domainModel.CreatedAt
@@ -131,12 +131,12 @@ func BookmarkSqlRepositoryToDomainModel(ctx context.Context, db *sql.DB, sqlRepo
 
     //**********************    Set Timestamps    **********************//
     {{ if eq .DatabaseName "sqlite3"}}
-    domainModel.CreatedAt, err = time.Parse("2006-01-02 15:04:05", sqlRepositoryModel.CreatedAt)
+    domainModel.CreatedAt, err = time.Parse(helper.DateFormat, sqlRepositoryModel.CreatedAt)
     if err != nil {
         return
     }
 
-    domainModel.UpdatedAt, err = time.Parse("2006-01-02 15:04:05", sqlRepositoryModel.UpdatedAt)
+    domainModel.UpdatedAt, err = time.Parse(helper.DateFormat, sqlRepositoryModel.UpdatedAt)
     if err != nil {
         return
     }
@@ -144,7 +144,7 @@ func BookmarkSqlRepositoryToDomainModel(ctx context.Context, db *sql.DB, sqlRepo
     if sqlRepositoryModel.DeletedAt.Valid {
         var t time.Time
 
-        t, err = time.Parse("2006-01-02 15:04:05", sqlRepositoryModel.DeletedAt.String)
+        t, err = time.Parse(helper.DateFormat, sqlRepositoryModel.DeletedAt.String)
         if err != nil {
             return
         }
@@ -194,12 +194,12 @@ func DocumentDomainToSqlRepositoryModel(ctx context.Context, db *sql.DB, domainM
 
     //**********************    Set Timestamps    **********************//
     {{ if eq .DatabaseName "sqlite3"}}
-    sqlRepositoryModel.CreatedAt = domainModel.CreatedAt.Format("2006-01-02 15:04:05")
-    sqlRepositoryModel.UpdatedAt = domainModel.UpdatedAt.Format("2006-01-02 15:04:05")
+    sqlRepositoryModel.CreatedAt = domainModel.CreatedAt.Format(helper.DateFormat)
+    sqlRepositoryModel.UpdatedAt = domainModel.UpdatedAt.Format(helper.DateFormat)
 
     if domainModel.DeletedAt.HasValue {
         sqlRepositoryModel.DeletedAt.Valid = true
-        sqlRepositoryModel.DeletedAt.String = domainModel.DeletedAt.Wrappee.Format("2006-01-02 15:04:05")
+        sqlRepositoryModel.DeletedAt.String = domainModel.DeletedAt.Wrappee.Format(helper.DateFormat)
     }
     {{else}}
     sqlRepositoryModel.CreatedAt = domainModel.CreatedAt
@@ -284,12 +284,12 @@ func DocumentSqlRepositoryToDomainModel(ctx context.Context, db *sql.DB, sqlRepo
 
     //**********************    Set Timestamps    **********************//
     {{ if eq .DatabaseName "sqlite3"}}
-    domainModel.CreatedAt, err = time.Parse("2006-01-02 15:04:05", sqlRepositoryModel.CreatedAt)
+    domainModel.CreatedAt, err = time.Parse(helper.DateFormat, sqlRepositoryModel.CreatedAt)
     if err != nil {
         return
     }
 
-    domainModel.UpdatedAt, err = time.Parse("2006-01-02 15:04:05", sqlRepositoryModel.UpdatedAt)
+    domainModel.UpdatedAt, err = time.Parse(helper.DateFormat, sqlRepositoryModel.UpdatedAt)
     if err != nil {
         return
     }
@@ -297,7 +297,7 @@ func DocumentSqlRepositoryToDomainModel(ctx context.Context, db *sql.DB, sqlRepo
     var t time.Time
 
     if sqlRepositoryModel.DeletedAt.Valid {
-        t, err = time.Parse("2006-01-02 15:04:05", sqlRepositoryModel.DeletedAt.String)
+        t, err = time.Parse(helper.DateFormat, sqlRepositoryModel.DeletedAt.String)
         if err != nil {
             return
         }
