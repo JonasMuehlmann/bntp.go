@@ -82,6 +82,7 @@ func ToMysql(mainSchema string) string {
 	schema = strings.Replace(schema, "PRAGMA foreign_keys = ON;", "", -1)
 	schema = strings.Replace(schema, "PRIMARY KEY NOT NULL", "PRIMARY KEY", -1)
 	schema = strings.ReplaceAll(schema, "TEXT", "VARCHAR(255)")
+	schema = strings.ReplaceAll(schema, "INTEGER", "BIGINT")
 
 	return schema
 }
@@ -90,6 +91,7 @@ func ToPostgrees(mainSchema string) string {
 	schema := mainSchema
 
 	schema = strings.ReplaceAll(schema, "PRAGMA foreign_keys = ON;", "")
+	schema = strings.ReplaceAll(schema, "INTEGER", "BIGINT")
 
 	return schema
 }
@@ -101,6 +103,7 @@ func ToSqlServer(mainSchema string) string {
 	schema = strings.Replace(schema, "PRIMARY KEY NOT NULL", "PRIMARY KEY", -1)
 	schema = strings.ReplaceAll(schema, "TEXT", "VARCHAR(255)")
 	schema = strings.ReplaceAll(schema, "TIMESTAMP", "DATETIME")
+	schema = strings.ReplaceAll(schema, "INTEGER", "BIGINT")
 
 	return schema
 }
