@@ -31,6 +31,9 @@ import (
     "context"
     "strings"
     "strconv"
+    {{ if ne .DatabaseName "sqlite3" }}
+    "time"
+    {{ end }}
 )
 
 func BookmarkDomainToSqlRepositoryUpdater(ctx context.Context, db *sql.DB, domainUpdater *domain.{{.Entities.Bookmark}}Updater) (sqlRepositoryUpdater *{{.Entities.Bookmark}}Updater, err error)  {
@@ -46,7 +49,7 @@ func BookmarkDomainToSqlRepositoryUpdater(ctx context.Context, db *sql.DB, domai
 
         sqlRepositoryUpdater.CreatedAt.Push(model.UpdateOperation[string]{Operator: domainUpdater.CreatedAt.Wrappee.Operator, Operand: convertedUpdater})
         {{ else }}
-        sqlRepositoryUpdater.CreatedAt.Push(model.UpdateOperation[string]{Operator: domainUpdater.CreatedAt.Wrappee.Operator, Operand: domainUpdater.CreatedAt.Wrappee.Operand})
+        sqlRepositoryUpdater.CreatedAt.Push(model.UpdateOperation[time.Time]{Operator: domainUpdater.CreatedAt.Wrappee.Operator, Operand: domainUpdater.CreatedAt.Wrappee.Operand})
         {{ end}}
     }
 
@@ -60,7 +63,7 @@ func BookmarkDomainToSqlRepositoryUpdater(ctx context.Context, db *sql.DB, domai
 
         sqlRepositoryUpdater.UpdatedAt.Push(model.UpdateOperation[string]{Operator: domainUpdater.UpdatedAt.Wrappee.Operator, Operand: convertedUpdater})
         {{ else }}
-        sqlRepositoryUpdater.UpdatedAt.Push(model.UpdateOperation[string]{Operator: domainUpdater.UpdatedAt.Wrappee.Operator, Operand: domainUpdater.UpdatedAt.Wrappee.Operand})
+        sqlRepositoryUpdater.UpdatedAt.Push(model.UpdateOperation[time.Time]{Operator: domainUpdater.UpdatedAt.Wrappee.Operator, Operand: domainUpdater.UpdatedAt.Wrappee.Operand})
         {{ end }}
     }
 
@@ -74,7 +77,13 @@ func BookmarkDomainToSqlRepositoryUpdater(ctx context.Context, db *sql.DB, domai
 
         sqlRepositoryUpdater.DeletedAt.Push(model.UpdateOperation[null.String]{Operator: domainUpdater.UpdatedAt.Wrappee.Operator, Operand: convertedUpdater})
         {{ else }}
-        sqlRepositoryUpdater.DeletedAt.Push(model.UpdateOperation[null.Time]{Operator: domainUpdater.UpdatedAt.Wrappee.Operator, Operand: domainUpdater.DeletedAt.Wrappee.Operand})
+        var convertedTime null.Time
+        convertedTime, err = repoCommon.OptionalTimeToNullTime(domainUpdater.DeletedAt.Wrappee.Operand)
+        if err != nil {
+            return
+        }
+
+        sqlRepositoryUpdater.DeletedAt.Push(model.UpdateOperation[null.Time]{Operator: domainUpdater.UpdatedAt.Wrappee.Operator, Operand: convertedTime})
         {{ end }}
     }
 
@@ -89,7 +98,7 @@ func BookmarkDomainToSqlRepositoryUpdater(ctx context.Context, db *sql.DB, domai
             return
         }
 
-        sqlRepositoryUpdater.DeletedAt.Push(model.UpdateOperation[null.String]{Operator: domainUpdater.Title.Wrappee.Operator, Operand: convertedUpdater})
+        sqlRepositoryUpdater.Title.Push(model.UpdateOperation[null.String]{Operator: domainUpdater.Title.Wrappee.Operator, Operand: convertedUpdater})
     }
 
 	if domainUpdater.Tags.HasValue {
@@ -182,7 +191,7 @@ func DocumentDomainToSqlRepositoryUpdater(ctx context.Context, db *sql.DB, domai
 
         sqlRepositoryUpdater.CreatedAt.Push(model.UpdateOperation[string]{Operator: domainUpdater.CreatedAt.Wrappee.Operator, Operand: convertedUpdater})
         {{ else }}
-        sqlRepositoryUpdater.CreatedAt.Push(model.UpdateOperation[string]{Operator: domainUpdater.CreatedAt.Wrappee.Operator, Operand: domainUpdater.CreatedAt.Wrappee.Operand})
+        sqlRepositoryUpdater.CreatedAt.Push(model.UpdateOperation[time.Time]{Operator: domainUpdater.CreatedAt.Wrappee.Operator, Operand: domainUpdater.CreatedAt.Wrappee.Operand})
         {{ end}}
     }
 
@@ -196,7 +205,7 @@ func DocumentDomainToSqlRepositoryUpdater(ctx context.Context, db *sql.DB, domai
 
         sqlRepositoryUpdater.UpdatedAt.Push(model.UpdateOperation[string]{Operator: domainUpdater.UpdatedAt.Wrappee.Operator, Operand: convertedUpdater})
         {{ else }}
-        sqlRepositoryUpdater.UpdatedAt.Push(model.UpdateOperation[string]{Operator: domainUpdater.UpdatedAt.Wrappee.Operator, Operand: domainUpdater.UpdatedAt.Wrappee.Operand})
+        sqlRepositoryUpdater.UpdatedAt.Push(model.UpdateOperation[time.Time]{Operator: domainUpdater.UpdatedAt.Wrappee.Operator, Operand: domainUpdater.UpdatedAt.Wrappee.Operand})
         {{ end }}
     }
 
@@ -210,7 +219,13 @@ func DocumentDomainToSqlRepositoryUpdater(ctx context.Context, db *sql.DB, domai
 
         sqlRepositoryUpdater.DeletedAt.Push(model.UpdateOperation[null.String]{Operator: domainUpdater.UpdatedAt.Wrappee.Operator, Operand: convertedUpdater})
         {{ else }}
-        sqlRepositoryUpdater.DeletedAt.Push(model.UpdateOperation[null.Time]{Operator: domainUpdater.UpdatedAt.Wrappee.Operator, Operand: domainUpdater.DeletedAt.Wrappee.Operand})
+        var convertedTime null.Time
+        convertedTime, err = repoCommon.OptionalTimeToNullTime(domainUpdater.DeletedAt.Wrappee.Operand)
+        if err != nil {
+            return
+        }
+
+        sqlRepositoryUpdater.DeletedAt.Push(model.UpdateOperation[null.Time]{Operator: domainUpdater.UpdatedAt.Wrappee.Operator, Operand: convertedTime})
         {{ end }}
     }
 

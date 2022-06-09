@@ -23,168 +23,176 @@
 package repository
 
 import (
-	"container/list"
-	"context"
-	"database/sql"
-	"fmt"
-
+    "database/sql"
 	"github.com/JonasMuehlmann/bntp.go/model"
 	"github.com/JonasMuehlmann/bntp.go/model/domain"
 	"github.com/JonasMuehlmann/goaoi"
 	"github.com/JonasMuehlmann/optional.go"
+    "context"
+	"fmt"
+    "github.com/volatiletech/sqlboiler/v4/boil"
+    "github.com/volatiletech/sqlboiler/v4/queries/qm"
+    "github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/null/v8"
-	"github.com/volatiletech/sqlboiler/v4/boil"
-	"github.com/volatiletech/sqlboiler/v4/queries"
-	"github.com/volatiletech/sqlboiler/v4/queries/qm"
-
-	"time"
+	"container/list"
+    
+    "time"
+    
 )
 
 type MssqlDocumentRepository struct {
-	db *sql.DB
+    db *sql.DB
 }
 type DocumentField string
 
 var DocumentFields = struct {
-	ID             DocumentField
-	Path           DocumentField
-	DocumentTypeID DocumentField
-	CreatedAt      DocumentField
-	UpdatedAt      DocumentField
-	DeletedAt      DocumentField
+    ID  DocumentField
+    Path  DocumentField
+    DocumentTypeID  DocumentField
+    CreatedAt  DocumentField
+    UpdatedAt  DocumentField
+    DeletedAt  DocumentField
+    
 }{
-	ID:             "id",
-	Path:           "path",
-	DocumentTypeID: "document_type_id",
-	CreatedAt:      "created_at",
-	UpdatedAt:      "updated_at",
-	DeletedAt:      "deleted_at",
+    ID: "id",
+    Path: "path",
+    DocumentTypeID: "document_type_id",
+    CreatedAt: "created_at",
+    UpdatedAt: "updated_at",
+    DeletedAt: "deleted_at",
+    
 }
 
 var DocumentFieldsList = []DocumentField{
-	DocumentField("ID"),
-	DocumentField("Path"),
-	DocumentField("DocumentTypeID"),
-	DocumentField("CreatedAt"),
-	DocumentField("UpdatedAt"),
-	DocumentField("DeletedAt"),
+    DocumentField("ID"),
+    DocumentField("Path"),
+    DocumentField("DocumentTypeID"),
+    DocumentField("CreatedAt"),
+    DocumentField("UpdatedAt"),
+    DocumentField("DeletedAt"),
+    
 }
 
 var DocumentRelationsList = []string{
-	"DocumentType",
-	"Tags",
-	"SourceDocuments",
-	"DestinationDocuments",
+    "DocumentType",
+    "Tags",
+    "SourceDocuments",
+    "DestinationDocuments",
+    
 }
 
 type DocumentFilter struct {
-	ID             optional.Optional[model.FilterOperation[int64]]
-	Path           optional.Optional[model.FilterOperation[string]]
-	DocumentTypeID optional.Optional[model.FilterOperation[null.Int64]]
-	CreatedAt      optional.Optional[model.FilterOperation[time.Time]]
-	UpdatedAt      optional.Optional[model.FilterOperation[time.Time]]
-	DeletedAt      optional.Optional[model.FilterOperation[null.Time]]
-
-	DocumentType         optional.Optional[model.FilterOperation[*DocumentType]]
-	Tags                 optional.Optional[model.FilterOperation[*Tag]]
-	SourceDocuments      optional.Optional[model.FilterOperation[*Document]]
-	DestinationDocuments optional.Optional[model.FilterOperation[*Document]]
+    ID optional.Optional[model.FilterOperation[int64]]
+    Path optional.Optional[model.FilterOperation[string]]
+    DocumentTypeID optional.Optional[model.FilterOperation[null.Int64]]
+    CreatedAt optional.Optional[model.FilterOperation[time.Time]]
+    UpdatedAt optional.Optional[model.FilterOperation[time.Time]]
+    DeletedAt optional.Optional[model.FilterOperation[null.Time]]
+    
+    DocumentType optional.Optional[model.FilterOperation[*DocumentType]]
+    Tags optional.Optional[model.FilterOperation[*Tag]]
+    SourceDocuments optional.Optional[model.FilterOperation[*Document]]
+    DestinationDocuments optional.Optional[model.FilterOperation[*Document]]
+    
 }
 
 type DocumentFilterMapping[T any] struct {
-	Field           DocumentField
-	FilterOperation model.FilterOperation[T]
+    Field DocumentField
+    FilterOperation model.FilterOperation[T]
 }
 
 func (filter *DocumentFilter) GetSetFilters() *list.List {
-	setFilters := list.New()
+    setFilters := list.New()
 
-	if filter.ID.HasValue {
-		setFilters.PushBack(DocumentFilterMapping[int64]{Field: DocumentFields.ID, FilterOperation: filter.ID.Wrappee})
-	}
-	if filter.Path.HasValue {
-		setFilters.PushBack(DocumentFilterMapping[string]{Field: DocumentFields.Path, FilterOperation: filter.Path.Wrappee})
-	}
-	if filter.DocumentTypeID.HasValue {
-		setFilters.PushBack(DocumentFilterMapping[null.Int64]{Field: DocumentFields.DocumentTypeID, FilterOperation: filter.DocumentTypeID.Wrappee})
-	}
-	if filter.CreatedAt.HasValue {
-		setFilters.PushBack(DocumentFilterMapping[time.Time]{Field: DocumentFields.CreatedAt, FilterOperation: filter.CreatedAt.Wrappee})
-	}
-	if filter.UpdatedAt.HasValue {
-		setFilters.PushBack(DocumentFilterMapping[time.Time]{Field: DocumentFields.UpdatedAt, FilterOperation: filter.UpdatedAt.Wrappee})
-	}
-	if filter.DeletedAt.HasValue {
-		setFilters.PushBack(DocumentFilterMapping[null.Time]{Field: DocumentFields.DeletedAt, FilterOperation: filter.DeletedAt.Wrappee})
-	}
+    if filter.ID.HasValue {
+    setFilters.PushBack(DocumentFilterMapping[int64]{Field: DocumentFields.ID, FilterOperation: filter.ID.Wrappee})
+    }
+    if filter.Path.HasValue {
+    setFilters.PushBack(DocumentFilterMapping[string]{Field: DocumentFields.Path, FilterOperation: filter.Path.Wrappee})
+    }
+    if filter.DocumentTypeID.HasValue {
+    setFilters.PushBack(DocumentFilterMapping[null.Int64]{Field: DocumentFields.DocumentTypeID, FilterOperation: filter.DocumentTypeID.Wrappee})
+    }
+    if filter.CreatedAt.HasValue {
+    setFilters.PushBack(DocumentFilterMapping[time.Time]{Field: DocumentFields.CreatedAt, FilterOperation: filter.CreatedAt.Wrappee})
+    }
+    if filter.UpdatedAt.HasValue {
+    setFilters.PushBack(DocumentFilterMapping[time.Time]{Field: DocumentFields.UpdatedAt, FilterOperation: filter.UpdatedAt.Wrappee})
+    }
+    if filter.DeletedAt.HasValue {
+    setFilters.PushBack(DocumentFilterMapping[null.Time]{Field: DocumentFields.DeletedAt, FilterOperation: filter.DeletedAt.Wrappee})
+    }
+    
 
-	return setFilters
+    return setFilters
 }
 
 type DocumentUpdater struct {
-	ID             optional.Optional[model.UpdateOperation[int64]]
-	Path           optional.Optional[model.UpdateOperation[string]]
-	DocumentTypeID optional.Optional[model.UpdateOperation[null.Int64]]
-	CreatedAt      optional.Optional[model.UpdateOperation[time.Time]]
-	UpdatedAt      optional.Optional[model.UpdateOperation[time.Time]]
-	DeletedAt      optional.Optional[model.UpdateOperation[null.Time]]
-
-	DocumentType         optional.Optional[model.UpdateOperation[*DocumentType]]
-	Tags                 optional.Optional[model.UpdateOperation[TagSlice]]
-	SourceDocuments      optional.Optional[model.UpdateOperation[DocumentSlice]]
-	DestinationDocuments optional.Optional[model.UpdateOperation[DocumentSlice]]
+    ID optional.Optional[model.UpdateOperation[int64]]
+    Path optional.Optional[model.UpdateOperation[string]]
+    DocumentTypeID optional.Optional[model.UpdateOperation[null.Int64]]
+    CreatedAt optional.Optional[model.UpdateOperation[time.Time]]
+    UpdatedAt optional.Optional[model.UpdateOperation[time.Time]]
+    DeletedAt optional.Optional[model.UpdateOperation[null.Time]]
+    
+    DocumentType optional.Optional[model.UpdateOperation[*DocumentType]]
+    Tags optional.Optional[model.UpdateOperation[TagSlice]]
+    SourceDocuments optional.Optional[model.UpdateOperation[DocumentSlice]]
+    DestinationDocuments optional.Optional[model.UpdateOperation[DocumentSlice]]
+    
 }
 
 type DocumentUpdaterMapping[T any] struct {
-	Field   DocumentField
-	Updater model.UpdateOperation[T]
+    Field DocumentField
+    Updater model.UpdateOperation[T]
 }
 
 func (updater *DocumentUpdater) GetSetUpdaters() *list.List {
-	setUpdaters := list.New()
+    setUpdaters := list.New()
 
-	if updater.ID.HasValue {
-		setUpdaters.PushBack(DocumentUpdaterMapping[int64]{Field: DocumentFields.ID, Updater: updater.ID.Wrappee})
-	}
-	if updater.Path.HasValue {
-		setUpdaters.PushBack(DocumentUpdaterMapping[string]{Field: DocumentFields.Path, Updater: updater.Path.Wrappee})
-	}
-	if updater.DocumentTypeID.HasValue {
-		setUpdaters.PushBack(DocumentUpdaterMapping[null.Int64]{Field: DocumentFields.DocumentTypeID, Updater: updater.DocumentTypeID.Wrappee})
-	}
-	if updater.CreatedAt.HasValue {
-		setUpdaters.PushBack(DocumentUpdaterMapping[time.Time]{Field: DocumentFields.CreatedAt, Updater: updater.CreatedAt.Wrappee})
-	}
-	if updater.UpdatedAt.HasValue {
-		setUpdaters.PushBack(DocumentUpdaterMapping[time.Time]{Field: DocumentFields.UpdatedAt, Updater: updater.UpdatedAt.Wrappee})
-	}
-	if updater.DeletedAt.HasValue {
-		setUpdaters.PushBack(DocumentUpdaterMapping[null.Time]{Field: DocumentFields.DeletedAt, Updater: updater.DeletedAt.Wrappee})
-	}
+    if updater.ID.HasValue {
+    setUpdaters.PushBack(DocumentUpdaterMapping[int64]{Field: DocumentFields.ID, Updater: updater.ID.Wrappee})
+    }
+    if updater.Path.HasValue {
+    setUpdaters.PushBack(DocumentUpdaterMapping[string]{Field: DocumentFields.Path, Updater: updater.Path.Wrappee})
+    }
+    if updater.DocumentTypeID.HasValue {
+    setUpdaters.PushBack(DocumentUpdaterMapping[null.Int64]{Field: DocumentFields.DocumentTypeID, Updater: updater.DocumentTypeID.Wrappee})
+    }
+    if updater.CreatedAt.HasValue {
+    setUpdaters.PushBack(DocumentUpdaterMapping[time.Time]{Field: DocumentFields.CreatedAt, Updater: updater.CreatedAt.Wrappee})
+    }
+    if updater.UpdatedAt.HasValue {
+    setUpdaters.PushBack(DocumentUpdaterMapping[time.Time]{Field: DocumentFields.UpdatedAt, Updater: updater.UpdatedAt.Wrappee})
+    }
+    if updater.DeletedAt.HasValue {
+    setUpdaters.PushBack(DocumentUpdaterMapping[null.Time]{Field: DocumentFields.DeletedAt, Updater: updater.DeletedAt.Wrappee})
+    }
+    
 
-	return setUpdaters
+    return setUpdaters
 }
 
 func (updater *DocumentUpdater) ApplyToModel(documentModel *Document) {
-	if updater.ID.HasValue {
-		model.ApplyUpdater(&(*documentModel).ID, updater.ID.Wrappee)
-	}
-	if updater.Path.HasValue {
-		model.ApplyUpdater(&(*documentModel).Path, updater.Path.Wrappee)
-	}
-	if updater.DocumentTypeID.HasValue {
-		model.ApplyUpdater(&(*documentModel).DocumentTypeID, updater.DocumentTypeID.Wrappee)
-	}
-	if updater.CreatedAt.HasValue {
-		model.ApplyUpdater(&(*documentModel).CreatedAt, updater.CreatedAt.Wrappee)
-	}
-	if updater.UpdatedAt.HasValue {
-		model.ApplyUpdater(&(*documentModel).UpdatedAt, updater.UpdatedAt.Wrappee)
-	}
-	if updater.DeletedAt.HasValue {
-		model.ApplyUpdater(&(*documentModel).DeletedAt, updater.DeletedAt.Wrappee)
-	}
-
+    if updater.ID.HasValue {
+        model.ApplyUpdater(&(*documentModel).ID, updater.ID.Wrappee)
+    }
+    if updater.Path.HasValue {
+        model.ApplyUpdater(&(*documentModel).Path, updater.Path.Wrappee)
+    }
+    if updater.DocumentTypeID.HasValue {
+        model.ApplyUpdater(&(*documentModel).DocumentTypeID, updater.DocumentTypeID.Wrappee)
+    }
+    if updater.CreatedAt.HasValue {
+        model.ApplyUpdater(&(*documentModel).CreatedAt, updater.CreatedAt.Wrappee)
+    }
+    if updater.UpdatedAt.HasValue {
+        model.ApplyUpdater(&(*documentModel).UpdatedAt, updater.UpdatedAt.Wrappee)
+    }
+    if updater.DeletedAt.HasValue {
+        model.ApplyUpdater(&(*documentModel).DeletedAt, updater.DeletedAt.Wrappee)
+    }
+    
 }
 
 type MssqlDocumentRepositoryHook func(context.Context, MssqlDocumentRepository) error
@@ -192,119 +200,119 @@ type MssqlDocumentRepositoryHook func(context.Context, MssqlDocumentRepository) 
 type queryModSliceDocument []qm.QueryMod
 
 func (s queryModSliceDocument) Apply(q *queries.Query) {
-	qm.Apply(q, s...)
+    qm.Apply(q, s...)
 }
 
 func buildQueryModFilterDocument[T any](filterField DocumentField, filterOperation model.FilterOperation[T]) queryModSliceDocument {
-	var newQueryMod queryModSliceDocument
+    var newQueryMod queryModSliceDocument
 
-	filterOperator := filterOperation.Operator
+    filterOperator := filterOperation.Operator
 
-	switch filterOperator {
-	case model.FilterEqual:
-		filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[any])
-		if !ok {
-			panic("Expected a scalar operand for FilterEqual operator")
-		}
+    switch filterOperator {
+    case model.FilterEqual:
+        filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[any])
+        if !ok {
+            panic("Expected a scalar operand for FilterEqual operator")
+        }
 
-		newQueryMod = append(newQueryMod, qm.Where(string(filterField)+" = ?", filterOperand.Operand))
-	case model.FilterNEqual:
-		filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[any])
-		if !ok {
-			panic("Expected a scalar operand for FilterNEqual operator")
-		}
+        newQueryMod = append(newQueryMod, qm.Where(string(filterField)+" = ?", filterOperand.Operand))
+    case model.FilterNEqual:
+        filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[any])
+        if !ok {
+            panic("Expected a scalar operand for FilterNEqual operator")
+        }
 
-		newQueryMod = append(newQueryMod, qm.Where(string(filterField)+" != ?", filterOperand.Operand))
-	case model.FilterGreaterThan:
-		filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[any])
-		if !ok {
-			panic("Expected a scalar operand for FilterGreaterThan operator")
-		}
+        newQueryMod = append(newQueryMod, qm.Where(string(filterField)+" != ?", filterOperand.Operand))
+    case model.FilterGreaterThan:
+        filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[any])
+        if !ok {
+            panic("Expected a scalar operand for FilterGreaterThan operator")
+        }
 
-		newQueryMod = append(newQueryMod, qm.Where(string(filterField)+" > ?", filterOperand.Operand))
-	case model.FilterGreaterThanEqual:
-		filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[any])
-		if !ok {
-			panic("Expected a scalar operand for FilterGreaterThanEqual operator")
-		}
+        newQueryMod = append(newQueryMod, qm.Where(string(filterField)+" > ?", filterOperand.Operand))
+    case model.FilterGreaterThanEqual:
+        filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[any])
+        if !ok {
+            panic("Expected a scalar operand for FilterGreaterThanEqual operator")
+        }
 
-		newQueryMod = append(newQueryMod, qm.Where(string(filterField)+" >= ?", filterOperand.Operand))
-	case model.FilterLessThan:
-		filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[any])
-		if !ok {
-			panic("Expected a scalar operand for FilterLessThan operator")
-		}
+        newQueryMod = append(newQueryMod, qm.Where(string(filterField)+" >= ?", filterOperand.Operand))
+    case model.FilterLessThan:
+        filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[any])
+        if !ok {
+            panic("Expected a scalar operand for FilterLessThan operator")
+        }
 
-		newQueryMod = append(newQueryMod, qm.Where(string(filterField)+" < ?", filterOperand.Operand))
-	case model.FilterLessThanEqual:
-		filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[any])
-		if !ok {
-			panic("Expected a scalar operand for FilterLessThanEqual operator")
-		}
+        newQueryMod = append(newQueryMod, qm.Where(string(filterField)+" < ?", filterOperand.Operand))
+    case model.FilterLessThanEqual:
+        filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[any])
+        if !ok {
+            panic("Expected a scalar operand for FilterLessThanEqual operator")
+        }
 
-		newQueryMod = append(newQueryMod, qm.Where(string(filterField)+" <= ?", filterOperand.Operand))
-	case model.FilterIn:
-		filterOperand, ok := filterOperation.Operand.(model.ListOperand[any])
-		if !ok {
-			panic("Expected a list operand for FilterIn operator")
-		}
+        newQueryMod = append(newQueryMod, qm.Where(string(filterField)+" <= ?", filterOperand.Operand))
+    case model.FilterIn:
+        filterOperand, ok := filterOperation.Operand.(model.ListOperand[any])
+        if !ok {
+            panic("Expected a list operand for FilterIn operator")
+        }
 
-		newQueryMod = append(newQueryMod, qm.WhereIn(string(filterField)+" IN (?)", filterOperand.Operands))
-	case model.FilterNotIn:
-		filterOperand, ok := filterOperation.Operand.(model.ListOperand[any])
-		if !ok {
-			panic("Expected a list operand for FilterNotIn operator")
-		}
+        newQueryMod = append(newQueryMod, qm.WhereIn(string(filterField)+" IN (?)", filterOperand.Operands))
+    case model.FilterNotIn:
+        filterOperand, ok := filterOperation.Operand.(model.ListOperand[any])
+        if !ok {
+            panic("Expected a list operand for FilterNotIn operator")
+        }
 
-		newQueryMod = append(newQueryMod, qm.WhereNotIn(string(filterField)+" IN (?)", filterOperand.Operands))
-	case model.FilterBetween:
-		filterOperand, ok := filterOperation.Operand.(model.RangeOperand[any])
-		if !ok {
-			panic("Expected a scalar operand for FilterBetween operator")
-		}
+        newQueryMod = append(newQueryMod, qm.WhereNotIn(string(filterField)+" IN (?)", filterOperand.Operands))
+    case model.FilterBetween:
+        filterOperand, ok := filterOperation.Operand.(model.RangeOperand[any])
+        if !ok {
+            panic("Expected a scalar operand for FilterBetween operator")
+        }
 
-		newQueryMod = append(newQueryMod, qm.Where(string(filterField)+" BETWEEN ? AND ?", filterOperand.Start, filterOperand.End))
-	case model.FilterNotBetween:
-		filterOperand, ok := filterOperation.Operand.(model.RangeOperand[any])
-		if !ok {
-			panic("Expected a scalar operand for FilterNotBetween operator")
-		}
+        newQueryMod = append(newQueryMod, qm.Where(string(filterField)+" BETWEEN ? AND ?", filterOperand.Start, filterOperand.End))
+    case model.FilterNotBetween:
+        filterOperand, ok := filterOperation.Operand.(model.RangeOperand[any])
+        if !ok {
+            panic("Expected a scalar operand for FilterNotBetween operator")
+        }
 
-		newQueryMod = append(newQueryMod, qm.Where(string(filterField)+" NOT BETWEEN ? AND ?", filterOperand.Start, filterOperand.End))
-	case model.FilterLike:
-		filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[any])
-		if !ok {
-			panic("Expected a scalar operand for FilterLike operator")
-		}
+        newQueryMod = append(newQueryMod, qm.Where(string(filterField)+" NOT BETWEEN ? AND ?", filterOperand.Start, filterOperand.End))
+    case model.FilterLike:
+        filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[any])
+        if !ok {
+            panic("Expected a scalar operand for FilterLike operator")
+        }
 
-		newQueryMod = append(newQueryMod, qm.Where(string(filterField)+" LIKE ?", filterOperand.Operand))
-	case model.FilterNotLike:
-		filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[any])
-		if !ok {
-			panic("Expected a scalar operand for FilterLike operator")
-		}
+        newQueryMod = append(newQueryMod, qm.Where(string(filterField)+" LIKE ?", filterOperand.Operand))
+    case model.FilterNotLike:
+        filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[any])
+        if !ok {
+            panic("Expected a scalar operand for FilterLike operator")
+        }
 
-		newQueryMod = append(newQueryMod, qm.Where(string(filterField)+" NOT LIKE ?", filterOperand.Operand))
-	case model.FilterOr:
-		filterOperand, ok := filterOperation.Operand.(model.CompoundOperand[any])
-		if !ok {
-			panic("Expected a scalar operand for FilterOr operator")
-		}
-		newQueryMod = append(newQueryMod, qm.Expr(buildQueryModFilterDocument(filterField, filterOperand.LHS)))
-		newQueryMod = append(newQueryMod, qm.Or2(qm.Expr(buildQueryModFilterDocument(filterField, filterOperand.RHS))))
-	case model.FilterAnd:
-		filterOperand, ok := filterOperation.Operand.(model.CompoundOperand[any])
-		if !ok {
-			panic("Expected a scalar operand for FilterAnd operator")
-		}
+        newQueryMod = append(newQueryMod, qm.Where(string(filterField)+" NOT LIKE ?", filterOperand.Operand))
+    case model.FilterOr:
+        filterOperand, ok := filterOperation.Operand.(model.CompoundOperand[any])
+        if !ok {
+            panic("Expected a scalar operand for FilterOr operator")
+        }
+        newQueryMod = append(newQueryMod, qm.Expr(buildQueryModFilterDocument(filterField, filterOperand.LHS)))
+        newQueryMod = append(newQueryMod, qm.Or2(qm.Expr(buildQueryModFilterDocument(filterField, filterOperand.RHS))))
+    case model.FilterAnd:
+        filterOperand, ok := filterOperation.Operand.(model.CompoundOperand[any])
+        if !ok {
+            panic("Expected a scalar operand for FilterAnd operator")
+        }
 
-		newQueryMod = append(newQueryMod, qm.Expr(buildQueryModFilterDocument(filterField, filterOperand.LHS)))
-		newQueryMod = append(newQueryMod, qm.Expr(buildQueryModFilterDocument(filterField, filterOperand.RHS)))
-	default:
-		panic("Unhandled FilterOperator")
-	}
+        newQueryMod = append(newQueryMod, qm.Expr(buildQueryModFilterDocument(filterField, filterOperand.LHS)))
+        newQueryMod = append(newQueryMod, qm.Expr(buildQueryModFilterDocument(filterField, filterOperand.RHS)))
+    default:
+        panic("Unhandled FilterOperator")
+    }
 
-	return newQueryMod
+    return newQueryMod
 }
 
 func buildQueryModListFromFilterDocument(setFilters list.List) queryModSliceDocument {
@@ -316,43 +324,43 @@ func buildQueryModListFromFilterDocument(setFilters list.List) queryModSliceDocu
 			panic(fmt.Sprintf("Expected type %T but got %T", DocumentFilterMapping[any]{}, filter))
 		}
 
-		newQueryMod := buildQueryModFilterDocument(filterMapping.Field, filterMapping.FilterOperation)
+        newQueryMod := buildQueryModFilterDocument(filterMapping.Field, filterMapping.FilterOperation)
 
-		queryModList = append(queryModList, newQueryMod...)
+        queryModList = append(queryModList, newQueryMod...)
 	}
 
 	return queryModList
 }
 
 func GetDocumentDomainToSqlRepositoryModel(ctx context.Context, db *sql.DB) func(domainModel *domain.Document) (sqlRepositoryModel *Document, err error) {
-	return func(domainModel *domain.Document) (sqlRepositoryModel *Document, err error) {
-		return DocumentDomainToSqlRepositoryModel(ctx, db, domainModel)
-	}
+    return func(domainModel *domain.Document) (sqlRepositoryModel *Document, err error) {
+        return DocumentDomainToSqlRepositoryModel(ctx, db, domainModel)
+    }
 }
 
 func GetDocumentSqlRepositoryToDomainModel(ctx context.Context, db *sql.DB) func(repositoryModel *Document) (domainModel *domain.Document, err error) {
-	return func(sqlRepositoryModel *Document) (domainModel *domain.Document, err error) {
-		return DocumentSqlRepositoryToDomainModel(ctx, db, sqlRepositoryModel)
-	}
+    return func(sqlRepositoryModel *Document) (domainModel *domain.Document, err error) {
+        return DocumentSqlRepositoryToDomainModel(ctx, db,sqlRepositoryModel)
+    }
 }
 
 type MssqlDocumentRepositoryConstructorArgs struct {
-	DB *sql.DB
+    DB *sql.DB
 }
 
 func (repo *MssqlDocumentRepository) New(args any) (*MssqlDocumentRepository, error) {
-	constructorArgs, ok := args.(MssqlDocumentRepositoryConstructorArgs)
-	if !ok {
-		return repo, fmt.Errorf("expected type %T but got %T", MssqlDocumentRepositoryConstructorArgs{}, args)
-	}
+    constructorArgs, ok := args.(MssqlDocumentRepositoryConstructorArgs)
+    if !ok {
+        return repo, fmt.Errorf("expected type %T but got %T", MssqlDocumentRepositoryConstructorArgs{}, args)
+    }
 
-	repo.db = constructorArgs.DB
+    repo.db = constructorArgs.DB
 
-	return repo, nil
+    return repo, nil
 }
 
 func (repo *MssqlDocumentRepository) Add(ctx context.Context, domainModels []*domain.Document) error {
-	repositoryModels, err := goaoi.TransformCopySlice(domainModels, GetDocumentDomainToSqlRepositoryModel(ctx, repo.db))
+    repositoryModels, err := goaoi.TransformCopySlice(domainModels, GetDocumentDomainToSqlRepositoryModel(ctx, repo.db))
 	if err != nil {
 		return err
 	}
@@ -371,11 +379,11 @@ func (repo *MssqlDocumentRepository) Add(ctx context.Context, domainModels []*do
 
 	tx.Commit()
 
-	return nil
+    return nil
 }
 
 func (repo *MssqlDocumentRepository) Replace(ctx context.Context, domainModels []*domain.Document) error {
-	repositoryModels, err := goaoi.TransformCopySlice(domainModels, GetDocumentDomainToSqlRepositoryModel(ctx, repo.db))
+    repositoryModels, err := goaoi.TransformCopySlice(domainModels, GetDocumentDomainToSqlRepositoryModel(ctx, repo.db))
 	if err != nil {
 		return err
 	}
@@ -394,23 +402,25 @@ func (repo *MssqlDocumentRepository) Replace(ctx context.Context, domainModels [
 
 	tx.Commit()
 
-	return nil
+    return nil
 }
 
 func (repo *MssqlDocumentRepository) UpdateWhere(ctx context.Context, domainColumnFilter *domain.DocumentFilter, domainColumnUpdater *domain.DocumentUpdater) (numAffectedRecords int64, err error) {
 	var modelsToUpdate DocumentSlice
 
-	columnFilter, err := DocumentDomainToSqlRepositoryFilter(ctx, repo.db, domainColumnFilter)
-	if err != nil {
-		return
-	}
+    columnFilter, err := DocumentDomainToSqlRepositoryFilter(ctx, repo.db, domainColumnFilter)
+    if err != nil {
+        return
+    }
 
-	columnUpdater, err := DocumentDomainToSqlRepositoryUpdater(ctx, repo.db, domainColumnUpdater)
-	if err != nil {
-		return
-	}
+    columnUpdater, err := DocumentDomainToSqlRepositoryUpdater(ctx, repo.db, domainColumnUpdater)
+    if err != nil {
+        return
+    }
 
-	setFilters := *columnFilter.GetSetFilters()
+
+
+    setFilters := *columnFilter.GetSetFilters()
 
 	queryFilters := buildQueryModListFromFilterDocument(setFilters)
 
@@ -419,25 +429,25 @@ func (repo *MssqlDocumentRepository) UpdateWhere(ctx context.Context, domainColu
 		return
 	}
 
-	numAffectedRecords = int64(len(modelsToUpdate))
+    numAffectedRecords = int64(len(modelsToUpdate))
 
 	tx, err := repo.db.BeginTx(ctx, nil)
 	if err != nil {
 		return
 	}
 
-	for _, model := range modelsToUpdate {
-		columnUpdater.ApplyToModel(model)
-		model.Update(ctx, tx, boil.Infer())
-	}
+    for _, model := range modelsToUpdate {
+        columnUpdater.ApplyToModel(model)
+        model.Update(ctx, tx, boil.Infer())
+    }
 
-	tx.Commit()
+    tx.Commit()
 
-	return
+    return
 }
 
 func (repo *MssqlDocumentRepository) Delete(ctx context.Context, domainModels []*domain.Document) error {
-	repositoryModels, err := goaoi.TransformCopySlice(domainModels, GetDocumentDomainToSqlRepositoryModel(ctx, repo.db))
+    repositoryModels, err := goaoi.TransformCopySlice(domainModels, GetDocumentDomainToSqlRepositoryModel(ctx, repo.db))
 	if err != nil {
 		return err
 	}
@@ -456,16 +466,16 @@ func (repo *MssqlDocumentRepository) Delete(ctx context.Context, domainModels []
 
 	tx.Commit()
 
-	return nil
+    return nil
 }
 
 func (repo *MssqlDocumentRepository) DeleteWhere(ctx context.Context, domainColumnFilter *domain.DocumentFilter) (numAffectedRecords int64, err error) {
-	columnFilter, err := DocumentDomainToSqlRepositoryFilter(ctx, repo.db, domainColumnFilter)
-	if err != nil {
-		return
-	}
+    columnFilter, err := DocumentDomainToSqlRepositoryFilter(ctx, repo.db, domainColumnFilter)
+    if err != nil {
+        return
+    }
 
-	setFilters := *columnFilter.GetSetFilters()
+    setFilters := *columnFilter.GetSetFilters()
 
 	queryFilters := buildQueryModListFromFilterDocument(setFilters)
 
@@ -479,18 +489,18 @@ func (repo *MssqlDocumentRepository) DeleteWhere(ctx context.Context, domainColu
 		return
 	}
 
-	tx.Commit()
+    tx.Commit()
 
-	return
+    return
 }
 
 func (repo *MssqlDocumentRepository) CountWhere(ctx context.Context, domainColumnFilter *domain.DocumentFilter) (int64, error) {
-	columnFilter, err := DocumentDomainToSqlRepositoryFilter(ctx, repo.db, domainColumnFilter)
-	if err != nil {
-		return 0, err
-	}
+    columnFilter, err := DocumentDomainToSqlRepositoryFilter(ctx, repo.db, domainColumnFilter)
+    if err != nil {
+        return 0, err
+    }
 
-	setFilters := *columnFilter.GetSetFilters()
+    setFilters := *columnFilter.GetSetFilters()
 
 	queryFilters := buildQueryModListFromFilterDocument(setFilters)
 
@@ -502,21 +512,21 @@ func (repo *MssqlDocumentRepository) CountAll(ctx context.Context) (int64, error
 }
 
 func (repo *MssqlDocumentRepository) DoesExist(ctx context.Context, domainModel *domain.Document) (bool, error) {
-	repositoryModel, err := DocumentDomainToSqlRepositoryModel(ctx, repo.db, domainModel)
-	if err != nil {
-		return false, err
-	}
+    repositoryModel, err := DocumentDomainToSqlRepositoryModel(ctx, repo.db, domainModel)
+    if err != nil {
+        return false, err
+    }
 
 	return DocumentExists(ctx, repo.db, repositoryModel.ID)
 }
 
 func (repo *MssqlDocumentRepository) DoesExistWhere(ctx context.Context, domainColumnFilter *domain.DocumentFilter) (bool, error) {
-	columnFilter, err := DocumentDomainToSqlRepositoryFilter(ctx, repo.db, domainColumnFilter)
-	if err != nil {
-		return false, err
-	}
+    columnFilter, err := DocumentDomainToSqlRepositoryFilter(ctx, repo.db, domainColumnFilter)
+    if err != nil {
+        return false, err
+    }
 
-	setFilters := *columnFilter.GetSetFilters()
+    setFilters := *columnFilter.GetSetFilters()
 
 	queryFilters := buildQueryModListFromFilterDocument(setFilters)
 
@@ -524,79 +534,79 @@ func (repo *MssqlDocumentRepository) DoesExistWhere(ctx context.Context, domainC
 }
 
 func (repo *MssqlDocumentRepository) GetWhere(ctx context.Context, domainColumnFilter *domain.DocumentFilter) ([]*domain.Document, error) {
-	columnFilter, err := DocumentDomainToSqlRepositoryFilter(ctx, repo.db, domainColumnFilter)
-	if err != nil {
-		return []*domain.Document{}, err
-	}
+    columnFilter, err := DocumentDomainToSqlRepositoryFilter(ctx, repo.db, domainColumnFilter)
+    if err != nil {
+        return []*domain.Document{}, err
+    }
 
-	setFilters := *columnFilter.GetSetFilters()
+    setFilters := *columnFilter.GetSetFilters()
 
 	queryFilters := buildQueryModListFromFilterDocument(setFilters)
 
-	repositoryModels, err := Documents(queryFilters...).All(ctx, repo.db)
+    repositoryModels, err := Documents(queryFilters...).All(ctx, repo.db)
 
-	domainModels, err := goaoi.TransformCopySlice(repositoryModels, GetDocumentSqlRepositoryToDomainModel(ctx, repo.db))
+    domainModels, err := goaoi.TransformCopySlice(repositoryModels, GetDocumentSqlRepositoryToDomainModel(ctx, repo.db))
 
-	return domainModels, err
+    return domainModels, err
 }
 
 func (repo *MssqlDocumentRepository) GetFirstWhere(ctx context.Context, domainColumnFilter *domain.DocumentFilter) (*domain.Document, error) {
-	columnFilter, err := DocumentDomainToSqlRepositoryFilter(ctx, repo.db, domainColumnFilter)
-	if err != nil {
-		return nil, err
-	}
+    columnFilter, err := DocumentDomainToSqlRepositoryFilter(ctx, repo.db, domainColumnFilter)
+    if err != nil {
+        return nil, err
+    }
 
-	setFilters := *columnFilter.GetSetFilters()
+    setFilters := *columnFilter.GetSetFilters()
 
 	queryFilters := buildQueryModListFromFilterDocument(setFilters)
 
-	repositoryModel, err := Documents(queryFilters...).One(ctx, repo.db)
+    repositoryModel, err := Documents(queryFilters...).One(ctx, repo.db)
 
-	var domainModel *domain.Document
-	if err != nil {
-		return domainModel, err
-	}
+    var domainModel *domain.Document
+    if err != nil {
+        return domainModel, err
+    }
 
-	domainModel, err = DocumentSqlRepositoryToDomainModel(ctx, repo.db, repositoryModel)
+    domainModel, err = DocumentSqlRepositoryToDomainModel(ctx, repo.db, repositoryModel)
 
-	return domainModel, err
+    return domainModel, err
 }
 
 func (repo *MssqlDocumentRepository) GetAll(ctx context.Context) ([]*domain.Document, error) {
-	repositoryModels, err := Documents().All(ctx, repo.db)
+    repositoryModels, err := Documents().All(ctx, repo.db)
 
-	if err != nil {
-		return []*domain.Document{}, err
-	}
+    if err != nil {
+        return []*domain.Document{}, err
+    }
 
-	domainModels, err := goaoi.TransformCopySlice(repositoryModels, GetDocumentSqlRepositoryToDomainModel(ctx, repo.db))
+    domainModels, err := goaoi.TransformCopySlice(repositoryModels, GetDocumentSqlRepositoryToDomainModel(ctx, repo.db))
 
-	return domainModels, err
+    return domainModels, err
 }
 
 func (repo *MssqlDocumentRepository) AddType(ctx context.Context, type_ string) error {
-	repositoryModel := DocumentType{DocumentType: type_}
+    repositoryModel := DocumentType{DocumentType: type_}
 
-	return repositoryModel.Insert(ctx, repo.db, boil.Infer())
+    return repositoryModel.Insert(ctx, repo.db, boil.Infer())
 }
 
 func (repo *MssqlDocumentRepository) DeleteType(ctx context.Context, type_ string) error {
-	repositoryModel := DocumentType{DocumentType: type_}
+    repositoryModel := DocumentType{DocumentType: type_}
 
-	_, err := repositoryModel.Delete(ctx, repo.db)
+    _, err := repositoryModel.Delete(ctx, repo.db)
 
-	return err
+    return err
 }
 
 func (repo *MssqlDocumentRepository) UpdateType(ctx context.Context, oldType string, newType string) error {
-	repositoryModel, err := DocumentTypes(DocumentTypeWhere.DocumentType.EQ(oldType)).One(ctx, repo.db)
-	if err != nil {
-		return err
-	}
+    repositoryModel, err := DocumentTypes(DocumentTypeWhere.DocumentType.EQ(oldType)).One(ctx, repo.db)
+    if err != nil {
+        return err
+    }
 
-	repositoryModel.DocumentType = newType
+    repositoryModel.DocumentType = newType
 
-	_, err = repositoryModel.Update(ctx, repo.db, boil.Infer())
+    _, err = repositoryModel.Update(ctx, repo.db, boil.Infer())
 
-	return err
+    return err
 }

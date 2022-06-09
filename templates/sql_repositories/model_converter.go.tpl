@@ -28,9 +28,13 @@ import (
 	"github.com/JonasMuehlmann/bntp.go/model/domain"
     "context"
     "database/sql"
-    "time"
     "strconv"
     "strings"
+    {{ if eq .DatabaseName "sqlite3" }}
+    "time"
+    {{ else }}
+	 repoCommon "github.com/JonasMuehlmann/bntp.go/model/repository"
+    {{ end }}
 )
 
 func BookmarkDomainToSqlRepositoryModel(ctx context.Context, db *sql.DB, domainModel *domain.{{.Entities.Bookmark}}) ( sqlRepositoryModel *{{.Entities.Bookmark}}, err error)  {
@@ -55,8 +59,13 @@ func BookmarkDomainToSqlRepositoryModel(ctx context.Context, db *sql.DB, domainM
     sqlRepositoryModel.UpdatedAt = domainModel.UpdatedAt
 
     if domainModel.DeletedAt.HasValue {
-        sqlRepositoryModel.DeletedAt.Valid = true
-        sqlRepositoryModel.DeletedAt.String = domainModel.DeletedAt
+        var convertedTime null.Time
+        convertedTime, err = repoCommon.OptionalTimeToNullTime(domainModel.DeletedAt)
+        if err != nil {
+            return
+        }
+
+        sqlRepositoryModel.DeletedAt = convertedTime
     }
     {{end}}
 
@@ -70,7 +79,6 @@ func BookmarkDomainToSqlRepositoryModel(ctx context.Context, db *sql.DB, domainM
 
 
     //******************    Set IsRead/IsCollection    *****************//
-    {{ if eq .DatabaseName "sqlite3"}}
     if domainModel.IsRead {
         sqlRepositoryModel.IsRead = 1
     }
@@ -78,11 +86,6 @@ func BookmarkDomainToSqlRepositoryModel(ctx context.Context, db *sql.DB, domainM
     if domainModel.IsCollection {
         sqlRepositoryModel.IsCollection = 1
     }
-    {{else}}
-    sqlRepositoryModel.IsRead = domainModel.IsRead
-    sqlRepositoryModel.IsCollection = domainModel.IsCollection
-    {{end}}
-
 
     //*************************    Set Tags    *************************//
     var repositoryTag *Tag
@@ -163,20 +166,15 @@ func BookmarkSqlRepositoryToDomainModel(ctx context.Context, db *sql.DB, sqlRepo
     }
 
     //******************    Set IsRead/IsCollection    *****************//
-    {{ if eq .DatabaseName "sqlite3"}}
     domainModel.IsRead = sqlRepositoryModel.IsRead > 0
     domainModel.IsCollection = sqlRepositoryModel.IsCollection > 0
-    {{else}}
-    domainModel.IsRead = sqlRepositoryModel.IsRead
-    domainModel.IsCollection = sqlRepositoryModel.IsCollection
-    {{end}}
 
     //*************************    Set Tags    *************************//
     var domainTag *domain.Tag
 
 	domainModel.Tags = make([]*domain.Tag, 0, len(sqlRepositoryModel.R.Tags))
     for _, repositoryTag := range sqlRepositoryModel.R.Tags {
-        domainTag, err = TagSqlRepositoryToDomainModel(db, repositoryTag)
+        domainTag, err = TagSqlRepositoryToDomainModel(ctx, db, repositoryTag)
         if err != nil {
             return
         }
@@ -208,8 +206,13 @@ func DocumentDomainToSqlRepositoryModel(ctx context.Context, db *sql.DB, domainM
     sqlRepositoryModel.UpdatedAt = domainModel.UpdatedAt
 
     if domainModel.DeletedAt.HasValue {
-        sqlRepositoryModel.DeletedAt.Valid = true
-        sqlRepositoryModel.DeletedAt.String = domainModel.DeletedAt
+        var convertedTime null.Time
+        convertedTime, err = repoCommon.OptionalTimeToNullTime(domainModel.DeletedAt)
+        if err != nil {
+            return
+        }
+
+        sqlRepositoryModel.DeletedAt = convertedTime
     }
     {{end}}
 

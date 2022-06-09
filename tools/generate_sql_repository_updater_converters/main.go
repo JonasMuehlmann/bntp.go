@@ -45,7 +45,8 @@ type Database struct {
 
 var databases = []Database{
 	{"mssql"},
-	{"mysql"},
+	// NOTE: Currently broken on sqlboiler side
+	// {"mysql"},
 	{"psql"},
 	{"sqlite3"},
 }

@@ -49,11 +49,12 @@ var dbEntities = map[string][]Entity{
 		{"Bookmark", mssqlRepository.Bookmark{}},
 		{"Tag", mssqlRepository.Tag{}},
 	},
-	"mysql": {
-		{"Document", mysqlRepository.Document{}},
-		{"Bookmark", mysqlRepository.Bookmark{}},
-		{"Tag", mysqlRepository.Tag{}},
-	},
+	// NOTE: Currently broken on sqlboiler side
+	// "mysql": {
+	// 	{"Document", mysqlRepository.Document{}},
+	// 	{"Bookmark", mysqlRepository.Bookmark{}},
+	// 	{"Tag", mysqlRepository.Tag{}},
+	// },
 	"psql": {
 		{"Document", psqlRepository.Document{}},
 		{"Bookmark", psqlRepository.Bookmark{}},
