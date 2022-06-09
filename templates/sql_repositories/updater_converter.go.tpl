@@ -29,6 +29,8 @@ import (
     "github.com/volatiletech/null/v8"
     "database/sql"
     "context"
+    "strings"
+    "strconv"
 )
 
 func BookmarkDomainToSqlRepositoryUpdater(ctx context.Context, db *sql.DB, domainUpdater *domain.{{.Entities.Bookmark}}Updater) (sqlRepositoryUpdater *{{.Entities.Bookmark}}Updater, err error)  {
