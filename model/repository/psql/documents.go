@@ -24,12 +24,12 @@ import (
 
 // Document is an object representing the database table.
 type Document struct {
-	ID             int64     `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Path           string    `boil:"path" json:"path" toml:"path" yaml:"path"`
-	DocumentTypeID null.Int  `boil:"document_type_id" json:"document_type_id,omitempty" toml:"document_type_id" yaml:"document_type_id,omitempty"`
-	CreatedAt      time.Time `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
-	UpdatedAt      time.Time `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
-	DeletedAt      null.Time `boil:"deleted_at" json:"deleted_at,omitempty" toml:"deleted_at" yaml:"deleted_at,omitempty"`
+	ID             int64      `boil:"id" json:"id" toml:"id" yaml:"id"`
+	Path           string     `boil:"path" json:"path" toml:"path" yaml:"path"`
+	DocumentTypeID null.Int64 `boil:"document_type_id" json:"document_type_id,omitempty" toml:"document_type_id" yaml:"document_type_id,omitempty"`
+	CreatedAt      time.Time  `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	UpdatedAt      time.Time  `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
+	DeletedAt      null.Time  `boil:"deleted_at" json:"deleted_at,omitempty" toml:"deleted_at" yaml:"deleted_at,omitempty"`
 
 	R *documentR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L documentL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -72,14 +72,14 @@ var DocumentTableColumns = struct {
 var DocumentWhere = struct {
 	ID             whereHelperint64
 	Path           whereHelperstring
-	DocumentTypeID whereHelpernull_Int
+	DocumentTypeID whereHelpernull_Int64
 	CreatedAt      whereHelpertime_Time
 	UpdatedAt      whereHelpertime_Time
 	DeletedAt      whereHelpernull_Time
 }{
 	ID:             whereHelperint64{field: "\"documents\".\"id\""},
 	Path:           whereHelperstring{field: "\"documents\".\"path\""},
-	DocumentTypeID: whereHelpernull_Int{field: "\"documents\".\"document_type_id\""},
+	DocumentTypeID: whereHelpernull_Int64{field: "\"documents\".\"document_type_id\""},
 	CreatedAt:      whereHelpertime_Time{field: "\"documents\".\"created_at\""},
 	UpdatedAt:      whereHelpertime_Time{field: "\"documents\".\"updated_at\""},
 	DeletedAt:      whereHelpernull_Time{field: "\"documents\".\"deleted_at\""},
