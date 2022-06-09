@@ -24,12 +24,15 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/JonasMuehlmann/bntp.go/bntp/backend"
 	"github.com/JonasMuehlmann/bntp.go/internal/config"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/stoewer/go-strcase"
 )
+
+var BNTPBackend *backend.Backend
 
 var RootCmd = &cobra.Command{
 	Use:   "bntp.go",
@@ -42,7 +45,9 @@ var RootCmd = &cobra.Command{
 	},
 }
 
-func Execute() {
+func Execute(backend *backend.Backend) {
+	BNTPBackend = backend
+
 	err := RootCmd.Execute()
 	if err != nil {
 		os.Exit(1)

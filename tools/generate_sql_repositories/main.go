@@ -338,7 +338,7 @@ func main() {
 
 			var relationStruct tools.Struct
 
-			//**************************    sqlite3    *************************//
+			// **************************    sqlite3    *************************//
 			switch e := entity.Struct.(type) {
 			case sqlite3Repository.Bookmark:
 				e.R = e.R.NewStruct()
@@ -350,7 +350,7 @@ func main() {
 				e.R = e.R.NewStruct()
 				relationStruct = tools.NewStructModel(*e.R)
 
-				//***************************    mssql    **************************//
+				// ***************************    mssql    **************************//
 			case mssqlRepository.Bookmark:
 				e.R = e.R.NewStruct()
 				relationStruct = tools.NewStructModel(*e.R)
@@ -361,7 +361,7 @@ func main() {
 				e.R = e.R.NewStruct()
 				relationStruct = tools.NewStructModel(*e.R)
 
-				//***************************    mysql    **************************//
+				// ***************************    mysql    **************************//
 			case mysqlRepository.Bookmark:
 				e.R = e.R.NewStruct()
 				relationStruct = tools.NewStructModel(*e.R)
@@ -372,7 +372,7 @@ func main() {
 				e.R = e.R.NewStruct()
 				relationStruct = tools.NewStructModel(*e.R)
 
-				//***************************    psql    ***************************//
+				// ***************************    psql    ***************************//
 			case psqlRepository.Bookmark:
 				e.R = e.R.NewStruct()
 				relationStruct = tools.NewStructModel(*e.R)

@@ -24,6 +24,7 @@ package repository
 
 import (
     "database/sql"
+	repositoryCommon "github.com/JonasMuehlmann/bntp.go/model/repository"
 	"github.com/JonasMuehlmann/bntp.go/model"
 	"github.com/JonasMuehlmann/bntp.go/model/domain"
 	"github.com/JonasMuehlmann/goaoi"
@@ -59,7 +60,7 @@ type {{$StructName}}ConstructorArgs struct {
     DB *sql.DB
 }
 
-func (repo *{{$StructName}}) New(args any) (*{{$StructName}}, error) {
+func (repo *{{$StructName}}) New(args any) (repositoryCommon.DocumentRepository, error) {
     constructorArgs, ok := args.({{$StructName}}ConstructorArgs)
     if !ok {
         return repo, fmt.Errorf("expected type %T but got %T", {{$StructName}}ConstructorArgs{}, args)

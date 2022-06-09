@@ -30,8 +30,8 @@ import (
     "database/sql"
     "strconv"
     "strings"
-	"github.com/JonasMuehlmann/bntp.go/internal/helper"
     {{ if eq .DatabaseName "sqlite3" }}
+	"github.com/JonasMuehlmann/bntp.go/internal/helper"
     "time"
     {{ else }}
 	 repoCommon "github.com/JonasMuehlmann/bntp.go/model/repository"
