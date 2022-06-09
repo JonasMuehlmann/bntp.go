@@ -24,11 +24,11 @@ import (
 
 // Tag is an object representing the database table.
 type Tag struct {
-	ID        int64    `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Tag       string   `boil:"tag" json:"tag" toml:"tag" yaml:"tag"`
-	ParentTag null.Int `boil:"parent_tag" json:"parent_tag,omitempty" toml:"parent_tag" yaml:"parent_tag,omitempty"`
-	Path      string   `boil:"path" json:"path" toml:"path" yaml:"path"`
-	Children  string   `boil:"children" json:"children" toml:"children" yaml:"children"`
+	ID        int64      `boil:"id" json:"id" toml:"id" yaml:"id"`
+	Tag       string     `boil:"tag" json:"tag" toml:"tag" yaml:"tag"`
+	ParentTag null.Int64 `boil:"parent_tag" json:"parent_tag,omitempty" toml:"parent_tag" yaml:"parent_tag,omitempty"`
+	Path      string     `boil:"path" json:"path" toml:"path" yaml:"path"`
+	Children  string     `boil:"children" json:"children" toml:"children" yaml:"children"`
 
 	R *tagR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L tagL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -67,13 +67,13 @@ var TagTableColumns = struct {
 var TagWhere = struct {
 	ID        whereHelperint64
 	Tag       whereHelperstring
-	ParentTag whereHelpernull_Int
+	ParentTag whereHelpernull_Int64
 	Path      whereHelperstring
 	Children  whereHelperstring
 }{
 	ID:        whereHelperint64{field: "[dbo].[tags].[id]"},
 	Tag:       whereHelperstring{field: "[dbo].[tags].[tag]"},
-	ParentTag: whereHelpernull_Int{field: "[dbo].[tags].[parent_tag]"},
+	ParentTag: whereHelpernull_Int64{field: "[dbo].[tags].[parent_tag]"},
 	Path:      whereHelperstring{field: "[dbo].[tags].[path]"},
 	Children:  whereHelperstring{field: "[dbo].[tags].[children]"},
 }

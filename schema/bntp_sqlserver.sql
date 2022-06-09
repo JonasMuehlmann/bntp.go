@@ -5,7 +5,7 @@
 CREATE TABLE table_cache_states
 (
     table_name  NOT NULL VARCHAR(255) PRIMARY KEY,
-    is_dirty    NOT NULL INTEGER
+    is_dirty    NOT NULL BIGINT
 );
 
 CREATE TABLE dirty_entries
@@ -17,9 +17,9 @@ CREATE TABLE dirty_entries
 
 CREATE TABLE tags
 (
-    id         INTEGER    PRIMARY KEY,
+    id         BIGINT    PRIMARY KEY,
     tag        VARCHAR(255)       NOT NULL UNIQUE,
-    parent_tag INTEGER    REFERENCES tags(id),
+    parent_tag BIGINT    REFERENCES tags(id),
     -- Stores list of parent ids from root to self
     -- e.g. "1;2;3"
     path       VARCHAR(255)       NOT NULL,
@@ -30,18 +30,18 @@ CREATE TABLE tags
 
 CREATE TABLE bookmark_types
 (
-    id   INTEGER PRIMARY KEY,
+    id   BIGINT PRIMARY KEY,
     Type VARCHAR(255)    NOT NULL UNIQUE
 );
 
 CREATE TABLE bookmarks
 (
-    id               INTEGER   PRIMARY KEY,
-    is_read          INTEGER   NOT  NULL DEFAULT 0,
+    id               BIGINT   PRIMARY KEY,
+    is_read          BIGINT   NOT  NULL DEFAULT 0,
     title            VARCHAR(255)      UNIQUE,
     url              VARCHAR(255)      NOT NULL UNIQUE,
-    bookmark_type_id INTEGER   REFERENCES bookmark_types(id),
-    is_collection    INTEGER   NOT NULL DEFAULT 0,
+    bookmark_type_id BIGINT   REFERENCES bookmark_types(id),
+    is_collection    BIGINT   NOT NULL DEFAULT 0,
     created_at       DATETIME NOT NULL,
     updated_at       DATETIME NOT NULL,
     deleted_at       DATETIME
@@ -49,15 +49,15 @@ CREATE TABLE bookmarks
 
 CREATE TABLE document_types
 (
-    id            INTEGER PRIMARY KEY,
+    id            BIGINT PRIMARY KEY,
     document_type VARCHAR(255)    NOT NULL UNIQUE
 );
 
 CREATE TABLE documents
 (
-    id               INTEGER   PRIMARY KEY,
+    id               BIGINT   PRIMARY KEY,
     path             VARCHAR(255)      NOT NULL UNIQUE,
-    document_type_id INTEGER   REFERENCES document_types(id),
+    document_type_id BIGINT   REFERENCES document_types(id),
     created_at       DATETIME NOT NULL,
     updated_at       DATETIME NOT NULL,
     deleted_at       DATETIME
@@ -65,8 +65,8 @@ CREATE TABLE documents
 
 CREATE TABLE links
 (
-    source_id      INTEGER  NOT NULL REFERENCES documents(id),
-    destination_id INTEGER  NOT NULL REFERENCES documents(id),
+    source_id      BIGINT  NOT NULL REFERENCES documents(id),
+    destination_id BIGINT  NOT NULL REFERENCES documents(id),
 
     PRIMARY KEY(source_id, destination_id),
     CHECK(source_id != destination_id)
@@ -74,16 +74,16 @@ CREATE TABLE links
 
 CREATE TABLE bookmark_contexts
 (
-    bookmark_id INTEGER  NOT NULL REFERENCES bookmarks(id),
-    tag_id      INTEGER  NOT NULL REFERENCES tags(id),
+    bookmark_id BIGINT  NOT NULL REFERENCES bookmarks(id),
+    tag_id      BIGINT  NOT NULL REFERENCES tags(id),
 
     PRIMARY KEY(tag_id, bookmark_id)
 );
 
 CREATE TABLE document_contexts
 (
-    document_id INTEGER  NOT NULL REFERENCES documents(id),
-    tag_id      INTEGER  NOT NULL REFERENCES  tags(id),
+    document_id BIGINT  NOT NULL REFERENCES documents(id),
+    tag_id      BIGINT  NOT NULL REFERENCES  tags(id),
 
     PRIMARY KEY(tag_id, document_id)
 );
