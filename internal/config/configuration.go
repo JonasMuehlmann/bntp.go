@@ -22,6 +22,7 @@ package config
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"os"
 	"path"
@@ -74,38 +75,42 @@ func newMessage(level log.Level, msg string) message {
 	return message
 }
 
-var DefaultDBConfig DBConfig = DBConfig{
-	Driver:     "sqlite3",
-	DataSource: path.Join(ConfigDir, "bntp_db.sql"),
+func GetDefaultDBConfig() DBConfig {
+	return DBConfig{
+		Driver:     "sqlite3",
+		DataSource: path.Join(ConfigDir, "bntp_db.sql"),
+	}
 }
 
-var DefaultSettings = map[string]any{
-	LogFile:         path.Join(ConfigDir, "bntp.log"),
-	ConsoleLogLevel: log.ErrorLevel,
-	FileLogLevel:    log.InfoLevel,
-	DB:              DefaultDBConfig,
-	Backend: BackendConfig{
-		Bookmarkmanager: BookmarkManagerConfig{
-			BookmarkRepository: BookmarkRepositoryConfig{
-				DB: DefaultDBConfig,
+func GetDefaultSettings() map[string]any {
+	return map[string]any{
+		LogFile:         path.Join(ConfigDir, "bntp.log"),
+		ConsoleLogLevel: log.ErrorLevel.String(),
+		FileLogLevel:    log.InfoLevel.String(),
+		DB:              GetDefaultDBConfig(),
+		Backend: BackendConfig{
+			Bookmarkmanager: BookmarkManagerConfig{
+				BookmarkRepository: BookmarkRepositoryConfig{
+					DB: GetDefaultDBConfig(),
+				},
+			},
+			TagsManager: TagsManagerConfig{
+				TagsRepository: TagsRepositoryConfig{
+					DB: GetDefaultDBConfig(),
+				},
+			},
+			DocumentManager: DocumentManagerConfig{
+				DocumentRepository: DocumentRepositoryConfig{
+					DB: GetDefaultDBConfig(),
+				},
+			},
+			DocumentContentManager: DocumentContentManagerConfig{
+				DocumentContentRepository: DocumentContentRepositoryConfig{
+					DB: GetDefaultDBConfig(),
+				},
 			},
 		},
-		TagsManager: TagsManagerConfig{
-			TagsRepository: TagsRepositoryConfig{
-				DB: DefaultDBConfig,
-			},
-		},
-		DocumentManager: DocumentManagerConfig{
-			DocumentRepository: DocumentRepositoryConfig{
-				DB: DefaultDBConfig,
-			},
-		},
-		DocumentContentManager: DocumentContentManagerConfig{
-			DocumentContentRepository: DocumentContentRepositoryConfig{
-				DB: DefaultDBConfig,
-			},
-		},
-	},
+	}
 }
 
 var pendingLogMessage []message
@@ -190,7 +195,7 @@ func InitConfig() {
 
 	goaoi.ForeachSliceUnsafe(ConfigSearchPaths, viper.AddConfigPath)
 
-	err := setDefaultsFromStructOrMap(DefaultSettings)
+	err := setDefaultsFromStructOrMap(GetDefaultSettings())
 	if err != nil {
 		addPendingLogMessage(log.FatalLevel, "Error setting default values: %v", err)
 	}
@@ -200,7 +205,7 @@ func InitConfig() {
 	viper.AutomaticEnv() // read in environment variables that match
 
 	err = viper.ReadInConfig()
-	if err != nil {
+	if err != nil && errors.Is(err, &viper.ConfigFileNotFoundError{}) {
 		addPendingLogMessage(log.FatalLevel, "Error reading config: %v", err)
 	}
 

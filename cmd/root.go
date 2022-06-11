@@ -59,13 +59,13 @@ func init() {
 
 	RootCmd.PersistentFlags().String(
 		strcase.KebabCase(config.ConsoleLogLevel),
-		config.DefaultSettings[config.ConsoleLogLevel].(log.Level).String(),
+		config.GetDefaultSettings()[config.ConsoleLogLevel].(string),
 		fmt.Sprintf("The minimum log level to display on the console (Allowed values: %v)", log.AllLevels),
 	)
 
 	RootCmd.PersistentFlags().String(
 		strcase.KebabCase(config.FileLogLevel),
-		config.DefaultSettings[config.FileLogLevel].(log.Level).String(),
+		config.GetDefaultSettings()[config.FileLogLevel].(string),
 		fmt.Sprintf("The minimum log level to log to the log files (Allowed values: %v)", log.AllLevels),
 	)
 
