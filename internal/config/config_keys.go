@@ -3,7 +3,12 @@
 package config
 
 const (
-	LOG_FILE          = "log_file"
-	CONSOLE_LOG_LEVEL = "console_log_level"
-	FILE_LOG_LEVEL    = "file_log_level"
+	LogFile         = "log_file"
+	ConsoleLogLevel = "console_log_level"
+	FileLogLevel    = "file_log_level"
+	DB              = "db"
+	DB_Driver       = DB + ".driver"
+	DB_DataSource   = DB + ".data_source"
+	DB_Args         = DB + ".args"
+	Backend         = "backend"
 )

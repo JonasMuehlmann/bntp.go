@@ -58,22 +58,22 @@ func init() {
 	RootCmd.PersistentFlags().StringVarP(&config.PassedConfigPath, "config", "c", "", "The config file to use instead of ones found in search paths")
 
 	RootCmd.PersistentFlags().String(
-		strcase.KebabCase(config.CONSOLE_LOG_LEVEL),
-		config.DefaultSettings[config.CONSOLE_LOG_LEVEL].(log.Level).String(),
+		strcase.KebabCase(config.ConsoleLogLevel),
+		config.DefaultSettings[config.ConsoleLogLevel].(log.Level).String(),
 		fmt.Sprintf("The minimum log level to display on the console (Allowed values: %v)", log.AllLevels),
 	)
 
 	RootCmd.PersistentFlags().String(
-		strcase.KebabCase(config.FILE_LOG_LEVEL),
-		config.DefaultSettings[config.FILE_LOG_LEVEL].(log.Level).String(),
+		strcase.KebabCase(config.FileLogLevel),
+		config.DefaultSettings[config.FileLogLevel].(log.Level).String(),
 		fmt.Sprintf("The minimum log level to log to the log files (Allowed values: %v)", log.AllLevels),
 	)
 
-	cobra.OnInitialize(config.InitConfig, bindFlagsToConfig)
+	cobra.OnInitialize(func() { config.InitConfig(); BNTPBackend = config.NewBackendFromConfig() }, bindFlagsToConfig)
 }
 
 func bindFlagsToConfig() {
-	for _, setting := range []string{config.CONSOLE_LOG_LEVEL, config.FILE_LOG_LEVEL} {
+	for _, setting := range []string{config.ConsoleLogLevel, config.FileLogLevel} {
 		err := viper.BindPFlag(setting, RootCmd.Flags().Lookup(strcase.KebabCase(setting)))
 		if err != nil {
 			log.Fatal(err)

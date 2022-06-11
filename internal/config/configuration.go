@@ -21,17 +21,36 @@
 package config
 
 import (
+	"database/sql"
 	"fmt"
 	"os"
 	"path"
+	"reflect"
+	"strings"
 
+	"github.com/JonasMuehlmann/bntp.go/bntp"
+	"github.com/JonasMuehlmann/bntp.go/bntp/backend"
+	"github.com/JonasMuehlmann/bntp.go/bntp/libbookmarks"
+	"github.com/JonasMuehlmann/bntp.go/bntp/libdocuments"
+	"github.com/JonasMuehlmann/bntp.go/bntp/libtags"
 	"github.com/JonasMuehlmann/bntp.go/internal/helper"
+	"github.com/JonasMuehlmann/bntp.go/model/repository"
 	"github.com/JonasMuehlmann/goaoi"
 	"github.com/go-playground/validator/v10"
+	_ "github.com/mattn/go-sqlite3"
+	"github.com/mitchellh/mapstructure"
 	"github.com/spf13/viper"
 	"github.com/stoewer/go-strcase"
 
+	"github.com/JonasMuehlmann/bntp.go/model/domain"
 	log "github.com/sirupsen/logrus"
+	"github.com/spf13/afero"
+
+	fsRepository "github.com/JonasMuehlmann/bntp.go/model/repository/fs"
+	// mssqlRepository "github.com/JonasMuehlmann/bntp.go/model/repository/mssql"
+	// mysqlRepository "github.com/JonasMuehlmann/bntp.go/model/repository/mysql"
+	// psqlRepository "github.com/JonasMuehlmann/bntp.go/model/repository/psql".
+	sqlite3Repository "github.com/JonasMuehlmann/bntp.go/model/repository/sqlite3"
 )
 
 var (
@@ -55,10 +74,38 @@ func newMessage(level log.Level, msg string) message {
 	return message
 }
 
+var DefaultDBConfig DBConfig = DBConfig{
+	Driver:     "sqlite3",
+	DataSource: path.Join(ConfigDir, "bntp_db.sql"),
+}
+
 var DefaultSettings = map[string]any{
-	LOG_FILE:          path.Join(ConfigDir, "bntp.log"),
-	CONSOLE_LOG_LEVEL: log.ErrorLevel,
-	FILE_LOG_LEVEL:    log.InfoLevel,
+	LogFile:         path.Join(ConfigDir, "bntp.log"),
+	ConsoleLogLevel: log.ErrorLevel,
+	FileLogLevel:    log.InfoLevel,
+	DB:              DefaultDBConfig,
+	Backend: BackendConfig{
+		Bookmarkmanager: BookmarkManagerConfig{
+			BookmarkRepository: BookmarkRepositoryConfig{
+				DB: DefaultDBConfig,
+			},
+		},
+		TagsManager: TagsManagerConfig{
+			TagsRepository: TagsRepositoryConfig{
+				DB: DefaultDBConfig,
+			},
+		},
+		DocumentManager: DocumentManagerConfig{
+			DocumentRepository: DocumentRepositoryConfig{
+				DB: DefaultDBConfig,
+			},
+		},
+		DocumentContentManager: DocumentContentManagerConfig{
+			DocumentContentRepository: DocumentContentRepositoryConfig{
+				DB: DefaultDBConfig,
+			},
+		},
+	},
 }
 
 var pendingLogMessage []message
@@ -72,7 +119,7 @@ func formatValidationError(e validator.FieldError) string {
 
 	// TODO: Add test to validate if all used validator tags are handled here
 	switch e.Tag() {
-	case VALIDATOR_LOGRUS_LOG_LEVEL:
+	case ValidatorLogrusLogLevel:
 		message = fmt.Sprintf("value %q is invalid, allowed values are %v", e.Value(), log.AllLevels)
 	case "required":
 		message = "setting is required"
@@ -85,6 +132,54 @@ func formatValidationError(e validator.FieldError) string {
 	return message
 }
 
+func bfsSetDefault(path string, val any) error {
+	switch v := val.(type) {
+	case map[string]any:
+		for k, v := range v {
+			newPath := path
+			if newPath == "" {
+				newPath = k
+			} else {
+				newPath += "." + k
+			}
+
+			bfsSetDefault(newPath, v)
+		}
+	default:
+		t := reflect.TypeOf(v)
+		if t.Kind() == reflect.Struct {
+			var asMap map[string]any
+			err := mapstructure.Decode(v, &asMap)
+			if err != nil {
+				return err
+			}
+
+			for k, v := range asMap {
+				newPath := path
+				if newPath == "" {
+					newPath = k
+				} else {
+					newPath += "." + k
+				}
+
+				err := bfsSetDefault(newPath, v)
+				if err != nil {
+					return err
+				}
+
+			}
+		} else {
+			viper.SetDefault(path, v)
+		}
+	}
+
+	return nil
+}
+
+func setDefaultsFromStructOrMap(defaults any) error {
+	return bfsSetDefault("", defaults)
+}
+
 func InitConfig() {
 
 	pendingLogMessage = make([]message, 0, 5)
@@ -95,15 +190,16 @@ func InitConfig() {
 
 	goaoi.ForeachSliceUnsafe(ConfigSearchPaths, viper.AddConfigPath)
 
-	for k, v := range DefaultSettings {
-		viper.SetDefault(k, v)
+	err := setDefaultsFromStructOrMap(DefaultSettings)
+	if err != nil {
+		addPendingLogMessage(log.FatalLevel, "Error setting default values: %v", err)
 	}
 
 	viper.SetEnvPrefix("BNTP")
 	viper.SetConfigName(ConfigFileBaseName)
 	viper.AutomaticEnv() // read in environment variables that match
 
-	err := viper.ReadInConfig()
+	err = viper.ReadInConfig()
 	if err != nil {
 		addPendingLogMessage(log.FatalLevel, "Error reading config: %v", err)
 	}
@@ -129,12 +225,12 @@ func InitConfig() {
 			addPendingLogMessage(log.FatalLevel, "Error processing setting %v: %v", strcase.SnakeCase(e.Field()), formatValidationError(e))
 		}
 	} else {
-		consoleLogLevel, _ = log.ParseLevel(viper.GetString(CONSOLE_LOG_LEVEL))
-		fileLogLevel, _ = log.ParseLevel(viper.GetString(FILE_LOG_LEVEL))
+		consoleLogLevel, _ = log.ParseLevel(viper.GetString(ConsoleLogLevel))
+		fileLogLevel, _ = log.ParseLevel(viper.GetString(FileLogLevel))
 	}
 	// ******************** Log pending messages ********************* //
 
-	helper.Logger = *helper.NewDefaultLogger(viper.GetString(LOG_FILE), consoleLogLevel, fileLogLevel)
+	helper.Logger = *helper.NewDefaultLogger(viper.GetString(LogFile), consoleLogLevel, fileLogLevel)
 
 	for _, message := range pendingLogMessage {
 		helper.Logger.Log(message.Level, message.Msg)
@@ -148,6 +244,138 @@ func InitConfig() {
 	} else {
 		helper.Logger.Info("Using internal configuration")
 	}
+}
+
+func NewDBFromConfig() *sql.DB {
+	dataSource := viper.GetString(DB_DataSource)
+	args := viper.GetStringSlice(DB_Args)
+
+	openArgs := dataSource
+	if len(args) > 0 {
+		openArgs += "?"
+
+		openArgs += strings.Join(args, "&")
+	}
+
+	db, err := sql.Open(viper.GetString(DB_Driver), openArgs)
+	if err != nil {
+		panic(err)
+	}
+
+	return db
+}
+
+//********************    Repository builders    ********************//
+// TODO: Allow using non-sql repositories.
+func NewBookmarkRepositoryFromConfig(repoDB *sql.DB) repository.BookmarkRepository {
+	bookmarkRepository := new(sqlite3Repository.Sqlite3BookmarkRepository)
+
+	bookmarkRepositoryAbstract, err := bookmarkRepository.New(sqlite3Repository.Sqlite3BookmarkRepositoryConstructorArgs{DB: repoDB})
+	if err != nil {
+		panic(err)
+	}
+
+	bookmarkRepository, _ = bookmarkRepositoryAbstract.(*sqlite3Repository.Sqlite3BookmarkRepository)
+
+	return bookmarkRepository
+}
+
+func NewTagsRepositoryFromConfig(repoDB *sql.DB) repository.TagRepository {
+	tagsRepository := new(sqlite3Repository.Sqlite3TagRepository)
+
+	tagsRepositoryAbstract, err := tagsRepository.New(sqlite3Repository.Sqlite3TagRepositoryConstructorArgs{DB: repoDB})
+	if err != nil {
+		panic(err)
+	}
+
+	tagsRepository, _ = tagsRepositoryAbstract.(*sqlite3Repository.Sqlite3TagRepository)
+
+	return tagsRepository
+}
+func NewDocumentRepositoryFromConfig(repoDB *sql.DB) repository.DocumentRepository {
+	documentRepository := new(sqlite3Repository.Sqlite3DocumentRepository)
+
+	documentRepositoryAbstract, err := documentRepository.New(sqlite3Repository.Sqlite3DocumentRepositoryConstructorArgs{DB: repoDB})
+	if err != nil {
+		panic(err)
+	}
+
+	documentRepository, _ = documentRepositoryAbstract.(*sqlite3Repository.Sqlite3DocumentRepository)
+
+	return documentRepository
+}
+
+// TODO: Allow non-fs content repositories
+func NewDocumentContentRepositoryFromConfig(fs afero.Fs) repository.DocumentContentRepository {
+	documentContentRepository := new(fsRepository.FSDocumentContentRepository)
+
+	documentContentRepositoryAbstract, err := documentContentRepository.New(fs)
+	if err != nil {
+		panic(err)
+	}
+
+	documentContentRepository, _ = documentContentRepositoryAbstract.(*fsRepository.FSDocumentContentRepository)
+
+	return documentContentRepository
+}
+
+// TODO: Implement proper  hook parsing
+//********************    Manager builders    ********************//
+func NewBookmarkManagerFromConfig(repo repository.BookmarkRepository) libbookmarks.BookmarkManager {
+	hooks := new(bntp.Hooks[domain.Bookmark])
+
+	bookmarkManager, err := libbookmarks.NewBookmarkManager(hooks, repo)
+	if err != nil {
+		panic(err)
+	}
+
+	return bookmarkManager
+}
+
+func NewTagsManagerFromConfig(repo repository.TagRepository) libtags.TagManager {
+	hooks := new(bntp.Hooks[domain.Tag])
+	tagsManager, err := libtags.NewTagmanager(hooks, repo)
+	if err != nil {
+		panic(err)
+	}
+
+	return tagsManager
+}
+func NewDocumentManagerFromConfig(repo repository.DocumentRepository) libdocuments.DocumentManager {
+	hooks := new(bntp.Hooks[domain.Document])
+	documentManager, err := libdocuments.NewDocumentManager(hooks, repo)
+	if err != nil {
+		panic(err)
+	}
+
+	return documentManager
+}
+
+func NewDocumentContentManagerFromConfig(repo repository.DocumentContentRepository) libdocuments.DocumentContentManager {
+	hooks := new(bntp.Hooks[string])
+	documentContentManager, err := libdocuments.NewDocumentContentRepository(hooks, repo)
+	if err != nil {
+		panic(err)
+	}
+
+	return documentContentManager
+}
+
+// **********************    Set up backend    **********************//
+func NewBackendFromConfig() *backend.Backend {
+	newBackend := new(backend.Backend)
+
+	db := NewDBFromConfig()
+
+	// TODO: Extend config to allow creating custom fs
+	fs := afero.NewOsFs()
+
+	newBackend.BookmarkManager = NewBookmarkManagerFromConfig(NewBookmarkRepositoryFromConfig(db))
+	newBackend.TagManager = NewTagsManagerFromConfig(NewTagsRepositoryFromConfig(db))
+	newBackend.DocumentManager = NewDocumentManagerFromConfig(NewDocumentRepositoryFromConfig(db))
+	newBackend.DocumentContentManager = NewDocumentContentManagerFromConfig(NewDocumentContentRepositoryFromConfig(fs))
+
+	return newBackend
 }
 
 func init() {
