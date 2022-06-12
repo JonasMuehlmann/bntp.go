@@ -21,6 +21,7 @@
 package cmd
 
 import (
+	"context"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -48,6 +49,11 @@ var bookmarkTypeAddCmd = &cobra.Command{
 			cmd.Help()
 			os.Exit(0)
 		}
+
+		err := BNTPBackend.BookmarkManager.AddType(context.Background(), args)
+		if err != nil {
+			panic(err)
+		}
 	},
 }
 
@@ -61,6 +67,11 @@ var bookmarkTypeEditCmd = &cobra.Command{
 			cmd.Help()
 			os.Exit(0)
 		}
+
+		err := BNTPBackend.BookmarkManager.UpdateType(context.Background(), args[0], args[1])
+		if err != nil {
+			panic(err)
+		}
 	},
 }
 
@@ -73,6 +84,11 @@ var bookmarkTypeRemoveCmd = &cobra.Command{
 		if len(args) == 0 {
 			cmd.Help()
 			os.Exit(0)
+		}
+
+		err := BNTPBackend.BookmarkManager.DeleteType(context.Background(), args)
+		if err != nil {
+			panic(err)
 		}
 	},
 }

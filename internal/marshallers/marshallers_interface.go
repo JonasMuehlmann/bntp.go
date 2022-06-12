@@ -18,20 +18,12 @@
 // TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE
 // OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-package backend
+package marshallers
 
-import (
-	"github.com/JonasMuehlmann/bntp.go/bntp/libbookmarks"
-	"github.com/JonasMuehlmann/bntp.go/bntp/libdocuments"
-	"github.com/JonasMuehlmann/bntp.go/bntp/libtags"
-	"github.com/JonasMuehlmann/bntp.go/internal/marshallers"
-)
+type Marshaller interface {
+	Marshall(from any) (to string, err error)
+}
 
-type Backend struct {
-	BookmarkManager        libbookmarks.BookmarkManager
-	TagManager             libtags.TagManager
-	DocumentManager        libdocuments.DocumentManager
-	DocumentContentManager libdocuments.DocumentContentManager
-	Marshallers            map[string]marshallers.Marshaller
-	Unmarshallers          map[string]marshallers.Unmarshaller
+type Unmarshaller interface {
+	Unmarshall(out any, in string) error
 }
