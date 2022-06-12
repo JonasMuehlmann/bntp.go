@@ -63,6 +63,29 @@ type Document struct {
 
 var entities = []any{Document{}, Tag{}, Bookmark{}}
 
+// TODO: Add this to template
+// func (updater *DocumentUpdater) ApplyToModel(documentModel *Document) {
+// 	if updater.ID.HasValue {
+// 		model.ApplyUpdater(&(*documentModel).ID, updater.ID.Wrappee)
+// 	}
+// 	if updater.Path.HasValue {
+// 		model.ApplyUpdater(&(*documentModel).Path, updater.Path.Wrappee)
+// 	}
+// 	if updater.DocumentTypeID.HasValue {
+// 		model.ApplyUpdater(&(*documentModel).DocumentTypeID, updater.DocumentTypeID.Wrappee)
+// 	}
+// 	if updater.CreatedAt.HasValue {
+// 		model.ApplyUpdater(&(*documentModel).CreatedAt, updater.CreatedAt.Wrappee)
+// 	}
+// 	if updater.UpdatedAt.HasValue {
+// 		model.ApplyUpdater(&(*documentModel).UpdatedAt, updater.UpdatedAt.Wrappee)
+// 	}
+// 	if updater.DeletedAt.HasValue {
+// 		model.ApplyUpdater(&(*documentModel).DeletedAt, updater.DeletedAt.Wrappee)
+// 	}
+
+// }
+
 func main() {
 	for _, entity := range entities {
 		entityStruct := tools.NewStructModel(entity)

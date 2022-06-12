@@ -94,6 +94,11 @@ var documentReplaceCmd = &cobra.Command{
 		if err != nil {
 			panic(err)
 		}
+
+		err = BNTPBackend.DocumentContentManager.UpdateDocumentContentsFromNewModels(context.Background(), documents, &BNTPBackend.DocumentManager)
+		if err != nil {
+			panic(err)
+		}
 	},
 }
 
@@ -118,6 +123,11 @@ var documentUpsertCmd = &cobra.Command{
 		}
 
 		err := BNTPBackend.DocumentManager.Upsert(context.Background(), documents)
+		if err != nil {
+			panic(err)
+		}
+
+		err = BNTPBackend.DocumentContentManager.UpdateDocumentContentsFromNewModels(context.Background(), documents, &BNTPBackend.DocumentManager)
 		if err != nil {
 			panic(err)
 		}
@@ -160,6 +170,11 @@ var documentEditCmd = &cobra.Command{
 			}
 
 			numAffectedRecords = int64(len(args))
+
+			err = BNTPBackend.DocumentContentManager.UpdateDocumentContentsFromFilterAndUpdater(context.Background(), filter, updater, &BNTPBackend.DocumentManager)
+			if err != nil {
+				panic(err)
+			}
 		} else {
 			err = BNTPBackend.Unmarshallers[Format].Unmarshall(filter, FilterRaw)
 			if err != nil {
@@ -167,6 +182,11 @@ var documentEditCmd = &cobra.Command{
 			}
 
 			numAffectedRecords, err = BNTPBackend.DocumentManager.UpdateWhere(context.Background(), filter, updater)
+			if err != nil {
+				panic(err)
+			}
+
+			err = BNTPBackend.DocumentContentManager.UpdateDocumentContentsFromNewModels(context.Background(), documents, &BNTPBackend.DocumentManager)
 			if err != nil {
 				panic(err)
 			}
