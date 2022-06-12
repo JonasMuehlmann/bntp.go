@@ -21,6 +21,7 @@
 package cmd
 
 import (
+	"context"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -48,6 +49,11 @@ var documentTypeAddCmd = &cobra.Command{
 			cmd.Help()
 			os.Exit(0)
 		}
+
+		err := BNTPBackend.DocumentManager.AddType(context.Background(), args)
+		if err != nil {
+			panic(err)
+		}
 	},
 }
 
@@ -61,6 +67,11 @@ var documentTypeEditCmd = &cobra.Command{
 			cmd.Help()
 			os.Exit(0)
 		}
+
+		err := BNTPBackend.DocumentManager.UpdateType(context.Background(), args[0], args[1])
+		if err != nil {
+			panic(err)
+		}
 	},
 }
 
@@ -73,6 +84,11 @@ var documentTypeRemoveCmd = &cobra.Command{
 		if len(args) == 0 {
 			cmd.Help()
 			os.Exit(0)
+		}
+
+		err := BNTPBackend.DocumentManager.DeleteType(context.Background(), args)
+		if err != nil {
+			panic(err)
 		}
 	},
 }

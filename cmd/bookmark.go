@@ -45,7 +45,7 @@ var bookmarkCmd = &cobra.Command{
 }
 
 var bookmarkAddCmd = &cobra.Command{
-	Use:   "add DATA...",
+	Use:   "add MODEL...",
 	Short: "Add a bntp bookmark",
 	Long:  `A longer description`,
 	Args:  cobra.ArbitraryArgs,
@@ -72,7 +72,7 @@ var bookmarkAddCmd = &cobra.Command{
 }
 
 var bookmarkReplaceCmd = &cobra.Command{
-	Use:   "replace NEW_DATA...",
+	Use:   "replace MODEL...",
 	Short: "Replace a bntp bookmark with an updated version",
 	Long:  `A longer description`,
 	Args:  cobra.ArbitraryArgs,
@@ -99,7 +99,7 @@ var bookmarkReplaceCmd = &cobra.Command{
 }
 
 var bookmarkUpsertCmd = &cobra.Command{
-	Use:   "upsert NEW_DATA...",
+	Use:   "upsert MODEL...",
 	Short: "Add or replace a bntp bookmark",
 	Long:  `A longer description`,
 	Args:  cobra.ArbitraryArgs,
@@ -126,7 +126,7 @@ var bookmarkUpsertCmd = &cobra.Command{
 }
 
 var bookmarkEditCmd = &cobra.Command{
-	Use:   "edit NEW_DATA...",
+	Use:   "edit MODEL...",
 	Short: "Edit a bntp bookmark",
 	Long:  `A longer description`,
 	Args:  cobra.ArbitraryArgs,
@@ -222,7 +222,7 @@ var bookmarkListCmd = &cobra.Command{
 }
 
 var bookmarkRemoveCmd = &cobra.Command{
-	Use:   "remove [BOOKMARK...]",
+	Use:   "remove [MODEL...]",
 	Short: "Remove a bntp bookmark",
 	Long:  `A longer description`,
 	Args:  cobra.ArbitraryArgs,
@@ -338,7 +338,7 @@ var bookmarkCountCmd = &cobra.Command{
 	},
 }
 var bookmarkDoesExistCmd = &cobra.Command{
-	Use:   "does-exist [DATA]",
+	Use:   "does-exist [MODEL]",
 	Short: "Manage bntp bookmarks",
 	Long:  `A longer description`,
 	Args:  cobra.RangeArgs(0, 1),
