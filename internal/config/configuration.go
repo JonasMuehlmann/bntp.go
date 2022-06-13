@@ -35,6 +35,7 @@ import (
 	"github.com/JonasMuehlmann/bntp.go/bntp/libdocuments"
 	"github.com/JonasMuehlmann/bntp.go/bntp/libtags"
 	"github.com/JonasMuehlmann/bntp.go/internal/helper"
+	"github.com/JonasMuehlmann/bntp.go/internal/marshallers"
 	"github.com/JonasMuehlmann/bntp.go/model/repository"
 	"github.com/JonasMuehlmann/goaoi"
 	"github.com/go-playground/validator/v10"
@@ -379,6 +380,9 @@ func NewBackendFromConfig() *backend.Backend {
 	newBackend.TagManager = NewTagsManagerFromConfig(NewTagsRepositoryFromConfig(db))
 	newBackend.DocumentManager = NewDocumentManagerFromConfig(NewDocumentRepositoryFromConfig(db))
 	newBackend.DocumentContentManager = NewDocumentContentManagerFromConfig(NewDocumentContentRepositoryFromConfig(fs))
+
+	newBackend.Marshallers["json"] = marshallers.JsonMarshaller
+	newBackend.Unmarshallers["json"] = marshallers.JsoUnmMarshaller
 
 	return newBackend
 }

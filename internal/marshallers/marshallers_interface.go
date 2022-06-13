@@ -20,10 +20,26 @@
 
 package marshallers
 
+import "encoding/json"
+
 type Marshaller interface {
 	Marshall(from any) (to string, err error)
 }
 
 type Unmarshaller interface {
 	Unmarshall(out any, in string) error
+}
+
+type JsonMarshaller struct{}
+
+func (marshaller *JsonMarshaller) Marshall(from any) (to string, err error) {
+	res, err := json.Marshal(from)
+
+	return string(res), err
+}
+
+type JsonUnmarshaller struct{}
+
+func (unmarshaller *JsonUnmarshaller) Unmarshall(out any, in string) error {
+	return json.Unmarshal([]byte(in), out)
 }
