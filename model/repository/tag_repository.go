@@ -33,6 +33,7 @@ type TagRepository interface {
 	Add(ctx context.Context, domainModels []*domain.Tag) error
 	Replace(ctx context.Context, domainModels []*domain.Tag) error
 	Upsert(ctx context.Context, domainModels []*domain.Tag) error
+	Update(ctx context.Context, domainModels []*domain.Tag, columnUpdaters *domain.TagUpdater) error
 	UpdateWhere(ctx context.Context, columnFilter *domain.TagFilter, columnUpdaters *domain.TagUpdater) (numAffectedRecords int64, err error)
 	Delete(ctx context.Context, domainModels []*domain.Tag) error
 	DeleteWhere(ctx context.Context, columnFilter *domain.TagFilter) (numAffectedRecords int64, err error)

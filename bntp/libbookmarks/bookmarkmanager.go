@@ -126,6 +126,33 @@ func (m *BookmarkManager) Upsert(ctx context.Context, bookmarks []*domain.Bookma
 	return err
 }
 
+func (m *BookmarkManager) Update(ctx context.Context, documents []*domain.Bookmark, documentUpdater *domain.BookmarkUpdater) error {
+	err := goaoi.ForeachSlice(documents, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.BeforeAnyHook|bntp.BeforeUpdateHook))
+	if err != nil {
+		err = bntp.HookExecutionError{Inner: err}
+		log.Error(err)
+
+		return err
+	}
+
+	err = m.Repository.Update(ctx, documents, documentUpdater)
+	if err != nil {
+		log.Error(err)
+
+		return err
+	}
+
+	err = goaoi.ForeachSlice(documents, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.AfterAnyHook|bntp.AfterUpdateHook))
+	if err != nil {
+		err = bntp.HookExecutionError{Inner: err}
+		log.Error(err)
+
+		return err
+	}
+
+	return err
+}
+
 func (m *BookmarkManager) UpdateWhere(ctx context.Context, bookmarkFilter *domain.BookmarkFilter, bookmarkUpdater *domain.BookmarkUpdater) (numAffectedRecords int64, err error) {
 	bookmarks := []*domain.Bookmark{}
 

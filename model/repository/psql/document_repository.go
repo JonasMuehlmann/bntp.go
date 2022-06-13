@@ -428,6 +428,32 @@ func (repo *PsqlDocumentRepository) Upsert(ctx context.Context, domainModels []*
     return nil
 }
 
+func (repo *PsqlDocumentRepository) Update(ctx context.Context, domainModels []*domain.Document, domainColumnUpdater *domain.DocumentUpdater) error {
+    repositoryModels, err := goaoi.TransformCopySlice(domainModels, GetDocumentDomainToSqlRepositoryModel(ctx, repo.db))
+	if err != nil {
+		return err
+	}
+
+    columnUpdater, err := DocumentDomainToSqlRepositoryUpdater(ctx, repo.db, domainColumnUpdater)
+    if err != nil {
+        return err
+    }
+
+   	tx, err := repo.db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+
+    for _, model := range   repositoryModels {
+        columnUpdater.ApplyToModel(model)
+        model.Update(ctx, tx, boil.Infer())
+    }
+
+    tx.Commit()
+
+    return err
+}
+
 func (repo *PsqlDocumentRepository) UpdateWhere(ctx context.Context, domainColumnFilter *domain.DocumentFilter, domainColumnUpdater *domain.DocumentUpdater) (numAffectedRecords int64, err error) {
 	var modelsToUpdate DocumentSlice
 

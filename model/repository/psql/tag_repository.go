@@ -388,6 +388,7 @@ func (repo *PsqlTagRepository) Replace(ctx context.Context, domainModels []*doma
 
     return nil
 }
+
 func (repo *PsqlTagRepository) Upsert(ctx context.Context, domainModels []*domain.Tag) error {
     repositoryModels, err := goaoi.TransformCopySlice(domainModels, GetTagDomainToSqlRepositoryModel(ctx, repo.db))
 	if err != nil {
@@ -409,6 +410,32 @@ func (repo *PsqlTagRepository) Upsert(ctx context.Context, domainModels []*domai
 	tx.Commit()
 
     return nil
+}
+
+func (repo *PsqlTagRepository) Update(ctx context.Context, domainModels []*domain.Tag, domainColumnUpdater *domain.TagUpdater) error {
+    repositoryModels, err := goaoi.TransformCopySlice(domainModels, GetTagDomainToSqlRepositoryModel(ctx, repo.db))
+	if err != nil {
+		return err
+	}
+
+    columnUpdater, err := TagDomainToSqlRepositoryUpdater(ctx, repo.db, domainColumnUpdater)
+    if err != nil {
+        return err
+    }
+
+   	tx, err := repo.db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+
+    for _, model := range   repositoryModels {
+        columnUpdater.ApplyToModel(model)
+        model.Update(ctx, tx, boil.Infer())
+    }
+
+    tx.Commit()
+
+    return err
 }
 
 func (repo *PsqlTagRepository) UpdateWhere(ctx context.Context, domainColumnFilter *domain.TagFilter, domainColumnUpdater *domain.TagUpdater) (numAffectedRecords int64, err error) {

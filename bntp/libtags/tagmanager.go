@@ -124,6 +124,33 @@ func (m *TagManager) Upsert(ctx context.Context, tags []*domain.Tag) error {
 	return err
 }
 
+func (m *TagManager) Update(ctx context.Context, documents []*domain.Tag, documentUpdater *domain.TagUpdater) error {
+	err := goaoi.ForeachSlice(documents, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.BeforeAnyHook|bntp.BeforeUpdateHook))
+	if err != nil {
+		err = bntp.HookExecutionError{Inner: err}
+		log.Error(err)
+
+		return err
+	}
+
+	err = m.Repository.Update(ctx, documents, documentUpdater)
+	if err != nil {
+		log.Error(err)
+
+		return err
+	}
+
+	err = goaoi.ForeachSlice(documents, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.AfterAnyHook|bntp.AfterUpdateHook))
+	if err != nil {
+		err = bntp.HookExecutionError{Inner: err}
+		log.Error(err)
+
+		return err
+	}
+
+	return err
+}
+
 func (m *TagManager) UpdateWhere(ctx context.Context, tagFilter *domain.TagFilter, tagUpdater *domain.TagUpdater) (numAffectedRecords int64, err error) {
 	tags := []*domain.Tag{}
 

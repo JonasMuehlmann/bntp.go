@@ -33,6 +33,7 @@ type DocumentRepository interface {
 	Add(ctx context.Context, domainModels []*domain.Document) error
 	Replace(ctx context.Context, domainModels []*domain.Document) error
 	Upsert(ctx context.Context, domainModels []*domain.Document) error
+	Update(ctx context.Context, domainModels []*domain.Document, columnUpdaters *domain.DocumentUpdater) error
 	UpdateWhere(ctx context.Context, columnFilter *domain.DocumentFilter, columnUpdaters *domain.DocumentUpdater) (numAffectedRecords int64, err error)
 	Delete(ctx context.Context, domainModels []*domain.Document) error
 	DeleteWhere(ctx context.Context, columnFilter *domain.DocumentFilter) (numAffectedRecords int64, err error)

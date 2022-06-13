@@ -33,6 +33,7 @@ type BookmarkRepository interface {
 	Add(ctx context.Context, domainModels []*domain.Bookmark) error
 	Replace(ctx context.Context, domainModels []*domain.Bookmark) error
 	Upsert(ctx context.Context, domainModels []*domain.Bookmark) error
+	Update(ctx context.Context, domainModels []*domain.Bookmark, columnUpdaters *domain.BookmarkUpdater) error
 	UpdateWhere(ctx context.Context, columnFilter *domain.BookmarkFilter, columnUpdaters *domain.BookmarkUpdater) (numAffectedRecords int64, err error)
 	Delete(ctx context.Context, domainModels []*domain.Bookmark) error
 	DeleteWhere(ctx context.Context, columnFilter *domain.BookmarkFilter) (numAffectedRecords int64, err error)

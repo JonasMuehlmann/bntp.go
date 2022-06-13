@@ -126,6 +126,33 @@ func (m *DocumentManager) Upsert(ctx context.Context, documents []*domain.Docume
 	return err
 }
 
+func (m *DocumentManager) Update(ctx context.Context, documents []*domain.Document, documentUpdater *domain.DocumentUpdater) error {
+	err := goaoi.ForeachSlice(documents, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.BeforeAnyHook|bntp.BeforeUpdateHook))
+	if err != nil {
+		err = bntp.HookExecutionError{Inner: err}
+		log.Error(err)
+
+		return err
+	}
+
+	err = m.Repository.Update(ctx, documents, documentUpdater)
+	if err != nil {
+		log.Error(err)
+
+		return err
+	}
+
+	err = goaoi.ForeachSlice(documents, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.AfterAnyHook|bntp.AfterUpdateHook))
+	if err != nil {
+		err = bntp.HookExecutionError{Inner: err}
+		log.Error(err)
+
+		return err
+	}
+
+	return err
+}
+
 func (m *DocumentManager) UpdateWhere(ctx context.Context, documentFilter *domain.DocumentFilter, documentUpdater *domain.DocumentUpdater) (numAffectedRecords int64, err error) {
 	documents := []*domain.Document{}
 

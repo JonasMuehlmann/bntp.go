@@ -462,6 +462,32 @@ func (repo *Sqlite3BookmarkRepository) Upsert(ctx context.Context, domainModels 
     return nil
 }
 
+func (repo *Sqlite3BookmarkRepository) Update(ctx context.Context, domainModels []*domain.Bookmark, domainColumnUpdater *domain.BookmarkUpdater) error {
+    repositoryModels, err := goaoi.TransformCopySlice(domainModels, GetBookmarkDomainToSqlRepositoryModel(ctx, repo.db))
+	if err != nil {
+		return err
+	}
+
+    columnUpdater, err := BookmarkDomainToSqlRepositoryUpdater(ctx, repo.db, domainColumnUpdater)
+    if err != nil {
+        return err
+    }
+
+   	tx, err := repo.db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+
+    for _, model := range   repositoryModels {
+        columnUpdater.ApplyToModel(model)
+        model.Update(ctx, tx, boil.Infer())
+    }
+
+    tx.Commit()
+
+    return err
+}
+
 func (repo *Sqlite3BookmarkRepository) UpdateWhere(ctx context.Context, domainColumnFilter *domain.BookmarkFilter, domainColumnUpdater *domain.BookmarkUpdater) (numAffectedRecords int64, err error) {
 	var modelsToUpdate BookmarkSlice
 
