@@ -138,18 +138,17 @@ func (filter *BookmarkFilter) GetSetFilters() *list.List {
 }
 
 type BookmarkUpdater struct {
+	BookmarkType   optional.Optional[model.UpdateOperation[*BookmarkType]]
 	CreatedAt      optional.Optional[model.UpdateOperation[string]]
 	UpdatedAt      optional.Optional[model.UpdateOperation[string]]
 	URL            optional.Optional[model.UpdateOperation[string]]
-	Title          optional.Optional[model.UpdateOperation[null.String]]
 	DeletedAt      optional.Optional[model.UpdateOperation[null.String]]
+	Title          optional.Optional[model.UpdateOperation[null.String]]
+	Tags           optional.Optional[model.UpdateOperation[TagSlice]]
 	BookmarkTypeID optional.Optional[model.UpdateOperation[null.Int64]]
 	IsCollection   optional.Optional[model.UpdateOperation[int64]]
 	ID             optional.Optional[model.UpdateOperation[int64]]
 	IsRead         optional.Optional[model.UpdateOperation[int64]]
-
-	BookmarkType optional.Optional[model.UpdateOperation[*BookmarkType]]
-	Tags         optional.Optional[model.UpdateOperation[TagSlice]]
 }
 
 type BookmarkUpdaterMapping[T any] struct {
@@ -388,7 +387,6 @@ func (repo *Sqlite3BookmarkRepository) New(args any) (repositoryCommon.BookmarkR
 
 func (repo *Sqlite3BookmarkRepository) Add(ctx context.Context, domainModels []*domain.Bookmark) error {
 	repositoryModels, err := goaoi.TransformCopySlice(domainModels, GetBookmarkDomainToSqlRepositoryModel(ctx, repo.db))
-	// TODO: Ignore EmptyIterable errors in all goaoi calls
 	if err != nil {
 		return err
 	}

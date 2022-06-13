@@ -23,271 +23,256 @@
 package repository
 
 import (
-	"github.com/JonasMuehlmann/optional.go"
-	"github.com/JonasMuehlmann/bntp.go/model/domain"
+	"context"
+	"database/sql"
+	"strconv"
+	"time"
+
 	"github.com/JonasMuehlmann/bntp.go/model"
+	"github.com/JonasMuehlmann/bntp.go/model/domain"
 	repoCommon "github.com/JonasMuehlmann/bntp.go/model/repository"
-    "github.com/volatiletech/null/v8"
-    "context"
-    "database/sql"
-    "time"
-    "strconv"
+	"github.com/JonasMuehlmann/optional.go"
+	"github.com/volatiletech/null/v8"
 )
 
+func BookmarkDomainToSqlRepositoryFilter(ctx context.Context, db *sql.DB, domainFilter *domain.BookmarkFilter) (sqlRepositoryFilter *BookmarkFilter, err error) {
+	sqlRepositoryFilter = new(BookmarkFilter)
 
-func BookmarkDomainToSqlRepositoryFilter(ctx context.Context, db *sql.DB, domainFilter *domain.BookmarkFilter) (sqlRepositoryFilter *BookmarkFilter, err error)  {
-    sqlRepositoryFilter = new(BookmarkFilter)
+	sqlRepositoryFilter.URL = domainFilter.URL
+	sqlRepositoryFilter.ID = domainFilter.ID
 
-    sqlRepositoryFilter.URL = domainFilter.URL
-    sqlRepositoryFilter.ID = domainFilter.ID
+	//**********************    Set Timestamps    **********************//
 
-    //**********************    Set Timestamps    **********************//
-    
-    if domainFilter.CreatedAt.HasValue {
-        var convertedFilter model.FilterOperation[string]
+	if domainFilter.CreatedAt.HasValue {
+		var convertedFilter model.FilterOperation[string]
 
-        convertedFilter, err = model.ConvertFilter[string, time.Time](domainFilter.CreatedAt.Wrappee, repoCommon.TimeToStr)
-        if err != nil {
-            return
-        }
+		convertedFilter, err = model.ConvertFilter[string, time.Time](domainFilter.CreatedAt.Wrappee, repoCommon.TimeToStr)
+		if err != nil {
+			return
+		}
 
-        sqlRepositoryFilter.CreatedAt.Push(convertedFilter)
-    }
-    if domainFilter.UpdatedAt.HasValue {
-        var convertedFilter model.FilterOperation[string]
+		sqlRepositoryFilter.CreatedAt.Push(convertedFilter)
+	}
+	if domainFilter.UpdatedAt.HasValue {
+		var convertedFilter model.FilterOperation[string]
 
-        convertedFilter, err = model.ConvertFilter[string, time.Time](domainFilter.UpdatedAt.Wrappee, repoCommon.TimeToStr)
-        if err != nil {
-            return
-        }
+		convertedFilter, err = model.ConvertFilter[string, time.Time](domainFilter.UpdatedAt.Wrappee, repoCommon.TimeToStr)
+		if err != nil {
+			return
+		}
 
-        sqlRepositoryFilter.UpdatedAt.Push(convertedFilter)
-    }
-    if domainFilter.DeletedAt.HasValue {
-        var convertedFilter model.FilterOperation[null.String]
+		sqlRepositoryFilter.UpdatedAt.Push(convertedFilter)
+	}
+	if domainFilter.DeletedAt.HasValue {
+		var convertedFilter model.FilterOperation[null.String]
 
-        convertedFilter, err = model.ConvertFilter[null.String, optional.Optional[time.Time]](domainFilter.DeletedAt.Wrappee, repoCommon.OptionalTimeToNullStr)
-        if err != nil {
-            return
-        }
+		convertedFilter, err = model.ConvertFilter[null.String, optional.Optional[time.Time]](domainFilter.DeletedAt.Wrappee, repoCommon.OptionalTimeToNullStr)
+		if err != nil {
+			return
+		}
 
-        sqlRepositoryFilter.DeletedAt.Push(convertedFilter)
-    }
-    
+		sqlRepositoryFilter.DeletedAt.Push(convertedFilter)
+	}
 
+	//*************************    Set Title    ************************//
+	if domainFilter.Title.HasValue {
+		var convertedFilter model.FilterOperation[null.String]
 
-    //*************************    Set Title    ************************//
-    if domainFilter.Title.HasValue {
-        var convertedFilter model.FilterOperation[null.String]
+		convertedFilter, err = model.ConvertFilter[null.String, optional.Optional[string]](domainFilter.Title.Wrappee, repoCommon.OptionalStringToNullString)
+		if err != nil {
+			return
+		}
 
-        convertedFilter, err = model.ConvertFilter[null.String, optional.Optional[string]](domainFilter.Title.Wrappee, repoCommon.OptionalStringToNullString)
-        if err != nil {
-            return
-        }
+		sqlRepositoryFilter.Title.Push(convertedFilter)
+	}
 
-        sqlRepositoryFilter.Title.Push(convertedFilter)
-    }
+	//******************    Set IsRead/IsCollection    *****************//
+	if domainFilter.IsRead.HasValue {
+		var convertedFilter model.FilterOperation[int64]
 
+		convertedFilter, err = model.ConvertFilter[int64, bool](domainFilter.IsRead.Wrappee, repoCommon.BoolToInt)
+		if err != nil {
+			return
+		}
 
+		sqlRepositoryFilter.IsRead.Push(convertedFilter)
+	}
 
-    //******************    Set IsRead/IsCollection    *****************//
-    if domainFilter.IsRead.HasValue {
-        var convertedFilter model.FilterOperation[int64]
+	if domainFilter.IsCollection.HasValue {
+		var convertedFilter model.FilterOperation[int64]
 
-        convertedFilter, err = model.ConvertFilter[int64, bool](domainFilter.IsRead.Wrappee, repoCommon.BoolToInt)
-        if err != nil {
-            return
-        }
+		convertedFilter, err = model.ConvertFilter[int64, bool](domainFilter.IsCollection.Wrappee, repoCommon.BoolToInt)
+		if err != nil {
+			return
+		}
 
-        sqlRepositoryFilter.IsRead.Push(convertedFilter)
-    }
+		sqlRepositoryFilter.IsCollection.Push(convertedFilter)
+	}
 
-    if domainFilter.IsCollection.HasValue {
-        var convertedFilter model.FilterOperation[int64]
+	//*************************    Set Tags    *************************//
 
-        convertedFilter, err = model.ConvertFilter[int64, bool](domainFilter.IsCollection.Wrappee, repoCommon.BoolToInt)
-        if err != nil {
-            return
-        }
+	if domainFilter.Tags.HasValue {
+		var convertedFilter model.FilterOperation[*Tag]
 
-        sqlRepositoryFilter.IsCollection.Push(convertedFilter)
-    }
+		convertedFilter, err = model.ConvertFilter[*Tag, *domain.Tag](domainFilter.Tags.Wrappee, repoCommon.MakeDomainToRepositoryEntityConverter[domain.Tag, Tag](ctx, db, TagDomainToSqlRepositoryModel))
+		if err != nil {
+			return
+		}
 
+		sqlRepositoryFilter.Tags.Push(convertedFilter)
+	}
 
-    //*************************    Set Tags    *************************//
+	//*************************    Set Type    *************************//
 
-    if domainFilter.Tags.HasValue {
-        var convertedFilter model.FilterOperation[*Tag]
+	if domainFilter.BookmarkType.HasValue {
+		var convertedTypeIDFilter model.FilterOperation[null.Int64]
+		var convertedTypeFilter model.FilterOperation[*BookmarkType]
 
-        convertedFilter, err = model.ConvertFilter[*Tag,*domain.Tag](domainFilter.Tags.Wrappee, repoCommon.MakeDomainToRepositoryEntityConverter[domain.Tag, Tag](ctx, db, TagDomainToSqlRepositoryModel))
-        if err != nil {
-            return
-        }
+		convertedTypeFilter, err = model.ConvertFilter[*BookmarkType, optional.Optional[string]](domainFilter.BookmarkType.Wrappee, func(type_ optional.Optional[string]) (*BookmarkType, error) {
+			if !type_.HasValue {
+				return nil, nil
+			}
 
-        sqlRepositoryFilter.Tags.Push(convertedFilter)
-    }
+			bookmarkType, err := BookmarkTypes(BookmarkTypeWhere.Type.EQ(type_.Wrappee)).One(ctx, db)
 
-    //*************************    Set Type    *************************//
+			return bookmarkType, err
+		})
+		if err != nil {
+			return
+		}
 
-    if domainFilter.BookmarkType.HasValue {
-        var convertedTypeIDFilter model.FilterOperation[null.Int64]
-        var convertedTypeFilter model.FilterOperation[*BookmarkType]
+		convertedTypeIDFilter, err = model.ConvertFilter[null.Int64, optional.Optional[string]](domainFilter.BookmarkType.Wrappee, func(type_ optional.Optional[string]) (null.Int64, error) {
+			if !type_.HasValue {
+				return null.NewInt64(-1, false), nil
+			}
 
-        convertedTypeFilter, err = model.ConvertFilter[*BookmarkType,optional.Optional[string]](domainFilter.BookmarkType.Wrappee, func(type_ optional.Optional[string]) (*BookmarkType, error) {
-            if !type_.HasValue {
-                return  nil, nil
-            }
+			bookmarkType, err := BookmarkTypes(BookmarkTypeWhere.Type.EQ(type_.Wrappee)).One(ctx, db)
 
+			return null.NewInt64(bookmarkType.ID, true), err
+		})
+		if err != nil {
+			return
+		}
 
-            bookmarkType, err := BookmarkTypes(BookmarkTypeWhere.Type.EQ(type_.Wrappee)).One(ctx, db)
+		sqlRepositoryFilter.BookmarkType.Push(convertedTypeFilter)
+		sqlRepositoryFilter.BookmarkTypeID.Push(convertedTypeIDFilter)
+	}
 
-            return bookmarkType, err
-        })
-        if err != nil {
-            return
-        }
-
-        convertedTypeIDFilter, err = model.ConvertFilter[null.Int64,optional.Optional[string]](domainFilter.BookmarkType.Wrappee, func(type_ optional.Optional[string]) (null.Int64, error) {
-            if !type_.HasValue {
-                return  null.NewInt64(-1, false), nil
-            }
-
-
-            bookmarkType, err := BookmarkTypes(BookmarkTypeWhere.Type.EQ(type_.Wrappee)).One(ctx, db)
-
-            return null.NewInt64(bookmarkType.ID, true), err
-        })
-        if err != nil {
-            return
-        }
-
-
-        sqlRepositoryFilter.BookmarkType.Push(convertedTypeFilter)
-        sqlRepositoryFilter.BookmarkTypeID.Push(convertedTypeIDFilter)
-    }
-
-    return
+	return
 }
 
-func DocumentDomainToSqlRepositoryFilter(ctx context.Context, db *sql.DB, domainFilter *domain.DocumentFilter) (sqlRepositoryFilter *DocumentFilter, err error)  {
-    sqlRepositoryFilter = new(DocumentFilter)
+func DocumentDomainToSqlRepositoryFilter(ctx context.Context, db *sql.DB, domainFilter *domain.DocumentFilter) (sqlRepositoryFilter *DocumentFilter, err error) {
+	sqlRepositoryFilter = new(DocumentFilter)
 
-    sqlRepositoryFilter.Path = domainFilter.Path
-    sqlRepositoryFilter.ID = domainFilter.ID
+	sqlRepositoryFilter.Path = domainFilter.Path
+	sqlRepositoryFilter.ID = domainFilter.ID
 
+	//**********************    Set Timestamps    **********************//
 
-    //**********************    Set Timestamps    **********************//
-    
-    if domainFilter.CreatedAt.HasValue {
-        var convertedFilter model.FilterOperation[string]
+	if domainFilter.CreatedAt.HasValue {
+		var convertedFilter model.FilterOperation[string]
 
-        convertedFilter, err = model.ConvertFilter[string, time.Time](domainFilter.CreatedAt.Wrappee, repoCommon.TimeToStr)
-        if err != nil {
-            return
-        }
+		convertedFilter, err = model.ConvertFilter[string, time.Time](domainFilter.CreatedAt.Wrappee, repoCommon.TimeToStr)
+		if err != nil {
+			return
+		}
 
-        sqlRepositoryFilter.CreatedAt.Push(convertedFilter)
-    }
-    if domainFilter.UpdatedAt.HasValue {
-        var convertedFilter model.FilterOperation[string]
+		sqlRepositoryFilter.CreatedAt.Push(convertedFilter)
+	}
+	if domainFilter.UpdatedAt.HasValue {
+		var convertedFilter model.FilterOperation[string]
 
-        convertedFilter, err = model.ConvertFilter[string, time.Time](domainFilter.UpdatedAt.Wrappee, repoCommon.TimeToStr)
-        if err != nil {
-            return
-        }
+		convertedFilter, err = model.ConvertFilter[string, time.Time](domainFilter.UpdatedAt.Wrappee, repoCommon.TimeToStr)
+		if err != nil {
+			return
+		}
 
-        sqlRepositoryFilter.UpdatedAt.Push(convertedFilter)
-    }
-    if domainFilter.DeletedAt.HasValue {
-        var convertedFilter model.FilterOperation[null.String]
+		sqlRepositoryFilter.UpdatedAt.Push(convertedFilter)
+	}
+	if domainFilter.DeletedAt.HasValue {
+		var convertedFilter model.FilterOperation[null.String]
 
-        convertedFilter, err = model.ConvertFilter[null.String, optional.Optional[time.Time]](domainFilter.DeletedAt.Wrappee, repoCommon.OptionalTimeToNullStr)
-        if err != nil {
-            return
-        }
+		convertedFilter, err = model.ConvertFilter[null.String, optional.Optional[time.Time]](domainFilter.DeletedAt.Wrappee, repoCommon.OptionalTimeToNullStr)
+		if err != nil {
+			return
+		}
 
-        sqlRepositoryFilter.DeletedAt.Push(convertedFilter)
-    }
-    
+		sqlRepositoryFilter.DeletedAt.Push(convertedFilter)
+	}
 
-    //*************************    Set Tags    *************************//
-    if domainFilter.Tags.HasValue {
-        var convertedFilter model.FilterOperation[*Tag]
+	//*************************    Set Tags    *************************//
+	if domainFilter.Tags.HasValue {
+		var convertedFilter model.FilterOperation[*Tag]
 
-        convertedFilter, err = model.ConvertFilter[*Tag,*domain.Tag](domainFilter.Tags.Wrappee, repoCommon.MakeDomainToRepositoryEntityConverter[domain.Tag, Tag](ctx, db, TagDomainToSqlRepositoryModel))
-        if err != nil {
-            return
-        }
+		convertedFilter, err = model.ConvertFilter[*Tag, *domain.Tag](domainFilter.Tags.Wrappee, repoCommon.MakeDomainToRepositoryEntityConverter[domain.Tag, Tag](ctx, db, TagDomainToSqlRepositoryModel))
+		if err != nil {
+			return
+		}
 
-        sqlRepositoryFilter.Tags.Push(convertedFilter)
-    }
+		sqlRepositoryFilter.Tags.Push(convertedFilter)
+	}
 
-    //*************************    Set Type    *************************//
-    if domainFilter.DocumentType.HasValue {
-        var convertedTypeIDFilter model.FilterOperation[null.Int64]
-        var convertedTypeFilter model.FilterOperation[*DocumentType]
+	//*************************    Set Type    *************************//
+	if domainFilter.DocumentType.HasValue {
+		var convertedTypeIDFilter model.FilterOperation[null.Int64]
+		var convertedTypeFilter model.FilterOperation[*DocumentType]
 
-        convertedTypeFilter, err = model.ConvertFilter[*DocumentType,optional.Optional[string]](domainFilter.DocumentType.Wrappee, func(type_ optional.Optional[string]) (*DocumentType, error) {
-            if !type_.HasValue {
-                return  nil, nil
-            }
+		convertedTypeFilter, err = model.ConvertFilter[*DocumentType, optional.Optional[string]](domainFilter.DocumentType.Wrappee, func(type_ optional.Optional[string]) (*DocumentType, error) {
+			if !type_.HasValue {
+				return nil, nil
+			}
 
+			bookmarkType, err := DocumentTypes(DocumentTypeWhere.DocumentType.EQ(type_.Wrappee)).One(ctx, db)
 
-            bookmarkType, err := DocumentTypes(DocumentTypeWhere.DocumentType.EQ(type_.Wrappee)).One(ctx, db)
+			return bookmarkType, err
+		})
+		if err != nil {
+			return
+		}
 
-            return bookmarkType, err
-        })
-        if err != nil {
-            return
-        }
+		convertedTypeIDFilter, err = model.ConvertFilter[null.Int64, optional.Optional[string]](domainFilter.DocumentType.Wrappee, func(type_ optional.Optional[string]) (null.Int64, error) {
+			if !type_.HasValue {
+				return null.NewInt64(-1, false), nil
+			}
 
-        convertedTypeIDFilter, err = model.ConvertFilter[null.Int64,optional.Optional[string]](domainFilter.DocumentType.Wrappee, func(type_ optional.Optional[string]) (null.Int64, error) {
-            if !type_.HasValue {
-                return  null.NewInt64(-1, false), nil
-            }
+			bookmarkType, err := DocumentTypes(DocumentTypeWhere.DocumentType.EQ(type_.Wrappee)).One(ctx, db)
 
+			return null.NewInt64(bookmarkType.ID, true), err
+		})
+		if err != nil {
+			return
+		}
 
-            bookmarkType, err := DocumentTypes(DocumentTypeWhere.DocumentType.EQ(type_.Wrappee)).One(ctx, db)
+		sqlRepositoryFilter.DocumentType.Push(convertedTypeFilter)
+		sqlRepositoryFilter.DocumentTypeID.Push(convertedTypeIDFilter)
+	}
 
-            return null.NewInt64(bookmarkType.ID, true), err
-        })
-        if err != nil {
-            return
-        }
+	//**************    Set linked/backlinked documents    *************//
+	if domainFilter.LinkedDocuments.HasValue {
+		var convertedFilter model.FilterOperation[*Document]
 
+		convertedFilter, err = model.ConvertFilter[*Document, *domain.Document](domainFilter.LinkedDocuments.Wrappee, repoCommon.MakeDomainToRepositoryEntityConverter[domain.Document, Document](ctx, db, DocumentDomainToSqlRepositoryModel))
+		if err != nil {
+			return
+		}
 
-        sqlRepositoryFilter.DocumentType.Push(convertedTypeFilter)
-        sqlRepositoryFilter.DocumentTypeID.Push(convertedTypeIDFilter)
-    }
+		sqlRepositoryFilter.SourceDocuments.Push(convertedFilter)
+	}
+	if domainFilter.BacklinkedDocuments.HasValue {
+		var convertedFilter model.FilterOperation[*Document]
 
+		convertedFilter, err = model.ConvertFilter[*Document, *domain.Document](domainFilter.BacklinkedDocuments.Wrappee, repoCommon.MakeDomainToRepositoryEntityConverter[domain.Document, Document](ctx, db, DocumentDomainToSqlRepositoryModel))
+		if err != nil {
+			return
+		}
 
-    //**************    Set linked/backlinked documents    *************//
-    if domainFilter.LinkedDocuments.HasValue {
-        var convertedFilter model.FilterOperation[*Document]
+		sqlRepositoryFilter.DestinationDocuments.Push(convertedFilter)
+	}
 
-        convertedFilter, err = model.ConvertFilter[*Document,*domain.Document](domainFilter.LinkedDocuments.Wrappee, repoCommon.MakeDomainToRepositoryEntityConverter[domain.Document,Document](ctx, db, DocumentDomainToSqlRepositoryModel))
-        if err != nil {
-            return
-        }
-
-        sqlRepositoryFilter.SourceDocuments.Push(convertedFilter)
-    }
-    if domainFilter.BacklinkedDocuments.HasValue {
-        var convertedFilter model.FilterOperation[*Document]
-
-        convertedFilter, err = model.ConvertFilter[*Document,*domain.Document](domainFilter.BacklinkedDocuments.Wrappee, repoCommon.MakeDomainToRepositoryEntityConverter[domain.Document,Document](ctx, db, DocumentDomainToSqlRepositoryModel))
-        if err != nil {
-            return
-        }
-
-        sqlRepositoryFilter.DestinationDocuments.Push(convertedFilter)
-    }
-
-    return
+	return
 }
 
-
-func TagDomainToSqlRepositoryFilter(ctx context.Context, db *sql.DB, domainFilter *domain.TagFilter) (sqlRepositoryFilter *TagFilter, err error)  {
+func TagDomainToSqlRepositoryFilter(ctx context.Context, db *sql.DB, domainFilter *domain.TagFilter) (sqlRepositoryFilter *TagFilter, err error) {
 	sqlRepositoryFilter = new(TagFilter)
 
 	sqlRepositoryFilter.ID = domainFilter.ID
