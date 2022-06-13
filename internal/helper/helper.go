@@ -21,8 +21,11 @@
 package helper
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
+	"path"
+	"runtime"
 
 	"github.com/JonasMuehlmann/goaoi"
 	log "github.com/sirupsen/logrus"
@@ -31,15 +34,21 @@ import (
 
 const DateFormat string = "helper.DateFormat"
 
-var Logger log.Logger
-
 func NewDefaultLogger(logFile string, consoleLogLevel log.Level, fileLogLevel log.Level) *log.Logger {
+	callerPrettyfier := func(f *runtime.Frame) (string, string) {
+		filename := path.Base(f.File)
+
+		return fmt.Sprintf("%s()", path.Base(f.Function)), fmt.Sprintf("%s:%d", filename, f.Line)
+	}
+
 	formatter := &log.TextFormatter{
-		FullTimestamp: true,
+		FullTimestamp:    true,
+		CallerPrettyfier: callerPrettyfier,
 	}
 	consoleFormatter := &log.TextFormatter{
-		FullTimestamp: true,
-		ForceColors:   true,
+		FullTimestamp:    true,
+		ForceColors:      true,
+		CallerPrettyfier: callerPrettyfier,
 	}
 
 	logFileHandle, err := os.OpenFile(logFile, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0o755)
@@ -50,6 +59,7 @@ func NewDefaultLogger(logFile string, consoleLogLevel log.Level, fileLogLevel lo
 	mainLogger := log.New()
 	mainLogger.SetFormatter(formatter)
 	mainLogger.SetOutput(ioutil.Discard)
+	mainLogger.SetReportCaller(true)
 
 	// Log levels are ordered from most to least serve
 	consoleLogLevels, _ := goaoi.TakeWhileSlice(log.AllLevels, goaoi.IsLessThanEqualPartial(consoleLogLevel))

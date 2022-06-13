@@ -22,6 +22,7 @@ package libdocuments
 
 import (
 	"context"
+	"errors"
 
 	"github.com/JonasMuehlmann/bntp.go/model"
 	"github.com/JonasMuehlmann/bntp.go/model/domain"
@@ -53,7 +54,7 @@ func (m *DocumentContentManager) Add(ctx context.Context, pathContents []tuple.T
 	paths := bntp.TupleToSOA2(pathContents).V1
 
 	err := goaoi.ForeachSlice(paths, m.Hooks.PartiallySpecializeExecuteHooksForNoPointer(ctx, bntp.BeforeAnyHook|bntp.BeforeAddHook))
-	if err != nil {
+	if !errors.As(err, &goaoi.EmptyIterableError{}) {
 		err = bntp.HookExecutionError{Inner: err}
 		log.Error(err)
 
@@ -68,7 +69,7 @@ func (m *DocumentContentManager) Add(ctx context.Context, pathContents []tuple.T
 	}
 
 	err = goaoi.ForeachSlice(paths, m.Hooks.PartiallySpecializeExecuteHooksForNoPointer(ctx, bntp.AfterAnyHook|bntp.AfterAddHook))
-	if err != nil {
+	if !errors.As(err, &goaoi.EmptyIterableError{}) {
 		err = bntp.HookExecutionError{Inner: err}
 		log.Error(err)
 
@@ -82,7 +83,7 @@ func (m *DocumentContentManager) Update(ctx context.Context, pathContents []tupl
 	paths := bntp.TupleToSOA2(pathContents).V1
 
 	err := goaoi.ForeachSlice(paths, m.Hooks.PartiallySpecializeExecuteHooksForNoPointer(ctx, bntp.BeforeAnyHook|bntp.BeforeUpdateHook))
-	if err != nil {
+	if !errors.As(err, &goaoi.EmptyIterableError{}) {
 		err = bntp.HookExecutionError{Inner: err}
 		log.Error(err)
 
@@ -97,7 +98,7 @@ func (m *DocumentContentManager) Update(ctx context.Context, pathContents []tupl
 	}
 
 	err = goaoi.ForeachSlice(paths, m.Hooks.PartiallySpecializeExecuteHooksForNoPointer(ctx, bntp.AfterAnyHook|bntp.AfterUpdateHook))
-	if err != nil {
+	if !errors.As(err, &goaoi.EmptyIterableError{}) {
 		err = bntp.HookExecutionError{Inner: err}
 		log.Error(err)
 
@@ -111,7 +112,7 @@ func (m *DocumentContentManager) Move(ctx context.Context, pathChanges []tuple.T
 	paths := bntp.TupleToSOA2(pathChanges).V1
 
 	err := goaoi.ForeachSlice(paths, m.Hooks.PartiallySpecializeExecuteHooksForNoPointer(ctx, bntp.BeforeAnyHook|bntp.BeforeUpdateHook))
-	if err != nil {
+	if !errors.As(err, &goaoi.EmptyIterableError{}) {
 		err = bntp.HookExecutionError{Inner: err}
 		log.Error(err)
 
@@ -126,7 +127,7 @@ func (m *DocumentContentManager) Move(ctx context.Context, pathChanges []tuple.T
 	}
 
 	err = goaoi.ForeachSlice(paths, m.Hooks.PartiallySpecializeExecuteHooksForNoPointer(ctx, bntp.AfterAnyHook|bntp.AfterUpdateHook))
-	if err != nil {
+	if !errors.As(err, &goaoi.EmptyIterableError{}) {
 		err = bntp.HookExecutionError{Inner: err}
 		log.Error(err)
 
@@ -138,7 +139,7 @@ func (m *DocumentContentManager) Move(ctx context.Context, pathChanges []tuple.T
 
 func (m *DocumentContentManager) Delete(ctx context.Context, paths []string) error {
 	err := goaoi.ForeachSlice(paths, m.Hooks.PartiallySpecializeExecuteHooksForNoPointer(ctx, bntp.BeforeAnyHook|bntp.BeforeDeleteHook))
-	if err != nil {
+	if !errors.As(err, &goaoi.EmptyIterableError{}) {
 		err = bntp.HookExecutionError{Inner: err}
 		log.Error(err)
 
@@ -153,7 +154,7 @@ func (m *DocumentContentManager) Delete(ctx context.Context, paths []string) err
 	}
 
 	err = goaoi.ForeachSlice(paths, m.Hooks.PartiallySpecializeExecuteHooksForNoPointer(ctx, bntp.AfterAnyHook|bntp.AfterDeleteHook))
-	if err != nil {
+	if !errors.As(err, &goaoi.EmptyIterableError{}) {
 		err = bntp.HookExecutionError{Inner: err}
 		log.Error(err)
 
@@ -165,7 +166,7 @@ func (m *DocumentContentManager) Delete(ctx context.Context, paths []string) err
 
 func (m *DocumentContentManager) Get(ctx context.Context, paths []string) (contents []string, err error) {
 	err = goaoi.ForeachSlice(paths, m.Hooks.PartiallySpecializeExecuteHooksForNoPointer(ctx, bntp.BeforeAnyHook|bntp.BeforeSelectHook))
-	if err != nil {
+	if !errors.As(err, &goaoi.EmptyIterableError{}) {
 		err = bntp.HookExecutionError{Inner: err}
 		log.Error(err)
 
@@ -180,7 +181,7 @@ func (m *DocumentContentManager) Get(ctx context.Context, paths []string) (conte
 	}
 
 	err = goaoi.ForeachSlice(paths, m.Hooks.PartiallySpecializeExecuteHooksForNoPointer(ctx, bntp.AfterAnyHook|bntp.AfterSelectHook))
-	if err != nil {
+	if !errors.As(err, &goaoi.EmptyIterableError{}) {
 		err = bntp.HookExecutionError{Inner: err}
 		log.Error(err)
 
@@ -195,7 +196,7 @@ func (m *DocumentContentManager) AddTags(ctx context.Context, pathTags []tuple.T
 	paths := soa.V1
 
 	err := goaoi.ForeachSlice(paths, m.Hooks.PartiallySpecializeExecuteHooksForNoPointer(ctx, bntp.BeforeAnyHook|bntp.BeforeAddHook))
-	if err != nil {
+	if !errors.As(err, &goaoi.EmptyIterableError{}) {
 		err = bntp.HookExecutionError{Inner: err}
 		log.Error(err)
 
@@ -233,7 +234,7 @@ func (m *DocumentContentManager) AddTags(ctx context.Context, pathTags []tuple.T
 	}
 
 	err = goaoi.ForeachSlice(paths, m.Hooks.PartiallySpecializeExecuteHooksForNoPointer(ctx, bntp.AfterAnyHook|bntp.AfterAddHook))
-	if err != nil {
+	if !errors.As(err, &goaoi.EmptyIterableError{}) {
 		err = bntp.HookExecutionError{Inner: err}
 		log.Error(err)
 
@@ -248,7 +249,7 @@ func (m *DocumentContentManager) RemoveTags(ctx context.Context, pathTags []tupl
 	paths := soa.V1
 
 	err := goaoi.ForeachSlice(paths, m.Hooks.PartiallySpecializeExecuteHooksForNoPointer(ctx, bntp.BeforeAnyHook|bntp.BeforeDeleteHook))
-	if err != nil {
+	if !errors.As(err, &goaoi.EmptyIterableError{}) {
 		err = bntp.HookExecutionError{Inner: err}
 		log.Error(err)
 
@@ -286,7 +287,7 @@ func (m *DocumentContentManager) RemoveTags(ctx context.Context, pathTags []tupl
 	}
 
 	err = goaoi.ForeachSlice(paths, m.Hooks.PartiallySpecializeExecuteHooksForNoPointer(ctx, bntp.AfterAnyHook|bntp.AfterDeleteHook))
-	if err != nil {
+	if !errors.As(err, &goaoi.EmptyIterableError{}) {
 		err = bntp.HookExecutionError{Inner: err}
 		log.Error(err)
 
@@ -301,7 +302,7 @@ func (m *DocumentContentManager) AddLinks(ctx context.Context, pathLinks []tuple
 	paths := soa.V1
 
 	err := goaoi.ForeachSlice(paths, m.Hooks.PartiallySpecializeExecuteHooksForNoPointer(ctx, bntp.BeforeAnyHook|bntp.BeforeAddHook))
-	if err != nil {
+	if !errors.As(err, &goaoi.EmptyIterableError{}) {
 		err = bntp.HookExecutionError{Inner: err}
 		log.Error(err)
 
@@ -339,7 +340,7 @@ func (m *DocumentContentManager) AddLinks(ctx context.Context, pathLinks []tuple
 	}
 
 	err = goaoi.ForeachSlice(paths, m.Hooks.PartiallySpecializeExecuteHooksForNoPointer(ctx, bntp.AfterAnyHook|bntp.AfterAddHook))
-	if err != nil {
+	if !errors.As(err, &goaoi.EmptyIterableError{}) {
 		err = bntp.HookExecutionError{Inner: err}
 		log.Error(err)
 
@@ -354,7 +355,7 @@ func (m *DocumentContentManager) RemoveLinks(ctx context.Context, pathLinks []tu
 	paths := soa.V1
 
 	err := goaoi.ForeachSlice(paths, m.Hooks.PartiallySpecializeExecuteHooksForNoPointer(ctx, bntp.BeforeAnyHook|bntp.BeforeDeleteHook))
-	if err != nil {
+	if !errors.As(err, &goaoi.EmptyIterableError{}) {
 		err = bntp.HookExecutionError{Inner: err}
 		log.Error(err)
 
@@ -392,7 +393,7 @@ func (m *DocumentContentManager) RemoveLinks(ctx context.Context, pathLinks []tu
 	}
 
 	err = goaoi.ForeachSlice(paths, m.Hooks.PartiallySpecializeExecuteHooksForNoPointer(ctx, bntp.AfterAnyHook|bntp.AfterDeleteHook))
-	if err != nil {
+	if !errors.As(err, &goaoi.EmptyIterableError{}) {
 		err = bntp.HookExecutionError{Inner: err}
 		log.Error(err)
 
@@ -407,7 +408,7 @@ func (m *DocumentContentManager) AddBackLinks(ctx context.Context, pathBacklinks
 	paths := soa.V1
 
 	err := goaoi.ForeachSlice(paths, m.Hooks.PartiallySpecializeExecuteHooksForNoPointer(ctx, bntp.BeforeAnyHook|bntp.BeforeAddHook))
-	if err != nil {
+	if !errors.As(err, &goaoi.EmptyIterableError{}) {
 		err = bntp.HookExecutionError{Inner: err}
 		log.Error(err)
 
@@ -445,7 +446,7 @@ func (m *DocumentContentManager) AddBackLinks(ctx context.Context, pathBacklinks
 	}
 
 	err = goaoi.ForeachSlice(paths, m.Hooks.PartiallySpecializeExecuteHooksForNoPointer(ctx, bntp.AfterAnyHook|bntp.AfterAddHook))
-	if err != nil {
+	if !errors.As(err, &goaoi.EmptyIterableError{}) {
 		err = bntp.HookExecutionError{Inner: err}
 		log.Error(err)
 
@@ -460,7 +461,7 @@ func (m *DocumentContentManager) RemoveBackLinks(ctx context.Context, pathBackli
 	paths := soa.V1
 
 	err := goaoi.ForeachSlice(paths, m.Hooks.PartiallySpecializeExecuteHooksForNoPointer(ctx, bntp.BeforeAnyHook|bntp.BeforeDeleteHook))
-	if err != nil {
+	if !errors.As(err, &goaoi.EmptyIterableError{}) {
 		err = bntp.HookExecutionError{Inner: err}
 		log.Error(err)
 
@@ -498,7 +499,7 @@ func (m *DocumentContentManager) RemoveBackLinks(ctx context.Context, pathBackli
 	}
 
 	err = goaoi.ForeachSlice(paths, m.Hooks.PartiallySpecializeExecuteHooksForNoPointer(ctx, bntp.AfterAnyHook|bntp.AfterDeleteHook))
-	if err != nil {
+	if !errors.As(err, &goaoi.EmptyIterableError{}) {
 		err = bntp.HookExecutionError{Inner: err}
 		log.Error(err)
 

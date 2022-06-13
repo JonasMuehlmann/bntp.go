@@ -236,19 +236,19 @@ func InitConfig() {
 	}
 	// ******************** Log pending messages ********************* //
 
-	helper.Logger = *helper.NewDefaultLogger(viper.GetString(LogFile), consoleLogLevel, fileLogLevel)
+	*log.StandardLogger() = *helper.NewDefaultLogger(viper.GetString(LogFile), consoleLogLevel, fileLogLevel)
 
 	for _, message := range pendingLogMessage {
-		helper.Logger.Log(message.Level, message.Msg)
+		log.StandardLogger().Log(message.Level, message.Msg)
 		if message.Level == log.FatalLevel {
-			helper.Logger.Exit(1)
+			log.Exit(1)
 		}
 	}
 
 	if PassedConfigPath != "" {
-		helper.Logger.Infof("Using config file %v", viper.ConfigFileUsed())
+		log.Infof("Using config file %v", viper.ConfigFileUsed())
 	} else {
-		helper.Logger.Info("Using internal configuration")
+		log.Info("Using internal configuration")
 	}
 }
 
@@ -381,8 +381,11 @@ func NewBackendFromConfig() *backend.Backend {
 	newBackend.DocumentManager = NewDocumentManagerFromConfig(NewDocumentRepositoryFromConfig(db))
 	newBackend.DocumentContentManager = NewDocumentContentManagerFromConfig(NewDocumentContentRepositoryFromConfig(fs))
 
-	newBackend.Marshallers["json"] = marshallers.JsonMarshaller
-	newBackend.Unmarshallers["json"] = marshallers.JsoUnmMarshaller
+	newBackend.Marshallers = make(map[string]marshallers.Marshaller)
+	newBackend.Unmarshallers = make(map[string]marshallers.Unmarshaller)
+
+	newBackend.Marshallers["json"] = new(marshallers.JsonMarshaller)
+	newBackend.Unmarshallers["json"] = new(marshallers.JsonUnmarshaller)
 
 	return newBackend
 }
