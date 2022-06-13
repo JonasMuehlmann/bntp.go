@@ -401,7 +401,9 @@ func (repo *Sqlite3TagRepository) Upsert(ctx context.Context, domainModels []*do
 	}
 
 	for _, repositoryModel := range repositoryModels {
+        
 		err = repositoryModel.Upsert(ctx, tx, false, []string{}, boil.Infer(), boil.Infer())
+        
 		if err != nil {
 			return err
 		}

@@ -415,7 +415,9 @@ func (repo *Sqlite3DocumentRepository) Upsert(ctx context.Context, domainModels 
 	}
 
 	for _, repositoryModel := range repositoryModels {
+        
 		err = repositoryModel.Upsert(ctx, tx, false, []string{}, boil.Infer(), boil.Infer())
+        
 		if err != nil {
 			return err
 		}

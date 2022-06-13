@@ -401,7 +401,9 @@ func (repo *PsqlTagRepository) Upsert(ctx context.Context, domainModels []*domai
 	}
 
 	for _, repositoryModel := range repositoryModels {
+        
 		err = repositoryModel.Upsert(ctx, tx, false, []string{}, boil.Infer(), boil.Infer())
+        
 		if err != nil {
 			return err
 		}

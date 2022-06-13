@@ -126,7 +126,11 @@ func (repo *{{$StructName}}) Upsert(ctx context.Context, domainModels []*domain.
 	}
 
 	for _, repositoryModel := range repositoryModels {
+        {{ if eq .DatabaseName "mssql" }}
+		err = repositoryModel.Upsert(ctx, tx, boil.Infer(), boil.Infer())
+        {{else}}
 		err = repositoryModel.Upsert(ctx, tx, false, []string{}, boil.Infer(), boil.Infer())
+        {{end}}
 		if err != nil {
 			return err
 		}
