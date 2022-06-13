@@ -25,13 +25,12 @@ package repository
 import (
 	"context"
 	"database/sql"
-	"strconv"
-	"strings"
-
 	"github.com/JonasMuehlmann/bntp.go/model"
 	"github.com/JonasMuehlmann/bntp.go/model/domain"
 	repoCommon "github.com/JonasMuehlmann/bntp.go/model/repository"
 	"github.com/volatiletech/null/v8"
+	"strconv"
+	"strings"
 )
 
 func BookmarkDomainToSqlRepositoryUpdater(ctx context.Context, db *sql.DB, domainUpdater *domain.BookmarkUpdater) (sqlRepositoryUpdater *BookmarkUpdater, err error) {

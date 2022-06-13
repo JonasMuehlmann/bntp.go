@@ -384,7 +384,7 @@ func (m *DocumentManager) GetAll(ctx context.Context) (records []*domain.Documen
 	return
 }
 
-func (m *DocumentManager) AddType(ctx context.Context, type_ string) error {
+func (m *DocumentManager) AddType(ctx context.Context, types []string) error {
 	documents := []*domain.Document{}
 
 	err := goaoi.ForeachSlice(documents, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.BeforeAnyHook|bntp.BeforeAddHook))
@@ -395,7 +395,7 @@ func (m *DocumentManager) AddType(ctx context.Context, type_ string) error {
 		return err
 	}
 
-	err = m.Repository.AddType(ctx, type_)
+	err = m.Repository.AddType(ctx, types)
 	if err != nil {
 		log.Error(err)
 
@@ -413,7 +413,7 @@ func (m *DocumentManager) AddType(ctx context.Context, type_ string) error {
 	return err
 }
 
-func (m *DocumentManager) DeleteType(ctx context.Context, type_ string) error {
+func (m *DocumentManager) DeleteType(ctx context.Context, types []string) error {
 	documents := []*domain.Document{}
 
 	err := goaoi.ForeachSlice(documents, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.BeforeAnyHook|bntp.BeforeDeleteHook))
@@ -424,7 +424,7 @@ func (m *DocumentManager) DeleteType(ctx context.Context, type_ string) error {
 		return err
 	}
 
-	err = m.Repository.DeleteType(ctx, type_)
+	err = m.Repository.DeleteType(ctx, types)
 	if err != nil {
 		log.Error(err)
 

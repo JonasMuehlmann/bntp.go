@@ -25,12 +25,11 @@ package repository
 import (
 	"context"
 	"database/sql"
-	"strconv"
-	"strings"
-
 	"github.com/JonasMuehlmann/bntp.go/model/domain"
 	"github.com/JonasMuehlmann/optional.go"
 	"github.com/volatiletech/null/v8"
+	"strconv"
+	"strings"
 
 	repoCommon "github.com/JonasMuehlmann/bntp.go/model/repository"
 )

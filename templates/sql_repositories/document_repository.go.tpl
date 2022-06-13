@@ -296,18 +296,23 @@ func (repo *{{$StructName}}) GetAll(ctx context.Context) ([]*domain.Document, er
     return domainModels, err
 }
 
-func (repo *{{$StructName}}) AddType(ctx context.Context, type_ string) error {
-    repositoryModel := DocumentType{DocumentType: type_}
+func (repo *{{$StructName}}) AddType(ctx context.Context, types []string) error {
+    for _, type_ := range types {
+        repositoryModel := DocumentType{DocumentType: type_}
 
-    return repositoryModel.Insert(ctx, repo.db, boil.Infer())
+        err := repositoryModel.Insert(ctx, repo.db, boil.Infer())
+        if err != nil {
+            return err
+        }
+    }
+
+    return nil
 }
 
-func (repo *{{$StructName}}) DeleteType(ctx context.Context, type_ string) error {
-    repositoryModel := DocumentType{DocumentType: type_}
+func (repo *{{$StructName}}) DeleteType(ctx context.Context, types []string) error {
+    _, err := DocumentTypes(BookmarkTypeWhere.Type.IN(types)).DeleteAll(ctx, repo.db)
 
-    _, err := repositoryModel.Delete(ctx, repo.db)
-
-    return err
+	return err
 }
 
 func (repo *{{$StructName}}) UpdateType(ctx context.Context, oldType string, newType string) error {

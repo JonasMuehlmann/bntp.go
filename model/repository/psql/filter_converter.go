@@ -25,14 +25,13 @@ package repository
 import (
 	"context"
 	"database/sql"
-	"strconv"
-	"time"
-
 	"github.com/JonasMuehlmann/bntp.go/model"
 	"github.com/JonasMuehlmann/bntp.go/model/domain"
 	repoCommon "github.com/JonasMuehlmann/bntp.go/model/repository"
 	"github.com/JonasMuehlmann/optional.go"
 	"github.com/volatiletech/null/v8"
+	"strconv"
+	"time"
 )
 
 func BookmarkDomainToSqlRepositoryFilter(ctx context.Context, db *sql.DB, domainFilter *domain.BookmarkFilter) (sqlRepositoryFilter *BookmarkFilter, err error) {

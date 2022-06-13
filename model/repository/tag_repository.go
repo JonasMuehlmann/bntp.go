@@ -24,7 +24,6 @@ package repository
 
 import (
 	"context"
-
 	"github.com/JonasMuehlmann/bntp.go/model/domain"
 )
 

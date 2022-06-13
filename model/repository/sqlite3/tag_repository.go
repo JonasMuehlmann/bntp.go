@@ -27,7 +27,6 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-
 	"github.com/JonasMuehlmann/bntp.go/model"
 	"github.com/JonasMuehlmann/bntp.go/model/domain"
 	repositoryCommon "github.com/JonasMuehlmann/bntp.go/model/repository"
@@ -45,25 +44,25 @@ type Sqlite3TagRepository struct {
 type TagField string
 
 var TagFields = struct {
-	ID        TagField
 	Tag       TagField
-	ParentTag TagField
 	Path      TagField
 	Children  TagField
+	ParentTag TagField
+	ID        TagField
 }{
-	ID:        "id",
 	Tag:       "tag",
-	ParentTag: "parent_tag",
 	Path:      "path",
 	Children:  "children",
+	ParentTag: "parent_tag",
+	ID:        "id",
 }
 
 var TagFieldsList = []TagField{
-	TagField("ID"),
 	TagField("Tag"),
-	TagField("ParentTag"),
 	TagField("Path"),
 	TagField("Children"),
+	TagField("ParentTag"),
+	TagField("ID"),
 }
 
 var TagRelationsList = []string{
@@ -74,11 +73,11 @@ var TagRelationsList = []string{
 }
 
 type TagFilter struct {
-	ID        optional.Optional[model.FilterOperation[int64]]
 	Tag       optional.Optional[model.FilterOperation[string]]
-	ParentTag optional.Optional[model.FilterOperation[null.Int64]]
 	Path      optional.Optional[model.FilterOperation[string]]
 	Children  optional.Optional[model.FilterOperation[string]]
+	ParentTag optional.Optional[model.FilterOperation[null.Int64]]
+	ID        optional.Optional[model.FilterOperation[int64]]
 
 	ParentTagTag  optional.Optional[model.FilterOperation[*Tag]]
 	Bookmarks     optional.Optional[model.FilterOperation[*Bookmark]]
@@ -94,14 +93,8 @@ type TagFilterMapping[T any] struct {
 func (filter *TagFilter) GetSetFilters() *list.List {
 	setFilters := list.New()
 
-	if filter.ID.HasValue {
-		setFilters.PushBack(TagFilterMapping[int64]{Field: TagFields.ID, FilterOperation: filter.ID.Wrappee})
-	}
 	if filter.Tag.HasValue {
 		setFilters.PushBack(TagFilterMapping[string]{Field: TagFields.Tag, FilterOperation: filter.Tag.Wrappee})
-	}
-	if filter.ParentTag.HasValue {
-		setFilters.PushBack(TagFilterMapping[null.Int64]{Field: TagFields.ParentTag, FilterOperation: filter.ParentTag.Wrappee})
 	}
 	if filter.Path.HasValue {
 		setFilters.PushBack(TagFilterMapping[string]{Field: TagFields.Path, FilterOperation: filter.Path.Wrappee})
@@ -109,20 +102,27 @@ func (filter *TagFilter) GetSetFilters() *list.List {
 	if filter.Children.HasValue {
 		setFilters.PushBack(TagFilterMapping[string]{Field: TagFields.Children, FilterOperation: filter.Children.Wrappee})
 	}
+	if filter.ParentTag.HasValue {
+		setFilters.PushBack(TagFilterMapping[null.Int64]{Field: TagFields.ParentTag, FilterOperation: filter.ParentTag.Wrappee})
+	}
+	if filter.ID.HasValue {
+		setFilters.PushBack(TagFilterMapping[int64]{Field: TagFields.ID, FilterOperation: filter.ID.Wrappee})
+	}
 
 	return setFilters
 }
 
 type TagUpdater struct {
+	Tag       optional.Optional[model.UpdateOperation[string]]
+	Path      optional.Optional[model.UpdateOperation[string]]
+	Children  optional.Optional[model.UpdateOperation[string]]
+	ParentTag optional.Optional[model.UpdateOperation[null.Int64]]
+	ID        optional.Optional[model.UpdateOperation[int64]]
+
 	ParentTagTag  optional.Optional[model.UpdateOperation[*Tag]]
-	Tag           optional.Optional[model.UpdateOperation[string]]
-	Path          optional.Optional[model.UpdateOperation[string]]
-	Children      optional.Optional[model.UpdateOperation[string]]
 	Bookmarks     optional.Optional[model.UpdateOperation[BookmarkSlice]]
-	ParentTagTags optional.Optional[model.UpdateOperation[TagSlice]]
 	Documents     optional.Optional[model.UpdateOperation[DocumentSlice]]
-	ParentTag     optional.Optional[model.UpdateOperation[null.Int64]]
-	ID            optional.Optional[model.UpdateOperation[int64]]
+	ParentTagTags optional.Optional[model.UpdateOperation[TagSlice]]
 }
 
 type TagUpdaterMapping[T any] struct {
@@ -133,14 +133,8 @@ type TagUpdaterMapping[T any] struct {
 func (updater *TagUpdater) GetSetUpdaters() *list.List {
 	setUpdaters := list.New()
 
-	if updater.ID.HasValue {
-		setUpdaters.PushBack(TagUpdaterMapping[int64]{Field: TagFields.ID, Updater: updater.ID.Wrappee})
-	}
 	if updater.Tag.HasValue {
 		setUpdaters.PushBack(TagUpdaterMapping[string]{Field: TagFields.Tag, Updater: updater.Tag.Wrappee})
-	}
-	if updater.ParentTag.HasValue {
-		setUpdaters.PushBack(TagUpdaterMapping[null.Int64]{Field: TagFields.ParentTag, Updater: updater.ParentTag.Wrappee})
 	}
 	if updater.Path.HasValue {
 		setUpdaters.PushBack(TagUpdaterMapping[string]{Field: TagFields.Path, Updater: updater.Path.Wrappee})
@@ -148,25 +142,31 @@ func (updater *TagUpdater) GetSetUpdaters() *list.List {
 	if updater.Children.HasValue {
 		setUpdaters.PushBack(TagUpdaterMapping[string]{Field: TagFields.Children, Updater: updater.Children.Wrappee})
 	}
+	if updater.ParentTag.HasValue {
+		setUpdaters.PushBack(TagUpdaterMapping[null.Int64]{Field: TagFields.ParentTag, Updater: updater.ParentTag.Wrappee})
+	}
+	if updater.ID.HasValue {
+		setUpdaters.PushBack(TagUpdaterMapping[int64]{Field: TagFields.ID, Updater: updater.ID.Wrappee})
+	}
 
 	return setUpdaters
 }
 
 func (updater *TagUpdater) ApplyToModel(tagModel *Tag) {
-	if updater.ID.HasValue {
-		model.ApplyUpdater(&(*tagModel).ID, updater.ID.Wrappee)
-	}
 	if updater.Tag.HasValue {
 		model.ApplyUpdater(&(*tagModel).Tag, updater.Tag.Wrappee)
-	}
-	if updater.ParentTag.HasValue {
-		model.ApplyUpdater(&(*tagModel).ParentTag, updater.ParentTag.Wrappee)
 	}
 	if updater.Path.HasValue {
 		model.ApplyUpdater(&(*tagModel).Path, updater.Path.Wrappee)
 	}
 	if updater.Children.HasValue {
 		model.ApplyUpdater(&(*tagModel).Children, updater.Children.Wrappee)
+	}
+	if updater.ParentTag.HasValue {
+		model.ApplyUpdater(&(*tagModel).ParentTag, updater.ParentTag.Wrappee)
+	}
+	if updater.ID.HasValue {
+		model.ApplyUpdater(&(*tagModel).ID, updater.ID.Wrappee)
 	}
 
 }

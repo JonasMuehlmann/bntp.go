@@ -43,8 +43,8 @@ type {{.EntityName}}Repository interface {
 	GetFirstWhere(ctx context.Context, columnFilter *domain.{{.EntityName}}Filter) (record *domain.{{.EntityName}}, err error)
 	GetAll(ctx context.Context) (records []*domain.{{.EntityName}}, err error)
     {{if or (eq .EntityName "Bookmark") (eq .EntityName "Document")}}
-    AddType(ctx context.Context, type_ string) error
-    DeleteType(ctx context.Context, type_ string) error
+    AddType(ctx context.Context, types  []string) error
+    DeleteType(ctx context.Context, types  []string) error
     UpdateType(ctx context.Context, oldType string, newType string) error
     {{end}}
 }

@@ -432,4 +432,6 @@ func init() {
 			subcommand.PersistentFlags().StringVar(&FilterRaw, "updater", "", "The updater to use for processing entities")
 		}
 	}
+
+	// TODO: Add flag to not update document content, because they already were added through an editor
 }

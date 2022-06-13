@@ -387,7 +387,7 @@ func (m *BookmarkManager) GetAll(ctx context.Context) (records []*domain.Bookmar
 	return
 }
 
-func (m *BookmarkManager) AddType(ctx context.Context, type_ string) error {
+func (m *BookmarkManager) AddType(ctx context.Context, types []string) error {
 	bookmarks := []*domain.Bookmark{}
 
 	err := goaoi.ForeachSlice(bookmarks, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.BeforeAnyHook|bntp.BeforeAddHook))
@@ -398,7 +398,7 @@ func (m *BookmarkManager) AddType(ctx context.Context, type_ string) error {
 		return err
 	}
 
-	err = m.Repository.AddType(ctx, type_)
+	err = m.Repository.AddType(ctx, types)
 	if err != nil {
 		log.Error(err)
 
@@ -416,7 +416,7 @@ func (m *BookmarkManager) AddType(ctx context.Context, type_ string) error {
 	return err
 }
 
-func (m *BookmarkManager) DeleteType(ctx context.Context, type_ string) error {
+func (m *BookmarkManager) DeleteType(ctx context.Context, types []string) error {
 	bookmarks := []*domain.Bookmark{}
 
 	err := goaoi.ForeachSlice(bookmarks, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.BeforeAnyHook|bntp.BeforeDeleteHook))
@@ -427,7 +427,7 @@ func (m *BookmarkManager) DeleteType(ctx context.Context, type_ string) error {
 		return err
 	}
 
-	err = m.Repository.DeleteType(ctx, type_)
+	err = m.Repository.DeleteType(ctx, types)
 	if err != nil {
 		log.Error(err)
 
