@@ -156,7 +156,6 @@ var bookmarkEditCmd = &cobra.Command{
 		if err != nil {
 			panic(err)
 		}
-		// TODO: We should also have Update and Upsert methods in the managers and repositories
 		if FilterRaw == "" {
 			err := BNTPBackend.BookmarkManager.Update(context.Background(), bookmarks, updater)
 			if err != nil {
@@ -180,7 +179,6 @@ var bookmarkEditCmd = &cobra.Command{
 	},
 }
 
-// TODO: Implement output filters
 var bookmarkListCmd = &cobra.Command{
 	Use:   "list",
 	Short: "List bntp bookmarks",
