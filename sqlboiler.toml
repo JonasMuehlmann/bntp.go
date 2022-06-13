@@ -1,0 +1,31 @@
+wipe = true
+add-soft-delete = true
+pkgname = "repository"
+
+[auto-columns]
+created = "createdAt"
+updated = "updatedAt"
+
+[sqlite3]
+dbname = "bntp_test.db"
+
+[mysql]
+dbname  = "bntp_test"
+host    = "localhost"
+user    = "root"
+pass    = "root"
+sslmode = "false"
+
+[psql]
+dbname = "bntp_test"
+host   = "localhost"
+user   = "postgres"
+schema = "public"
+sslmode = "disable"
+
+[mssql]
+dbname  = "bntp_test"
+host    = "localhost"
+user    = "SA"
+pass    = "jdksjds6dsads8a97d!"
+sslmode = "disable"

@@ -1,0 +1,93 @@
+name: Code generation
+
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches:  [main]
+
+
+
+jobs:
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0  # OR "2" -> To retrieve the preceding commit.
+       
+    - name: Check if models need to be regenerated
+      id: changed-files-specific
+      uses: tj-actions/changed-files@v18.7
+      with:
+          since_last_remote_commit: true
+          files: |
+           create_db_models.sh
+           sqlboiler.toml
+           tools/schema_converter/*
+           schema/*
+
+    - name: Set up Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: 1.18
+
+    - name: Set up databases
+      if: steps.changed-files-specific.outputs.any_changed == 'true'
+      run:  |
+        # Convert schemas
+         go run ./tools/schema_converter
+         
+
+        # Install/start databases
+        sudo systemctl start postgresql.service
+        sudo systemctl start mysql.service
+        sudo docker pull mcr.microsoft.com/mssql/server:2019-latest
+        
+        sudo docker run -e "ACCEPT_EULA=Y" -e 'SA_PASSWORD=jdksjds6dsads8a97d!' \
+        -p 1433:1433 --name sql1 --hostname sql1 \
+        -d mcr.microsoft.com/mssql/server:2019-latest
+        
+        sleep 5
+        
+        # Import schema
+        sqlcmd -H sql1 -U SA -P 'jdksjds6dsads8a97d!' -Q "CREATE DATABASE bntp_test"    
+        sqlcmd -H sql1 -U SA -P 'jdksjds6dsads8a97d!' -d bntp_test -i "schema/bntp_sqlserver.sql"
+        
+        mysql -u root -proot -e "CREATE DATABASE bntp_test"
+        mysql -u root -proot -D bntp_test < schema/bntp_mysql.sql
+         
+        sudo -u postgres psql -c 'create database bntp_test;'
+        sudo -u postgres psql -d bntp_test -a -f schema/bntp_postgres.sql
+        sudo sed -i 's/peer/trust/g' $(sudo -u postgres psql -c 'show hba_file' 2> /dev/null | grep pg_hba)
+        sudo sed -i 's/scram-sha-256/trust/g' $(sudo -u postgres psql -c 'show hba_file' 2> /dev/null | grep pg_hba)
+        # sudo cat $(sudo -u postgres psql -c 'show hba_file' 2> /dev/null | grep pg_hba)
+        sudo systemctl restart postgresql.service
+        
+        sqlite3 bntp_test.db < schema/bntp_sqlite.sql
+        
+    - name: Update SQLboiler models
+      if: steps.changed-files-specific.outputs.any_changed == 'true'
+      run: ./create_db_models.sh
+    - uses: stefanzweifel/git-auto-commit-action@v4
+      with:
+        file_pattern: ./model/repository/* ./schema/*
+
+    - name: Run code generator
+      run: |
+         shopt -s globstar
+         go install golang.org/x/tools/go/analysis/passes/fieldalignment/cmd/fieldalignment@latest
+         go install golang.org/x/tools/cmd/goimports@latest
+         
+         cp schema/bntp_sqlite.sql test/bntp.sql
+         go generate ./...
+         
+         goimports -w ./**/*.go
+         fieldalignment -fix ./bntp/... ./model/... || true
+         gofmt -w ./**/*.go
+         
+    - uses: stefanzweifel/git-auto-commit-action@v4
+      with:
+        file_pattern: ./internal/** ./bntp/** ./model/**
