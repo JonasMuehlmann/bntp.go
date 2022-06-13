@@ -328,7 +328,7 @@ func NewDocumentContentRepositoryFromConfig(fs afero.Fs) repository.DocumentCont
 // TODO: Implement proper  hook parsing
 //********************    Manager builders    ********************//
 func NewBookmarkManagerFromConfig(repo repository.BookmarkRepository) libbookmarks.BookmarkManager {
-	hooks := new(bntp.Hooks[domain.Bookmark])
+	hooks := bntp.NewHooks[domain.Bookmark]()
 
 	bookmarkManager, err := libbookmarks.NewBookmarkManager(hooks, repo)
 	if err != nil {

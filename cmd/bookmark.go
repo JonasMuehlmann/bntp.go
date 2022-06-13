@@ -55,10 +55,12 @@ var bookmarkAddCmd = &cobra.Command{
 			os.Exit(0)
 		}
 
-		bookmarks := make([]*domain.Bookmark, 0, len(args))
+		bookmarks := make([]*domain.Bookmark, len(args))
 
-		for i, bookmarkOut := range bookmarks {
-			err := BNTPBackend.Unmarshallers[Format].Unmarshall(bookmarkOut, args[i])
+		for i, arg := range args {
+			bookmarks[i] = new(domain.Bookmark)
+
+			err := BNTPBackend.Unmarshallers[Format].Unmarshall(bookmarks[i], arg)
 			if err != nil {
 				panic(err)
 			}

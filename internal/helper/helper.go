@@ -38,7 +38,7 @@ func NewDefaultLogger(logFile string, consoleLogLevel log.Level, fileLogLevel lo
 	callerPrettyfier := func(f *runtime.Frame) (string, string) {
 		filename := path.Base(f.File)
 
-		return fmt.Sprintf("%s()", path.Base(f.Function)), fmt.Sprintf("%s:%d", filename, f.Line)
+		return fmt.Sprintf("in function %s()", path.Base(f.Function)), fmt.Sprintf("%s:%d", filename, f.Line)
 	}
 
 	formatter := &log.TextFormatter{

@@ -55,7 +55,7 @@ func RemoveTags(ctx context.Context, content string, tags []string) (string, err
 	unary_predicate := func(tag string) bool {
 		_, err := goaoi.FindSlice(tags, tag)
 
-		return !errors.As(err, &goaoi.ElementNotFoundError{})
+		return err != nil && !errors.As(err, &goaoi.ElementNotFoundError{})
 	}
 
 	lineTags, err = goaoi.CopyExceptIfSlice(lineTags, unary_predicate)
@@ -127,7 +127,7 @@ func RemoveLinks(ctx context.Context, content string, links []string) (string, e
 	unary_predicate = func(link string) bool {
 		_, err := goaoi.FindSlice(linksLinesToRemove, link)
 
-		return !errors.As(err, &goaoi.ElementNotFoundError{})
+		return err != nil && !errors.As(err, &goaoi.ElementNotFoundError{})
 	}
 
 	newLinksLines, err := goaoi.CopyExceptIfSlice(links[iLinksLinesStart:iLinksLinesEnd], unary_predicate)
@@ -199,7 +199,7 @@ func RemoveBacklinks(ctx context.Context, content string, backlinks []string) (s
 	unary_predicate = func(link string) bool {
 		_, err := goaoi.FindSlice(linksLinesToRemove, link)
 
-		return !errors.As(err, &goaoi.ElementNotFoundError{})
+		return err != nil && !errors.As(err, &goaoi.ElementNotFoundError{})
 	}
 
 	newBacklinksLines, err := goaoi.CopyExceptIfSlice(backlinks[iBacklinksLinesStart:iBacklinksLinesEnd], unary_predicate)
