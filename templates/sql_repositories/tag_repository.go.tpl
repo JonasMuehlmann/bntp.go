@@ -113,6 +113,28 @@ func (repo *{{$StructName}}) Replace(ctx context.Context, domainModels []*domain
 
     return nil
 }
+func (repo *{{$StructName}}) Upsert(ctx context.Context, domainModels []*domain.Tag) error {
+    repositoryModels, err := goaoi.TransformCopySlice(domainModels, GetTagDomainToSqlRepositoryModel(ctx, repo.db))
+	if err != nil {
+		return err
+	}
+
+	tx, err := repo.db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+
+	for _, repositoryModel := range repositoryModels {
+		err = repositoryModel.Upsert(ctx, tx, false, []string{}, boil.Infer(), boil.Infer())
+		if err != nil {
+			return err
+		}
+	}
+
+	tx.Commit()
+
+    return nil
+}
 
 func (repo *{{$StructName}}) UpdateWhere(ctx context.Context, domainColumnFilter *domain.TagFilter, domainColumnUpdater *domain.TagUpdater) (numAffectedRecords int64, err error) {
 	var modelsToUpdate TagSlice

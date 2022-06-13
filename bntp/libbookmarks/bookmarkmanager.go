@@ -99,6 +99,33 @@ func (m *BookmarkManager) Replace(ctx context.Context, bookmarks []*domain.Bookm
 	return err
 }
 
+func (m *BookmarkManager) Upsert(ctx context.Context, bookmarks []*domain.Bookmark) error {
+	err := goaoi.ForeachSlice(bookmarks, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.BeforeAnyHook|bntp.BeforeUpdateHook))
+	if err != nil {
+		err = bntp.HookExecutionError{Inner: err}
+		log.Error(err)
+
+		return err
+	}
+
+	err = m.Repository.Upsert(ctx, bookmarks)
+	if err != nil {
+		log.Error(err)
+
+		return err
+	}
+
+	err = goaoi.ForeachSlice(bookmarks, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.AfterAnyHook|bntp.AfterUpdateHook))
+	if err != nil {
+		err = bntp.HookExecutionError{Inner: err}
+		log.Error(err)
+
+		return err
+	}
+
+	return err
+}
+
 func (m *BookmarkManager) UpdateWhere(ctx context.Context, bookmarkFilter *domain.BookmarkFilter, bookmarkUpdater *domain.BookmarkUpdater) (numAffectedRecords int64, err error) {
 	bookmarks := []*domain.Bookmark{}
 

@@ -23,7 +23,7 @@
 package repository
 
 import (
-	"context"
+    "context"
 	"github.com/JonasMuehlmann/bntp.go/model/domain"
 )
 
@@ -32,6 +32,7 @@ type BookmarkRepository interface {
 
 	Add(ctx context.Context, domainModels []*domain.Bookmark) error
 	Replace(ctx context.Context, domainModels []*domain.Bookmark) error
+	Upsert(ctx context.Context, domainModels []*domain.Bookmark) error
 	UpdateWhere(ctx context.Context, columnFilter *domain.BookmarkFilter, columnUpdaters *domain.BookmarkUpdater) (numAffectedRecords int64, err error)
 	Delete(ctx context.Context, domainModels []*domain.Bookmark) error
 	DeleteWhere(ctx context.Context, columnFilter *domain.BookmarkFilter) (numAffectedRecords int64, err error)
@@ -42,8 +43,9 @@ type BookmarkRepository interface {
 	GetWhere(ctx context.Context, columnFilter *domain.BookmarkFilter) (records []*domain.Bookmark, err error)
 	GetFirstWhere(ctx context.Context, columnFilter *domain.BookmarkFilter) (record *domain.Bookmark, err error)
 	GetAll(ctx context.Context) (records []*domain.Bookmark, err error)
-
-	AddType(ctx context.Context, types []string) error
-	DeleteType(ctx context.Context, types []string) error
-	UpdateType(ctx context.Context, oldType string, newType string) error
+    
+    AddType(ctx context.Context, types  []string) error
+    DeleteType(ctx context.Context, types  []string) error
+    UpdateType(ctx context.Context, oldType string, newType string) error
+    
 }

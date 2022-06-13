@@ -23,7 +23,7 @@
 package repository
 
 import (
-	"context"
+    "context"
 	"github.com/JonasMuehlmann/bntp.go/model/domain"
 )
 
@@ -32,6 +32,7 @@ type DocumentRepository interface {
 
 	Add(ctx context.Context, domainModels []*domain.Document) error
 	Replace(ctx context.Context, domainModels []*domain.Document) error
+	Upsert(ctx context.Context, domainModels []*domain.Document) error
 	UpdateWhere(ctx context.Context, columnFilter *domain.DocumentFilter, columnUpdaters *domain.DocumentUpdater) (numAffectedRecords int64, err error)
 	Delete(ctx context.Context, domainModels []*domain.Document) error
 	DeleteWhere(ctx context.Context, columnFilter *domain.DocumentFilter) (numAffectedRecords int64, err error)
@@ -42,8 +43,9 @@ type DocumentRepository interface {
 	GetWhere(ctx context.Context, columnFilter *domain.DocumentFilter) (records []*domain.Document, err error)
 	GetFirstWhere(ctx context.Context, columnFilter *domain.DocumentFilter) (record *domain.Document, err error)
 	GetAll(ctx context.Context) (records []*domain.Document, err error)
-
-	AddType(ctx context.Context, types []string) error
-	DeleteType(ctx context.Context, types []string) error
-	UpdateType(ctx context.Context, oldType string, newType string) error
+    
+    AddType(ctx context.Context, types  []string) error
+    DeleteType(ctx context.Context, types  []string) error
+    UpdateType(ctx context.Context, oldType string, newType string) error
+    
 }

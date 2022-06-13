@@ -32,6 +32,7 @@ type {{.EntityName}}Repository interface {
 
 	Add(ctx context.Context, domainModels []*domain.{{.EntityName}}) error
 	Replace(ctx context.Context, domainModels []*domain.{{.EntityName}}) error
+	Upsert(ctx context.Context, domainModels []*domain.{{.EntityName}}) error
 	UpdateWhere(ctx context.Context, columnFilter *domain.{{.EntityName}}Filter, columnUpdaters *domain.{{.EntityName}}Updater) (numAffectedRecords int64, err error)
 	Delete(ctx context.Context, domainModels []*domain.{{.EntityName}}) error
 	DeleteWhere(ctx context.Context, columnFilter *domain.{{.EntityName}}Filter) (numAffectedRecords int64, err error)
