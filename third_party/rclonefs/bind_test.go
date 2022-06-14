@@ -2,11 +2,10 @@ package rclonefs
 
 import (
 	"fmt"
-	"github.com/spf13/afero"
 	"os"
-	"os/user"
-	"path/filepath"
 	"testing"
+
+	"github.com/spf13/afero"
 )
 
 func walkPrintFn(path string, info os.FileInfo, err error) error {
@@ -22,9 +21,8 @@ func walkPrintFn(path string, info os.FileInfo, err error) error {
 }
 
 func TestNewRCloneFs(t *testing.T) {
-	usr, _ := user.Current()
-	_ = SetConfigPath(filepath.Join(usr.HomeDir, ".config/rclone/rclone.conf"))
-	fs := NewRCloneFs("ibm")
+	_ = SetConfigPath("test.conf")
+	fs := NewRCloneFs("memory")
 
 	_ = afero.Walk(fs, "/", walkPrintFn)
 }
