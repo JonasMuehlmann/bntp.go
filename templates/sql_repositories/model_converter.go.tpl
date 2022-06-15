@@ -40,6 +40,7 @@ import (
 
 func BookmarkDomainToSqlRepositoryModel(ctx context.Context, db *sql.DB, domainModel *domain.{{.Entities.Bookmark}}) ( sqlRepositoryModel *{{.Entities.Bookmark}}, err error)  {
     sqlRepositoryModel = new({{.Entities.Bookmark}})
+    sqlRepositoryModel.R = sqlRepositoryModel.R.NewStruct()
 
     sqlRepositoryModel.URL = domainModel.URL
     sqlRepositoryModel.ID = domainModel.ID
@@ -90,22 +91,24 @@ func BookmarkDomainToSqlRepositoryModel(ctx context.Context, db *sql.DB, domainM
     //*************************    Set Tags    *************************//
     var repositoryTag *Tag
 
-    sqlRepositoryModel.R.Tags = make(TagSlice, 0, len(domainModel.Tags))
-	for _,  domainTag := range domainModel.Tags {
-		repositoryTag, err = Tags(TagWhere.Tag.EQ(domainTag.Tag)).One(ctx, db)
-		if err != nil {
-			return
-		}
+    if domainModel.Tags != nil {
+        sqlRepositoryModel.R.Tags = make(TagSlice, 0, len(domainModel.Tags))
+        for _,  domainTag := range domainModel.Tags {
+            repositoryTag, err = Tags(TagWhere.Tag.EQ(domainTag.Tag)).One(ctx, db)
+            if err != nil {
+                return
+            }
 
-        sqlRepositoryModel.R.Tags = append(sqlRepositoryModel.R.Tags, &Tag{Tag: repositoryTag.Tag, ID: repositoryTag.ID})
-	}
+            sqlRepositoryModel.R.Tags = append(sqlRepositoryModel.R.Tags, &Tag{Tag: repositoryTag.Tag, ID: repositoryTag.ID})
+        }
+    }
 
 
     //*************************    Set Type    *************************//
 	if domainModel.BookmarkType.HasValue {
         var repositoryBookmarkType *BookmarkType
 
-		sqlRepositoryModel.R.BookmarkType.Type = domainModel.BookmarkType.Wrappee
+        sqlRepositoryModel.R.BookmarkType = &BookmarkType{Type: domainModel.BookmarkType.Wrappee}
 		repositoryBookmarkType, err = BookmarkTypes(BookmarkTypeWhere.Type.EQ(domainModel.BookmarkType.Wrappee)).One(ctx, db)
 		if err != nil {
 			return
@@ -127,7 +130,15 @@ func BookmarkSqlRepositoryToDomainModel(ctx context.Context, db *sql.DB, sqlRepo
 
     domainModel.URL = sqlRepositoryModel.URL
     domainModel.ID = sqlRepositoryModel.ID
-	domainModel.BookmarkType = optional.Make(sqlRepositoryModel.R.BookmarkType.Type)
+    {{/* TODO: Handle slices being nil and containing nil values */}}
+
+    if sqlRepositoryModel.R == nil {
+        sqlRepositoryModel.R = sqlRepositoryModel.R.NewStruct()
+    }
+
+    if sqlRepositoryModel.R.BookmarkType != nil {
+        domainModel.BookmarkType = optional.Make(sqlRepositoryModel.R.BookmarkType.Type)
+    }
 
     //**********************    Set Timestamps    **********************//
     {{ if eq .DatabaseName "sqlite3"}}
@@ -187,6 +198,7 @@ func BookmarkSqlRepositoryToDomainModel(ctx context.Context, db *sql.DB, sqlRepo
 
 func DocumentDomainToSqlRepositoryModel(ctx context.Context, db *sql.DB, domainModel *domain.{{.Entities.Document}}) (sqlRepositoryModel *{{.Entities.Document}}, err error)  {
     sqlRepositoryModel = new({{.Entities.Document}})
+    sqlRepositoryModel.R = sqlRepositoryModel.R.NewStruct()
 
     sqlRepositoryModel.Path = domainModel.Path
     sqlRepositoryModel.ID = domainModel.ID
@@ -233,7 +245,7 @@ func DocumentDomainToSqlRepositoryModel(ctx context.Context, db *sql.DB, domainM
     var repositoryDocumentType *DocumentType
 
 	if domainModel.DocumentType.HasValue {
-		sqlRepositoryModel.R.DocumentType.DocumentType = domainModel.DocumentType.Wrappee
+        sqlRepositoryModel.R.DocumentType = &DocumentType{DocumentType: domainModel.DocumentType.Wrappee}
 		repositoryDocumentType, err = DocumentTypes(DocumentTypeWhere.DocumentType.EQ(domainModel.DocumentType.Wrappee)).One(ctx, db)
 		if err != nil {
 			return
@@ -280,7 +292,14 @@ func DocumentSqlRepositoryToDomainModel(ctx context.Context, db *sql.DB, sqlRepo
 
     domainModel.Path = sqlRepositoryModel.Path
     domainModel.ID = sqlRepositoryModel.ID
-	domainModel.DocumentType = optional.Make(sqlRepositoryModel.R.DocumentType.DocumentType)
+
+    if sqlRepositoryModel.R == nil {
+        sqlRepositoryModel.R = sqlRepositoryModel.R.NewStruct()
+    }
+
+    if sqlRepositoryModel.R.DocumentType != nil {
+        domainModel.DocumentType = optional.Make(sqlRepositoryModel.R.DocumentType.DocumentType)
+    }
 
     //**********************    Set Timestamps    **********************//
     {{ if eq .DatabaseName "sqlite3"}}
@@ -356,6 +375,7 @@ func DocumentSqlRepositoryToDomainModel(ctx context.Context, db *sql.DB, sqlRepo
 func TagDomainToSqlRepositoryModel(ctx context.Context, db *sql.DB, domainModel *domain.{{.Entities.Tag}}) (sqlRepositoryModel *{{.Entities.Tag}}, err error)  {
 // TODO: make sure to insert all tags in ParentPath and Subtags into db
     sqlRepositoryModel = new({{.Entities.Tag}})
+    sqlRepositoryModel.R = sqlRepositoryModel.R.NewStruct()
 
     sqlRepositoryModel.ID = domainModel.ID
     sqlRepositoryModel.Tag = domainModel.Tag
