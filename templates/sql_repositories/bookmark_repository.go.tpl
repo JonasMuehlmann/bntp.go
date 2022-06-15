@@ -58,6 +58,7 @@ func GetBookmarkSqlRepositoryToDomainModel(ctx context.Context, db *sql.DB) func
 
 type {{$StructName}}ConstructorArgs struct {
     DB *sql.DB
+    TagRepository repositoryCommon.TagRepository
 }
 
 func (repo *{{$StructName}}) New(args any) (repositoryCommon.BookmarkRepository, error) {
@@ -67,6 +68,7 @@ func (repo *{{$StructName}}) New(args any) (repositoryCommon.BookmarkRepository,
     }
 
     repo.db = constructorArgs.DB
+    repo.tagRepository = constructorArgs.TagRepository
 
     return repo, nil
 }

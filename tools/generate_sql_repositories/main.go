@@ -77,6 +77,9 @@ var structNameVarTemplaterFragment = `{{$StructName := print (UppercaseBeginning
 
 var structDefinition = `type {{UppercaseBeginning .DatabaseName}}{{UppercaseBeginning .EntityName}}Repository struct {
     db *sql.DB
+    {{ if ne .EntityName "Tag" }}
+    tagRepository repositoryCommon.TagRepository
+    {{ end }}
 }`
 
 var repositoryHelperTypesFragment = structNameVarTemplaterFragment + `

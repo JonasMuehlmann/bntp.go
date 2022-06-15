@@ -58,6 +58,7 @@ func GetDocumentSqlRepositoryToDomainModel(ctx context.Context, db *sql.DB) func
 
 type {{$StructName}}ConstructorArgs struct {
     DB *sql.DB
+    TagRepository repositoryCommon.TagRepository
 }
 
 func (repo *{{$StructName}}) New(args any) (repositoryCommon.DocumentRepository, error) {
@@ -67,6 +68,7 @@ func (repo *{{$StructName}}) New(args any) (repositoryCommon.DocumentRepository,
     }
 
     repo.db = constructorArgs.DB
+    repo.tagRepository = constructorArgs.TagRepository
 
     return repo, nil
 }

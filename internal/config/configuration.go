@@ -84,6 +84,10 @@ func GetDefaultDBConfig() DBConfig {
 }
 
 func GetDefaultSettings() map[string]any {
+	defaultTagRepository := TagsRepositoryConfig{
+		DB: GetDefaultDBConfig(),
+	}
+
 	return map[string]any{
 		LogFile:         path.Join(ConfigDir, "bntp.log"),
 		ConsoleLogLevel: log.ErrorLevel.String(),
@@ -92,17 +96,17 @@ func GetDefaultSettings() map[string]any {
 		Backend: BackendConfig{
 			Bookmarkmanager: BookmarkManagerConfig{
 				BookmarkRepository: BookmarkRepositoryConfig{
-					DB: GetDefaultDBConfig(),
+					DB:            GetDefaultDBConfig(),
+					TagRepository: defaultTagRepository,
 				},
 			},
 			TagsManager: TagsManagerConfig{
-				TagsRepository: TagsRepositoryConfig{
-					DB: GetDefaultDBConfig(),
-				},
+				TagsRepository: defaultTagRepository,
 			},
 			DocumentManager: DocumentManagerConfig{
 				DocumentRepository: DocumentRepositoryConfig{
-					DB: GetDefaultDBConfig(),
+					DB:            GetDefaultDBConfig(),
+					TagRepository: defaultTagRepository,
 				},
 			},
 			DocumentContentManager: DocumentContentManagerConfig{
@@ -273,10 +277,10 @@ func NewDBFromConfig() *sql.DB {
 
 //********************    Repository builders    ********************//
 // TODO: Allow using non-sql repositories.
-func NewBookmarkRepositoryFromConfig(repoDB *sql.DB) repository.BookmarkRepository {
+func NewBookmarkRepositoryFromConfig(repoDB *sql.DB, tagRepository repository.TagRepository) repository.BookmarkRepository {
 	bookmarkRepository := new(sqlite3Repository.Sqlite3BookmarkRepository)
 
-	bookmarkRepositoryAbstract, err := bookmarkRepository.New(sqlite3Repository.Sqlite3BookmarkRepositoryConstructorArgs{DB: repoDB})
+	bookmarkRepositoryAbstract, err := bookmarkRepository.New(sqlite3Repository.Sqlite3BookmarkRepositoryConstructorArgs{DB: repoDB, TagRepository: tagRepository})
 	if err != nil {
 		panic(err)
 	}
@@ -298,10 +302,10 @@ func NewTagsRepositoryFromConfig(repoDB *sql.DB) repository.TagRepository {
 
 	return tagsRepository
 }
-func NewDocumentRepositoryFromConfig(repoDB *sql.DB) repository.DocumentRepository {
+func NewDocumentRepositoryFromConfig(repoDB *sql.DB, tagRepository repository.TagRepository) repository.DocumentRepository {
 	documentRepository := new(sqlite3Repository.Sqlite3DocumentRepository)
 
-	documentRepositoryAbstract, err := documentRepository.New(sqlite3Repository.Sqlite3DocumentRepositoryConstructorArgs{DB: repoDB})
+	documentRepositoryAbstract, err := documentRepository.New(sqlite3Repository.Sqlite3DocumentRepositoryConstructorArgs{DB: repoDB, TagRepository: tagRepository})
 	if err != nil {
 		panic(err)
 	}
@@ -376,9 +380,10 @@ func NewBackendFromConfig() *backend.Backend {
 	// TODO: Extend config to allow creating custom fs
 	fs := afero.NewOsFs()
 
-	newBackend.BookmarkManager = NewBookmarkManagerFromConfig(NewBookmarkRepositoryFromConfig(db))
-	newBackend.TagManager = NewTagsManagerFromConfig(NewTagsRepositoryFromConfig(db))
-	newBackend.DocumentManager = NewDocumentManagerFromConfig(NewDocumentRepositoryFromConfig(db))
+	tagRepository := NewTagsRepositoryFromConfig(db)
+	newBackend.BookmarkManager = NewBookmarkManagerFromConfig(NewBookmarkRepositoryFromConfig(db, tagRepository))
+	newBackend.TagManager = NewTagsManagerFromConfig(tagRepository)
+	newBackend.DocumentManager = NewDocumentManagerFromConfig(NewDocumentRepositoryFromConfig(db, tagRepository))
 	newBackend.DocumentContentManager = NewDocumentContentManagerFromConfig(NewDocumentContentRepositoryFromConfig(fs))
 
 	newBackend.Marshallers = make(map[string]marshallers.Marshaller)

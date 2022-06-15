@@ -69,7 +69,8 @@ type BackendConfig struct {
 //                        Repository configs                         //
 // ******************************************************************//.
 type BookmarkRepositoryConfig struct {
-	DB DBConfig `name:"db" mapstructure:"db" validate:"required"`
+	DB            DBConfig             `name:"db" mapstructure:"db" validate:"required"`
+	TagRepository TagsRepositoryConfig `name:"tag_repository" mapstructure:"tag_repository" validate:"required"`
 }
 
 type TagsRepositoryConfig struct {
@@ -77,7 +78,8 @@ type TagsRepositoryConfig struct {
 }
 
 type DocumentRepositoryConfig struct {
-	DB DBConfig `name:"db" mapstructure:"db" validate:"required"`
+	DB            DBConfig             `name:"db" mapstructure:"db" validate:"required"`
+	TagRepository TagsRepositoryConfig `name:"tag_repository" mapstructure:"tag_repository" validate:"required"`
 }
 
 type DocumentContentRepositoryConfig struct {

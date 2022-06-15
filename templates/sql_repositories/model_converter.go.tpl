@@ -94,6 +94,7 @@ func BookmarkDomainToSqlRepositoryModel(ctx context.Context, db *sql.DB, domainM
     if domainModel.Tags != nil {
         sqlRepositoryModel.R.Tags = make(TagSlice, 0, len(domainModel.Tags))
         for _,  domainTag := range domainModel.Tags {
+        {{/* TODO: This fails if the tags don't exist already, they have to be added beforehand! */}}
             repositoryTag, err = Tags(TagWhere.Tag.EQ(domainTag.Tag)).One(ctx, db)
             if err != nil {
                 return
