@@ -147,7 +147,7 @@ require (
 )
 
 require (
-	github.com/JonasMuehlmann/optional.go v1.2.0
+	github.com/JonasMuehlmann/optional.go v1.3.0
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 )
