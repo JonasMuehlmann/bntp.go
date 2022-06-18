@@ -30,8 +30,8 @@ CREATE TABLE tags
 
 CREATE TABLE bookmark_types
 (
-    id   BIGINT PRIMARY KEY,
-    Type VARCHAR(255)    NOT NULL UNIQUE
+    id            BIGINT PRIMARY KEY,
+    bookmark_type VARCHAR(255)    NOT NULL UNIQUE
 );
 
 CREATE TABLE bookmarks

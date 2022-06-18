@@ -23,26 +23,27 @@ import (
 
 // BookmarkType is an object representing the database table.
 type BookmarkType struct {
-	L    bookmarkTypeL  `boil:"-" json:"-" toml:"-" yaml:"-"`
-	R    *bookmarkTypeR `boil:"-" json:"-" toml:"-" yaml:"-"`
-	Type string         `boil:"Type" json:"Type" toml:"Type" yaml:"Type"`
-	ID   int64          `boil:"id" json:"id" toml:"id" yaml:"id"`
+	ID           int64  `boil:"id" json:"id" toml:"id" yaml:"id"`
+	BookmarkType string `boil:"bookmark_type" json:"bookmark_type" toml:"bookmark_type" yaml:"bookmark_type"`
+
+	R *bookmarkTypeR `boil:"-" json:"-" toml:"-" yaml:"-"`
+	L bookmarkTypeL  `boil:"-" json:"-" toml:"-" yaml:"-"`
 }
 
 var BookmarkTypeColumns = struct {
-	ID   string
-	Type string
+	ID           string
+	BookmarkType string
 }{
-	ID:   "id",
-	Type: "Type",
+	ID:           "id",
+	BookmarkType: "bookmark_type",
 }
 
 var BookmarkTypeTableColumns = struct {
-	ID   string
-	Type string
+	ID           string
+	BookmarkType string
 }{
-	ID:   "bookmark_types.id",
-	Type: "bookmark_types.Type",
+	ID:           "bookmark_types.id",
+	BookmarkType: "bookmark_types.bookmark_type",
 }
 
 // Generated where
@@ -94,11 +95,11 @@ func (w whereHelperstring) NIN(slice []string) qm.QueryMod {
 }
 
 var BookmarkTypeWhere = struct {
-	ID   whereHelperint64
-	Type whereHelperstring
+	ID           whereHelperint64
+	BookmarkType whereHelperstring
 }{
-	ID:   whereHelperint64{field: "\"bookmark_types\".\"id\""},
-	Type: whereHelperstring{field: "\"bookmark_types\".\"Type\""},
+	ID:           whereHelperint64{field: "\"bookmark_types\".\"id\""},
+	BookmarkType: whereHelperstring{field: "\"bookmark_types\".\"bookmark_type\""},
 }
 
 // BookmarkTypeRels is where relationship names are stored.
@@ -129,8 +130,8 @@ func (r *bookmarkTypeR) GetBookmarks() BookmarkSlice {
 type bookmarkTypeL struct{}
 
 var (
-	bookmarkTypeAllColumns            = []string{"id", "Type"}
-	bookmarkTypeColumnsWithoutDefault = []string{"Type"}
+	bookmarkTypeAllColumns            = []string{"id", "bookmark_type"}
+	bookmarkTypeColumnsWithoutDefault = []string{"bookmark_type"}
 	bookmarkTypeColumnsWithDefault    = []string{"id"}
 	bookmarkTypePrimaryKeyColumns     = []string{"id"}
 	bookmarkTypeGeneratedColumns      = []string{"id"}

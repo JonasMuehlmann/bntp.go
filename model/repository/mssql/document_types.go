@@ -23,10 +23,11 @@ import (
 
 // DocumentType is an object representing the database table.
 type DocumentType struct {
-	L            documentTypeL  `boil:"-" json:"-" toml:"-" yaml:"-"`
-	R            *documentTypeR `boil:"-" json:"-" toml:"-" yaml:"-"`
-	DocumentType string         `boil:"document_type" json:"document_type" toml:"document_type" yaml:"document_type"`
-	ID           int64          `boil:"id" json:"id" toml:"id" yaml:"id"`
+	ID           int64  `boil:"id" json:"id" toml:"id" yaml:"id"`
+	DocumentType string `boil:"document_type" json:"document_type" toml:"document_type" yaml:"document_type"`
+
+	R *documentTypeR `boil:"-" json:"-" toml:"-" yaml:"-"`
+	L documentTypeL  `boil:"-" json:"-" toml:"-" yaml:"-"`
 }
 
 var DocumentTypeColumns = struct {
