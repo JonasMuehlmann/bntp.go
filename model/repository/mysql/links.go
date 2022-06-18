@@ -23,11 +23,10 @@ import (
 
 // Link is an object representing the database table.
 type Link struct {
-	SourceID      int64 `boil:"source_id" json:"source_id" toml:"source_id" yaml:"source_id"`
-	DestinationID int64 `boil:"destination_id" json:"destination_id" toml:"destination_id" yaml:"destination_id"`
-
-	R *linkR `boil:"-" json:"-" toml:"-" yaml:"-"`
-	L linkL  `boil:"-" json:"-" toml:"-" yaml:"-"`
+	L             linkL  `boil:"-" json:"-" toml:"-" yaml:"-"`
+	R             *linkR `boil:"-" json:"-" toml:"-" yaml:"-"`
+	SourceID      int64  `boil:"source_id" json:"source_id" toml:"source_id" yaml:"source_id"`
+	DestinationID int64  `boil:"destination_id" json:"destination_id" toml:"destination_id" yaml:"destination_id"`
 }
 
 var LinkColumns = struct {

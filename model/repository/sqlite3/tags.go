@@ -24,14 +24,13 @@ import (
 
 // Tag is an object representing the database table.
 type Tag struct {
-	ID        int64      `boil:"id" json:"id" toml:"id" yaml:"id"`
+	L         tagL       `boil:"-" json:"-" toml:"-" yaml:"-"`
+	R         *tagR      `boil:"-" json:"-" toml:"-" yaml:"-"`
 	Tag       string     `boil:"tag" json:"tag" toml:"tag" yaml:"tag"`
-	ParentTag null.Int64 `boil:"parent_tag" json:"parent_tag,omitempty" toml:"parent_tag" yaml:"parent_tag,omitempty"`
 	Path      string     `boil:"path" json:"path" toml:"path" yaml:"path"`
 	Children  string     `boil:"children" json:"children" toml:"children" yaml:"children"`
-
-	R *tagR `boil:"-" json:"-" toml:"-" yaml:"-"`
-	L tagL  `boil:"-" json:"-" toml:"-" yaml:"-"`
+	ParentTag null.Int64 `boil:"parent_tag" json:"parent_tag,omitempty" toml:"parent_tag" yaml:"parent_tag,omitempty"`
+	ID        int64      `boil:"id" json:"id" toml:"id" yaml:"id"`
 }
 
 var TagColumns = struct {
