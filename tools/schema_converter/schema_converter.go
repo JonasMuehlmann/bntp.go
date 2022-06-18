@@ -115,7 +115,7 @@ func ToSqlServerTest(mainSchema string) string {
 	schema = strings.Replace(schema, "PRIMARY KEY NOT NULL", "PRIMARY KEY", -1)
 	schema = strings.ReplaceAll(schema, "TEXT", "VARCHAR(255)")
 	schema = strings.ReplaceAll(schema, "TIMESTAMP", "DATETIME")
-	removeForeignKeys := regexp.MustCompile(`REFERENCES\s+\w+\(\w+)`)
+	removeForeignKeys := regexp.MustCompile(`REFERENCES\s+\w+\(\w+\)`)
 	schema = removeForeignKeys.ReplaceAllString(schema, "")
 
 	return schema
