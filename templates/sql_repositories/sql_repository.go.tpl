@@ -46,7 +46,7 @@ import (
     "strconv"
     "strings"
     {{ end }}
-    {{ if and (eq .DatabaseName "sqlite3") (ne $EntityName "Tag") }}
+    {{ if and (ne .DatabaseName "sqlite3") (ne $EntityName "Tag") }}
     "time"
     {{ end }}
 )
