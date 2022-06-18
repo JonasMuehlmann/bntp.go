@@ -33,16 +33,22 @@ type TagRepository interface {
 	Add(ctx context.Context, domainModels []*domain.Tag) error
 	Replace(ctx context.Context, domainModels []*domain.Tag) error
 	Upsert(ctx context.Context, domainModels []*domain.Tag) error
-	Update(ctx context.Context, domainModels []*domain.Tag, columnUpdaters *domain.TagUpdater) error
-	UpdateWhere(ctx context.Context, columnFilter *domain.TagFilter, columnUpdaters *domain.TagUpdater) (numAffectedRecords int64, err error)
+	Update(ctx context.Context, domainModels []*domain.Tag, domainUpdaters *domain.TagUpdater) error
+	UpdateWhere(ctx context.Context, domainFilter *domain.TagFilter, domainUpdaters *domain.TagUpdater) (numAffectedRecords int64, err error)
 	Delete(ctx context.Context, domainModels []*domain.Tag) error
-	DeleteWhere(ctx context.Context, columnFilter *domain.TagFilter) (numAffectedRecords int64, err error)
-	CountWhere(ctx context.Context, columnFilter *domain.TagFilter) (numRecords int64, err error)
+	DeleteWhere(ctx context.Context, domainFilter *domain.TagFilter) (numAffectedRecords int64, err error)
+	CountWhere(ctx context.Context, domainFilter *domain.TagFilter) (numRecords int64, err error)
 	CountAll(ctx context.Context) (numRecords int64, err error)
 	DoesExist(ctx context.Context, domainModel *domain.Tag) (doesExist bool, err error)
-	DoesExistWhere(ctx context.Context, columnFilter *domain.TagFilter) (doesExist bool, err error)
-	GetWhere(ctx context.Context, columnFilter *domain.TagFilter) (records []*domain.Tag, err error)
-	GetFirstWhere(ctx context.Context, columnFilter *domain.TagFilter) (record *domain.Tag, err error)
+	DoesExistWhere(ctx context.Context, domainFilter *domain.TagFilter) (doesExist bool, err error)
+	GetWhere(ctx context.Context, domainFilter *domain.TagFilter) (records []*domain.Tag, err error)
+	GetFirstWhere(ctx context.Context, domainFilter *domain.TagFilter) (record *domain.Tag, err error)
 	GetAll(ctx context.Context) (records []*domain.Tag, err error)
     
+
+    TagRepositoryToDomainModel(ctx context.Context, repositoryModel any) (domainModel *domain.Tag, err error)
+    TagDomainToRepositoryModel(ctx context.Context, domainModel *domain.Tag) (repositoryModel any, err error)
+
+    TagDomainToRepositoryFilter(ctx context.Context, domainFilter *domain.TagFilter) (repositoryFilter any, err error)
+    TagDomainToRepositoryUpdater(ctx context.Context, domainUpdater *domain.TagUpdater) (repositoryUpdater any, err error)
 }

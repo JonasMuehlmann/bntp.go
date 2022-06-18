@@ -32,7 +32,21 @@ import (
 	"github.com/sirupsen/logrus/hooks/writer"
 )
 
-const DateFormat string = "helper.DateFormat"
+const (
+	DateFormat           string = "helper.DateFormat"
+	LogMessageEmptyInput        = "Returning early after receiving empty input"
+)
+
+type NilInputError struct {
+	BadFieldOrParameter string
+}
+
+func (err NilInputError) Error() string {
+	if err.BadFieldOrParameter == "" {
+		return "Input contains a nil pointer"
+	}
+	return "Input contains a nil pointer in parameter or struct field " + err.BadFieldOrParameter
+}
 
 func NewDefaultLogger(logFile string, consoleLogLevel log.Level, fileLogLevel log.Level) *log.Logger {
 	callerPrettyfier := func(f *runtime.Frame) (string, string) {
