@@ -55,28 +55,28 @@ type MssqlDocumentRepository struct {
 type DocumentField string
 
 var DocumentFields = struct {
-	ID             DocumentField
-	Path           DocumentField
-	DocumentTypeID DocumentField
 	CreatedAt      DocumentField
 	UpdatedAt      DocumentField
 	DeletedAt      DocumentField
+	Path           DocumentField
+	DocumentTypeID DocumentField
+	ID             DocumentField
 }{
-	ID:             "id",
-	Path:           "path",
-	DocumentTypeID: "document_type_id",
 	CreatedAt:      "created_at",
 	UpdatedAt:      "updated_at",
 	DeletedAt:      "deleted_at",
+	Path:           "path",
+	DocumentTypeID: "document_type_id",
+	ID:             "id",
 }
 
 var DocumentFieldsList = []DocumentField{
-	DocumentField("ID"),
-	DocumentField("Path"),
-	DocumentField("DocumentTypeID"),
 	DocumentField("CreatedAt"),
 	DocumentField("UpdatedAt"),
 	DocumentField("DeletedAt"),
+	DocumentField("Path"),
+	DocumentField("DocumentTypeID"),
+	DocumentField("ID"),
 }
 
 var DocumentRelationsList = []string{
@@ -87,12 +87,12 @@ var DocumentRelationsList = []string{
 }
 
 type DocumentFilter struct {
-	ID             optional.Optional[model.FilterOperation[int64]]
-	Path           optional.Optional[model.FilterOperation[string]]
-	DocumentTypeID optional.Optional[model.FilterOperation[null.Int64]]
 	CreatedAt      optional.Optional[model.FilterOperation[time.Time]]
 	UpdatedAt      optional.Optional[model.FilterOperation[time.Time]]
 	DeletedAt      optional.Optional[model.FilterOperation[null.Time]]
+	Path           optional.Optional[model.FilterOperation[string]]
+	DocumentTypeID optional.Optional[model.FilterOperation[null.Int64]]
+	ID             optional.Optional[model.FilterOperation[int64]]
 
 	DocumentType         optional.Optional[model.FilterOperation[*DocumentType]]
 	Tags                 optional.Optional[model.FilterOperation[*Tag]]
@@ -108,15 +108,6 @@ type DocumentFilterMapping[T any] struct {
 func (filter *DocumentFilter) GetSetFilters() *list.List {
 	setFilters := list.New()
 
-	if filter.ID.HasValue {
-		setFilters.PushBack(DocumentFilterMapping[int64]{Field: DocumentFields.ID, FilterOperation: filter.ID.Wrappee})
-	}
-	if filter.Path.HasValue {
-		setFilters.PushBack(DocumentFilterMapping[string]{Field: DocumentFields.Path, FilterOperation: filter.Path.Wrappee})
-	}
-	if filter.DocumentTypeID.HasValue {
-		setFilters.PushBack(DocumentFilterMapping[null.Int64]{Field: DocumentFields.DocumentTypeID, FilterOperation: filter.DocumentTypeID.Wrappee})
-	}
 	if filter.CreatedAt.HasValue {
 		setFilters.PushBack(DocumentFilterMapping[time.Time]{Field: DocumentFields.CreatedAt, FilterOperation: filter.CreatedAt.Wrappee})
 	}
@@ -126,21 +117,31 @@ func (filter *DocumentFilter) GetSetFilters() *list.List {
 	if filter.DeletedAt.HasValue {
 		setFilters.PushBack(DocumentFilterMapping[null.Time]{Field: DocumentFields.DeletedAt, FilterOperation: filter.DeletedAt.Wrappee})
 	}
+	if filter.Path.HasValue {
+		setFilters.PushBack(DocumentFilterMapping[string]{Field: DocumentFields.Path, FilterOperation: filter.Path.Wrappee})
+	}
+	if filter.DocumentTypeID.HasValue {
+		setFilters.PushBack(DocumentFilterMapping[null.Int64]{Field: DocumentFields.DocumentTypeID, FilterOperation: filter.DocumentTypeID.Wrappee})
+	}
+	if filter.ID.HasValue {
+		setFilters.PushBack(DocumentFilterMapping[int64]{Field: DocumentFields.ID, FilterOperation: filter.ID.Wrappee})
+	}
 
 	return setFilters
 }
 
 type DocumentUpdater struct {
-	CreatedAt            optional.Optional[model.UpdateOperation[time.Time]]
-	UpdatedAt            optional.Optional[model.UpdateOperation[time.Time]]
+	CreatedAt      optional.Optional[model.UpdateOperation[time.Time]]
+	UpdatedAt      optional.Optional[model.UpdateOperation[time.Time]]
+	DeletedAt      optional.Optional[model.UpdateOperation[null.Time]]
+	Path           optional.Optional[model.UpdateOperation[string]]
+	DocumentTypeID optional.Optional[model.UpdateOperation[null.Int64]]
+	ID             optional.Optional[model.UpdateOperation[int64]]
+
 	DocumentType         optional.Optional[model.UpdateOperation[*DocumentType]]
-	DeletedAt            optional.Optional[model.UpdateOperation[null.Time]]
-	Path                 optional.Optional[model.UpdateOperation[string]]
-	SourceDocuments      optional.Optional[model.UpdateOperation[DocumentSlice]]
 	Tags                 optional.Optional[model.UpdateOperation[TagSlice]]
+	SourceDocuments      optional.Optional[model.UpdateOperation[DocumentSlice]]
 	DestinationDocuments optional.Optional[model.UpdateOperation[DocumentSlice]]
-	DocumentTypeID       optional.Optional[model.UpdateOperation[null.Int64]]
-	ID                   optional.Optional[model.UpdateOperation[int64]]
 }
 
 type DocumentUpdaterMapping[T any] struct {
@@ -151,15 +152,6 @@ type DocumentUpdaterMapping[T any] struct {
 func (updater *DocumentUpdater) GetSetUpdaters() *list.List {
 	setUpdaters := list.New()
 
-	if updater.ID.HasValue {
-		setUpdaters.PushBack(DocumentUpdaterMapping[int64]{Field: DocumentFields.ID, Updater: updater.ID.Wrappee})
-	}
-	if updater.Path.HasValue {
-		setUpdaters.PushBack(DocumentUpdaterMapping[string]{Field: DocumentFields.Path, Updater: updater.Path.Wrappee})
-	}
-	if updater.DocumentTypeID.HasValue {
-		setUpdaters.PushBack(DocumentUpdaterMapping[null.Int64]{Field: DocumentFields.DocumentTypeID, Updater: updater.DocumentTypeID.Wrappee})
-	}
 	if updater.CreatedAt.HasValue {
 		setUpdaters.PushBack(DocumentUpdaterMapping[time.Time]{Field: DocumentFields.CreatedAt, Updater: updater.CreatedAt.Wrappee})
 	}
@@ -169,20 +161,20 @@ func (updater *DocumentUpdater) GetSetUpdaters() *list.List {
 	if updater.DeletedAt.HasValue {
 		setUpdaters.PushBack(DocumentUpdaterMapping[null.Time]{Field: DocumentFields.DeletedAt, Updater: updater.DeletedAt.Wrappee})
 	}
+	if updater.Path.HasValue {
+		setUpdaters.PushBack(DocumentUpdaterMapping[string]{Field: DocumentFields.Path, Updater: updater.Path.Wrappee})
+	}
+	if updater.DocumentTypeID.HasValue {
+		setUpdaters.PushBack(DocumentUpdaterMapping[null.Int64]{Field: DocumentFields.DocumentTypeID, Updater: updater.DocumentTypeID.Wrappee})
+	}
+	if updater.ID.HasValue {
+		setUpdaters.PushBack(DocumentUpdaterMapping[int64]{Field: DocumentFields.ID, Updater: updater.ID.Wrappee})
+	}
 
 	return setUpdaters
 }
 
 func (updater *DocumentUpdater) ApplyToModel(documentModel *Document) {
-	if updater.ID.HasValue {
-		model.ApplyUpdater(&(*documentModel).ID, updater.ID.Wrappee)
-	}
-	if updater.Path.HasValue {
-		model.ApplyUpdater(&(*documentModel).Path, updater.Path.Wrappee)
-	}
-	if updater.DocumentTypeID.HasValue {
-		model.ApplyUpdater(&(*documentModel).DocumentTypeID, updater.DocumentTypeID.Wrappee)
-	}
 	if updater.CreatedAt.HasValue {
 		model.ApplyUpdater(&(*documentModel).CreatedAt, updater.CreatedAt.Wrappee)
 	}
@@ -191,6 +183,15 @@ func (updater *DocumentUpdater) ApplyToModel(documentModel *Document) {
 	}
 	if updater.DeletedAt.HasValue {
 		model.ApplyUpdater(&(*documentModel).DeletedAt, updater.DeletedAt.Wrappee)
+	}
+	if updater.Path.HasValue {
+		model.ApplyUpdater(&(*documentModel).Path, updater.Path.Wrappee)
+	}
+	if updater.DocumentTypeID.HasValue {
+		model.ApplyUpdater(&(*documentModel).DocumentTypeID, updater.DocumentTypeID.Wrappee)
+	}
+	if updater.ID.HasValue {
+		model.ApplyUpdater(&(*documentModel).ID, updater.ID.Wrappee)
 	}
 
 }

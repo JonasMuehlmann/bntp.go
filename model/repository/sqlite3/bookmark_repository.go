@@ -55,37 +55,37 @@ type Sqlite3BookmarkRepository struct {
 type BookmarkField string
 
 var BookmarkFields = struct {
-	ID             BookmarkField
-	IsRead         BookmarkField
-	Title          BookmarkField
-	URL            BookmarkField
-	BookmarkTypeID BookmarkField
-	IsCollection   BookmarkField
 	CreatedAt      BookmarkField
 	UpdatedAt      BookmarkField
+	URL            BookmarkField
+	Title          BookmarkField
 	DeletedAt      BookmarkField
+	BookmarkTypeID BookmarkField
+	IsCollection   BookmarkField
+	ID             BookmarkField
+	IsRead         BookmarkField
 }{
-	ID:             "id",
-	IsRead:         "is_read",
-	Title:          "title",
-	URL:            "url",
-	BookmarkTypeID: "bookmark_type_id",
-	IsCollection:   "is_collection",
 	CreatedAt:      "created_at",
 	UpdatedAt:      "updated_at",
+	URL:            "url",
+	Title:          "title",
 	DeletedAt:      "deleted_at",
+	BookmarkTypeID: "bookmark_type_id",
+	IsCollection:   "is_collection",
+	ID:             "id",
+	IsRead:         "is_read",
 }
 
 var BookmarkFieldsList = []BookmarkField{
-	BookmarkField("ID"),
-	BookmarkField("IsRead"),
-	BookmarkField("Title"),
-	BookmarkField("URL"),
-	BookmarkField("BookmarkTypeID"),
-	BookmarkField("IsCollection"),
 	BookmarkField("CreatedAt"),
 	BookmarkField("UpdatedAt"),
+	BookmarkField("URL"),
+	BookmarkField("Title"),
 	BookmarkField("DeletedAt"),
+	BookmarkField("BookmarkTypeID"),
+	BookmarkField("IsCollection"),
+	BookmarkField("ID"),
+	BookmarkField("IsRead"),
 }
 
 var BookmarkRelationsList = []string{
@@ -94,15 +94,15 @@ var BookmarkRelationsList = []string{
 }
 
 type BookmarkFilter struct {
-	ID             optional.Optional[model.FilterOperation[int64]]
-	IsRead         optional.Optional[model.FilterOperation[int64]]
-	Title          optional.Optional[model.FilterOperation[null.String]]
-	URL            optional.Optional[model.FilterOperation[string]]
-	BookmarkTypeID optional.Optional[model.FilterOperation[null.Int64]]
-	IsCollection   optional.Optional[model.FilterOperation[int64]]
 	CreatedAt      optional.Optional[model.FilterOperation[string]]
 	UpdatedAt      optional.Optional[model.FilterOperation[string]]
+	URL            optional.Optional[model.FilterOperation[string]]
+	Title          optional.Optional[model.FilterOperation[null.String]]
 	DeletedAt      optional.Optional[model.FilterOperation[null.String]]
+	BookmarkTypeID optional.Optional[model.FilterOperation[null.Int64]]
+	IsCollection   optional.Optional[model.FilterOperation[int64]]
+	ID             optional.Optional[model.FilterOperation[int64]]
+	IsRead         optional.Optional[model.FilterOperation[int64]]
 
 	BookmarkType optional.Optional[model.FilterOperation[*BookmarkType]]
 	Tags         optional.Optional[model.FilterOperation[*Tag]]
@@ -116,17 +116,20 @@ type BookmarkFilterMapping[T any] struct {
 func (filter *BookmarkFilter) GetSetFilters() *list.List {
 	setFilters := list.New()
 
-	if filter.ID.HasValue {
-		setFilters.PushBack(BookmarkFilterMapping[int64]{Field: BookmarkFields.ID, FilterOperation: filter.ID.Wrappee})
+	if filter.CreatedAt.HasValue {
+		setFilters.PushBack(BookmarkFilterMapping[string]{Field: BookmarkFields.CreatedAt, FilterOperation: filter.CreatedAt.Wrappee})
 	}
-	if filter.IsRead.HasValue {
-		setFilters.PushBack(BookmarkFilterMapping[int64]{Field: BookmarkFields.IsRead, FilterOperation: filter.IsRead.Wrappee})
+	if filter.UpdatedAt.HasValue {
+		setFilters.PushBack(BookmarkFilterMapping[string]{Field: BookmarkFields.UpdatedAt, FilterOperation: filter.UpdatedAt.Wrappee})
+	}
+	if filter.URL.HasValue {
+		setFilters.PushBack(BookmarkFilterMapping[string]{Field: BookmarkFields.URL, FilterOperation: filter.URL.Wrappee})
 	}
 	if filter.Title.HasValue {
 		setFilters.PushBack(BookmarkFilterMapping[null.String]{Field: BookmarkFields.Title, FilterOperation: filter.Title.Wrappee})
 	}
-	if filter.URL.HasValue {
-		setFilters.PushBack(BookmarkFilterMapping[string]{Field: BookmarkFields.URL, FilterOperation: filter.URL.Wrappee})
+	if filter.DeletedAt.HasValue {
+		setFilters.PushBack(BookmarkFilterMapping[null.String]{Field: BookmarkFields.DeletedAt, FilterOperation: filter.DeletedAt.Wrappee})
 	}
 	if filter.BookmarkTypeID.HasValue {
 		setFilters.PushBack(BookmarkFilterMapping[null.Int64]{Field: BookmarkFields.BookmarkTypeID, FilterOperation: filter.BookmarkTypeID.Wrappee})
@@ -134,31 +137,29 @@ func (filter *BookmarkFilter) GetSetFilters() *list.List {
 	if filter.IsCollection.HasValue {
 		setFilters.PushBack(BookmarkFilterMapping[int64]{Field: BookmarkFields.IsCollection, FilterOperation: filter.IsCollection.Wrappee})
 	}
-	if filter.CreatedAt.HasValue {
-		setFilters.PushBack(BookmarkFilterMapping[string]{Field: BookmarkFields.CreatedAt, FilterOperation: filter.CreatedAt.Wrappee})
+	if filter.ID.HasValue {
+		setFilters.PushBack(BookmarkFilterMapping[int64]{Field: BookmarkFields.ID, FilterOperation: filter.ID.Wrappee})
 	}
-	if filter.UpdatedAt.HasValue {
-		setFilters.PushBack(BookmarkFilterMapping[string]{Field: BookmarkFields.UpdatedAt, FilterOperation: filter.UpdatedAt.Wrappee})
-	}
-	if filter.DeletedAt.HasValue {
-		setFilters.PushBack(BookmarkFilterMapping[null.String]{Field: BookmarkFields.DeletedAt, FilterOperation: filter.DeletedAt.Wrappee})
+	if filter.IsRead.HasValue {
+		setFilters.PushBack(BookmarkFilterMapping[int64]{Field: BookmarkFields.IsRead, FilterOperation: filter.IsRead.Wrappee})
 	}
 
 	return setFilters
 }
 
 type BookmarkUpdater struct {
-	BookmarkType   optional.Optional[model.UpdateOperation[*BookmarkType]]
 	CreatedAt      optional.Optional[model.UpdateOperation[string]]
 	UpdatedAt      optional.Optional[model.UpdateOperation[string]]
 	URL            optional.Optional[model.UpdateOperation[string]]
 	Title          optional.Optional[model.UpdateOperation[null.String]]
-	Tags           optional.Optional[model.UpdateOperation[TagSlice]]
 	DeletedAt      optional.Optional[model.UpdateOperation[null.String]]
 	BookmarkTypeID optional.Optional[model.UpdateOperation[null.Int64]]
 	IsCollection   optional.Optional[model.UpdateOperation[int64]]
 	ID             optional.Optional[model.UpdateOperation[int64]]
 	IsRead         optional.Optional[model.UpdateOperation[int64]]
+
+	BookmarkType optional.Optional[model.UpdateOperation[*BookmarkType]]
+	Tags         optional.Optional[model.UpdateOperation[TagSlice]]
 }
 
 type BookmarkUpdaterMapping[T any] struct {
@@ -169,17 +170,20 @@ type BookmarkUpdaterMapping[T any] struct {
 func (updater *BookmarkUpdater) GetSetUpdaters() *list.List {
 	setUpdaters := list.New()
 
-	if updater.ID.HasValue {
-		setUpdaters.PushBack(BookmarkUpdaterMapping[int64]{Field: BookmarkFields.ID, Updater: updater.ID.Wrappee})
+	if updater.CreatedAt.HasValue {
+		setUpdaters.PushBack(BookmarkUpdaterMapping[string]{Field: BookmarkFields.CreatedAt, Updater: updater.CreatedAt.Wrappee})
 	}
-	if updater.IsRead.HasValue {
-		setUpdaters.PushBack(BookmarkUpdaterMapping[int64]{Field: BookmarkFields.IsRead, Updater: updater.IsRead.Wrappee})
+	if updater.UpdatedAt.HasValue {
+		setUpdaters.PushBack(BookmarkUpdaterMapping[string]{Field: BookmarkFields.UpdatedAt, Updater: updater.UpdatedAt.Wrappee})
+	}
+	if updater.URL.HasValue {
+		setUpdaters.PushBack(BookmarkUpdaterMapping[string]{Field: BookmarkFields.URL, Updater: updater.URL.Wrappee})
 	}
 	if updater.Title.HasValue {
 		setUpdaters.PushBack(BookmarkUpdaterMapping[null.String]{Field: BookmarkFields.Title, Updater: updater.Title.Wrappee})
 	}
-	if updater.URL.HasValue {
-		setUpdaters.PushBack(BookmarkUpdaterMapping[string]{Field: BookmarkFields.URL, Updater: updater.URL.Wrappee})
+	if updater.DeletedAt.HasValue {
+		setUpdaters.PushBack(BookmarkUpdaterMapping[null.String]{Field: BookmarkFields.DeletedAt, Updater: updater.DeletedAt.Wrappee})
 	}
 	if updater.BookmarkTypeID.HasValue {
 		setUpdaters.PushBack(BookmarkUpdaterMapping[null.Int64]{Field: BookmarkFields.BookmarkTypeID, Updater: updater.BookmarkTypeID.Wrappee})
@@ -187,31 +191,31 @@ func (updater *BookmarkUpdater) GetSetUpdaters() *list.List {
 	if updater.IsCollection.HasValue {
 		setUpdaters.PushBack(BookmarkUpdaterMapping[int64]{Field: BookmarkFields.IsCollection, Updater: updater.IsCollection.Wrappee})
 	}
-	if updater.CreatedAt.HasValue {
-		setUpdaters.PushBack(BookmarkUpdaterMapping[string]{Field: BookmarkFields.CreatedAt, Updater: updater.CreatedAt.Wrappee})
+	if updater.ID.HasValue {
+		setUpdaters.PushBack(BookmarkUpdaterMapping[int64]{Field: BookmarkFields.ID, Updater: updater.ID.Wrappee})
 	}
-	if updater.UpdatedAt.HasValue {
-		setUpdaters.PushBack(BookmarkUpdaterMapping[string]{Field: BookmarkFields.UpdatedAt, Updater: updater.UpdatedAt.Wrappee})
-	}
-	if updater.DeletedAt.HasValue {
-		setUpdaters.PushBack(BookmarkUpdaterMapping[null.String]{Field: BookmarkFields.DeletedAt, Updater: updater.DeletedAt.Wrappee})
+	if updater.IsRead.HasValue {
+		setUpdaters.PushBack(BookmarkUpdaterMapping[int64]{Field: BookmarkFields.IsRead, Updater: updater.IsRead.Wrappee})
 	}
 
 	return setUpdaters
 }
 
 func (updater *BookmarkUpdater) ApplyToModel(bookmarkModel *Bookmark) {
-	if updater.ID.HasValue {
-		model.ApplyUpdater(&(*bookmarkModel).ID, updater.ID.Wrappee)
+	if updater.CreatedAt.HasValue {
+		model.ApplyUpdater(&(*bookmarkModel).CreatedAt, updater.CreatedAt.Wrappee)
 	}
-	if updater.IsRead.HasValue {
-		model.ApplyUpdater(&(*bookmarkModel).IsRead, updater.IsRead.Wrappee)
+	if updater.UpdatedAt.HasValue {
+		model.ApplyUpdater(&(*bookmarkModel).UpdatedAt, updater.UpdatedAt.Wrappee)
+	}
+	if updater.URL.HasValue {
+		model.ApplyUpdater(&(*bookmarkModel).URL, updater.URL.Wrappee)
 	}
 	if updater.Title.HasValue {
 		model.ApplyUpdater(&(*bookmarkModel).Title, updater.Title.Wrappee)
 	}
-	if updater.URL.HasValue {
-		model.ApplyUpdater(&(*bookmarkModel).URL, updater.URL.Wrappee)
+	if updater.DeletedAt.HasValue {
+		model.ApplyUpdater(&(*bookmarkModel).DeletedAt, updater.DeletedAt.Wrappee)
 	}
 	if updater.BookmarkTypeID.HasValue {
 		model.ApplyUpdater(&(*bookmarkModel).BookmarkTypeID, updater.BookmarkTypeID.Wrappee)
@@ -219,14 +223,11 @@ func (updater *BookmarkUpdater) ApplyToModel(bookmarkModel *Bookmark) {
 	if updater.IsCollection.HasValue {
 		model.ApplyUpdater(&(*bookmarkModel).IsCollection, updater.IsCollection.Wrappee)
 	}
-	if updater.CreatedAt.HasValue {
-		model.ApplyUpdater(&(*bookmarkModel).CreatedAt, updater.CreatedAt.Wrappee)
+	if updater.ID.HasValue {
+		model.ApplyUpdater(&(*bookmarkModel).ID, updater.ID.Wrappee)
 	}
-	if updater.UpdatedAt.HasValue {
-		model.ApplyUpdater(&(*bookmarkModel).UpdatedAt, updater.UpdatedAt.Wrappee)
-	}
-	if updater.DeletedAt.HasValue {
-		model.ApplyUpdater(&(*bookmarkModel).DeletedAt, updater.DeletedAt.Wrappee)
+	if updater.IsRead.HasValue {
+		model.ApplyUpdater(&(*bookmarkModel).IsRead, updater.IsRead.Wrappee)
 	}
 
 }
