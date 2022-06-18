@@ -20,8 +20,17 @@
 
 package marshallers
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"strings"
 
+	"github.com/ghodss/yaml"
+	"github.com/gocarina/gocsv"
+)
+
+// ******************************************************************//
+//                            Interfaces                            //
+// ******************************************************************//.
 type Marshaller interface {
 	Marshall(from any) (to string, err error)
 }
@@ -30,6 +39,9 @@ type Unmarshaller interface {
 	Unmarshall(out any, in string) error
 }
 
+// ******************************************************************//
+//                               Json                               //
+// ******************************************************************//.
 type JsonMarshaller struct{}
 
 func (marshaller *JsonMarshaller) Marshall(from any) (to string, err error) {
@@ -42,4 +54,39 @@ type JsonUnmarshaller struct{}
 
 func (unmarshaller *JsonUnmarshaller) Unmarshall(out any, in string) error {
 	return json.Unmarshal([]byte(in), out)
+}
+
+// ******************************************************************//
+//                               Yaml                               //
+// ******************************************************************//.
+type YamlMarshaller struct{}
+
+func (marshaller *YamlMarshaller) Marshall(from any) (to string, err error) {
+	res, err := yaml.Marshal(from)
+
+	return string(res), err
+}
+
+type YamlUnmarshaller struct{}
+
+func (unmarshaller *YamlUnmarshaller) Unmarshall(out any, in string) error {
+	return yaml.Unmarshal([]byte(in), out)
+}
+
+// ******************************************************************//
+//                               Csv                                //
+// ******************************************************************//.
+type CsvMarshaller struct{}
+
+func (marshaller *CsvMarshaller) Marshall(from any) (to string, err error) {
+	res := new(strings.Builder)
+	err = gocsv.Marshal(from, res)
+
+	return res.String(), err
+}
+
+type CsvUnmarshaller struct{}
+
+func (unmarshaller *CsvUnmarshaller) Unmarshall(out any, in string) error {
+	return gocsv.Unmarshal(strings.NewReader(in), out)
 }

@@ -392,6 +392,12 @@ func NewBackendFromConfig() *backend.Backend {
 	newBackend.Marshallers["json"] = new(marshallers.JsonMarshaller)
 	newBackend.Unmarshallers["json"] = new(marshallers.JsonUnmarshaller)
 
+	newBackend.Marshallers["yaml"] = new(marshallers.YamlMarshaller)
+	newBackend.Unmarshallers["yaml"] = new(marshallers.YamlUnmarshaller)
+
+	newBackend.Marshallers["csv"] = new(marshallers.CsvMarshaller)
+	newBackend.Unmarshallers["csv"] = new(marshallers.CsvUnmarshaller)
+
 	return newBackend
 }
 
