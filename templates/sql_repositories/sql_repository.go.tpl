@@ -697,7 +697,7 @@ func (repo *{{$StructName}}) GetAll(ctx context.Context) ([]*domain.{{$EntityNam
 {{ if ne $EntityName "Tag" }}
 func (repo *{{$StructName}}) AddType(ctx context.Context, types []string) error {
     for _, type_ := range types {
-        repositoryModel := {{$EntityName}}Type{Type: type_}
+        repositoryModel := {{$EntityName}}Type{{"{"}}{{$EntityName}}Type: type_}
 
         err := repositoryModel.Insert(ctx, repo.db, boil.Infer())
         if err != nil {
@@ -709,18 +709,18 @@ func (repo *{{$StructName}}) AddType(ctx context.Context, types []string) error 
 }
 
 func (repo *{{$StructName}}) DeleteType(ctx context.Context, types []string) error {
-    _, err := {{$EntityName}}Types({{$EntityName}}TypeWhere.Type.IN(types)).DeleteAll(ctx, repo.db)
+    _, err := {{$EntityName}}Types({{$EntityName}}TypeWhere.{{$EntityName}}Type.IN(types)).DeleteAll(ctx, repo.db)
 
 	return err
 }
 
 func (repo *{{$StructName}}) UpdateType(ctx context.Context, oldType string, newType string) error {
-    repositoryModel, err := {{$EntityName}}Types({{$EntityName}}TypeWhere.Type.EQ(oldType)).One(ctx, repo.db)
+    repositoryModel, err := {{$EntityName}}Types({{$EntityName}}TypeWhere.{{$EntityName}}Type.EQ(oldType)).One(ctx, repo.db)
     if err != nil {
         return err
     }
 
-    repositoryModel.Type = newType
+    repositoryModel.{{$EntityName}}Type = newType
 
     _, err = repositoryModel.Update(ctx, repo.db, boil.Infer())
 
@@ -825,8 +825,8 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryModel(ctx context.
 	if domainModel.{{$EntityName}}Type.HasValue {
         var repository{{$EntityName}}Type *{{$EntityName}}Type
 
-        repositoryModelConcrete.R.{{$EntityName}}Type = &{{$EntityName}}Type{Type: domainModel.{{$EntityName}}Type.Wrappee}
-		repository{{$EntityName}}Type, err = {{$EntityName}}Types({{$EntityName}}TypeWhere.Type.EQ(domainModel.{{$EntityName}}Type.Wrappee)).One(ctx, repo.db)
+        repositoryModelConcrete.R.{{$EntityName}}Type = &{{$EntityName}}Type{{"{"}}{{$EntityName}}Type: domainModel.{{$EntityName}}Type.Wrappee}
+		repository{{$EntityName}}Type, err = {{$EntityName}}Types({{$EntityName}}TypeWhere.{{$EntityName}}Type.EQ(domainModel.{{$EntityName}}Type.Wrappee)).One(ctx, repo.db)
 		if err != nil {
 			return
 		}
@@ -858,7 +858,7 @@ func (repo *{{$StructName}}) {{$EntityName}}RepositoryToDomainModel(ctx context.
     }
 
     if repositoryModelConcrete.R.{{$EntityName}}Type != nil {
-        domainModel.{{$EntityName}}Type = optional.Make(repositoryModelConcrete.R.{{$EntityName}}Type.Type)
+        domainModel.{{$EntityName}}Type = optional.Make(repositoryModelConcrete.R.{{$EntityName}}Type.{{$EntityName}}Type)
     }
 
     //**********************    Set Timestamps    **********************//
@@ -1316,7 +1316,7 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryFilter(ctx context
             }
 
 
-            bookmarkType, err := {{$EntityName}}Types({{$EntityName}}TypeWhere.Type.EQ(type_.Wrappee)).One(ctx, repo.db)
+            bookmarkType, err := {{$EntityName}}Types({{$EntityName}}TypeWhere.{{$EntityName}}Type.EQ(type_.Wrappee)).One(ctx, repo.db)
 
             return bookmarkType, err
         })
@@ -1330,7 +1330,7 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryFilter(ctx context
             }
 
 
-            bookmarkType, err := {{$EntityName}}Types({{$EntityName}}TypeWhere.Type.EQ(type_.Wrappee)).One(ctx, repo.db)
+            bookmarkType, err := {{$EntityName}}Types({{$EntityName}}TypeWhere.{{$EntityName}}Type.EQ(type_.Wrappee)).One(ctx, repo.db)
 
             return null.NewInt64(bookmarkType.ID, true), err
         })
@@ -1650,7 +1650,7 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryUpdater(ctx contex
 	if domainUpdater.{{$EntityName}}Type.HasValue {
         var converted{{$EntityName}}Type *{{$EntityName}}Type
         if domainUpdater.{{$EntityName}}Type.Wrappee.Operand.HasValue {
-            converted{{$EntityName}}Type, err = {{$EntityName}}Types({{$EntityName}}TypeWhere.Type.EQ(domainUpdater.{{$EntityName}}Type.Wrappee.Operand.Wrappee)).One(context.Background(), repo.db)
+            converted{{$EntityName}}Type, err = {{$EntityName}}Types({{$EntityName}}TypeWhere.{{$EntityName}}Type.EQ(domainUpdater.{{$EntityName}}Type.Wrappee.Operand.Wrappee)).One(context.Background(), repo.db)
             if err != nil {
                 return
             }
