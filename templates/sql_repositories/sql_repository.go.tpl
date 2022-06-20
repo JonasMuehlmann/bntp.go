@@ -161,98 +161,98 @@ func buildQueryModFilter{{$EntityName}}[T any](filterField {{$EntityName}}Field,
     case model.FilterEqual:
         filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[any])
         if !ok {
-            panic("Expected a scalar operand for FilterEqual operator")
+            panic("expected a scalar operand for FilterEqual operator")
         }
 
         newQueryMod = append(newQueryMod, qm.Where(string(filterField)+" = ?", filterOperand.Operand))
     case model.FilterNEqual:
         filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[any])
         if !ok {
-            panic("Expected a scalar operand for FilterNEqual operator")
+            panic("expected a scalar operand for FilterNEqual operator")
         }
 
         newQueryMod = append(newQueryMod, qm.Where(string(filterField)+" != ?", filterOperand.Operand))
     case model.FilterGreaterThan:
         filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[any])
         if !ok {
-            panic("Expected a scalar operand for FilterGreaterThan operator")
+            panic("expected a scalar operand for FilterGreaterThan operator")
         }
 
         newQueryMod = append(newQueryMod, qm.Where(string(filterField)+" > ?", filterOperand.Operand))
     case model.FilterGreaterThanEqual:
         filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[any])
         if !ok {
-            panic("Expected a scalar operand for FilterGreaterThanEqual operator")
+            panic("expected a scalar operand for FilterGreaterThanEqual operator")
         }
 
         newQueryMod = append(newQueryMod, qm.Where(string(filterField)+" >= ?", filterOperand.Operand))
     case model.FilterLessThan:
         filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[any])
         if !ok {
-            panic("Expected a scalar operand for FilterLessThan operator")
+            panic("expected a scalar operand for FilterLessThan operator")
         }
 
         newQueryMod = append(newQueryMod, qm.Where(string(filterField)+" < ?", filterOperand.Operand))
     case model.FilterLessThanEqual:
         filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[any])
         if !ok {
-            panic("Expected a scalar operand for FilterLessThanEqual operator")
+            panic("expected a scalar operand for FilterLessThanEqual operator")
         }
 
         newQueryMod = append(newQueryMod, qm.Where(string(filterField)+" <= ?", filterOperand.Operand))
     case model.FilterIn:
         filterOperand, ok := filterOperation.Operand.(model.ListOperand[any])
         if !ok {
-            panic("Expected a list operand for FilterIn operator")
+            panic("expected a list operand for FilterIn operator")
         }
 
         newQueryMod = append(newQueryMod, qm.WhereIn(string(filterField)+" IN (?)", filterOperand.Operands))
     case model.FilterNotIn:
         filterOperand, ok := filterOperation.Operand.(model.ListOperand[any])
         if !ok {
-            panic("Expected a list operand for FilterNotIn operator")
+            panic("expected a list operand for FilterNotIn operator")
         }
 
         newQueryMod = append(newQueryMod, qm.WhereNotIn(string(filterField)+" IN (?)", filterOperand.Operands))
     case model.FilterBetween:
         filterOperand, ok := filterOperation.Operand.(model.RangeOperand[any])
         if !ok {
-            panic("Expected a scalar operand for FilterBetween operator")
+            panic("expected a scalar operand for FilterBetween operator")
         }
 
         newQueryMod = append(newQueryMod, qm.Where(string(filterField)+" BETWEEN ? AND ?", filterOperand.Start, filterOperand.End))
     case model.FilterNotBetween:
         filterOperand, ok := filterOperation.Operand.(model.RangeOperand[any])
         if !ok {
-            panic("Expected a scalar operand for FilterNotBetween operator")
+            panic("expected a scalar operand for FilterNotBetween operator")
         }
 
         newQueryMod = append(newQueryMod, qm.Where(string(filterField)+" NOT BETWEEN ? AND ?", filterOperand.Start, filterOperand.End))
     case model.FilterLike:
         filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[any])
         if !ok {
-            panic("Expected a scalar operand for FilterLike operator")
+            panic("expected a scalar operand for FilterLike operator")
         }
 
         newQueryMod = append(newQueryMod, qm.Where(string(filterField)+" LIKE ?", filterOperand.Operand))
     case model.FilterNotLike:
         filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[any])
         if !ok {
-            panic("Expected a scalar operand for FilterLike operator")
+            panic("expected a scalar operand for FilterLike operator")
         }
 
         newQueryMod = append(newQueryMod, qm.Where(string(filterField)+" NOT LIKE ?", filterOperand.Operand))
     case model.FilterOr:
         filterOperand, ok := filterOperation.Operand.(model.CompoundOperand[any])
         if !ok {
-            panic("Expected a scalar operand for FilterOr operator")
+            panic("expected a scalar operand for FilterOr operator")
         }
         newQueryMod = append(newQueryMod, qm.Expr(buildQueryModFilter{{$EntityName}}(filterField, filterOperand.LHS)))
         newQueryMod = append(newQueryMod, qm.Or2(qm.Expr(buildQueryModFilter{{$EntityName}}(filterField, filterOperand.RHS))))
     case model.FilterAnd:
         filterOperand, ok := filterOperation.Operand.(model.CompoundOperand[any])
         if !ok {
-            panic("Expected a scalar operand for FilterAnd operator")
+            panic("expected a scalar operand for FilterAnd operator")
         }
 
         newQueryMod = append(newQueryMod, qm.Expr(buildQueryModFilter{{$EntityName}}(filterField, filterOperand.LHS)))
@@ -270,7 +270,7 @@ func buildQueryModListFromFilter{{$EntityName}}(setFilters list.List) queryModSl
 	for filter := setFilters.Front(); filter != nil; filter = filter.Next() {
 		filterMapping, ok := filter.Value.({{$EntityName}}FilterMapping[any])
 		if !ok {
-			panic(fmt.Sprintf("Expected type %T but got %T", {{$EntityName}}FilterMapping[any]{}, filter))
+			panic(fmt.Sprintf("expected type %T but got %T", {{$EntityName}}FilterMapping[any]{}, filter))
 		}
 
         newQueryMod := buildQueryModFilter{{$EntityName}}(filterMapping.Field, filterMapping.FilterOperation)
@@ -314,6 +314,7 @@ func (repo *{{$StructName}}) New(args any) (newRepo repoCommon.{{$EntityName}}Re
 func (repo *{{$StructName}}) Add(ctx context.Context, domainModels []*domain.{{$EntityName}}) error {
     if len(domainModels) == 0 {
         log.Debug(helper.LogMessageEmptyInput)
+
         return nil
     }
 
@@ -338,7 +339,7 @@ func (repo *{{$StructName}}) Add(ctx context.Context, domainModels []*domain.{{$
 	for _, repositoryModel := range repositoryModels {
         repoModel, ok := repositoryModel.(*{{$EntityName}})
         if !ok {
-            return fmt.Errorf("Expected type *{{$EntityName}} but got %T", repoModel)
+            return fmt.Errorf("expected type *{{$EntityName}} but got %T", repoModel)
         }
 
 		err = repoModel.Insert(ctx, tx, boil.Infer())
@@ -367,7 +368,7 @@ func (repo *{{$StructName}}) Replace(ctx context.Context, domainModels []*domain
 	for _, repositoryModel := range repositoryModels {
         repoModel, ok := repositoryModel.(*{{$EntityName}})
         if !ok {
-            return fmt.Errorf("Expected type *{{$EntityName}} but got %T", repoModel)
+            return fmt.Errorf("expected type *{{$EntityName}} but got %T", repoModel)
         }
 
 		_, err = repoModel.Update(ctx, tx, boil.Infer())
@@ -394,7 +395,7 @@ func (repo *{{$StructName}}) Upsert(ctx context.Context, domainModels []*domain.
 	for _, repositoryModel := range repositoryModels {
         repoModel, ok := repositoryModel.(*{{$EntityName}})
         if !ok {
-            return fmt.Errorf("Expected type *{{$EntityName}} but got %T", repoModel)
+            return fmt.Errorf("expected type *{{$EntityName}} but got %T", repoModel)
         }
 
         {{ if eq .DatabaseName "mssql" }}
@@ -431,12 +432,12 @@ func (repo *{{$StructName}}) Update(ctx context.Context, domainModels []*domain.
     for _, repositoryModel := range   repositoryModels {
         repoModel, ok := repositoryModel.(*{{$EntityName}})
         if !ok {
-            return fmt.Errorf("Expected type *{{$EntityName}} but got %T", repoModel)
+            return fmt.Errorf("expected type *{{$EntityName}} but got %T", repoModel)
         }
 
         repoUpdater, ok := repositoryUpdater.(*{{$EntityName}}Updater)
         if !ok {
-            return fmt.Errorf("Expected type *{{$EntityName}} but got %T", repoModel)
+            return fmt.Errorf("expected type *{{$EntityName}} but got %T", repoModel)
         }
 
         repoUpdater.ApplyToModel(repoModel)
@@ -463,7 +464,7 @@ func (repo *{{$StructName}}) UpdateWhere(ctx context.Context, domainColumnFilter
 
     repoUpdater, ok := repositoryUpdater.(*{{$EntityName}}Updater)
     if !ok {
-        err = fmt.Errorf("Expected type *{{$EntityName}}Updater but got %T", repoUpdater)
+        err = fmt.Errorf("expected type *{{$EntityName}}Updater but got %T", repoUpdater)
 
         return
     }
@@ -471,7 +472,7 @@ func (repo *{{$StructName}}) UpdateWhere(ctx context.Context, domainColumnFilter
 
     repoFilter, ok := repositoryFilter.(*{{$EntityName}}Filter)
     if !ok {
-        err = fmt.Errorf("Expected type *{{$EntityName}}Filter but got %T", repoFilter)
+        err = fmt.Errorf("expected type *{{$EntityName}}Filter but got %T", repoFilter)
 
         return
     }
@@ -516,7 +517,7 @@ func (repo *{{$StructName}}) Delete(ctx context.Context, domainModels []*domain.
 	for _, repositoryModel := range repositoryModels {
         repoModel, ok := repositoryModel.(*{{$EntityName}})
         if !ok {
-            return fmt.Errorf("Expected type *{{$EntityName}} but got %T", repoModel)
+            return fmt.Errorf("expected type *{{$EntityName}} but got %T", repoModel)
         }
 
 		_, err = repoModel.Delete(ctx, tx)
@@ -538,7 +539,7 @@ func (repo *{{$StructName}}) DeleteWhere(ctx context.Context, domainColumnFilter
 
     repoFilter, ok := repositoryFilter.(*{{$EntityName}}Filter)
     if !ok {
-        err = fmt.Errorf("Expected type *{{$EntityName}}Filter but got %T", repoFilter)
+        err = fmt.Errorf("expected type *{{$EntityName}}Filter but got %T", repoFilter)
 
         return
     }
@@ -567,7 +568,7 @@ func (repo *{{$StructName}}) CountWhere(ctx context.Context, domainColumnFilter 
 
     repoFilter, ok := repositoryFilter.(*{{$EntityName}}Filter)
     if !ok {
-        return 0, fmt.Errorf("Expected type *{{$EntityName}}Filter but got %T", repoFilter)
+        return 0, fmt.Errorf("expected type *{{$EntityName}}Filter but got %T", repoFilter)
 
     }
 
@@ -590,7 +591,7 @@ func (repo *{{$StructName}}) DoesExist(ctx context.Context, domainModel *domain.
 
     repoModel, ok := repositoryModel.(*{{$EntityName}})
     if !ok {
-        return false, fmt.Errorf("Expected type *{{$EntityName}} but got %T", repoModel)
+        return false, fmt.Errorf("expected type *{{$EntityName}} but got %T", repoModel)
     }
 
 
@@ -605,7 +606,7 @@ func (repo *{{$StructName}}) DoesExistWhere(ctx context.Context, domainColumnFil
 
     repoFilter, ok := repositoryFilter.(*{{$EntityName}}Filter)
     if !ok {
-        return false, fmt.Errorf("Expected type *{{$EntityName}}Filter but got %T", repoFilter)
+        return false, fmt.Errorf("expected type *{{$EntityName}}Filter but got %T", repoFilter)
     }
 
     setFilters := *repoFilter.GetSetFilters()
@@ -623,7 +624,7 @@ func (repo *{{$StructName}}) GetWhere(ctx context.Context, domainColumnFilter *d
 
     repoFilter, ok := repositoryFilter.(*{{$EntityName}}Filter)
     if !ok {
-        return []*domain.{{$EntityName}}{}, fmt.Errorf("Expected type *{{$EntityName}}Filter but got %T", repoFilter)
+        return []*domain.{{$EntityName}}{}, fmt.Errorf("expected type *{{$EntityName}}Filter but got %T", repoFilter)
     }
 
 
@@ -655,7 +656,7 @@ func (repo *{{$StructName}}) GetFirstWhere(ctx context.Context, domainColumnFilt
 
     repoFilter, ok := repositoryFilter.(*{{$EntityName}}Filter)
     if !ok {
-        return nil, fmt.Errorf("Expected type *{{$EntityName}}Filter but got %T", repoFilter)
+        return nil, fmt.Errorf("expected type *{{$EntityName}}Filter but got %T", repoFilter)
     }
 
     setFilters := * repoFilter.GetSetFilters()
@@ -810,9 +811,11 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryModel(ctx context.
     if domainModel.Tags != nil {
         repositoryModelConcrete.R.Tags = make(TagSlice, 0, len(domainModel.Tags))
         for _,  domainTag := range domainModel.Tags {
-        {{/* TODO: This fails if the tags don't exist already, they have to be added beforehand! */}}
+        {{/* TODO: This fails if the tags don't exist already, they have to be added beforehand, this should be done in the managers though! */}}
             repositoryTag, err = Tags(TagWhere.Tag.EQ(domainTag.Tag)).One(ctx, repo.db)
             if err != nil {
+                err = repoCommon.ReferenceToNonExistentDependencyError{Inner: err}
+
                 return
             }
 
@@ -828,6 +831,8 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryModel(ctx context.
         repositoryModelConcrete.R.{{$EntityName}}Type = &{{$EntityName}}Type{{"{"}}{{$EntityName}}Type: domainModel.{{$EntityName}}Type.Wrappee}
 		repository{{$EntityName}}Type, err = {{$EntityName}}Types({{$EntityName}}TypeWhere.{{$EntityName}}Type.EQ(domainModel.{{$EntityName}}Type.Wrappee)).One(ctx, repo.db)
 		if err != nil {
+            err = repoCommon.ReferenceToNonExistentDependencyError{Inner: err}
+
 			return
 		}
 
@@ -957,6 +962,8 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryModel(ctx context.
 	for _, modelTag := range domainModel.Tags {
 		repositoryTag, err = Tags(TagWhere.Tag.EQ(modelTag.Tag)).One(ctx, repo.db)
 		if err != nil {
+            err = repoCommon.ReferenceToNonExistentDependencyError{Inner: err}
+
 			return
 		}
 
@@ -970,6 +977,8 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryModel(ctx context.
         repositoryModelConcrete.R.{{$EntityName}}Type = &{{$EntityName}}Type{{"{"}}{{$EntityName}}Type: domainModel.{{$EntityName}}Type.Wrappee}
 		repository{{$EntityName}}Type, err = {{$EntityName}}Types({{$EntityName}}TypeWhere.{{$EntityName}}Type.EQ(domainModel.{{$EntityName}}Type.Wrappee)).One(ctx, repo.db)
 		if err != nil {
+            err = repoCommon.ReferenceToNonExistentDependencyError{Inner: err}
+
 			return
 		}
 
@@ -991,6 +1000,8 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryModel(ctx context.
     for _ , link := range domainModel.Linked{{$EntityName}}s {
         repository{{$EntityName}}Raw, err = repo.{{$EntityName}}DomainToRepositoryModel(ctx, link)
         if err != nil {
+            err = repoCommon.ReferenceToNonExistentDependencyError{Inner: err}
+
             return
         }
 
@@ -1000,6 +1011,8 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryModel(ctx context.
     for _ , backlink := range domainModel.Backlinked{{$EntityName}}s {
         repository{{$EntityName}}Raw, err = repo.{{$EntityName}}DomainToRepositoryModel(ctx, backlink)
         if err != nil {
+            err = repoCommon.ReferenceToNonExistentDependencyError{Inner: err}
+
             return
         }
 

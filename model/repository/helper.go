@@ -122,3 +122,15 @@ func MakeDomainToRepositoryEntityConverterGeneric[TIn any, TOut any](ctx context
 		return entityConcrete, nil
 	}
 }
+
+type ReferenceToNonExistentDependencyError struct {
+	Inner error
+}
+
+func (err ReferenceToNonExistentDependencyError) Error() string {
+	return fmt.Sprintf("Error when writing data with reference to non-existent dependency: %v", err.Inner)
+}
+
+func (err ReferenceToNonExistentDependencyError) Unwrap() error {
+	return err.Inner
+}
