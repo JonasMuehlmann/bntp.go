@@ -311,14 +311,14 @@ func (repo *{{$StructName}}) New(args any) (newRepo repoCommon.{{$EntityName}}Re
 //******************************************************************//
 //                              Methods                             //
 //******************************************************************//
-func (repo *{{$StructName}}) Add(ctx context.Context, domainModels []*domain.{{$EntityName}}) error {
+func (repo *{{$StructName}}) Add(ctx context.Context, domainModels []*domain.{{$EntityName}})  (err error){
     if len(domainModels) == 0 {
         log.Debug(helper.LogMessageEmptyInput)
 
-        return nil
+        return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
     }
 
-	err := goaoi.AnyOfSlice(domainModels, goaoi.AreEqualPartial[*domain.{{$EntityName}}](nil))
+	err = goaoi.AnyOfSlice(domainModels, goaoi.AreEqualPartial[*domain.{{$EntityName}}](nil))
 	if err == nil{
 		err = helper.NilInputError{}
 		log.Error(err)
@@ -326,12 +326,15 @@ func (repo *{{$StructName}}) Add(ctx context.Context, domainModels []*domain.{{$
 		return err
 	}
 
-    repositoryModels, err := goaoi.TransformCopySlice(domainModels, repo.Get{{$EntityName}}DomainToRepositoryModel(ctx))
+    var repositoryModels []any
+    repositoryModels, err = goaoi.TransformCopySlice(domainModels, repo.Get{{$EntityName}}DomainToRepositoryModel(ctx))
 	if err != nil {
 		return err
 	}
 
-	tx, err := repo.db.BeginTx(ctx, nil)
+    var tx *sql.Tx
+
+	tx, err = repo.db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
 	}
@@ -353,14 +356,31 @@ func (repo *{{$StructName}}) Add(ctx context.Context, domainModels []*domain.{{$
     return nil
 }
 
-func (repo *{{$StructName}}) Replace(ctx context.Context, domainModels []*domain.{{$EntityName}}) error {
+func (repo *{{$StructName}}) Replace(ctx context.Context, domainModels []*domain.{{$EntityName}})  (err error){
     {{/* TODO: Handle empty inputs and input containing/being nil values */}}
-    repositoryModels, err := goaoi.TransformCopySlice(domainModels, repo.Get{{$EntityName}}DomainToRepositoryModel(ctx))
+    if len(domainModels) == 0 {
+        log.Debug(helper.LogMessageEmptyInput)
+
+        return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
+    }
+
+	err = goaoi.AnyOfSlice(domainModels, goaoi.AreEqualPartial[*domain.{{$EntityName}}](nil))
+	if err == nil{
+		err = helper.NilInputError{}
+		log.Error(err)
+
+		return err
+	}
+
+    var repositoryModels []any
+    repositoryModels, err = goaoi.TransformCopySlice(domainModels, repo.Get{{$EntityName}}DomainToRepositoryModel(ctx))
 	if err != nil {
 		return err
 	}
 
-	tx, err := repo.db.BeginTx(ctx, nil)
+    var tx *sql.Tx
+
+	tx, err = repo.db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
 	}
@@ -371,23 +391,45 @@ func (repo *{{$StructName}}) Replace(ctx context.Context, domainModels []*domain
             return fmt.Errorf("expected type *{{$EntityName}} but got %T", repoModel)
         }
 
-		_, err = repoModel.Update(ctx, tx, boil.Infer())
+        var numAffectedRecords int64
+		numAffectedRecords, err = repoModel.Update(ctx, tx, boil.Infer())
 		if err != nil {
 			return err
 		}
+
+        if numAffectedRecords == 0 {
+            return helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError}
+        }
 	}
 
 	tx.Commit()
 
     return nil
 }
-func (repo *{{$StructName}}) Upsert(ctx context.Context, domainModels []*domain.{{$EntityName}}) error {
-    repositoryModels, err := goaoi.TransformCopySlice(domainModels, repo.Get{{$EntityName}}DomainToRepositoryModel(ctx))
+func (repo *{{$StructName}}) Upsert(ctx context.Context, domainModels []*domain.{{$EntityName}})  (err error){
+    if len(domainModels) == 0 {
+        log.Debug(helper.LogMessageEmptyInput)
+
+        return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
+    }
+
+	err = goaoi.AnyOfSlice(domainModels, goaoi.AreEqualPartial[*domain.{{$EntityName}}](nil))
+	if err == nil{
+		err = helper.NilInputError{}
+		log.Error(err)
+
+		return err
+	}
+
+    var repositoryModels []any
+    repositoryModels, err = goaoi.TransformCopySlice(domainModels, repo.Get{{$EntityName}}DomainToRepositoryModel(ctx))
 	if err != nil {
 		return err
 	}
 
-	tx, err := repo.db.BeginTx(ctx, nil)
+    var tx *sql.Tx
+
+	tx, err = repo.db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
 	}
@@ -413,22 +455,48 @@ func (repo *{{$StructName}}) Upsert(ctx context.Context, domainModels []*domain.
     return nil
 }
 
-func (repo *{{$StructName}}) Update(ctx context.Context, domainModels []*domain.{{$EntityName}}, domainColumnUpdater *domain.{{$EntityName}}Updater) error {
-    repositoryModels, err := goaoi.TransformCopySlice(domainModels, repo.Get{{$EntityName}}DomainToRepositoryModel(ctx))
+func (repo *{{$StructName}}) Update(ctx context.Context, domainModels []*domain.{{$EntityName}}, domainColumnUpdater *domain.{{$EntityName}}Updater)  (err error){
+    if len(domainModels) == 0 {
+        log.Debug(helper.LogMessageEmptyInput)
+
+        return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
+    }
+
+	err = goaoi.AnyOfSlice(domainModels, goaoi.AreEqualPartial[*domain.{{$EntityName}}](nil))
+	if err == nil{
+		err = helper.NilInputError{}
+		log.Error(err)
+
+		return err
+	}
+
+	if  domainColumnUpdater == nil {
+		err = helper.NilInputError{}
+		log.Error(err)
+
+		return err
+    }
+
+    var repositoryModels []any
+    repositoryModels, err = goaoi.TransformCopySlice(domainModels, repo.Get{{$EntityName}}DomainToRepositoryModel(ctx))
 	if err != nil {
 		return err
 	}
 
-    repositoryUpdater, err := repo.{{$EntityName}}DomainToRepositoryUpdater(ctx, domainColumnUpdater)
+    var repositoryUpdater any
+    repositoryUpdater, err = repo.{{$EntityName}}DomainToRepositoryUpdater(ctx, domainColumnUpdater)
     if err != nil {
         return err
     }
 
-   	tx, err := repo.db.BeginTx(ctx, nil)
+    var tx *sql.Tx
+
+   	tx, err = repo.db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
 	}
 
+    var numAffectedRecords int64
     for _, repositoryModel := range   repositoryModels {
         repoModel, ok := repositoryModel.(*{{$EntityName}})
         if !ok {
@@ -441,10 +509,17 @@ func (repo *{{$StructName}}) Update(ctx context.Context, domainModels []*domain.
         }
 
         repoUpdater.ApplyToModel(repoModel)
-        repoModel.Update(ctx, tx, boil.Infer())
+        numAffectedRecords, err = repoModel.Update(ctx, tx, boil.Infer())
+        if err != nil {
+            return err
+        }
+
+        if numAffectedRecords == 0 {
+            return helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError}
+        }
     }
 
-    tx.Commit()
+    err = tx.Commit()
 
     return err
 }
@@ -452,12 +527,28 @@ func (repo *{{$StructName}}) Update(ctx context.Context, domainModels []*domain.
 func (repo *{{$StructName}}) UpdateWhere(ctx context.Context, domainColumnFilter *domain.{{$EntityName}}Filter, domainColumnUpdater *domain.{{$EntityName}}Updater) (numAffectedRecords int64, err error) {
 	var modelsToUpdate {{$EntityName}}Slice
 
-    repositoryFilter, err := repo.{{$EntityName}}DomainToRepositoryFilter(ctx, domainColumnFilter)
+	if  domainColumnFilter == nil {
+		err = helper.NilInputError{}
+		log.Error(err)
+
+		return 0, err
+    }
+
+	if  domainColumnUpdater == nil {
+		err = helper.NilInputError{}
+		log.Error(err)
+
+		return 0, err
+    }
+
+    var repositoryFilter any
+    repositoryFilter, err = repo.{{$EntityName}}DomainToRepositoryFilter(ctx, domainColumnFilter)
     if err != nil {
         return
     }
 
-    repositoryUpdater, err := repo.{{$EntityName}}DomainToRepositoryUpdater(ctx, domainColumnUpdater)
+    var repositoryUpdater any
+    repositoryUpdater, err = repo.{{$EntityName}}DomainToRepositoryUpdater(ctx, domainColumnUpdater)
     if err != nil {
         return
     }
@@ -488,7 +579,9 @@ func (repo *{{$StructName}}) UpdateWhere(ctx context.Context, domainColumnFilter
 
     numAffectedRecords = int64(len(modelsToUpdate))
 
-	tx, err := repo.db.BeginTx(ctx, nil)
+    var tx *sql.Tx
+
+	tx, err = repo.db.BeginTx(ctx, nil)
 	if err != nil {
 		return
 	}
@@ -503,13 +596,30 @@ func (repo *{{$StructName}}) UpdateWhere(ctx context.Context, domainColumnFilter
     return
 }
 
-func (repo *{{$StructName}}) Delete(ctx context.Context, domainModels []*domain.{{$EntityName}}) error {
-    repositoryModels, err := goaoi.TransformCopySlice(domainModels, repo.Get{{$EntityName}}DomainToRepositoryModel(ctx))
+func (repo *{{$StructName}}) Delete(ctx context.Context, domainModels []*domain.{{$EntityName}})  (err error){
+    if len(domainModels) == 0 {
+        log.Debug(helper.LogMessageEmptyInput)
+
+        return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
+    }
+
+	err = goaoi.AnyOfSlice(domainModels, goaoi.AreEqualPartial[*domain.{{$EntityName}}](nil))
+	if err == nil{
+		err = helper.NilInputError{}
+		log.Error(err)
+
+		return err
+	}
+
+    var repositoryModels []any
+    repositoryModels, err = goaoi.TransformCopySlice(domainModels, repo.Get{{$EntityName}}DomainToRepositoryModel(ctx))
 	if err != nil {
 		return err
 	}
 
-	tx, err := repo.db.BeginTx(ctx, nil)
+    var tx *sql.Tx
+
+	tx, err = repo.db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
 	}
@@ -532,7 +642,15 @@ func (repo *{{$StructName}}) Delete(ctx context.Context, domainModels []*domain.
 }
 
 func (repo *{{$StructName}}) DeleteWhere(ctx context.Context, domainColumnFilter *domain.{{$EntityName}}Filter) (numAffectedRecords int64, err error) {
-    repositoryFilter, err := repo.{{$EntityName}}DomainToRepositoryFilter(ctx, domainColumnFilter)
+	if  domainColumnFilter == nil {
+		err = helper.NilInputError{}
+		log.Error(err)
+
+		return 0, err
+    }
+
+    var repositoryFilter any
+    repositoryFilter, err = repo.{{$EntityName}}DomainToRepositoryFilter(ctx, domainColumnFilter)
     if err != nil {
         return
     }
@@ -548,7 +666,9 @@ func (repo *{{$StructName}}) DeleteWhere(ctx context.Context, domainColumnFilter
 
 	queryFilters := buildQueryModListFromFilter{{$EntityName}}(setFilters)
 
-	tx, err := repo.db.BeginTx(ctx, nil)
+    var tx *sql.Tx
+
+	tx, err = repo.db.BeginTx(ctx, nil)
 	if err != nil {
 		return
 	}
@@ -560,8 +680,16 @@ func (repo *{{$StructName}}) DeleteWhere(ctx context.Context, domainColumnFilter
     return
 }
 
-func (repo *{{$StructName}}) CountWhere(ctx context.Context, domainColumnFilter *domain.{{$EntityName}}Filter) (int64, error) {
-    repositoryFilter, err := repo.{{$EntityName}}DomainToRepositoryFilter(ctx, domainColumnFilter)
+func (repo *{{$StructName}}) CountWhere(ctx context.Context, domainColumnFilter *domain.{{$EntityName}}Filter) (numRecords int64, err error) {
+	if  domainColumnFilter == nil {
+		err = helper.NilInputError{}
+		log.Error(err)
+
+		return 0, err
+    }
+
+    var repositoryFilter any
+    repositoryFilter, err = repo.{{$EntityName}}DomainToRepositoryFilter(ctx, domainColumnFilter)
     if err != nil {
         return 0, err
     }
@@ -579,34 +707,53 @@ func (repo *{{$StructName}}) CountWhere(ctx context.Context, domainColumnFilter 
 	return {{$EntityName}}s(queryFilters...).Count(ctx, repo.db)
 }
 
-func (repo *{{$StructName}}) CountAll(ctx context.Context) (int64, error) {
+func (repo *{{$StructName}}) CountAll(ctx context.Context) (numRecords int64, err error) {
 	return {{$EntityName}}s().Count(ctx, repo.db)
 }
 
-func (repo *{{$StructName}}) DoesExist(ctx context.Context, domainModel *domain.{{$EntityName}}) (bool, error) {
-    repositoryModel, err := repo.{{$EntityName}}DomainToRepositoryModel(ctx, domainModel)
+func (repo *{{$StructName}}) DoesExist(ctx context.Context, domainModel *domain.{{$EntityName}}) (doesExist bool, err error) {
+	if domainModel == nil {
+        err = helper.NilInputError{}
+		log.Error(err)
+
+		return
+	}
+
+    var repositoryModel any
+    repositoryModel, err = repo.{{$EntityName}}DomainToRepositoryModel(ctx, domainModel)
     if err != nil {
-        return false, err
+        return
     }
 
     repoModel, ok := repositoryModel.(*{{$EntityName}})
     if !ok {
-        return false, fmt.Errorf("expected type *{{$EntityName}} but got %T", repoModel)
+        err = fmt.Errorf("expected type *{{$EntityName}} but got %T", repoModel)
+        return
     }
 
 
 	return {{$EntityName}}Exists(ctx, repo.db, repoModel.ID)
 }
 
-func (repo *{{$StructName}}) DoesExistWhere(ctx context.Context, domainColumnFilter *domain.{{$EntityName}}Filter) (bool, error) {
-    repositoryFilter, err := repo.{{$EntityName}}DomainToRepositoryFilter(ctx, domainColumnFilter)
+func (repo *{{$StructName}}) DoesExistWhere(ctx context.Context, domainColumnFilter *domain.{{$EntityName}}Filter) (doesExist bool, err error) {
+	if  domainColumnFilter == nil {
+		err = helper.NilInputError{}
+		log.Error(err)
+
+		return
+    }
+
+    var repositoryFilter any
+    repositoryFilter, err = repo.{{$EntityName}}DomainToRepositoryFilter(ctx, domainColumnFilter)
     if err != nil {
-        return false, err
+        return
     }
 
     repoFilter, ok := repositoryFilter.(*{{$EntityName}}Filter)
     if !ok {
-        return false, fmt.Errorf("expected type *{{$EntityName}}Filter but got %T", repoFilter)
+        err = fmt.Errorf("expected type *{{$EntityName}}Filter but got %T", repoFilter)
+
+        return
     }
 
     setFilters := *repoFilter.GetSetFilters()
@@ -616,15 +763,25 @@ func (repo *{{$StructName}}) DoesExistWhere(ctx context.Context, domainColumnFil
 	return {{$EntityName}}s(queryFilters...).Exists(ctx, repo.db)
 }
 
-func (repo *{{$StructName}}) GetWhere(ctx context.Context, domainColumnFilter *domain.{{$EntityName}}Filter) ([]*domain.{{$EntityName}}, error) {
-    repositoryFilter, err := repo.{{$EntityName}}DomainToRepositoryFilter(ctx, domainColumnFilter)
+func (repo *{{$StructName}}) GetWhere(ctx context.Context, domainColumnFilter *domain.{{$EntityName}}Filter) (records []*domain.{{$EntityName}}, err error) {
+	if  domainColumnFilter == nil {
+		err = helper.NilInputError{}
+		log.Error(err)
+
+		return
+    }
+
+    var repositoryFilter any
+    repositoryFilter, err = repo.{{$EntityName}}DomainToRepositoryFilter(ctx, domainColumnFilter)
     if err != nil {
-        return []*domain.{{$EntityName}}{}, err
+        return
     }
 
     repoFilter, ok := repositoryFilter.(*{{$EntityName}}Filter)
     if !ok {
-        return []*domain.{{$EntityName}}{}, fmt.Errorf("expected type *{{$EntityName}}Filter but got %T", repoFilter)
+        err = fmt.Errorf("expected type *{{$EntityName}}Filter but got %T", repoFilter)
+
+        return
     }
 
 
@@ -632,91 +789,105 @@ func (repo *{{$StructName}}) GetWhere(ctx context.Context, domainColumnFilter *d
 
 	queryFilters := buildQueryModListFromFilter{{$EntityName}}(setFilters)
 
-    repositoryModels, err := {{$EntityName}}s(queryFilters...).All(ctx, repo.db)
+    var repositoryModels {{$EntityName}}Slice
+    repositoryModels, err = {{$EntityName}}s(queryFilters...).All(ctx, repo.db)
 
-    domainModels := make([]*domain.{{$EntityName}}, 0, len(repositoryModels))
+    records = make([]*domain.{{$EntityName}}, 0, len(repositoryModels))
 
+    var domainModel *domain.{{$EntityName}}
     for _, repoModel := range repositoryModels {
-        domainModel, err := repo.{{$EntityName}}RepositoryToDomainModel(ctx, repoModel)
+        domainModel, err = repo.{{$EntityName}}RepositoryToDomainModel(ctx, repoModel)
         if err != nil {
-            return domainModels, err
+            return
         }
 
-        domainModels = append(domainModels, domainModel)
+        records = append(records, domainModel)
     }
 
-    return domainModels, err
+    return
 }
 
-func (repo *{{$StructName}}) GetFirstWhere(ctx context.Context, domainColumnFilter *domain.{{$EntityName}}Filter) (*domain.{{$EntityName}}, error) {
-    repositoryFilter, err := repo.{{$EntityName}}DomainToRepositoryFilter(ctx, domainColumnFilter)
+func (repo *{{$StructName}}) GetFirstWhere(ctx context.Context, domainColumnFilter *domain.{{$EntityName}}Filter) (record *domain.{{$EntityName}}, err error) {
+	if  domainColumnFilter == nil {
+		err = helper.NilInputError{}
+		log.Error(err)
+
+		return
+    }
+
+    var repositoryFilter any
+    repositoryFilter, err = repo.{{$EntityName}}DomainToRepositoryFilter(ctx, domainColumnFilter)
     if err != nil {
-        return nil, err
+        return
     }
 
     repoFilter, ok := repositoryFilter.(*{{$EntityName}}Filter)
     if !ok {
-        return nil, fmt.Errorf("expected type *{{$EntityName}}Filter but got %T", repoFilter)
+        err =  fmt.Errorf("expected type *{{$EntityName}}Filter but got %T", repoFilter)
+
+        return
     }
 
     setFilters := * repoFilter.GetSetFilters()
 
 	queryFilters := buildQueryModListFromFilter{{$EntityName}}(setFilters)
 
-    repositoryModel, err := {{$EntityName}}s(queryFilters...).One(ctx, repo.db)
-
-    var domainModel *domain.{{$EntityName}}
+    var repositoryModel *{{$EntityName}}
+    repositoryModel, err = {{$EntityName}}s(queryFilters...).One(ctx, repo.db)
     if err != nil {
-        return domainModel, err
+        return
     }
 
-    domainModel, err =repo.{{$EntityName}}RepositoryToDomainModel(ctx, repositoryModel)
+    record , err =repo.{{$EntityName}}RepositoryToDomainModel(ctx, repositoryModel)
 
-    return domainModel, err
+    return
 }
 
-func (repo *{{$StructName}}) GetAll(ctx context.Context) ([]*domain.{{$EntityName}}, error) {
-    repositoryModels, err := {{$EntityName}}s().All(ctx, repo.db)
+func (repo *{{$StructName}}) GetAll(ctx context.Context) (records []*domain.{{$EntityName}}, err error) {
+    var repositoryModels {{$EntityName}}Slice
+    repositoryModels, err = {{$EntityName}}s().All(ctx, repo.db)
     if err != nil {
-        return []*domain.{{$EntityName}}{}, err
+        return
     }
 
-    domainModels := make([]*domain.{{$EntityName}}, 0, len(repositoryModels))
+    records = make([]*domain.{{$EntityName}}, 0, len(repositoryModels))
 
+    var domainModel *domain.{{$EntityName}}
     for _, repoModel := range repositoryModels {
-        domainModel, err := repo.{{$EntityName}}RepositoryToDomainModel(ctx, repoModel)
+        domainModel, err = repo.{{$EntityName}}RepositoryToDomainModel(ctx, repoModel)
         if err != nil {
-            return domainModels, err
+            return
         }
 
-        domainModels = append(domainModels, domainModel)
+        records = append(records, domainModel)
     }
 
-    return domainModels, err
+    return
 }
 
 {{ if ne $EntityName "Tag" }}
-func (repo *{{$StructName}}) AddType(ctx context.Context, types []string) error {
+func (repo *{{$StructName}}) AddType(ctx context.Context, types []string)  (err error){
     for _, type_ := range types {
         repositoryModel := {{$EntityName}}Type{{"{"}}{{$EntityName}}Type: type_}
 
-        err := repositoryModel.Insert(ctx, repo.db, boil.Infer())
+        err = repositoryModel.Insert(ctx, repo.db, boil.Infer())
         if err != nil {
             return err
         }
     }
 
-    return nil
+    return
 }
 
-func (repo *{{$StructName}}) DeleteType(ctx context.Context, types []string) error {
-    _, err := {{$EntityName}}Types({{$EntityName}}TypeWhere.{{$EntityName}}Type.IN(types)).DeleteAll(ctx, repo.db)
+func (repo *{{$StructName}}) DeleteType(ctx context.Context, types []string)  (err error){
+    _, err = {{$EntityName}}Types({{$EntityName}}TypeWhere.{{$EntityName}}Type.IN(types)).DeleteAll(ctx, repo.db)
 
-	return err
+	return
 }
 
-func (repo *{{$StructName}}) UpdateType(ctx context.Context, oldType string, newType string) error {
-    repositoryModel, err := {{$EntityName}}Types({{$EntityName}}TypeWhere.{{$EntityName}}Type.EQ(oldType)).One(ctx, repo.db)
+func (repo *{{$StructName}}) UpdateType(ctx context.Context, oldType string, newType string)  (err error){
+    var repositoryModel *{{$EntityName}}Type
+    repositoryModel, err = {{$EntityName}}Types({{$EntityName}}TypeWhere.{{$EntityName}}Type.EQ(oldType)).One(ctx, repo.db)
     if err != nil {
         return err
     }
@@ -725,7 +896,7 @@ func (repo *{{$StructName}}) UpdateType(ctx context.Context, oldType string, new
 
     _, err = repositoryModel.Update(ctx, repo.db, boil.Infer())
 
-    return err
+    return
 }
 
 func (repo *{{$StructName}}) GetTagRepository() repoCommon.TagRepository {

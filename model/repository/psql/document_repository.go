@@ -372,13 +372,14 @@ func (repo *PsqlDocumentRepository) New(args any) (newRepo repoCommon.DocumentRe
 //******************************************************************//
 //                              Methods                             //
 //******************************************************************//
-func (repo *PsqlDocumentRepository) Add(ctx context.Context, domainModels []*domain.Document) error {
+func (repo *PsqlDocumentRepository) Add(ctx context.Context, domainModels []*domain.Document)  (err error){
     if len(domainModels) == 0 {
         log.Debug(helper.LogMessageEmptyInput)
-        return nil
+
+        return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
     }
 
-	err := goaoi.AnyOfSlice(domainModels, goaoi.AreEqualPartial[*domain.Document](nil))
+	err = goaoi.AnyOfSlice(domainModels, goaoi.AreEqualPartial[*domain.Document](nil))
 	if err == nil{
 		err = helper.NilInputError{}
 		log.Error(err)
@@ -386,12 +387,15 @@ func (repo *PsqlDocumentRepository) Add(ctx context.Context, domainModels []*dom
 		return err
 	}
 
-    repositoryModels, err := goaoi.TransformCopySlice(domainModels, repo.GetDocumentDomainToRepositoryModel(ctx))
+    var repositoryModels []any
+    repositoryModels, err = goaoi.TransformCopySlice(domainModels, repo.GetDocumentDomainToRepositoryModel(ctx))
 	if err != nil {
 		return err
 	}
 
-	tx, err := repo.db.BeginTx(ctx, nil)
+    var tx *sql.Tx
+
+	tx, err = repo.db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
 	}
@@ -413,14 +417,31 @@ func (repo *PsqlDocumentRepository) Add(ctx context.Context, domainModels []*dom
     return nil
 }
 
-func (repo *PsqlDocumentRepository) Replace(ctx context.Context, domainModels []*domain.Document) error {
+func (repo *PsqlDocumentRepository) Replace(ctx context.Context, domainModels []*domain.Document)  (err error){
     
-    repositoryModels, err := goaoi.TransformCopySlice(domainModels, repo.GetDocumentDomainToRepositoryModel(ctx))
+    if len(domainModels) == 0 {
+        log.Debug(helper.LogMessageEmptyInput)
+
+        return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
+    }
+
+	err = goaoi.AnyOfSlice(domainModels, goaoi.AreEqualPartial[*domain.Document](nil))
+	if err == nil{
+		err = helper.NilInputError{}
+		log.Error(err)
+
+		return err
+	}
+
+    var repositoryModels []any
+    repositoryModels, err = goaoi.TransformCopySlice(domainModels, repo.GetDocumentDomainToRepositoryModel(ctx))
 	if err != nil {
 		return err
 	}
 
-	tx, err := repo.db.BeginTx(ctx, nil)
+    var tx *sql.Tx
+
+	tx, err = repo.db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
 	}
@@ -431,23 +452,45 @@ func (repo *PsqlDocumentRepository) Replace(ctx context.Context, domainModels []
             return fmt.Errorf("expected type *Document but got %T", repoModel)
         }
 
-		_, err = repoModel.Update(ctx, tx, boil.Infer())
+        var numAffectedRecords int64
+		numAffectedRecords, err = repoModel.Update(ctx, tx, boil.Infer())
 		if err != nil {
 			return err
 		}
+
+        if numAffectedRecords == 0 {
+            return helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError}
+        }
 	}
 
 	tx.Commit()
 
     return nil
 }
-func (repo *PsqlDocumentRepository) Upsert(ctx context.Context, domainModels []*domain.Document) error {
-    repositoryModels, err := goaoi.TransformCopySlice(domainModels, repo.GetDocumentDomainToRepositoryModel(ctx))
+func (repo *PsqlDocumentRepository) Upsert(ctx context.Context, domainModels []*domain.Document)  (err error){
+    if len(domainModels) == 0 {
+        log.Debug(helper.LogMessageEmptyInput)
+
+        return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
+    }
+
+	err = goaoi.AnyOfSlice(domainModels, goaoi.AreEqualPartial[*domain.Document](nil))
+	if err == nil{
+		err = helper.NilInputError{}
+		log.Error(err)
+
+		return err
+	}
+
+    var repositoryModels []any
+    repositoryModels, err = goaoi.TransformCopySlice(domainModels, repo.GetDocumentDomainToRepositoryModel(ctx))
 	if err != nil {
 		return err
 	}
 
-	tx, err := repo.db.BeginTx(ctx, nil)
+    var tx *sql.Tx
+
+	tx, err = repo.db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
 	}
@@ -471,22 +514,48 @@ func (repo *PsqlDocumentRepository) Upsert(ctx context.Context, domainModels []*
     return nil
 }
 
-func (repo *PsqlDocumentRepository) Update(ctx context.Context, domainModels []*domain.Document, domainColumnUpdater *domain.DocumentUpdater) error {
-    repositoryModels, err := goaoi.TransformCopySlice(domainModels, repo.GetDocumentDomainToRepositoryModel(ctx))
+func (repo *PsqlDocumentRepository) Update(ctx context.Context, domainModels []*domain.Document, domainColumnUpdater *domain.DocumentUpdater)  (err error){
+    if len(domainModels) == 0 {
+        log.Debug(helper.LogMessageEmptyInput)
+
+        return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
+    }
+
+	err = goaoi.AnyOfSlice(domainModels, goaoi.AreEqualPartial[*domain.Document](nil))
+	if err == nil{
+		err = helper.NilInputError{}
+		log.Error(err)
+
+		return err
+	}
+
+	if  domainColumnUpdater == nil {
+		err = helper.NilInputError{}
+		log.Error(err)
+
+		return err
+    }
+
+    var repositoryModels []any
+    repositoryModels, err = goaoi.TransformCopySlice(domainModels, repo.GetDocumentDomainToRepositoryModel(ctx))
 	if err != nil {
 		return err
 	}
 
-    repositoryUpdater, err := repo.DocumentDomainToRepositoryUpdater(ctx, domainColumnUpdater)
+    var repositoryUpdater any
+    repositoryUpdater, err = repo.DocumentDomainToRepositoryUpdater(ctx, domainColumnUpdater)
     if err != nil {
         return err
     }
 
-   	tx, err := repo.db.BeginTx(ctx, nil)
+    var tx *sql.Tx
+
+   	tx, err = repo.db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
 	}
 
+    var numAffectedRecords int64
     for _, repositoryModel := range   repositoryModels {
         repoModel, ok := repositoryModel.(*Document)
         if !ok {
@@ -499,10 +568,17 @@ func (repo *PsqlDocumentRepository) Update(ctx context.Context, domainModels []*
         }
 
         repoUpdater.ApplyToModel(repoModel)
-        repoModel.Update(ctx, tx, boil.Infer())
+        numAffectedRecords, err = repoModel.Update(ctx, tx, boil.Infer())
+        if err != nil {
+            return err
+        }
+
+        if numAffectedRecords == 0 {
+            return helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError}
+        }
     }
 
-    tx.Commit()
+    err = tx.Commit()
 
     return err
 }
@@ -510,12 +586,28 @@ func (repo *PsqlDocumentRepository) Update(ctx context.Context, domainModels []*
 func (repo *PsqlDocumentRepository) UpdateWhere(ctx context.Context, domainColumnFilter *domain.DocumentFilter, domainColumnUpdater *domain.DocumentUpdater) (numAffectedRecords int64, err error) {
 	var modelsToUpdate DocumentSlice
 
-    repositoryFilter, err := repo.DocumentDomainToRepositoryFilter(ctx, domainColumnFilter)
+	if  domainColumnFilter == nil {
+		err = helper.NilInputError{}
+		log.Error(err)
+
+		return 0, err
+    }
+
+	if  domainColumnUpdater == nil {
+		err = helper.NilInputError{}
+		log.Error(err)
+
+		return 0, err
+    }
+
+    var repositoryFilter any
+    repositoryFilter, err = repo.DocumentDomainToRepositoryFilter(ctx, domainColumnFilter)
     if err != nil {
         return
     }
 
-    repositoryUpdater, err := repo.DocumentDomainToRepositoryUpdater(ctx, domainColumnUpdater)
+    var repositoryUpdater any
+    repositoryUpdater, err = repo.DocumentDomainToRepositoryUpdater(ctx, domainColumnUpdater)
     if err != nil {
         return
     }
@@ -546,7 +638,9 @@ func (repo *PsqlDocumentRepository) UpdateWhere(ctx context.Context, domainColum
 
     numAffectedRecords = int64(len(modelsToUpdate))
 
-	tx, err := repo.db.BeginTx(ctx, nil)
+    var tx *sql.Tx
+
+	tx, err = repo.db.BeginTx(ctx, nil)
 	if err != nil {
 		return
 	}
@@ -561,13 +655,30 @@ func (repo *PsqlDocumentRepository) UpdateWhere(ctx context.Context, domainColum
     return
 }
 
-func (repo *PsqlDocumentRepository) Delete(ctx context.Context, domainModels []*domain.Document) error {
-    repositoryModels, err := goaoi.TransformCopySlice(domainModels, repo.GetDocumentDomainToRepositoryModel(ctx))
+func (repo *PsqlDocumentRepository) Delete(ctx context.Context, domainModels []*domain.Document)  (err error){
+    if len(domainModels) == 0 {
+        log.Debug(helper.LogMessageEmptyInput)
+
+        return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
+    }
+
+	err = goaoi.AnyOfSlice(domainModels, goaoi.AreEqualPartial[*domain.Document](nil))
+	if err == nil{
+		err = helper.NilInputError{}
+		log.Error(err)
+
+		return err
+	}
+
+    var repositoryModels []any
+    repositoryModels, err = goaoi.TransformCopySlice(domainModels, repo.GetDocumentDomainToRepositoryModel(ctx))
 	if err != nil {
 		return err
 	}
 
-	tx, err := repo.db.BeginTx(ctx, nil)
+    var tx *sql.Tx
+
+	tx, err = repo.db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
 	}
@@ -590,7 +701,15 @@ func (repo *PsqlDocumentRepository) Delete(ctx context.Context, domainModels []*
 }
 
 func (repo *PsqlDocumentRepository) DeleteWhere(ctx context.Context, domainColumnFilter *domain.DocumentFilter) (numAffectedRecords int64, err error) {
-    repositoryFilter, err := repo.DocumentDomainToRepositoryFilter(ctx, domainColumnFilter)
+	if  domainColumnFilter == nil {
+		err = helper.NilInputError{}
+		log.Error(err)
+
+		return 0, err
+    }
+
+    var repositoryFilter any
+    repositoryFilter, err = repo.DocumentDomainToRepositoryFilter(ctx, domainColumnFilter)
     if err != nil {
         return
     }
@@ -606,7 +725,9 @@ func (repo *PsqlDocumentRepository) DeleteWhere(ctx context.Context, domainColum
 
 	queryFilters := buildQueryModListFromFilterDocument(setFilters)
 
-	tx, err := repo.db.BeginTx(ctx, nil)
+    var tx *sql.Tx
+
+	tx, err = repo.db.BeginTx(ctx, nil)
 	if err != nil {
 		return
 	}
@@ -618,8 +739,16 @@ func (repo *PsqlDocumentRepository) DeleteWhere(ctx context.Context, domainColum
     return
 }
 
-func (repo *PsqlDocumentRepository) CountWhere(ctx context.Context, domainColumnFilter *domain.DocumentFilter) (int64, error) {
-    repositoryFilter, err := repo.DocumentDomainToRepositoryFilter(ctx, domainColumnFilter)
+func (repo *PsqlDocumentRepository) CountWhere(ctx context.Context, domainColumnFilter *domain.DocumentFilter) (numRecords int64, err error) {
+	if  domainColumnFilter == nil {
+		err = helper.NilInputError{}
+		log.Error(err)
+
+		return 0, err
+    }
+
+    var repositoryFilter any
+    repositoryFilter, err = repo.DocumentDomainToRepositoryFilter(ctx, domainColumnFilter)
     if err != nil {
         return 0, err
     }
@@ -637,34 +766,53 @@ func (repo *PsqlDocumentRepository) CountWhere(ctx context.Context, domainColumn
 	return Documents(queryFilters...).Count(ctx, repo.db)
 }
 
-func (repo *PsqlDocumentRepository) CountAll(ctx context.Context) (int64, error) {
+func (repo *PsqlDocumentRepository) CountAll(ctx context.Context) (numRecords int64, err error) {
 	return Documents().Count(ctx, repo.db)
 }
 
-func (repo *PsqlDocumentRepository) DoesExist(ctx context.Context, domainModel *domain.Document) (bool, error) {
-    repositoryModel, err := repo.DocumentDomainToRepositoryModel(ctx, domainModel)
+func (repo *PsqlDocumentRepository) DoesExist(ctx context.Context, domainModel *domain.Document) (doesExist bool, err error) {
+	if domainModel == nil {
+        err = helper.NilInputError{}
+		log.Error(err)
+
+		return
+	}
+
+    var repositoryModel any
+    repositoryModel, err = repo.DocumentDomainToRepositoryModel(ctx, domainModel)
     if err != nil {
-        return false, err
+        return
     }
 
     repoModel, ok := repositoryModel.(*Document)
     if !ok {
-        return false, fmt.Errorf("expected type *Document but got %T", repoModel)
+        err = fmt.Errorf("expected type *Document but got %T", repoModel)
+        return
     }
 
 
 	return DocumentExists(ctx, repo.db, repoModel.ID)
 }
 
-func (repo *PsqlDocumentRepository) DoesExistWhere(ctx context.Context, domainColumnFilter *domain.DocumentFilter) (bool, error) {
-    repositoryFilter, err := repo.DocumentDomainToRepositoryFilter(ctx, domainColumnFilter)
+func (repo *PsqlDocumentRepository) DoesExistWhere(ctx context.Context, domainColumnFilter *domain.DocumentFilter) (doesExist bool, err error) {
+	if  domainColumnFilter == nil {
+		err = helper.NilInputError{}
+		log.Error(err)
+
+		return
+    }
+
+    var repositoryFilter any
+    repositoryFilter, err = repo.DocumentDomainToRepositoryFilter(ctx, domainColumnFilter)
     if err != nil {
-        return false, err
+        return
     }
 
     repoFilter, ok := repositoryFilter.(*DocumentFilter)
     if !ok {
-        return false, fmt.Errorf("expected type *DocumentFilter but got %T", repoFilter)
+        err = fmt.Errorf("expected type *DocumentFilter but got %T", repoFilter)
+
+        return
     }
 
     setFilters := *repoFilter.GetSetFilters()
@@ -674,15 +822,25 @@ func (repo *PsqlDocumentRepository) DoesExistWhere(ctx context.Context, domainCo
 	return Documents(queryFilters...).Exists(ctx, repo.db)
 }
 
-func (repo *PsqlDocumentRepository) GetWhere(ctx context.Context, domainColumnFilter *domain.DocumentFilter) ([]*domain.Document, error) {
-    repositoryFilter, err := repo.DocumentDomainToRepositoryFilter(ctx, domainColumnFilter)
+func (repo *PsqlDocumentRepository) GetWhere(ctx context.Context, domainColumnFilter *domain.DocumentFilter) (records []*domain.Document, err error) {
+	if  domainColumnFilter == nil {
+		err = helper.NilInputError{}
+		log.Error(err)
+
+		return
+    }
+
+    var repositoryFilter any
+    repositoryFilter, err = repo.DocumentDomainToRepositoryFilter(ctx, domainColumnFilter)
     if err != nil {
-        return []*domain.Document{}, err
+        return
     }
 
     repoFilter, ok := repositoryFilter.(*DocumentFilter)
     if !ok {
-        return []*domain.Document{}, fmt.Errorf("expected type *DocumentFilter but got %T", repoFilter)
+        err = fmt.Errorf("expected type *DocumentFilter but got %T", repoFilter)
+
+        return
     }
 
 
@@ -690,91 +848,105 @@ func (repo *PsqlDocumentRepository) GetWhere(ctx context.Context, domainColumnFi
 
 	queryFilters := buildQueryModListFromFilterDocument(setFilters)
 
-    repositoryModels, err := Documents(queryFilters...).All(ctx, repo.db)
+    var repositoryModels DocumentSlice
+    repositoryModels, err = Documents(queryFilters...).All(ctx, repo.db)
 
-    domainModels := make([]*domain.Document, 0, len(repositoryModels))
+    records = make([]*domain.Document, 0, len(repositoryModels))
 
+    var domainModel *domain.Document
     for _, repoModel := range repositoryModels {
-        domainModel, err := repo.DocumentRepositoryToDomainModel(ctx, repoModel)
+        domainModel, err = repo.DocumentRepositoryToDomainModel(ctx, repoModel)
         if err != nil {
-            return domainModels, err
+            return
         }
 
-        domainModels = append(domainModels, domainModel)
+        records = append(records, domainModel)
     }
 
-    return domainModels, err
+    return
 }
 
-func (repo *PsqlDocumentRepository) GetFirstWhere(ctx context.Context, domainColumnFilter *domain.DocumentFilter) (*domain.Document, error) {
-    repositoryFilter, err := repo.DocumentDomainToRepositoryFilter(ctx, domainColumnFilter)
+func (repo *PsqlDocumentRepository) GetFirstWhere(ctx context.Context, domainColumnFilter *domain.DocumentFilter) (record *domain.Document, err error) {
+	if  domainColumnFilter == nil {
+		err = helper.NilInputError{}
+		log.Error(err)
+
+		return
+    }
+
+    var repositoryFilter any
+    repositoryFilter, err = repo.DocumentDomainToRepositoryFilter(ctx, domainColumnFilter)
     if err != nil {
-        return nil, err
+        return
     }
 
     repoFilter, ok := repositoryFilter.(*DocumentFilter)
     if !ok {
-        return nil, fmt.Errorf("expected type *DocumentFilter but got %T", repoFilter)
+        err =  fmt.Errorf("expected type *DocumentFilter but got %T", repoFilter)
+
+        return
     }
 
     setFilters := * repoFilter.GetSetFilters()
 
 	queryFilters := buildQueryModListFromFilterDocument(setFilters)
 
-    repositoryModel, err := Documents(queryFilters...).One(ctx, repo.db)
+    var repositoryModel *Document
+    repositoryModel, err = Documents(queryFilters...).One(ctx, repo.db)
+    if err != nil {
+        return
+    }
+
+    record , err =repo.DocumentRepositoryToDomainModel(ctx, repositoryModel)
+
+    return
+}
+
+func (repo *PsqlDocumentRepository) GetAll(ctx context.Context) (records []*domain.Document, err error) {
+    var repositoryModels DocumentSlice
+    repositoryModels, err = Documents().All(ctx, repo.db)
+    if err != nil {
+        return
+    }
+
+    records = make([]*domain.Document, 0, len(repositoryModels))
 
     var domainModel *domain.Document
-    if err != nil {
-        return domainModel, err
-    }
-
-    domainModel, err =repo.DocumentRepositoryToDomainModel(ctx, repositoryModel)
-
-    return domainModel, err
-}
-
-func (repo *PsqlDocumentRepository) GetAll(ctx context.Context) ([]*domain.Document, error) {
-    repositoryModels, err := Documents().All(ctx, repo.db)
-    if err != nil {
-        return []*domain.Document{}, err
-    }
-
-    domainModels := make([]*domain.Document, 0, len(repositoryModels))
-
     for _, repoModel := range repositoryModels {
-        domainModel, err := repo.DocumentRepositoryToDomainModel(ctx, repoModel)
+        domainModel, err = repo.DocumentRepositoryToDomainModel(ctx, repoModel)
         if err != nil {
-            return domainModels, err
+            return
         }
 
-        domainModels = append(domainModels, domainModel)
+        records = append(records, domainModel)
     }
 
-    return domainModels, err
+    return
 }
 
 
-func (repo *PsqlDocumentRepository) AddType(ctx context.Context, types []string) error {
+func (repo *PsqlDocumentRepository) AddType(ctx context.Context, types []string)  (err error){
     for _, type_ := range types {
         repositoryModel := DocumentType{DocumentType: type_}
 
-        err := repositoryModel.Insert(ctx, repo.db, boil.Infer())
+        err = repositoryModel.Insert(ctx, repo.db, boil.Infer())
         if err != nil {
             return err
         }
     }
 
-    return nil
+    return
 }
 
-func (repo *PsqlDocumentRepository) DeleteType(ctx context.Context, types []string) error {
-    _, err := DocumentTypes(DocumentTypeWhere.DocumentType.IN(types)).DeleteAll(ctx, repo.db)
+func (repo *PsqlDocumentRepository) DeleteType(ctx context.Context, types []string)  (err error){
+    _, err = DocumentTypes(DocumentTypeWhere.DocumentType.IN(types)).DeleteAll(ctx, repo.db)
 
-	return err
+	return
 }
 
-func (repo *PsqlDocumentRepository) UpdateType(ctx context.Context, oldType string, newType string) error {
-    repositoryModel, err := DocumentTypes(DocumentTypeWhere.DocumentType.EQ(oldType)).One(ctx, repo.db)
+func (repo *PsqlDocumentRepository) UpdateType(ctx context.Context, oldType string, newType string)  (err error){
+    var repositoryModel *DocumentType
+    repositoryModel, err = DocumentTypes(DocumentTypeWhere.DocumentType.EQ(oldType)).One(ctx, repo.db)
     if err != nil {
         return err
     }
@@ -783,7 +955,7 @@ func (repo *PsqlDocumentRepository) UpdateType(ctx context.Context, oldType stri
 
     _, err = repositoryModel.Update(ctx, repo.db, boil.Infer())
 
-    return err
+    return
 }
 
 func (repo *PsqlDocumentRepository) GetTagRepository() repoCommon.TagRepository {

@@ -21,6 +21,7 @@
 package helper
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -37,6 +38,11 @@ const (
 	LogMessageEmptyInput        = "Returning early after receiving empty input"
 )
 
+var (
+	EmptyInputError             = errors.New("empty input")
+	NonExistentPrimaryDataError = errors.New("the primary data to work with does not exist")
+)
+
 type NilInputError struct {
 	BadFieldOrParameter string
 }
@@ -46,6 +52,18 @@ func (err NilInputError) Error() string {
 		return "Input contains a nil pointer"
 	}
 	return "Input contains a nil pointer in parameter or struct field " + err.BadFieldOrParameter
+}
+
+type IneffectiveOperationError struct {
+	Inner error
+}
+
+func (err IneffectiveOperationError) Error() string {
+	return fmt.Sprintf("The operation had no effect: %v", err.Inner)
+}
+
+func (err IneffectiveOperationError) Unwrap() error {
+	return err.Inner
 }
 
 func NewDefaultLogger(logFile string, consoleLogLevel log.Level, fileLogLevel log.Level) *log.Logger {

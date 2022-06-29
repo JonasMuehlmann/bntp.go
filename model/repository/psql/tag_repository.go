@@ -353,13 +353,14 @@ func (repo *PsqlTagRepository) New(args any) (newRepo repoCommon.TagRepository, 
 //******************************************************************//
 //                              Methods                             //
 //******************************************************************//
-func (repo *PsqlTagRepository) Add(ctx context.Context, domainModels []*domain.Tag) error {
+func (repo *PsqlTagRepository) Add(ctx context.Context, domainModels []*domain.Tag)  (err error){
     if len(domainModels) == 0 {
         log.Debug(helper.LogMessageEmptyInput)
-        return nil
+
+        return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
     }
 
-	err := goaoi.AnyOfSlice(domainModels, goaoi.AreEqualPartial[*domain.Tag](nil))
+	err = goaoi.AnyOfSlice(domainModels, goaoi.AreEqualPartial[*domain.Tag](nil))
 	if err == nil{
 		err = helper.NilInputError{}
 		log.Error(err)
@@ -367,12 +368,15 @@ func (repo *PsqlTagRepository) Add(ctx context.Context, domainModels []*domain.T
 		return err
 	}
 
-    repositoryModels, err := goaoi.TransformCopySlice(domainModels, repo.GetTagDomainToRepositoryModel(ctx))
+    var repositoryModels []any
+    repositoryModels, err = goaoi.TransformCopySlice(domainModels, repo.GetTagDomainToRepositoryModel(ctx))
 	if err != nil {
 		return err
 	}
 
-	tx, err := repo.db.BeginTx(ctx, nil)
+    var tx *sql.Tx
+
+	tx, err = repo.db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
 	}
@@ -394,14 +398,31 @@ func (repo *PsqlTagRepository) Add(ctx context.Context, domainModels []*domain.T
     return nil
 }
 
-func (repo *PsqlTagRepository) Replace(ctx context.Context, domainModels []*domain.Tag) error {
+func (repo *PsqlTagRepository) Replace(ctx context.Context, domainModels []*domain.Tag)  (err error){
     
-    repositoryModels, err := goaoi.TransformCopySlice(domainModels, repo.GetTagDomainToRepositoryModel(ctx))
+    if len(domainModels) == 0 {
+        log.Debug(helper.LogMessageEmptyInput)
+
+        return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
+    }
+
+	err = goaoi.AnyOfSlice(domainModels, goaoi.AreEqualPartial[*domain.Tag](nil))
+	if err == nil{
+		err = helper.NilInputError{}
+		log.Error(err)
+
+		return err
+	}
+
+    var repositoryModels []any
+    repositoryModels, err = goaoi.TransformCopySlice(domainModels, repo.GetTagDomainToRepositoryModel(ctx))
 	if err != nil {
 		return err
 	}
 
-	tx, err := repo.db.BeginTx(ctx, nil)
+    var tx *sql.Tx
+
+	tx, err = repo.db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
 	}
@@ -412,23 +433,45 @@ func (repo *PsqlTagRepository) Replace(ctx context.Context, domainModels []*doma
             return fmt.Errorf("expected type *Tag but got %T", repoModel)
         }
 
-		_, err = repoModel.Update(ctx, tx, boil.Infer())
+        var numAffectedRecords int64
+		numAffectedRecords, err = repoModel.Update(ctx, tx, boil.Infer())
 		if err != nil {
 			return err
 		}
+
+        if numAffectedRecords == 0 {
+            return helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError}
+        }
 	}
 
 	tx.Commit()
 
     return nil
 }
-func (repo *PsqlTagRepository) Upsert(ctx context.Context, domainModels []*domain.Tag) error {
-    repositoryModels, err := goaoi.TransformCopySlice(domainModels, repo.GetTagDomainToRepositoryModel(ctx))
+func (repo *PsqlTagRepository) Upsert(ctx context.Context, domainModels []*domain.Tag)  (err error){
+    if len(domainModels) == 0 {
+        log.Debug(helper.LogMessageEmptyInput)
+
+        return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
+    }
+
+	err = goaoi.AnyOfSlice(domainModels, goaoi.AreEqualPartial[*domain.Tag](nil))
+	if err == nil{
+		err = helper.NilInputError{}
+		log.Error(err)
+
+		return err
+	}
+
+    var repositoryModels []any
+    repositoryModels, err = goaoi.TransformCopySlice(domainModels, repo.GetTagDomainToRepositoryModel(ctx))
 	if err != nil {
 		return err
 	}
 
-	tx, err := repo.db.BeginTx(ctx, nil)
+    var tx *sql.Tx
+
+	tx, err = repo.db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
 	}
@@ -452,22 +495,48 @@ func (repo *PsqlTagRepository) Upsert(ctx context.Context, domainModels []*domai
     return nil
 }
 
-func (repo *PsqlTagRepository) Update(ctx context.Context, domainModels []*domain.Tag, domainColumnUpdater *domain.TagUpdater) error {
-    repositoryModels, err := goaoi.TransformCopySlice(domainModels, repo.GetTagDomainToRepositoryModel(ctx))
+func (repo *PsqlTagRepository) Update(ctx context.Context, domainModels []*domain.Tag, domainColumnUpdater *domain.TagUpdater)  (err error){
+    if len(domainModels) == 0 {
+        log.Debug(helper.LogMessageEmptyInput)
+
+        return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
+    }
+
+	err = goaoi.AnyOfSlice(domainModels, goaoi.AreEqualPartial[*domain.Tag](nil))
+	if err == nil{
+		err = helper.NilInputError{}
+		log.Error(err)
+
+		return err
+	}
+
+	if  domainColumnUpdater == nil {
+		err = helper.NilInputError{}
+		log.Error(err)
+
+		return err
+    }
+
+    var repositoryModels []any
+    repositoryModels, err = goaoi.TransformCopySlice(domainModels, repo.GetTagDomainToRepositoryModel(ctx))
 	if err != nil {
 		return err
 	}
 
-    repositoryUpdater, err := repo.TagDomainToRepositoryUpdater(ctx, domainColumnUpdater)
+    var repositoryUpdater any
+    repositoryUpdater, err = repo.TagDomainToRepositoryUpdater(ctx, domainColumnUpdater)
     if err != nil {
         return err
     }
 
-   	tx, err := repo.db.BeginTx(ctx, nil)
+    var tx *sql.Tx
+
+   	tx, err = repo.db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
 	}
 
+    var numAffectedRecords int64
     for _, repositoryModel := range   repositoryModels {
         repoModel, ok := repositoryModel.(*Tag)
         if !ok {
@@ -480,10 +549,17 @@ func (repo *PsqlTagRepository) Update(ctx context.Context, domainModels []*domai
         }
 
         repoUpdater.ApplyToModel(repoModel)
-        repoModel.Update(ctx, tx, boil.Infer())
+        numAffectedRecords, err = repoModel.Update(ctx, tx, boil.Infer())
+        if err != nil {
+            return err
+        }
+
+        if numAffectedRecords == 0 {
+            return helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError}
+        }
     }
 
-    tx.Commit()
+    err = tx.Commit()
 
     return err
 }
@@ -491,12 +567,28 @@ func (repo *PsqlTagRepository) Update(ctx context.Context, domainModels []*domai
 func (repo *PsqlTagRepository) UpdateWhere(ctx context.Context, domainColumnFilter *domain.TagFilter, domainColumnUpdater *domain.TagUpdater) (numAffectedRecords int64, err error) {
 	var modelsToUpdate TagSlice
 
-    repositoryFilter, err := repo.TagDomainToRepositoryFilter(ctx, domainColumnFilter)
+	if  domainColumnFilter == nil {
+		err = helper.NilInputError{}
+		log.Error(err)
+
+		return 0, err
+    }
+
+	if  domainColumnUpdater == nil {
+		err = helper.NilInputError{}
+		log.Error(err)
+
+		return 0, err
+    }
+
+    var repositoryFilter any
+    repositoryFilter, err = repo.TagDomainToRepositoryFilter(ctx, domainColumnFilter)
     if err != nil {
         return
     }
 
-    repositoryUpdater, err := repo.TagDomainToRepositoryUpdater(ctx, domainColumnUpdater)
+    var repositoryUpdater any
+    repositoryUpdater, err = repo.TagDomainToRepositoryUpdater(ctx, domainColumnUpdater)
     if err != nil {
         return
     }
@@ -527,7 +619,9 @@ func (repo *PsqlTagRepository) UpdateWhere(ctx context.Context, domainColumnFilt
 
     numAffectedRecords = int64(len(modelsToUpdate))
 
-	tx, err := repo.db.BeginTx(ctx, nil)
+    var tx *sql.Tx
+
+	tx, err = repo.db.BeginTx(ctx, nil)
 	if err != nil {
 		return
 	}
@@ -542,13 +636,30 @@ func (repo *PsqlTagRepository) UpdateWhere(ctx context.Context, domainColumnFilt
     return
 }
 
-func (repo *PsqlTagRepository) Delete(ctx context.Context, domainModels []*domain.Tag) error {
-    repositoryModels, err := goaoi.TransformCopySlice(domainModels, repo.GetTagDomainToRepositoryModel(ctx))
+func (repo *PsqlTagRepository) Delete(ctx context.Context, domainModels []*domain.Tag)  (err error){
+    if len(domainModels) == 0 {
+        log.Debug(helper.LogMessageEmptyInput)
+
+        return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
+    }
+
+	err = goaoi.AnyOfSlice(domainModels, goaoi.AreEqualPartial[*domain.Tag](nil))
+	if err == nil{
+		err = helper.NilInputError{}
+		log.Error(err)
+
+		return err
+	}
+
+    var repositoryModels []any
+    repositoryModels, err = goaoi.TransformCopySlice(domainModels, repo.GetTagDomainToRepositoryModel(ctx))
 	if err != nil {
 		return err
 	}
 
-	tx, err := repo.db.BeginTx(ctx, nil)
+    var tx *sql.Tx
+
+	tx, err = repo.db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
 	}
@@ -571,7 +682,15 @@ func (repo *PsqlTagRepository) Delete(ctx context.Context, domainModels []*domai
 }
 
 func (repo *PsqlTagRepository) DeleteWhere(ctx context.Context, domainColumnFilter *domain.TagFilter) (numAffectedRecords int64, err error) {
-    repositoryFilter, err := repo.TagDomainToRepositoryFilter(ctx, domainColumnFilter)
+	if  domainColumnFilter == nil {
+		err = helper.NilInputError{}
+		log.Error(err)
+
+		return 0, err
+    }
+
+    var repositoryFilter any
+    repositoryFilter, err = repo.TagDomainToRepositoryFilter(ctx, domainColumnFilter)
     if err != nil {
         return
     }
@@ -587,7 +706,9 @@ func (repo *PsqlTagRepository) DeleteWhere(ctx context.Context, domainColumnFilt
 
 	queryFilters := buildQueryModListFromFilterTag(setFilters)
 
-	tx, err := repo.db.BeginTx(ctx, nil)
+    var tx *sql.Tx
+
+	tx, err = repo.db.BeginTx(ctx, nil)
 	if err != nil {
 		return
 	}
@@ -599,8 +720,16 @@ func (repo *PsqlTagRepository) DeleteWhere(ctx context.Context, domainColumnFilt
     return
 }
 
-func (repo *PsqlTagRepository) CountWhere(ctx context.Context, domainColumnFilter *domain.TagFilter) (int64, error) {
-    repositoryFilter, err := repo.TagDomainToRepositoryFilter(ctx, domainColumnFilter)
+func (repo *PsqlTagRepository) CountWhere(ctx context.Context, domainColumnFilter *domain.TagFilter) (numRecords int64, err error) {
+	if  domainColumnFilter == nil {
+		err = helper.NilInputError{}
+		log.Error(err)
+
+		return 0, err
+    }
+
+    var repositoryFilter any
+    repositoryFilter, err = repo.TagDomainToRepositoryFilter(ctx, domainColumnFilter)
     if err != nil {
         return 0, err
     }
@@ -618,34 +747,53 @@ func (repo *PsqlTagRepository) CountWhere(ctx context.Context, domainColumnFilte
 	return Tags(queryFilters...).Count(ctx, repo.db)
 }
 
-func (repo *PsqlTagRepository) CountAll(ctx context.Context) (int64, error) {
+func (repo *PsqlTagRepository) CountAll(ctx context.Context) (numRecords int64, err error) {
 	return Tags().Count(ctx, repo.db)
 }
 
-func (repo *PsqlTagRepository) DoesExist(ctx context.Context, domainModel *domain.Tag) (bool, error) {
-    repositoryModel, err := repo.TagDomainToRepositoryModel(ctx, domainModel)
+func (repo *PsqlTagRepository) DoesExist(ctx context.Context, domainModel *domain.Tag) (doesExist bool, err error) {
+	if domainModel == nil {
+        err = helper.NilInputError{}
+		log.Error(err)
+
+		return
+	}
+
+    var repositoryModel any
+    repositoryModel, err = repo.TagDomainToRepositoryModel(ctx, domainModel)
     if err != nil {
-        return false, err
+        return
     }
 
     repoModel, ok := repositoryModel.(*Tag)
     if !ok {
-        return false, fmt.Errorf("expected type *Tag but got %T", repoModel)
+        err = fmt.Errorf("expected type *Tag but got %T", repoModel)
+        return
     }
 
 
 	return TagExists(ctx, repo.db, repoModel.ID)
 }
 
-func (repo *PsqlTagRepository) DoesExistWhere(ctx context.Context, domainColumnFilter *domain.TagFilter) (bool, error) {
-    repositoryFilter, err := repo.TagDomainToRepositoryFilter(ctx, domainColumnFilter)
+func (repo *PsqlTagRepository) DoesExistWhere(ctx context.Context, domainColumnFilter *domain.TagFilter) (doesExist bool, err error) {
+	if  domainColumnFilter == nil {
+		err = helper.NilInputError{}
+		log.Error(err)
+
+		return
+    }
+
+    var repositoryFilter any
+    repositoryFilter, err = repo.TagDomainToRepositoryFilter(ctx, domainColumnFilter)
     if err != nil {
-        return false, err
+        return
     }
 
     repoFilter, ok := repositoryFilter.(*TagFilter)
     if !ok {
-        return false, fmt.Errorf("expected type *TagFilter but got %T", repoFilter)
+        err = fmt.Errorf("expected type *TagFilter but got %T", repoFilter)
+
+        return
     }
 
     setFilters := *repoFilter.GetSetFilters()
@@ -655,15 +803,25 @@ func (repo *PsqlTagRepository) DoesExistWhere(ctx context.Context, domainColumnF
 	return Tags(queryFilters...).Exists(ctx, repo.db)
 }
 
-func (repo *PsqlTagRepository) GetWhere(ctx context.Context, domainColumnFilter *domain.TagFilter) ([]*domain.Tag, error) {
-    repositoryFilter, err := repo.TagDomainToRepositoryFilter(ctx, domainColumnFilter)
+func (repo *PsqlTagRepository) GetWhere(ctx context.Context, domainColumnFilter *domain.TagFilter) (records []*domain.Tag, err error) {
+	if  domainColumnFilter == nil {
+		err = helper.NilInputError{}
+		log.Error(err)
+
+		return
+    }
+
+    var repositoryFilter any
+    repositoryFilter, err = repo.TagDomainToRepositoryFilter(ctx, domainColumnFilter)
     if err != nil {
-        return []*domain.Tag{}, err
+        return
     }
 
     repoFilter, ok := repositoryFilter.(*TagFilter)
     if !ok {
-        return []*domain.Tag{}, fmt.Errorf("expected type *TagFilter but got %T", repoFilter)
+        err = fmt.Errorf("expected type *TagFilter but got %T", repoFilter)
+
+        return
     }
 
 
@@ -671,67 +829,80 @@ func (repo *PsqlTagRepository) GetWhere(ctx context.Context, domainColumnFilter 
 
 	queryFilters := buildQueryModListFromFilterTag(setFilters)
 
-    repositoryModels, err := Tags(queryFilters...).All(ctx, repo.db)
+    var repositoryModels TagSlice
+    repositoryModels, err = Tags(queryFilters...).All(ctx, repo.db)
 
-    domainModels := make([]*domain.Tag, 0, len(repositoryModels))
+    records = make([]*domain.Tag, 0, len(repositoryModels))
 
+    var domainModel *domain.Tag
     for _, repoModel := range repositoryModels {
-        domainModel, err := repo.TagRepositoryToDomainModel(ctx, repoModel)
+        domainModel, err = repo.TagRepositoryToDomainModel(ctx, repoModel)
         if err != nil {
-            return domainModels, err
+            return
         }
 
-        domainModels = append(domainModels, domainModel)
+        records = append(records, domainModel)
     }
 
-    return domainModels, err
+    return
 }
 
-func (repo *PsqlTagRepository) GetFirstWhere(ctx context.Context, domainColumnFilter *domain.TagFilter) (*domain.Tag, error) {
-    repositoryFilter, err := repo.TagDomainToRepositoryFilter(ctx, domainColumnFilter)
+func (repo *PsqlTagRepository) GetFirstWhere(ctx context.Context, domainColumnFilter *domain.TagFilter) (record *domain.Tag, err error) {
+	if  domainColumnFilter == nil {
+		err = helper.NilInputError{}
+		log.Error(err)
+
+		return
+    }
+
+    var repositoryFilter any
+    repositoryFilter, err = repo.TagDomainToRepositoryFilter(ctx, domainColumnFilter)
     if err != nil {
-        return nil, err
+        return
     }
 
     repoFilter, ok := repositoryFilter.(*TagFilter)
     if !ok {
-        return nil, fmt.Errorf("expected type *TagFilter but got %T", repoFilter)
+        err =  fmt.Errorf("expected type *TagFilter but got %T", repoFilter)
+
+        return
     }
 
     setFilters := * repoFilter.GetSetFilters()
 
 	queryFilters := buildQueryModListFromFilterTag(setFilters)
 
-    repositoryModel, err := Tags(queryFilters...).One(ctx, repo.db)
-
-    var domainModel *domain.Tag
+    var repositoryModel *Tag
+    repositoryModel, err = Tags(queryFilters...).One(ctx, repo.db)
     if err != nil {
-        return domainModel, err
+        return
     }
 
-    domainModel, err =repo.TagRepositoryToDomainModel(ctx, repositoryModel)
+    record , err =repo.TagRepositoryToDomainModel(ctx, repositoryModel)
 
-    return domainModel, err
+    return
 }
 
-func (repo *PsqlTagRepository) GetAll(ctx context.Context) ([]*domain.Tag, error) {
-    repositoryModels, err := Tags().All(ctx, repo.db)
+func (repo *PsqlTagRepository) GetAll(ctx context.Context) (records []*domain.Tag, err error) {
+    var repositoryModels TagSlice
+    repositoryModels, err = Tags().All(ctx, repo.db)
     if err != nil {
-        return []*domain.Tag{}, err
+        return
     }
 
-    domainModels := make([]*domain.Tag, 0, len(repositoryModels))
+    records = make([]*domain.Tag, 0, len(repositoryModels))
 
+    var domainModel *domain.Tag
     for _, repoModel := range repositoryModels {
-        domainModel, err := repo.TagRepositoryToDomainModel(ctx, repoModel)
+        domainModel, err = repo.TagRepositoryToDomainModel(ctx, repoModel)
         if err != nil {
-            return domainModels, err
+            return
         }
 
-        domainModels = append(domainModels, domainModel)
+        records = append(records, domainModel)
     }
 
-    return domainModels, err
+    return
 }
 
 
