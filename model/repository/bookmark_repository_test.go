@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/JonasMuehlmann/bntp.go/internal/helper"
+	"github.com/JonasMuehlmann/bntp.go/model"
 	"github.com/JonasMuehlmann/bntp.go/model/domain"
 	repositoryCommon "github.com/JonasMuehlmann/bntp.go/model/repository"
 	repository "github.com/JonasMuehlmann/bntp.go/model/repository/sqlite3"
@@ -468,6 +469,34 @@ func TestSQLBookmarkRepositoryUpdateTest(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "Two existing minimal inputs, overwrite IsCollection", insertBeforeUpdate: true,
+			updater: &domain.BookmarkUpdater{
+				IsCollection: optional.Make(model.UpdateOperation[bool]{Operator: model.UpdateSet, Operand: true}),
+			},
+			models: []*domain.Bookmark{
+				{
+					CreatedAt:    time.Now(),
+					UpdatedAt:    time.Now(),
+					DeletedAt:    optional.Make(time.Now()),
+					URL:          "https://example.com",
+					Title:        optional.Make("My first bookmark"),
+					ID:           1,
+					IsCollection: false,
+					IsRead:       true,
+				},
+				{
+					CreatedAt:    time.Now(),
+					UpdatedAt:    time.Now(),
+					DeletedAt:    optional.Make(time.Now()),
+					URL:          "https://foo.example.com",
+					Title:        optional.Make("My second bookmark"),
+					ID:           2,
+					IsCollection: false,
+					IsRead:       true,
+				},
+			},
+		},
 	}
 
 	for _, test := range tests {
@@ -499,6 +528,165 @@ func TestSQLBookmarkRepositoryUpdateTest(t *testing.T) {
 			}
 
 			err = repo.Update(context.Background(), test.models, test.updater)
+			if test.err == nil {
+				assert.NoErrorf(t, err, test.name)
+			} else {
+				assert.ErrorAsf(t, err, &test.err, test.name)
+			}
+		})
+	}
+}
+
+func TestSQLBookmarkRepositoryUpdateWhereTest(t *testing.T) {
+	tests := []struct {
+		name               string
+		models             []*domain.Bookmark
+		filter             *domain.BookmarkFilter
+		updater            *domain.BookmarkUpdater
+		err                error
+		insertBeforeUpdate bool
+	}{
+		{
+			name: "No entities", updater: &domain.BookmarkUpdater{}, filter: &domain.BookmarkFilter{}, err: helper.IneffectiveOperationError{},
+		},
+		{
+			name: "Nil updater", updater: nil, filter: &domain.BookmarkFilter{}, err: helper.NilInputError{},
+		},
+		{
+			name: "Nil filter", updater: &domain.BookmarkUpdater{}, filter: nil, err: helper.NilInputError{},
+		},
+		{
+			name: "Two existing inputs, non-existent dependencies", err: repositoryCommon.ReferenceToNonExistentDependencyError{}, updater: &domain.BookmarkUpdater{}, filter: &domain.BookmarkFilter{}, insertBeforeUpdate: true, models: []*domain.Bookmark{
+				{
+					CreatedAt: time.Now(),
+					UpdatedAt: time.Now(),
+					DeletedAt: optional.Make(time.Now()),
+					URL:       "https://example.com",
+					Title:     optional.Make("My first bookmark"),
+					// These tags do not exist!
+					Tags: []*domain.Tag{{
+						Tag:        "Test",
+						ParentPath: []*domain.Tag{},
+						Subtags:    []*domain.Tag{},
+						ID:         1,
+					}},
+					// This type does not exist
+					BookmarkType: optional.Make("Text"),
+					ID:           1,
+					IsCollection: false,
+					IsRead:       true,
+				},
+				{
+					CreatedAt: time.Now(),
+					UpdatedAt: time.Now(),
+					DeletedAt: optional.Make(time.Now()),
+					URL:       "https://foo.example.com",
+					Title:     optional.Make("My second bookmark"),
+					// These tags do not exist!
+					Tags: []*domain.Tag{{
+						Tag:        "Test",
+						ParentPath: []*domain.Tag{},
+						Subtags:    []*domain.Tag{},
+						ID:         1,
+					}},
+					// This type does not exist
+					BookmarkType: optional.Make("Text"),
+					ID:           2,
+					IsCollection: false,
+					IsRead:       true,
+				},
+			},
+		},
+		{
+			name: "Two existing minimal inputs, filter for title of first", insertBeforeUpdate: true, updater: &domain.BookmarkUpdater{},
+			filter: &domain.BookmarkFilter{
+				Title: optional.Make(model.FilterOperation[optional.Optional[string]]{
+					Operator: model.FilterEqual,
+					Operand:  model.ScalarOperand[optional.Optional[string]]{Operand: optional.Make("My first bookmark")},
+				}),
+			},
+			models: []*domain.Bookmark{
+				{
+					CreatedAt:    time.Now(),
+					UpdatedAt:    time.Now(),
+					DeletedAt:    optional.Make(time.Now()),
+					URL:          "https://example.com",
+					Title:        optional.Make("My first bookmark"),
+					ID:           1,
+					IsCollection: false,
+					IsRead:       true,
+				},
+				{
+					CreatedAt:    time.Now(),
+					UpdatedAt:    time.Now(),
+					DeletedAt:    optional.Make(time.Now()),
+					URL:          "https://foo.example.com",
+					Title:        optional.Make("My second bookmark"),
+					ID:           2,
+					IsCollection: false,
+					IsRead:       true,
+				},
+			},
+		},
+		{
+			name: "Two existing minimal inputs, overwrite title", insertBeforeUpdate: true, filter: &domain.BookmarkFilter{},
+			updater: &domain.BookmarkUpdater{
+				Title: optional.Make(model.UpdateOperation[optional.Optional[string]]{Operator: model.UpdateSet, Operand: optional.Make("foo")}),
+			},
+			models: []*domain.Bookmark{
+				{
+					CreatedAt:    time.Now(),
+					UpdatedAt:    time.Now(),
+					DeletedAt:    optional.Make(time.Now()),
+					URL:          "https://example.com",
+					Title:        optional.Make("My first bookmark"),
+					ID:           1,
+					IsCollection: false,
+					IsRead:       true,
+				},
+				{
+					CreatedAt:    time.Now(),
+					UpdatedAt:    time.Now(),
+					DeletedAt:    optional.Make(time.Now()),
+					URL:          "https://foo.example.com",
+					Title:        optional.Make("My second bookmark"),
+					ID:           2,
+					IsCollection: false,
+					IsRead:       true,
+				},
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			db, err := testCommon.GetDB()
+			assert.NoErrorf(t, err, test.name)
+
+			tagRepo := new(repository.Sqlite3TagRepository)
+
+			tagRepoAbstract, err := tagRepo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db})
+			assert.NoErrorf(t, err, test.name)
+
+			tagRepo = tagRepoAbstract.(*repository.Sqlite3TagRepository)
+
+			repo := new(repository.Sqlite3BookmarkRepository)
+
+			repoAbstract, err := repo.New(repository.Sqlite3BookmarkRepositoryConstructorArgs{DB: db, TagRepository: tagRepo})
+			assert.NoErrorf(t, err, test.name)
+
+			repo = repoAbstract.(*repository.Sqlite3BookmarkRepository)
+
+			if test.insertBeforeUpdate {
+				err = repo.Add(context.Background(), test.models)
+				if test.err == nil {
+					assert.NoErrorf(t, err, test.name)
+				} else {
+					assert.ErrorAsf(t, err, &test.err, test.name)
+				}
+			}
+
+			_, err = repo.UpdateWhere(context.Background(), test.filter, test.updater)
 			if test.err == nil {
 				assert.NoErrorf(t, err, test.name)
 			} else {

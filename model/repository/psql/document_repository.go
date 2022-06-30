@@ -108,37 +108,6 @@ type DocumentFilter struct {
     
 }
 
-type DocumentFilterMapping[T any] struct {
-    Field DocumentField
-    FilterOperation model.FilterOperation[T]
-}
-
-func (filter *DocumentFilter) GetSetFilters() *list.List {
-    setFilters := list.New()
-
-    if filter.CreatedAt.HasValue {
-    setFilters.PushBack(DocumentFilterMapping[time.Time]{Field: DocumentFields.CreatedAt, FilterOperation: filter.CreatedAt.Wrappee})
-    }
-    if filter.UpdatedAt.HasValue {
-    setFilters.PushBack(DocumentFilterMapping[time.Time]{Field: DocumentFields.UpdatedAt, FilterOperation: filter.UpdatedAt.Wrappee})
-    }
-    if filter.DeletedAt.HasValue {
-    setFilters.PushBack(DocumentFilterMapping[null.Time]{Field: DocumentFields.DeletedAt, FilterOperation: filter.DeletedAt.Wrappee})
-    }
-    if filter.Path.HasValue {
-    setFilters.PushBack(DocumentFilterMapping[string]{Field: DocumentFields.Path, FilterOperation: filter.Path.Wrappee})
-    }
-    if filter.DocumentTypeID.HasValue {
-    setFilters.PushBack(DocumentFilterMapping[null.Int64]{Field: DocumentFields.DocumentTypeID, FilterOperation: filter.DocumentTypeID.Wrappee})
-    }
-    if filter.ID.HasValue {
-    setFilters.PushBack(DocumentFilterMapping[int64]{Field: DocumentFields.ID, FilterOperation: filter.ID.Wrappee})
-    }
-    
-
-    return setFilters
-}
-
 type DocumentUpdater struct {
     CreatedAt optional.Optional[model.UpdateOperation[time.Time]]
     UpdatedAt optional.Optional[model.UpdateOperation[time.Time]]
@@ -220,98 +189,98 @@ func buildQueryModFilterDocument[T any](filterField DocumentField, filterOperati
 
     switch filterOperator {
     case model.FilterEqual:
-        filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[any])
+        filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[T])
         if !ok {
             panic("expected a scalar operand for FilterEqual operator")
         }
 
         newQueryMod = append(newQueryMod, qm.Where(string(filterField)+" = ?", filterOperand.Operand))
     case model.FilterNEqual:
-        filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[any])
+        filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[T])
         if !ok {
             panic("expected a scalar operand for FilterNEqual operator")
         }
 
         newQueryMod = append(newQueryMod, qm.Where(string(filterField)+" != ?", filterOperand.Operand))
     case model.FilterGreaterThan:
-        filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[any])
+        filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[T])
         if !ok {
             panic("expected a scalar operand for FilterGreaterThan operator")
         }
 
         newQueryMod = append(newQueryMod, qm.Where(string(filterField)+" > ?", filterOperand.Operand))
     case model.FilterGreaterThanEqual:
-        filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[any])
+        filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[T])
         if !ok {
             panic("expected a scalar operand for FilterGreaterThanEqual operator")
         }
 
         newQueryMod = append(newQueryMod, qm.Where(string(filterField)+" >= ?", filterOperand.Operand))
     case model.FilterLessThan:
-        filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[any])
+        filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[T])
         if !ok {
             panic("expected a scalar operand for FilterLessThan operator")
         }
 
         newQueryMod = append(newQueryMod, qm.Where(string(filterField)+" < ?", filterOperand.Operand))
     case model.FilterLessThanEqual:
-        filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[any])
+        filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[T])
         if !ok {
             panic("expected a scalar operand for FilterLessThanEqual operator")
         }
 
         newQueryMod = append(newQueryMod, qm.Where(string(filterField)+" <= ?", filterOperand.Operand))
     case model.FilterIn:
-        filterOperand, ok := filterOperation.Operand.(model.ListOperand[any])
+        filterOperand, ok := filterOperation.Operand.(model.ListOperand[T])
         if !ok {
             panic("expected a list operand for FilterIn operator")
         }
 
         newQueryMod = append(newQueryMod, qm.WhereIn(string(filterField)+" IN (?)", filterOperand.Operands))
     case model.FilterNotIn:
-        filterOperand, ok := filterOperation.Operand.(model.ListOperand[any])
+        filterOperand, ok := filterOperation.Operand.(model.ListOperand[T])
         if !ok {
             panic("expected a list operand for FilterNotIn operator")
         }
 
         newQueryMod = append(newQueryMod, qm.WhereNotIn(string(filterField)+" IN (?)", filterOperand.Operands))
     case model.FilterBetween:
-        filterOperand, ok := filterOperation.Operand.(model.RangeOperand[any])
+        filterOperand, ok := filterOperation.Operand.(model.RangeOperand[T])
         if !ok {
             panic("expected a scalar operand for FilterBetween operator")
         }
 
         newQueryMod = append(newQueryMod, qm.Where(string(filterField)+" BETWEEN ? AND ?", filterOperand.Start, filterOperand.End))
     case model.FilterNotBetween:
-        filterOperand, ok := filterOperation.Operand.(model.RangeOperand[any])
+        filterOperand, ok := filterOperation.Operand.(model.RangeOperand[T])
         if !ok {
             panic("expected a scalar operand for FilterNotBetween operator")
         }
 
         newQueryMod = append(newQueryMod, qm.Where(string(filterField)+" NOT BETWEEN ? AND ?", filterOperand.Start, filterOperand.End))
     case model.FilterLike:
-        filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[any])
+        filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[T])
         if !ok {
             panic("expected a scalar operand for FilterLike operator")
         }
 
         newQueryMod = append(newQueryMod, qm.Where(string(filterField)+" LIKE ?", filterOperand.Operand))
     case model.FilterNotLike:
-        filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[any])
+        filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[T])
         if !ok {
             panic("expected a scalar operand for FilterLike operator")
         }
 
         newQueryMod = append(newQueryMod, qm.Where(string(filterField)+" NOT LIKE ?", filterOperand.Operand))
     case model.FilterOr:
-        filterOperand, ok := filterOperation.Operand.(model.CompoundOperand[any])
+        filterOperand, ok := filterOperation.Operand.(model.CompoundOperand[T])
         if !ok {
             panic("expected a scalar operand for FilterOr operator")
         }
         newQueryMod = append(newQueryMod, qm.Expr(buildQueryModFilterDocument(filterField, filterOperand.LHS)))
         newQueryMod = append(newQueryMod, qm.Or2(qm.Expr(buildQueryModFilterDocument(filterField, filterOperand.RHS))))
     case model.FilterAnd:
-        filterOperand, ok := filterOperation.Operand.(model.CompoundOperand[any])
+        filterOperand, ok := filterOperation.Operand.(model.CompoundOperand[T])
         if !ok {
             panic("expected a scalar operand for FilterAnd operator")
         }
@@ -325,19 +294,34 @@ func buildQueryModFilterDocument[T any](filterField DocumentField, filterOperati
     return newQueryMod
 }
 
-func buildQueryModListFromFilterDocument(setFilters list.List) queryModSliceDocument {
+func buildQueryModListFromFilterDocument(filter *DocumentFilter) queryModSliceDocument {
 	queryModList := make(queryModSliceDocument, 0, 6)
 
-	for filter := setFilters.Front(); filter != nil; filter = filter.Next() {
-		filterMapping, ok := filter.Value.(DocumentFilterMapping[any])
-		if !ok {
-			panic(fmt.Sprintf("expected type %T but got %T", DocumentFilterMapping[any]{}, filter))
-		}
-
-        newQueryMod := buildQueryModFilterDocument(filterMapping.Field, filterMapping.FilterOperation)
-
+    if filter.CreatedAt.HasValue {
+        newQueryMod := buildQueryModFilterDocument("CreatedAt", filter.CreatedAt.Wrappee)
         queryModList = append(queryModList, newQueryMod...)
-	}
+    }
+    if filter.UpdatedAt.HasValue {
+        newQueryMod := buildQueryModFilterDocument("UpdatedAt", filter.UpdatedAt.Wrappee)
+        queryModList = append(queryModList, newQueryMod...)
+    }
+    if filter.DeletedAt.HasValue {
+        newQueryMod := buildQueryModFilterDocument("DeletedAt", filter.DeletedAt.Wrappee)
+        queryModList = append(queryModList, newQueryMod...)
+    }
+    if filter.Path.HasValue {
+        newQueryMod := buildQueryModFilterDocument("Path", filter.Path.Wrappee)
+        queryModList = append(queryModList, newQueryMod...)
+    }
+    if filter.DocumentTypeID.HasValue {
+        newQueryMod := buildQueryModFilterDocument("DocumentTypeID", filter.DocumentTypeID.Wrappee)
+        queryModList = append(queryModList, newQueryMod...)
+    }
+    if filter.ID.HasValue {
+        newQueryMod := buildQueryModFilterDocument("ID", filter.ID.Wrappee)
+        queryModList = append(queryModList, newQueryMod...)
+    }
+    
 
 	return queryModList
 }
@@ -376,7 +360,9 @@ func (repo *PsqlDocumentRepository) Add(ctx context.Context, domainModels []*dom
     if len(domainModels) == 0 {
         log.Debug(helper.LogMessageEmptyInput)
 
-        return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
+        err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
+
+        return
     }
 
 	err = goaoi.AnyOfSlice(domainModels, goaoi.AreEqualPartial[*domain.Document](nil))
@@ -384,37 +370,39 @@ func (repo *PsqlDocumentRepository) Add(ctx context.Context, domainModels []*dom
 		err = helper.NilInputError{}
 		log.Error(err)
 
-		return err
+		return
 	}
 
     var repositoryModels []any
     repositoryModels, err = goaoi.TransformCopySlice(domainModels, repo.GetDocumentDomainToRepositoryModel(ctx))
 	if err != nil {
-		return err
+		return
 	}
 
     var tx *sql.Tx
 
 	tx, err = repo.db.BeginTx(ctx, nil)
 	if err != nil {
-		return err
+		return
 	}
 
 	for _, repositoryModel := range repositoryModels {
         repoModel, ok := repositoryModel.(*Document)
         if !ok {
-            return fmt.Errorf("expected type *Document but got %T", repoModel)
+            err = fmt.Errorf("expected type *Document but got %T", repoModel)
+
+            return
         }
 
 		err = repoModel.Insert(ctx, tx, boil.Infer())
 		if err != nil {
-			return err
+			return
 		}
 	}
 
 	tx.Commit()
 
-    return nil
+    return
 }
 
 func (repo *PsqlDocumentRepository) Replace(ctx context.Context, domainModels []*domain.Document)  (err error){
@@ -422,7 +410,9 @@ func (repo *PsqlDocumentRepository) Replace(ctx context.Context, domainModels []
     if len(domainModels) == 0 {
         log.Debug(helper.LogMessageEmptyInput)
 
-        return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
+        err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
+
+        return
     }
 
 	err = goaoi.AnyOfSlice(domainModels, goaoi.AreEqualPartial[*domain.Document](nil))
@@ -430,48 +420,54 @@ func (repo *PsqlDocumentRepository) Replace(ctx context.Context, domainModels []
 		err = helper.NilInputError{}
 		log.Error(err)
 
-		return err
+		return
 	}
 
     var repositoryModels []any
     repositoryModels, err = goaoi.TransformCopySlice(domainModels, repo.GetDocumentDomainToRepositoryModel(ctx))
 	if err != nil {
-		return err
+		return
 	}
 
     var tx *sql.Tx
 
 	tx, err = repo.db.BeginTx(ctx, nil)
 	if err != nil {
-		return err
+		return
 	}
 
 	for _, repositoryModel := range repositoryModels {
         repoModel, ok := repositoryModel.(*Document)
         if !ok {
-            return fmt.Errorf("expected type *Document but got %T", repoModel)
+            err = fmt.Errorf("expected type *Document but got %T", repoModel)
+
+            return
         }
 
         var numAffectedRecords int64
 		numAffectedRecords, err = repoModel.Update(ctx, tx, boil.Infer())
 		if err != nil {
-			return err
+			return
 		}
 
         if numAffectedRecords == 0 {
-            return helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError}
+            err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError}
+
+            return
         }
 	}
 
 	tx.Commit()
 
-    return nil
+    return
 }
 func (repo *PsqlDocumentRepository) Upsert(ctx context.Context, domainModels []*domain.Document)  (err error){
     if len(domainModels) == 0 {
         log.Debug(helper.LogMessageEmptyInput)
 
-        return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
+        err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
+
+        return
     }
 
 	err = goaoi.AnyOfSlice(domainModels, goaoi.AreEqualPartial[*domain.Document](nil))
@@ -479,46 +475,50 @@ func (repo *PsqlDocumentRepository) Upsert(ctx context.Context, domainModels []*
 		err = helper.NilInputError{}
 		log.Error(err)
 
-		return err
+		return
 	}
 
     var repositoryModels []any
     repositoryModels, err = goaoi.TransformCopySlice(domainModels, repo.GetDocumentDomainToRepositoryModel(ctx))
 	if err != nil {
-		return err
+		return
 	}
 
     var tx *sql.Tx
 
 	tx, err = repo.db.BeginTx(ctx, nil)
 	if err != nil {
-		return err
+		return
 	}
 
 	for _, repositoryModel := range repositoryModels {
         repoModel, ok := repositoryModel.(*Document)
         if !ok {
-            return fmt.Errorf("expected type *Document but got %T", repoModel)
+            err = fmt.Errorf("expected type *Document but got %T", repoModel)
+
+            return
         }
 
         
 		err = repoModel.Upsert(ctx, tx, false, []string{}, boil.Infer(), boil.Infer())
         
 		if err != nil {
-			return err
+			return
 		}
 	}
 
 	tx.Commit()
 
-    return nil
+    return
 }
 
 func (repo *PsqlDocumentRepository) Update(ctx context.Context, domainModels []*domain.Document, domainColumnUpdater *domain.DocumentUpdater)  (err error){
     if len(domainModels) == 0 {
         log.Debug(helper.LogMessageEmptyInput)
 
-        return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
+        err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
+
+        return
     }
 
 	err = goaoi.AnyOfSlice(domainModels, goaoi.AreEqualPartial[*domain.Document](nil))
@@ -526,61 +526,67 @@ func (repo *PsqlDocumentRepository) Update(ctx context.Context, domainModels []*
 		err = helper.NilInputError{}
 		log.Error(err)
 
-		return err
+		return
 	}
 
 	if  domainColumnUpdater == nil {
 		err = helper.NilInputError{}
 		log.Error(err)
 
-		return err
+		return
     }
 
     var repositoryModels []any
     repositoryModels, err = goaoi.TransformCopySlice(domainModels, repo.GetDocumentDomainToRepositoryModel(ctx))
 	if err != nil {
-		return err
+		return
 	}
 
     var repositoryUpdater any
     repositoryUpdater, err = repo.DocumentDomainToRepositoryUpdater(ctx, domainColumnUpdater)
     if err != nil {
-        return err
+        return
     }
 
     var tx *sql.Tx
 
    	tx, err = repo.db.BeginTx(ctx, nil)
 	if err != nil {
-		return err
+		return
 	}
 
     var numAffectedRecords int64
     for _, repositoryModel := range   repositoryModels {
         repoModel, ok := repositoryModel.(*Document)
         if !ok {
-            return fmt.Errorf("expected type *Document but got %T", repoModel)
+            err = fmt.Errorf("expected type *Document but got %T", repoModel)
+
+            return
         }
 
         repoUpdater, ok := repositoryUpdater.(*DocumentUpdater)
         if !ok {
-            return fmt.Errorf("expected type *Document but got %T", repoModel)
+            err = fmt.Errorf("expected type *Document but got %T", repoModel)
+
+            return
         }
 
         repoUpdater.ApplyToModel(repoModel)
         numAffectedRecords, err = repoModel.Update(ctx, tx, boil.Infer())
         if err != nil {
-            return err
+            return
         }
 
         if numAffectedRecords == 0 {
-            return helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError}
+            err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError}
+
+            return
         }
     }
 
     err = tx.Commit()
 
-    return err
+    return
 }
 
 func (repo *PsqlDocumentRepository) UpdateWhere(ctx context.Context, domainColumnFilter *domain.DocumentFilter, domainColumnUpdater *domain.DocumentUpdater) (numAffectedRecords int64, err error) {
@@ -590,14 +596,14 @@ func (repo *PsqlDocumentRepository) UpdateWhere(ctx context.Context, domainColum
 		err = helper.NilInputError{}
 		log.Error(err)
 
-		return 0, err
+		return
     }
 
 	if  domainColumnUpdater == nil {
 		err = helper.NilInputError{}
 		log.Error(err)
 
-		return 0, err
+		return
     }
 
     var repositoryFilter any
@@ -627,14 +633,20 @@ func (repo *PsqlDocumentRepository) UpdateWhere(ctx context.Context, domainColum
         return
     }
 
-    setFilters := *repoFilter.GetSetFilters()
 
-	queryFilters := buildQueryModListFromFilterDocument(setFilters)
+
+	queryFilters := buildQueryModListFromFilterDocument(repoFilter)
 
 	modelsToUpdate, err = Documents(queryFilters...).All(ctx, repo.db)
 	if err != nil {
 		return
 	}
+
+    if len(modelsToUpdate) == 0 {
+        err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError}
+
+        return
+    }
 
     numAffectedRecords = int64(len(modelsToUpdate))
 
@@ -659,7 +671,9 @@ func (repo *PsqlDocumentRepository) Delete(ctx context.Context, domainModels []*
     if len(domainModels) == 0 {
         log.Debug(helper.LogMessageEmptyInput)
 
-        return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
+        err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
+
+        return
     }
 
 	err = goaoi.AnyOfSlice(domainModels, goaoi.AreEqualPartial[*domain.Document](nil))
@@ -667,37 +681,39 @@ func (repo *PsqlDocumentRepository) Delete(ctx context.Context, domainModels []*
 		err = helper.NilInputError{}
 		log.Error(err)
 
-		return err
+		return
 	}
 
     var repositoryModels []any
     repositoryModels, err = goaoi.TransformCopySlice(domainModels, repo.GetDocumentDomainToRepositoryModel(ctx))
 	if err != nil {
-		return err
+		return
 	}
 
     var tx *sql.Tx
 
 	tx, err = repo.db.BeginTx(ctx, nil)
 	if err != nil {
-		return err
+		return
 	}
 
 	for _, repositoryModel := range repositoryModels {
         repoModel, ok := repositoryModel.(*Document)
         if !ok {
-            return fmt.Errorf("expected type *Document but got %T", repoModel)
+            err = fmt.Errorf("expected type *Document but got %T", repoModel)
+
+            return
         }
 
 		_, err = repoModel.Delete(ctx, tx)
 		if err != nil {
-			return err
+			return
 		}
 	}
 
 	tx.Commit()
 
-    return nil
+    return
 }
 
 func (repo *PsqlDocumentRepository) DeleteWhere(ctx context.Context, domainColumnFilter *domain.DocumentFilter) (numAffectedRecords int64, err error) {
@@ -705,7 +721,7 @@ func (repo *PsqlDocumentRepository) DeleteWhere(ctx context.Context, domainColum
 		err = helper.NilInputError{}
 		log.Error(err)
 
-		return 0, err
+		return
     }
 
     var repositoryFilter any
@@ -721,9 +737,9 @@ func (repo *PsqlDocumentRepository) DeleteWhere(ctx context.Context, domainColum
         return
     }
 
-    setFilters := * repoFilter.GetSetFilters()
 
-	queryFilters := buildQueryModListFromFilterDocument(setFilters)
+
+	queryFilters := buildQueryModListFromFilterDocument(repoFilter)
 
     var tx *sql.Tx
 
@@ -744,24 +760,25 @@ func (repo *PsqlDocumentRepository) CountWhere(ctx context.Context, domainColumn
 		err = helper.NilInputError{}
 		log.Error(err)
 
-		return 0, err
+		return
     }
 
     var repositoryFilter any
     repositoryFilter, err = repo.DocumentDomainToRepositoryFilter(ctx, domainColumnFilter)
     if err != nil {
-        return 0, err
+        return
     }
 
     repoFilter, ok := repositoryFilter.(*DocumentFilter)
     if !ok {
-        return 0, fmt.Errorf("expected type *DocumentFilter but got %T", repoFilter)
+        err = fmt.Errorf("expected type *DocumentFilter but got %T", repoFilter)
 
+        return
     }
 
-    setFilters := *repoFilter.GetSetFilters()
 
-	queryFilters := buildQueryModListFromFilterDocument(setFilters)
+
+	queryFilters := buildQueryModListFromFilterDocument(repoFilter)
 
 	return Documents(queryFilters...).Count(ctx, repo.db)
 }
@@ -787,6 +804,7 @@ func (repo *PsqlDocumentRepository) DoesExist(ctx context.Context, domainModel *
     repoModel, ok := repositoryModel.(*Document)
     if !ok {
         err = fmt.Errorf("expected type *Document but got %T", repoModel)
+
         return
     }
 
@@ -815,9 +833,9 @@ func (repo *PsqlDocumentRepository) DoesExistWhere(ctx context.Context, domainCo
         return
     }
 
-    setFilters := *repoFilter.GetSetFilters()
 
-	queryFilters := buildQueryModListFromFilterDocument(setFilters)
+
+	queryFilters := buildQueryModListFromFilterDocument(repoFilter)
 
 	return Documents(queryFilters...).Exists(ctx, repo.db)
 }
@@ -844,9 +862,9 @@ func (repo *PsqlDocumentRepository) GetWhere(ctx context.Context, domainColumnFi
     }
 
 
-    setFilters := *repoFilter.GetSetFilters()
 
-	queryFilters := buildQueryModListFromFilterDocument(setFilters)
+
+	queryFilters := buildQueryModListFromFilterDocument(repoFilter)
 
     var repositoryModels DocumentSlice
     repositoryModels, err = Documents(queryFilters...).All(ctx, repo.db)
@@ -887,9 +905,9 @@ func (repo *PsqlDocumentRepository) GetFirstWhere(ctx context.Context, domainCol
         return
     }
 
-    setFilters := * repoFilter.GetSetFilters()
 
-	queryFilters := buildQueryModListFromFilterDocument(setFilters)
+
+	queryFilters := buildQueryModListFromFilterDocument(repoFilter)
 
     var repositoryModel *Document
     repositoryModel, err = Documents(queryFilters...).One(ctx, repo.db)

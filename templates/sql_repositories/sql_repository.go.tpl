@@ -95,23 +95,6 @@ type {{$EntityName}}Filter struct {
     {{end}}
 }
 
-type {{$EntityName}}FilterMapping[T any] struct {
-    Field {{$EntityName}}Field
-    FilterOperation model.FilterOperation[T]
-}
-
-func (filter *{{$EntityName}}Filter) GetSetFilters() *list.List {
-    setFilters := list.New()
-
-    {{range $field := .StructFields -}}
-    if filter.{{.FieldName}}.HasValue {
-    setFilters.PushBack({{$EntityName}}FilterMapping[{{Unslice (UnaliasSQLBoilerSlice .FieldType)}}]{Field: {{$EntityName}}Fields.{{.FieldName}}, FilterOperation: filter.{{.FieldName}}.Wrappee})
-    }
-    {{end}}
-
-    return setFilters
-}
-
 type {{$EntityName}}Updater struct {
     {{range $field := .StructFields -}}
     {{.FieldName}} optional.Optional[model.UpdateOperation[{{.FieldType}}]]
@@ -159,98 +142,98 @@ func buildQueryModFilter{{$EntityName}}[T any](filterField {{$EntityName}}Field,
 
     switch filterOperator {
     case model.FilterEqual:
-        filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[any])
+        filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[T])
         if !ok {
             panic("expected a scalar operand for FilterEqual operator")
         }
 
         newQueryMod = append(newQueryMod, qm.Where(string(filterField)+" = ?", filterOperand.Operand))
     case model.FilterNEqual:
-        filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[any])
+        filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[T])
         if !ok {
             panic("expected a scalar operand for FilterNEqual operator")
         }
 
         newQueryMod = append(newQueryMod, qm.Where(string(filterField)+" != ?", filterOperand.Operand))
     case model.FilterGreaterThan:
-        filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[any])
+        filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[T])
         if !ok {
             panic("expected a scalar operand for FilterGreaterThan operator")
         }
 
         newQueryMod = append(newQueryMod, qm.Where(string(filterField)+" > ?", filterOperand.Operand))
     case model.FilterGreaterThanEqual:
-        filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[any])
+        filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[T])
         if !ok {
             panic("expected a scalar operand for FilterGreaterThanEqual operator")
         }
 
         newQueryMod = append(newQueryMod, qm.Where(string(filterField)+" >= ?", filterOperand.Operand))
     case model.FilterLessThan:
-        filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[any])
+        filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[T])
         if !ok {
             panic("expected a scalar operand for FilterLessThan operator")
         }
 
         newQueryMod = append(newQueryMod, qm.Where(string(filterField)+" < ?", filterOperand.Operand))
     case model.FilterLessThanEqual:
-        filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[any])
+        filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[T])
         if !ok {
             panic("expected a scalar operand for FilterLessThanEqual operator")
         }
 
         newQueryMod = append(newQueryMod, qm.Where(string(filterField)+" <= ?", filterOperand.Operand))
     case model.FilterIn:
-        filterOperand, ok := filterOperation.Operand.(model.ListOperand[any])
+        filterOperand, ok := filterOperation.Operand.(model.ListOperand[T])
         if !ok {
             panic("expected a list operand for FilterIn operator")
         }
 
         newQueryMod = append(newQueryMod, qm.WhereIn(string(filterField)+" IN (?)", filterOperand.Operands))
     case model.FilterNotIn:
-        filterOperand, ok := filterOperation.Operand.(model.ListOperand[any])
+        filterOperand, ok := filterOperation.Operand.(model.ListOperand[T])
         if !ok {
             panic("expected a list operand for FilterNotIn operator")
         }
 
         newQueryMod = append(newQueryMod, qm.WhereNotIn(string(filterField)+" IN (?)", filterOperand.Operands))
     case model.FilterBetween:
-        filterOperand, ok := filterOperation.Operand.(model.RangeOperand[any])
+        filterOperand, ok := filterOperation.Operand.(model.RangeOperand[T])
         if !ok {
             panic("expected a scalar operand for FilterBetween operator")
         }
 
         newQueryMod = append(newQueryMod, qm.Where(string(filterField)+" BETWEEN ? AND ?", filterOperand.Start, filterOperand.End))
     case model.FilterNotBetween:
-        filterOperand, ok := filterOperation.Operand.(model.RangeOperand[any])
+        filterOperand, ok := filterOperation.Operand.(model.RangeOperand[T])
         if !ok {
             panic("expected a scalar operand for FilterNotBetween operator")
         }
 
         newQueryMod = append(newQueryMod, qm.Where(string(filterField)+" NOT BETWEEN ? AND ?", filterOperand.Start, filterOperand.End))
     case model.FilterLike:
-        filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[any])
+        filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[T])
         if !ok {
             panic("expected a scalar operand for FilterLike operator")
         }
 
         newQueryMod = append(newQueryMod, qm.Where(string(filterField)+" LIKE ?", filterOperand.Operand))
     case model.FilterNotLike:
-        filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[any])
+        filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[T])
         if !ok {
             panic("expected a scalar operand for FilterLike operator")
         }
 
         newQueryMod = append(newQueryMod, qm.Where(string(filterField)+" NOT LIKE ?", filterOperand.Operand))
     case model.FilterOr:
-        filterOperand, ok := filterOperation.Operand.(model.CompoundOperand[any])
+        filterOperand, ok := filterOperation.Operand.(model.CompoundOperand[T])
         if !ok {
             panic("expected a scalar operand for FilterOr operator")
         }
         newQueryMod = append(newQueryMod, qm.Expr(buildQueryModFilter{{$EntityName}}(filterField, filterOperand.LHS)))
         newQueryMod = append(newQueryMod, qm.Or2(qm.Expr(buildQueryModFilter{{$EntityName}}(filterField, filterOperand.RHS))))
     case model.FilterAnd:
-        filterOperand, ok := filterOperation.Operand.(model.CompoundOperand[any])
+        filterOperand, ok := filterOperation.Operand.(model.CompoundOperand[T])
         if !ok {
             panic("expected a scalar operand for FilterAnd operator")
         }
@@ -264,19 +247,15 @@ func buildQueryModFilter{{$EntityName}}[T any](filterField {{$EntityName}}Field,
     return newQueryMod
 }
 
-func buildQueryModListFromFilter{{$EntityName}}(setFilters list.List) queryModSlice{{$EntityName}} {
+func buildQueryModListFromFilter{{$EntityName}}(filter *{{$EntityName}}Filter) queryModSlice{{$EntityName}} {
 	queryModList := make(queryModSlice{{$EntityName}}, 0, {{len .StructFields}})
 
-	for filter := setFilters.Front(); filter != nil; filter = filter.Next() {
-		filterMapping, ok := filter.Value.({{$EntityName}}FilterMapping[any])
-		if !ok {
-			panic(fmt.Sprintf("expected type %T but got %T", {{$EntityName}}FilterMapping[any]{}, filter))
-		}
-
-        newQueryMod := buildQueryModFilter{{$EntityName}}(filterMapping.Field, filterMapping.FilterOperation)
-
+    {{range $field := .StructFields -}}
+    if filter.{{.FieldName}}.HasValue {
+        newQueryMod := buildQueryModFilter{{$EntityName}}("{{.FieldName}}", filter.{{.FieldName}}.Wrappee)
         queryModList = append(queryModList, newQueryMod...)
-	}
+    }
+    {{end}}
 
 	return queryModList
 }
@@ -315,7 +294,9 @@ func (repo *{{$StructName}}) Add(ctx context.Context, domainModels []*domain.{{$
     if len(domainModels) == 0 {
         log.Debug(helper.LogMessageEmptyInput)
 
-        return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
+        err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
+
+        return
     }
 
 	err = goaoi.AnyOfSlice(domainModels, goaoi.AreEqualPartial[*domain.{{$EntityName}}](nil))
@@ -323,37 +304,39 @@ func (repo *{{$StructName}}) Add(ctx context.Context, domainModels []*domain.{{$
 		err = helper.NilInputError{}
 		log.Error(err)
 
-		return err
+		return
 	}
 
     var repositoryModels []any
     repositoryModels, err = goaoi.TransformCopySlice(domainModels, repo.Get{{$EntityName}}DomainToRepositoryModel(ctx))
 	if err != nil {
-		return err
+		return
 	}
 
     var tx *sql.Tx
 
 	tx, err = repo.db.BeginTx(ctx, nil)
 	if err != nil {
-		return err
+		return
 	}
 
 	for _, repositoryModel := range repositoryModels {
         repoModel, ok := repositoryModel.(*{{$EntityName}})
         if !ok {
-            return fmt.Errorf("expected type *{{$EntityName}} but got %T", repoModel)
+            err = fmt.Errorf("expected type *{{$EntityName}} but got %T", repoModel)
+
+            return
         }
 
 		err = repoModel.Insert(ctx, tx, boil.Infer())
 		if err != nil {
-			return err
+			return
 		}
 	}
 
 	tx.Commit()
 
-    return nil
+    return
 }
 
 func (repo *{{$StructName}}) Replace(ctx context.Context, domainModels []*domain.{{$EntityName}})  (err error){
@@ -361,7 +344,9 @@ func (repo *{{$StructName}}) Replace(ctx context.Context, domainModels []*domain
     if len(domainModels) == 0 {
         log.Debug(helper.LogMessageEmptyInput)
 
-        return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
+        err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
+
+        return
     }
 
 	err = goaoi.AnyOfSlice(domainModels, goaoi.AreEqualPartial[*domain.{{$EntityName}}](nil))
@@ -369,48 +354,54 @@ func (repo *{{$StructName}}) Replace(ctx context.Context, domainModels []*domain
 		err = helper.NilInputError{}
 		log.Error(err)
 
-		return err
+		return
 	}
 
     var repositoryModels []any
     repositoryModels, err = goaoi.TransformCopySlice(domainModels, repo.Get{{$EntityName}}DomainToRepositoryModel(ctx))
 	if err != nil {
-		return err
+		return
 	}
 
     var tx *sql.Tx
 
 	tx, err = repo.db.BeginTx(ctx, nil)
 	if err != nil {
-		return err
+		return
 	}
 
 	for _, repositoryModel := range repositoryModels {
         repoModel, ok := repositoryModel.(*{{$EntityName}})
         if !ok {
-            return fmt.Errorf("expected type *{{$EntityName}} but got %T", repoModel)
+            err = fmt.Errorf("expected type *{{$EntityName}} but got %T", repoModel)
+
+            return
         }
 
         var numAffectedRecords int64
 		numAffectedRecords, err = repoModel.Update(ctx, tx, boil.Infer())
 		if err != nil {
-			return err
+			return
 		}
 
         if numAffectedRecords == 0 {
-            return helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError}
+            err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError}
+
+            return
         }
 	}
 
 	tx.Commit()
 
-    return nil
+    return
 }
 func (repo *{{$StructName}}) Upsert(ctx context.Context, domainModels []*domain.{{$EntityName}})  (err error){
     if len(domainModels) == 0 {
         log.Debug(helper.LogMessageEmptyInput)
 
-        return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
+        err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
+
+        return
     }
 
 	err = goaoi.AnyOfSlice(domainModels, goaoi.AreEqualPartial[*domain.{{$EntityName}}](nil))
@@ -418,26 +409,28 @@ func (repo *{{$StructName}}) Upsert(ctx context.Context, domainModels []*domain.
 		err = helper.NilInputError{}
 		log.Error(err)
 
-		return err
+		return
 	}
 
     var repositoryModels []any
     repositoryModels, err = goaoi.TransformCopySlice(domainModels, repo.Get{{$EntityName}}DomainToRepositoryModel(ctx))
 	if err != nil {
-		return err
+		return
 	}
 
     var tx *sql.Tx
 
 	tx, err = repo.db.BeginTx(ctx, nil)
 	if err != nil {
-		return err
+		return
 	}
 
 	for _, repositoryModel := range repositoryModels {
         repoModel, ok := repositoryModel.(*{{$EntityName}})
         if !ok {
-            return fmt.Errorf("expected type *{{$EntityName}} but got %T", repoModel)
+            err = fmt.Errorf("expected type *{{$EntityName}} but got %T", repoModel)
+
+            return
         }
 
         {{ if eq .DatabaseName "mssql" }}
@@ -446,20 +439,22 @@ func (repo *{{$StructName}}) Upsert(ctx context.Context, domainModels []*domain.
 		err = repoModel.Upsert(ctx, tx, false, []string{}, boil.Infer(), boil.Infer())
         {{end}}
 		if err != nil {
-			return err
+			return
 		}
 	}
 
 	tx.Commit()
 
-    return nil
+    return
 }
 
 func (repo *{{$StructName}}) Update(ctx context.Context, domainModels []*domain.{{$EntityName}}, domainColumnUpdater *domain.{{$EntityName}}Updater)  (err error){
     if len(domainModels) == 0 {
         log.Debug(helper.LogMessageEmptyInput)
 
-        return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
+        err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
+
+        return
     }
 
 	err = goaoi.AnyOfSlice(domainModels, goaoi.AreEqualPartial[*domain.{{$EntityName}}](nil))
@@ -467,61 +462,67 @@ func (repo *{{$StructName}}) Update(ctx context.Context, domainModels []*domain.
 		err = helper.NilInputError{}
 		log.Error(err)
 
-		return err
+		return
 	}
 
 	if  domainColumnUpdater == nil {
 		err = helper.NilInputError{}
 		log.Error(err)
 
-		return err
+		return
     }
 
     var repositoryModels []any
     repositoryModels, err = goaoi.TransformCopySlice(domainModels, repo.Get{{$EntityName}}DomainToRepositoryModel(ctx))
 	if err != nil {
-		return err
+		return
 	}
 
     var repositoryUpdater any
     repositoryUpdater, err = repo.{{$EntityName}}DomainToRepositoryUpdater(ctx, domainColumnUpdater)
     if err != nil {
-        return err
+        return
     }
 
     var tx *sql.Tx
 
    	tx, err = repo.db.BeginTx(ctx, nil)
 	if err != nil {
-		return err
+		return
 	}
 
     var numAffectedRecords int64
     for _, repositoryModel := range   repositoryModels {
         repoModel, ok := repositoryModel.(*{{$EntityName}})
         if !ok {
-            return fmt.Errorf("expected type *{{$EntityName}} but got %T", repoModel)
+            err = fmt.Errorf("expected type *{{$EntityName}} but got %T", repoModel)
+
+            return
         }
 
         repoUpdater, ok := repositoryUpdater.(*{{$EntityName}}Updater)
         if !ok {
-            return fmt.Errorf("expected type *{{$EntityName}} but got %T", repoModel)
+            err = fmt.Errorf("expected type *{{$EntityName}} but got %T", repoModel)
+
+            return
         }
 
         repoUpdater.ApplyToModel(repoModel)
         numAffectedRecords, err = repoModel.Update(ctx, tx, boil.Infer())
         if err != nil {
-            return err
+            return
         }
 
         if numAffectedRecords == 0 {
-            return helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError}
+            err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError}
+
+            return
         }
     }
 
     err = tx.Commit()
 
-    return err
+    return
 }
 
 func (repo *{{$StructName}}) UpdateWhere(ctx context.Context, domainColumnFilter *domain.{{$EntityName}}Filter, domainColumnUpdater *domain.{{$EntityName}}Updater) (numAffectedRecords int64, err error) {
@@ -531,14 +532,14 @@ func (repo *{{$StructName}}) UpdateWhere(ctx context.Context, domainColumnFilter
 		err = helper.NilInputError{}
 		log.Error(err)
 
-		return 0, err
+		return
     }
 
 	if  domainColumnUpdater == nil {
 		err = helper.NilInputError{}
 		log.Error(err)
 
-		return 0, err
+		return
     }
 
     var repositoryFilter any
@@ -568,14 +569,20 @@ func (repo *{{$StructName}}) UpdateWhere(ctx context.Context, domainColumnFilter
         return
     }
 
-    setFilters := *repoFilter.GetSetFilters()
 
-	queryFilters := buildQueryModListFromFilter{{$EntityName}}(setFilters)
+
+	queryFilters := buildQueryModListFromFilter{{$EntityName}}(repoFilter)
 
 	modelsToUpdate, err = {{$EntityName}}s(queryFilters...).All(ctx, repo.db)
 	if err != nil {
 		return
 	}
+
+    if len(modelsToUpdate) == 0 {
+        err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError}
+
+        return
+    }
 
     numAffectedRecords = int64(len(modelsToUpdate))
 
@@ -600,7 +607,9 @@ func (repo *{{$StructName}}) Delete(ctx context.Context, domainModels []*domain.
     if len(domainModels) == 0 {
         log.Debug(helper.LogMessageEmptyInput)
 
-        return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
+        err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
+
+        return
     }
 
 	err = goaoi.AnyOfSlice(domainModels, goaoi.AreEqualPartial[*domain.{{$EntityName}}](nil))
@@ -608,37 +617,39 @@ func (repo *{{$StructName}}) Delete(ctx context.Context, domainModels []*domain.
 		err = helper.NilInputError{}
 		log.Error(err)
 
-		return err
+		return
 	}
 
     var repositoryModels []any
     repositoryModels, err = goaoi.TransformCopySlice(domainModels, repo.Get{{$EntityName}}DomainToRepositoryModel(ctx))
 	if err != nil {
-		return err
+		return
 	}
 
     var tx *sql.Tx
 
 	tx, err = repo.db.BeginTx(ctx, nil)
 	if err != nil {
-		return err
+		return
 	}
 
 	for _, repositoryModel := range repositoryModels {
         repoModel, ok := repositoryModel.(*{{$EntityName}})
         if !ok {
-            return fmt.Errorf("expected type *{{$EntityName}} but got %T", repoModel)
+            err = fmt.Errorf("expected type *{{$EntityName}} but got %T", repoModel)
+
+            return
         }
 
 		_, err = repoModel.Delete(ctx, tx)
 		if err != nil {
-			return err
+			return
 		}
 	}
 
 	tx.Commit()
 
-    return nil
+    return
 }
 
 func (repo *{{$StructName}}) DeleteWhere(ctx context.Context, domainColumnFilter *domain.{{$EntityName}}Filter) (numAffectedRecords int64, err error) {
@@ -646,7 +657,7 @@ func (repo *{{$StructName}}) DeleteWhere(ctx context.Context, domainColumnFilter
 		err = helper.NilInputError{}
 		log.Error(err)
 
-		return 0, err
+		return
     }
 
     var repositoryFilter any
@@ -662,9 +673,9 @@ func (repo *{{$StructName}}) DeleteWhere(ctx context.Context, domainColumnFilter
         return
     }
 
-    setFilters := * repoFilter.GetSetFilters()
 
-	queryFilters := buildQueryModListFromFilter{{$EntityName}}(setFilters)
+
+	queryFilters := buildQueryModListFromFilter{{$EntityName}}(repoFilter)
 
     var tx *sql.Tx
 
@@ -685,24 +696,25 @@ func (repo *{{$StructName}}) CountWhere(ctx context.Context, domainColumnFilter 
 		err = helper.NilInputError{}
 		log.Error(err)
 
-		return 0, err
+		return
     }
 
     var repositoryFilter any
     repositoryFilter, err = repo.{{$EntityName}}DomainToRepositoryFilter(ctx, domainColumnFilter)
     if err != nil {
-        return 0, err
+        return
     }
 
     repoFilter, ok := repositoryFilter.(*{{$EntityName}}Filter)
     if !ok {
-        return 0, fmt.Errorf("expected type *{{$EntityName}}Filter but got %T", repoFilter)
+        err = fmt.Errorf("expected type *{{$EntityName}}Filter but got %T", repoFilter)
 
+        return
     }
 
-    setFilters := *repoFilter.GetSetFilters()
 
-	queryFilters := buildQueryModListFromFilter{{$EntityName}}(setFilters)
+
+	queryFilters := buildQueryModListFromFilter{{$EntityName}}(repoFilter)
 
 	return {{$EntityName}}s(queryFilters...).Count(ctx, repo.db)
 }
@@ -728,6 +740,7 @@ func (repo *{{$StructName}}) DoesExist(ctx context.Context, domainModel *domain.
     repoModel, ok := repositoryModel.(*{{$EntityName}})
     if !ok {
         err = fmt.Errorf("expected type *{{$EntityName}} but got %T", repoModel)
+
         return
     }
 
@@ -756,9 +769,9 @@ func (repo *{{$StructName}}) DoesExistWhere(ctx context.Context, domainColumnFil
         return
     }
 
-    setFilters := *repoFilter.GetSetFilters()
 
-	queryFilters := buildQueryModListFromFilter{{$EntityName}}(setFilters)
+
+	queryFilters := buildQueryModListFromFilter{{$EntityName}}(repoFilter)
 
 	return {{$EntityName}}s(queryFilters...).Exists(ctx, repo.db)
 }
@@ -785,9 +798,9 @@ func (repo *{{$StructName}}) GetWhere(ctx context.Context, domainColumnFilter *d
     }
 
 
-    setFilters := *repoFilter.GetSetFilters()
 
-	queryFilters := buildQueryModListFromFilter{{$EntityName}}(setFilters)
+
+	queryFilters := buildQueryModListFromFilter{{$EntityName}}(repoFilter)
 
     var repositoryModels {{$EntityName}}Slice
     repositoryModels, err = {{$EntityName}}s(queryFilters...).All(ctx, repo.db)
@@ -828,9 +841,9 @@ func (repo *{{$StructName}}) GetFirstWhere(ctx context.Context, domainColumnFilt
         return
     }
 
-    setFilters := * repoFilter.GetSetFilters()
 
-	queryFilters := buildQueryModListFromFilter{{$EntityName}}(setFilters)
+
+	queryFilters := buildQueryModListFromFilter{{$EntityName}}(repoFilter)
 
     var repositoryModel *{{$EntityName}}
     repositoryModel, err = {{$EntityName}}s(queryFilters...).One(ctx, repo.db)

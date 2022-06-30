@@ -116,46 +116,6 @@ type BookmarkFilter struct {
     
 }
 
-type BookmarkFilterMapping[T any] struct {
-    Field BookmarkField
-    FilterOperation model.FilterOperation[T]
-}
-
-func (filter *BookmarkFilter) GetSetFilters() *list.List {
-    setFilters := list.New()
-
-    if filter.CreatedAt.HasValue {
-    setFilters.PushBack(BookmarkFilterMapping[time.Time]{Field: BookmarkFields.CreatedAt, FilterOperation: filter.CreatedAt.Wrappee})
-    }
-    if filter.UpdatedAt.HasValue {
-    setFilters.PushBack(BookmarkFilterMapping[time.Time]{Field: BookmarkFields.UpdatedAt, FilterOperation: filter.UpdatedAt.Wrappee})
-    }
-    if filter.DeletedAt.HasValue {
-    setFilters.PushBack(BookmarkFilterMapping[null.Time]{Field: BookmarkFields.DeletedAt, FilterOperation: filter.DeletedAt.Wrappee})
-    }
-    if filter.URL.HasValue {
-    setFilters.PushBack(BookmarkFilterMapping[string]{Field: BookmarkFields.URL, FilterOperation: filter.URL.Wrappee})
-    }
-    if filter.Title.HasValue {
-    setFilters.PushBack(BookmarkFilterMapping[null.String]{Field: BookmarkFields.Title, FilterOperation: filter.Title.Wrappee})
-    }
-    if filter.BookmarkTypeID.HasValue {
-    setFilters.PushBack(BookmarkFilterMapping[null.Int64]{Field: BookmarkFields.BookmarkTypeID, FilterOperation: filter.BookmarkTypeID.Wrappee})
-    }
-    if filter.IsCollection.HasValue {
-    setFilters.PushBack(BookmarkFilterMapping[int64]{Field: BookmarkFields.IsCollection, FilterOperation: filter.IsCollection.Wrappee})
-    }
-    if filter.ID.HasValue {
-    setFilters.PushBack(BookmarkFilterMapping[int64]{Field: BookmarkFields.ID, FilterOperation: filter.ID.Wrappee})
-    }
-    if filter.IsRead.HasValue {
-    setFilters.PushBack(BookmarkFilterMapping[int64]{Field: BookmarkFields.IsRead, FilterOperation: filter.IsRead.Wrappee})
-    }
-    
-
-    return setFilters
-}
-
 type BookmarkUpdater struct {
     CreatedAt optional.Optional[model.UpdateOperation[time.Time]]
     UpdatedAt optional.Optional[model.UpdateOperation[time.Time]]
@@ -256,98 +216,98 @@ func buildQueryModFilterBookmark[T any](filterField BookmarkField, filterOperati
 
     switch filterOperator {
     case model.FilterEqual:
-        filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[any])
+        filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[T])
         if !ok {
             panic("expected a scalar operand for FilterEqual operator")
         }
 
         newQueryMod = append(newQueryMod, qm.Where(string(filterField)+" = ?", filterOperand.Operand))
     case model.FilterNEqual:
-        filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[any])
+        filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[T])
         if !ok {
             panic("expected a scalar operand for FilterNEqual operator")
         }
 
         newQueryMod = append(newQueryMod, qm.Where(string(filterField)+" != ?", filterOperand.Operand))
     case model.FilterGreaterThan:
-        filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[any])
+        filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[T])
         if !ok {
             panic("expected a scalar operand for FilterGreaterThan operator")
         }
 
         newQueryMod = append(newQueryMod, qm.Where(string(filterField)+" > ?", filterOperand.Operand))
     case model.FilterGreaterThanEqual:
-        filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[any])
+        filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[T])
         if !ok {
             panic("expected a scalar operand for FilterGreaterThanEqual operator")
         }
 
         newQueryMod = append(newQueryMod, qm.Where(string(filterField)+" >= ?", filterOperand.Operand))
     case model.FilterLessThan:
-        filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[any])
+        filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[T])
         if !ok {
             panic("expected a scalar operand for FilterLessThan operator")
         }
 
         newQueryMod = append(newQueryMod, qm.Where(string(filterField)+" < ?", filterOperand.Operand))
     case model.FilterLessThanEqual:
-        filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[any])
+        filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[T])
         if !ok {
             panic("expected a scalar operand for FilterLessThanEqual operator")
         }
 
         newQueryMod = append(newQueryMod, qm.Where(string(filterField)+" <= ?", filterOperand.Operand))
     case model.FilterIn:
-        filterOperand, ok := filterOperation.Operand.(model.ListOperand[any])
+        filterOperand, ok := filterOperation.Operand.(model.ListOperand[T])
         if !ok {
             panic("expected a list operand for FilterIn operator")
         }
 
         newQueryMod = append(newQueryMod, qm.WhereIn(string(filterField)+" IN (?)", filterOperand.Operands))
     case model.FilterNotIn:
-        filterOperand, ok := filterOperation.Operand.(model.ListOperand[any])
+        filterOperand, ok := filterOperation.Operand.(model.ListOperand[T])
         if !ok {
             panic("expected a list operand for FilterNotIn operator")
         }
 
         newQueryMod = append(newQueryMod, qm.WhereNotIn(string(filterField)+" IN (?)", filterOperand.Operands))
     case model.FilterBetween:
-        filterOperand, ok := filterOperation.Operand.(model.RangeOperand[any])
+        filterOperand, ok := filterOperation.Operand.(model.RangeOperand[T])
         if !ok {
             panic("expected a scalar operand for FilterBetween operator")
         }
 
         newQueryMod = append(newQueryMod, qm.Where(string(filterField)+" BETWEEN ? AND ?", filterOperand.Start, filterOperand.End))
     case model.FilterNotBetween:
-        filterOperand, ok := filterOperation.Operand.(model.RangeOperand[any])
+        filterOperand, ok := filterOperation.Operand.(model.RangeOperand[T])
         if !ok {
             panic("expected a scalar operand for FilterNotBetween operator")
         }
 
         newQueryMod = append(newQueryMod, qm.Where(string(filterField)+" NOT BETWEEN ? AND ?", filterOperand.Start, filterOperand.End))
     case model.FilterLike:
-        filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[any])
+        filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[T])
         if !ok {
             panic("expected a scalar operand for FilterLike operator")
         }
 
         newQueryMod = append(newQueryMod, qm.Where(string(filterField)+" LIKE ?", filterOperand.Operand))
     case model.FilterNotLike:
-        filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[any])
+        filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[T])
         if !ok {
             panic("expected a scalar operand for FilterLike operator")
         }
 
         newQueryMod = append(newQueryMod, qm.Where(string(filterField)+" NOT LIKE ?", filterOperand.Operand))
     case model.FilterOr:
-        filterOperand, ok := filterOperation.Operand.(model.CompoundOperand[any])
+        filterOperand, ok := filterOperation.Operand.(model.CompoundOperand[T])
         if !ok {
             panic("expected a scalar operand for FilterOr operator")
         }
         newQueryMod = append(newQueryMod, qm.Expr(buildQueryModFilterBookmark(filterField, filterOperand.LHS)))
         newQueryMod = append(newQueryMod, qm.Or2(qm.Expr(buildQueryModFilterBookmark(filterField, filterOperand.RHS))))
     case model.FilterAnd:
-        filterOperand, ok := filterOperation.Operand.(model.CompoundOperand[any])
+        filterOperand, ok := filterOperation.Operand.(model.CompoundOperand[T])
         if !ok {
             panic("expected a scalar operand for FilterAnd operator")
         }
@@ -361,19 +321,46 @@ func buildQueryModFilterBookmark[T any](filterField BookmarkField, filterOperati
     return newQueryMod
 }
 
-func buildQueryModListFromFilterBookmark(setFilters list.List) queryModSliceBookmark {
+func buildQueryModListFromFilterBookmark(filter *BookmarkFilter) queryModSliceBookmark {
 	queryModList := make(queryModSliceBookmark, 0, 9)
 
-	for filter := setFilters.Front(); filter != nil; filter = filter.Next() {
-		filterMapping, ok := filter.Value.(BookmarkFilterMapping[any])
-		if !ok {
-			panic(fmt.Sprintf("expected type %T but got %T", BookmarkFilterMapping[any]{}, filter))
-		}
-
-        newQueryMod := buildQueryModFilterBookmark(filterMapping.Field, filterMapping.FilterOperation)
-
+    if filter.CreatedAt.HasValue {
+        newQueryMod := buildQueryModFilterBookmark("CreatedAt", filter.CreatedAt.Wrappee)
         queryModList = append(queryModList, newQueryMod...)
-	}
+    }
+    if filter.UpdatedAt.HasValue {
+        newQueryMod := buildQueryModFilterBookmark("UpdatedAt", filter.UpdatedAt.Wrappee)
+        queryModList = append(queryModList, newQueryMod...)
+    }
+    if filter.DeletedAt.HasValue {
+        newQueryMod := buildQueryModFilterBookmark("DeletedAt", filter.DeletedAt.Wrappee)
+        queryModList = append(queryModList, newQueryMod...)
+    }
+    if filter.URL.HasValue {
+        newQueryMod := buildQueryModFilterBookmark("URL", filter.URL.Wrappee)
+        queryModList = append(queryModList, newQueryMod...)
+    }
+    if filter.Title.HasValue {
+        newQueryMod := buildQueryModFilterBookmark("Title", filter.Title.Wrappee)
+        queryModList = append(queryModList, newQueryMod...)
+    }
+    if filter.BookmarkTypeID.HasValue {
+        newQueryMod := buildQueryModFilterBookmark("BookmarkTypeID", filter.BookmarkTypeID.Wrappee)
+        queryModList = append(queryModList, newQueryMod...)
+    }
+    if filter.IsCollection.HasValue {
+        newQueryMod := buildQueryModFilterBookmark("IsCollection", filter.IsCollection.Wrappee)
+        queryModList = append(queryModList, newQueryMod...)
+    }
+    if filter.ID.HasValue {
+        newQueryMod := buildQueryModFilterBookmark("ID", filter.ID.Wrappee)
+        queryModList = append(queryModList, newQueryMod...)
+    }
+    if filter.IsRead.HasValue {
+        newQueryMod := buildQueryModFilterBookmark("IsRead", filter.IsRead.Wrappee)
+        queryModList = append(queryModList, newQueryMod...)
+    }
+    
 
 	return queryModList
 }
@@ -412,7 +399,9 @@ func (repo *MssqlBookmarkRepository) Add(ctx context.Context, domainModels []*do
     if len(domainModels) == 0 {
         log.Debug(helper.LogMessageEmptyInput)
 
-        return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
+        err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
+
+        return
     }
 
 	err = goaoi.AnyOfSlice(domainModels, goaoi.AreEqualPartial[*domain.Bookmark](nil))
@@ -420,37 +409,39 @@ func (repo *MssqlBookmarkRepository) Add(ctx context.Context, domainModels []*do
 		err = helper.NilInputError{}
 		log.Error(err)
 
-		return err
+		return
 	}
 
     var repositoryModels []any
     repositoryModels, err = goaoi.TransformCopySlice(domainModels, repo.GetBookmarkDomainToRepositoryModel(ctx))
 	if err != nil {
-		return err
+		return
 	}
 
     var tx *sql.Tx
 
 	tx, err = repo.db.BeginTx(ctx, nil)
 	if err != nil {
-		return err
+		return
 	}
 
 	for _, repositoryModel := range repositoryModels {
         repoModel, ok := repositoryModel.(*Bookmark)
         if !ok {
-            return fmt.Errorf("expected type *Bookmark but got %T", repoModel)
+            err = fmt.Errorf("expected type *Bookmark but got %T", repoModel)
+
+            return
         }
 
 		err = repoModel.Insert(ctx, tx, boil.Infer())
 		if err != nil {
-			return err
+			return
 		}
 	}
 
 	tx.Commit()
 
-    return nil
+    return
 }
 
 func (repo *MssqlBookmarkRepository) Replace(ctx context.Context, domainModels []*domain.Bookmark)  (err error){
@@ -458,7 +449,9 @@ func (repo *MssqlBookmarkRepository) Replace(ctx context.Context, domainModels [
     if len(domainModels) == 0 {
         log.Debug(helper.LogMessageEmptyInput)
 
-        return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
+        err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
+
+        return
     }
 
 	err = goaoi.AnyOfSlice(domainModels, goaoi.AreEqualPartial[*domain.Bookmark](nil))
@@ -466,48 +459,54 @@ func (repo *MssqlBookmarkRepository) Replace(ctx context.Context, domainModels [
 		err = helper.NilInputError{}
 		log.Error(err)
 
-		return err
+		return
 	}
 
     var repositoryModels []any
     repositoryModels, err = goaoi.TransformCopySlice(domainModels, repo.GetBookmarkDomainToRepositoryModel(ctx))
 	if err != nil {
-		return err
+		return
 	}
 
     var tx *sql.Tx
 
 	tx, err = repo.db.BeginTx(ctx, nil)
 	if err != nil {
-		return err
+		return
 	}
 
 	for _, repositoryModel := range repositoryModels {
         repoModel, ok := repositoryModel.(*Bookmark)
         if !ok {
-            return fmt.Errorf("expected type *Bookmark but got %T", repoModel)
+            err = fmt.Errorf("expected type *Bookmark but got %T", repoModel)
+
+            return
         }
 
         var numAffectedRecords int64
 		numAffectedRecords, err = repoModel.Update(ctx, tx, boil.Infer())
 		if err != nil {
-			return err
+			return
 		}
 
         if numAffectedRecords == 0 {
-            return helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError}
+            err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError}
+
+            return
         }
 	}
 
 	tx.Commit()
 
-    return nil
+    return
 }
 func (repo *MssqlBookmarkRepository) Upsert(ctx context.Context, domainModels []*domain.Bookmark)  (err error){
     if len(domainModels) == 0 {
         log.Debug(helper.LogMessageEmptyInput)
 
-        return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
+        err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
+
+        return
     }
 
 	err = goaoi.AnyOfSlice(domainModels, goaoi.AreEqualPartial[*domain.Bookmark](nil))
@@ -515,46 +514,50 @@ func (repo *MssqlBookmarkRepository) Upsert(ctx context.Context, domainModels []
 		err = helper.NilInputError{}
 		log.Error(err)
 
-		return err
+		return
 	}
 
     var repositoryModels []any
     repositoryModels, err = goaoi.TransformCopySlice(domainModels, repo.GetBookmarkDomainToRepositoryModel(ctx))
 	if err != nil {
-		return err
+		return
 	}
 
     var tx *sql.Tx
 
 	tx, err = repo.db.BeginTx(ctx, nil)
 	if err != nil {
-		return err
+		return
 	}
 
 	for _, repositoryModel := range repositoryModels {
         repoModel, ok := repositoryModel.(*Bookmark)
         if !ok {
-            return fmt.Errorf("expected type *Bookmark but got %T", repoModel)
+            err = fmt.Errorf("expected type *Bookmark but got %T", repoModel)
+
+            return
         }
 
         
 		err = repoModel.Upsert(ctx, tx, boil.Infer(), boil.Infer())
         
 		if err != nil {
-			return err
+			return
 		}
 	}
 
 	tx.Commit()
 
-    return nil
+    return
 }
 
 func (repo *MssqlBookmarkRepository) Update(ctx context.Context, domainModels []*domain.Bookmark, domainColumnUpdater *domain.BookmarkUpdater)  (err error){
     if len(domainModels) == 0 {
         log.Debug(helper.LogMessageEmptyInput)
 
-        return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
+        err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
+
+        return
     }
 
 	err = goaoi.AnyOfSlice(domainModels, goaoi.AreEqualPartial[*domain.Bookmark](nil))
@@ -562,61 +565,67 @@ func (repo *MssqlBookmarkRepository) Update(ctx context.Context, domainModels []
 		err = helper.NilInputError{}
 		log.Error(err)
 
-		return err
+		return
 	}
 
 	if  domainColumnUpdater == nil {
 		err = helper.NilInputError{}
 		log.Error(err)
 
-		return err
+		return
     }
 
     var repositoryModels []any
     repositoryModels, err = goaoi.TransformCopySlice(domainModels, repo.GetBookmarkDomainToRepositoryModel(ctx))
 	if err != nil {
-		return err
+		return
 	}
 
     var repositoryUpdater any
     repositoryUpdater, err = repo.BookmarkDomainToRepositoryUpdater(ctx, domainColumnUpdater)
     if err != nil {
-        return err
+        return
     }
 
     var tx *sql.Tx
 
    	tx, err = repo.db.BeginTx(ctx, nil)
 	if err != nil {
-		return err
+		return
 	}
 
     var numAffectedRecords int64
     for _, repositoryModel := range   repositoryModels {
         repoModel, ok := repositoryModel.(*Bookmark)
         if !ok {
-            return fmt.Errorf("expected type *Bookmark but got %T", repoModel)
+            err = fmt.Errorf("expected type *Bookmark but got %T", repoModel)
+
+            return
         }
 
         repoUpdater, ok := repositoryUpdater.(*BookmarkUpdater)
         if !ok {
-            return fmt.Errorf("expected type *Bookmark but got %T", repoModel)
+            err = fmt.Errorf("expected type *Bookmark but got %T", repoModel)
+
+            return
         }
 
         repoUpdater.ApplyToModel(repoModel)
         numAffectedRecords, err = repoModel.Update(ctx, tx, boil.Infer())
         if err != nil {
-            return err
+            return
         }
 
         if numAffectedRecords == 0 {
-            return helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError}
+            err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError}
+
+            return
         }
     }
 
     err = tx.Commit()
 
-    return err
+    return
 }
 
 func (repo *MssqlBookmarkRepository) UpdateWhere(ctx context.Context, domainColumnFilter *domain.BookmarkFilter, domainColumnUpdater *domain.BookmarkUpdater) (numAffectedRecords int64, err error) {
@@ -626,14 +635,14 @@ func (repo *MssqlBookmarkRepository) UpdateWhere(ctx context.Context, domainColu
 		err = helper.NilInputError{}
 		log.Error(err)
 
-		return 0, err
+		return
     }
 
 	if  domainColumnUpdater == nil {
 		err = helper.NilInputError{}
 		log.Error(err)
 
-		return 0, err
+		return
     }
 
     var repositoryFilter any
@@ -663,14 +672,20 @@ func (repo *MssqlBookmarkRepository) UpdateWhere(ctx context.Context, domainColu
         return
     }
 
-    setFilters := *repoFilter.GetSetFilters()
 
-	queryFilters := buildQueryModListFromFilterBookmark(setFilters)
+
+	queryFilters := buildQueryModListFromFilterBookmark(repoFilter)
 
 	modelsToUpdate, err = Bookmarks(queryFilters...).All(ctx, repo.db)
 	if err != nil {
 		return
 	}
+
+    if len(modelsToUpdate) == 0 {
+        err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError}
+
+        return
+    }
 
     numAffectedRecords = int64(len(modelsToUpdate))
 
@@ -695,7 +710,9 @@ func (repo *MssqlBookmarkRepository) Delete(ctx context.Context, domainModels []
     if len(domainModels) == 0 {
         log.Debug(helper.LogMessageEmptyInput)
 
-        return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
+        err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
+
+        return
     }
 
 	err = goaoi.AnyOfSlice(domainModels, goaoi.AreEqualPartial[*domain.Bookmark](nil))
@@ -703,37 +720,39 @@ func (repo *MssqlBookmarkRepository) Delete(ctx context.Context, domainModels []
 		err = helper.NilInputError{}
 		log.Error(err)
 
-		return err
+		return
 	}
 
     var repositoryModels []any
     repositoryModels, err = goaoi.TransformCopySlice(domainModels, repo.GetBookmarkDomainToRepositoryModel(ctx))
 	if err != nil {
-		return err
+		return
 	}
 
     var tx *sql.Tx
 
 	tx, err = repo.db.BeginTx(ctx, nil)
 	if err != nil {
-		return err
+		return
 	}
 
 	for _, repositoryModel := range repositoryModels {
         repoModel, ok := repositoryModel.(*Bookmark)
         if !ok {
-            return fmt.Errorf("expected type *Bookmark but got %T", repoModel)
+            err = fmt.Errorf("expected type *Bookmark but got %T", repoModel)
+
+            return
         }
 
 		_, err = repoModel.Delete(ctx, tx)
 		if err != nil {
-			return err
+			return
 		}
 	}
 
 	tx.Commit()
 
-    return nil
+    return
 }
 
 func (repo *MssqlBookmarkRepository) DeleteWhere(ctx context.Context, domainColumnFilter *domain.BookmarkFilter) (numAffectedRecords int64, err error) {
@@ -741,7 +760,7 @@ func (repo *MssqlBookmarkRepository) DeleteWhere(ctx context.Context, domainColu
 		err = helper.NilInputError{}
 		log.Error(err)
 
-		return 0, err
+		return
     }
 
     var repositoryFilter any
@@ -757,9 +776,9 @@ func (repo *MssqlBookmarkRepository) DeleteWhere(ctx context.Context, domainColu
         return
     }
 
-    setFilters := * repoFilter.GetSetFilters()
 
-	queryFilters := buildQueryModListFromFilterBookmark(setFilters)
+
+	queryFilters := buildQueryModListFromFilterBookmark(repoFilter)
 
     var tx *sql.Tx
 
@@ -780,24 +799,25 @@ func (repo *MssqlBookmarkRepository) CountWhere(ctx context.Context, domainColum
 		err = helper.NilInputError{}
 		log.Error(err)
 
-		return 0, err
+		return
     }
 
     var repositoryFilter any
     repositoryFilter, err = repo.BookmarkDomainToRepositoryFilter(ctx, domainColumnFilter)
     if err != nil {
-        return 0, err
+        return
     }
 
     repoFilter, ok := repositoryFilter.(*BookmarkFilter)
     if !ok {
-        return 0, fmt.Errorf("expected type *BookmarkFilter but got %T", repoFilter)
+        err = fmt.Errorf("expected type *BookmarkFilter but got %T", repoFilter)
 
+        return
     }
 
-    setFilters := *repoFilter.GetSetFilters()
 
-	queryFilters := buildQueryModListFromFilterBookmark(setFilters)
+
+	queryFilters := buildQueryModListFromFilterBookmark(repoFilter)
 
 	return Bookmarks(queryFilters...).Count(ctx, repo.db)
 }
@@ -823,6 +843,7 @@ func (repo *MssqlBookmarkRepository) DoesExist(ctx context.Context, domainModel 
     repoModel, ok := repositoryModel.(*Bookmark)
     if !ok {
         err = fmt.Errorf("expected type *Bookmark but got %T", repoModel)
+
         return
     }
 
@@ -851,9 +872,9 @@ func (repo *MssqlBookmarkRepository) DoesExistWhere(ctx context.Context, domainC
         return
     }
 
-    setFilters := *repoFilter.GetSetFilters()
 
-	queryFilters := buildQueryModListFromFilterBookmark(setFilters)
+
+	queryFilters := buildQueryModListFromFilterBookmark(repoFilter)
 
 	return Bookmarks(queryFilters...).Exists(ctx, repo.db)
 }
@@ -880,9 +901,9 @@ func (repo *MssqlBookmarkRepository) GetWhere(ctx context.Context, domainColumnF
     }
 
 
-    setFilters := *repoFilter.GetSetFilters()
 
-	queryFilters := buildQueryModListFromFilterBookmark(setFilters)
+
+	queryFilters := buildQueryModListFromFilterBookmark(repoFilter)
 
     var repositoryModels BookmarkSlice
     repositoryModels, err = Bookmarks(queryFilters...).All(ctx, repo.db)
@@ -923,9 +944,9 @@ func (repo *MssqlBookmarkRepository) GetFirstWhere(ctx context.Context, domainCo
         return
     }
 
-    setFilters := * repoFilter.GetSetFilters()
 
-	queryFilters := buildQueryModListFromFilterBookmark(setFilters)
+
+	queryFilters := buildQueryModListFromFilterBookmark(repoFilter)
 
     var repositoryModel *Bookmark
     repositoryModel, err = Bookmarks(queryFilters...).One(ctx, repo.db)
