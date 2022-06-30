@@ -17,9 +17,9 @@ import (
 
 func TestSQLBookmarkRepositoryAddTest(t *testing.T) {
 	tests := []struct {
+		err    error
 		name   string
 		models []*domain.Bookmark
-		err    error
 	}{
 		{
 			name: "Empty input", models: []*domain.Bookmark{}, err: helper.IneffectiveOperationError{},
@@ -132,9 +132,9 @@ func TestSQLBookmarkRepositoryAddTest(t *testing.T) {
 
 func TestSQLBookmarkRepositoryReplaceTest(t *testing.T) {
 	tests := []struct {
+		err                error
 		name               string
 		models             []*domain.Bookmark
-		err                error
 		insertBeforeUpdate bool
 	}{
 		{
@@ -257,9 +257,9 @@ func TestSQLBookmarkRepositoryReplaceTest(t *testing.T) {
 
 func TestSQLBookmarkRepositoryUpsertTest(t *testing.T) {
 	tests := []struct {
+		err                error
 		name               string
 		models             []*domain.Bookmark
-		err                error
 		insertBeforeUpdate bool
 	}{
 		{
@@ -382,10 +382,10 @@ func TestSQLBookmarkRepositoryUpsertTest(t *testing.T) {
 
 func TestSQLBookmarkRepositoryUpdateTest(t *testing.T) {
 	tests := []struct {
+		err                error
+		updater            *domain.BookmarkUpdater
 		name               string
 		models             []*domain.Bookmark
-		updater            *domain.BookmarkUpdater
-		err                error
 		insertBeforeUpdate bool
 	}{
 		{
@@ -539,11 +539,11 @@ func TestSQLBookmarkRepositoryUpdateTest(t *testing.T) {
 
 func TestSQLBookmarkRepositoryUpdateWhereTest(t *testing.T) {
 	tests := []struct {
-		name               string
-		models             []*domain.Bookmark
+		err                error
 		filter             *domain.BookmarkFilter
 		updater            *domain.BookmarkUpdater
-		err                error
+		name               string
+		models             []*domain.Bookmark
 		insertBeforeUpdate bool
 	}{
 		{
