@@ -17,9 +17,9 @@ import (
 
 func TestSQLBookmarkRepositoryAddTest(t *testing.T) {
 	tests := []struct {
+		err    error
 		name   string
 		models []*domain.Bookmark
-		err    error
 	}{
 		{
 			name: "Empty input", models: []*domain.Bookmark{}, err: helper.IneffectiveOperationError{},
@@ -134,10 +134,10 @@ func TestSQLBookmarkRepositoryAddTest(t *testing.T) {
 
 func TestSQLBookmarkRepositoryReplaceTest(t *testing.T) {
 	tests := []struct {
+		err            error
 		name           string
 		previousModels []*domain.Bookmark
 		models         []*domain.Bookmark
-		err            error
 	}{
 		{
 			name: "Empty input", models: []*domain.Bookmark{}, err: helper.IneffectiveOperationError{},
@@ -301,10 +301,10 @@ func TestSQLBookmarkRepositoryReplaceTest(t *testing.T) {
 
 func TestSQLBookmarkRepositoryUpsertTest(t *testing.T) {
 	tests := []struct {
+		err            error
 		name           string
 		previousModels []*domain.Bookmark
 		models         []*domain.Bookmark
-		err            error
 	}{
 		{
 			name: "Empty input", models: []*domain.Bookmark{}, err: helper.IneffectiveOperationError{},
@@ -469,11 +469,11 @@ func TestSQLBookmarkRepositoryUpsertTest(t *testing.T) {
 
 func TestSQLBookmarkRepositoryUpdateTest(t *testing.T) {
 	tests := []struct {
+		err            error
+		updater        *domain.BookmarkUpdater
 		name           string
 		previousModels []*domain.Bookmark
 		models         []*domain.Bookmark
-		updater        *domain.BookmarkUpdater
-		err            error
 	}{
 		{
 			name: "Empty input", models: []*domain.Bookmark{}, updater: &domain.BookmarkUpdater{}, err: helper.IneffectiveOperationError{},
@@ -628,13 +628,13 @@ func TestSQLBookmarkRepositoryUpdateTest(t *testing.T) {
 
 func TestSQLBookmarkRepositoryUpdateWhereTest(t *testing.T) {
 	tests := []struct {
-		name               string
-		models             []*domain.Bookmark
+		err                error
 		filter             *domain.BookmarkFilter
 		updater            *domain.BookmarkUpdater
-		err                error
-		insertBeforeUpdate bool
+		name               string
+		models             []*domain.Bookmark
 		numAffectedRecords int64
+		insertBeforeUpdate bool
 	}{
 		{
 			name: "No entities", updater: &domain.BookmarkUpdater{}, filter: &domain.BookmarkFilter{}, err: helper.IneffectiveOperationError{},
@@ -745,10 +745,10 @@ func TestSQLBookmarkRepositoryUpdateWhereTest(t *testing.T) {
 
 func TestSQLBookmarkRepositoryDeleteTest(t *testing.T) {
 	tests := []struct {
+		err                error
 		name               string
 		models             []*domain.Bookmark
 		insertBeforeDelete bool
-		err                error
 	}{
 		{
 			name: "Empty input", models: []*domain.Bookmark{}, err: helper.IneffectiveOperationError{},
@@ -826,12 +826,12 @@ func TestSQLBookmarkRepositoryDeleteTest(t *testing.T) {
 
 func TestSQLBookmarkRepositoryDeleteWhereTest(t *testing.T) {
 	tests := []struct {
+		err                error
+		filter             *domain.BookmarkFilter
 		name               string
 		models             []*domain.Bookmark
-		filter             *domain.BookmarkFilter
-		err                error
-		insertBeforeDelete bool
 		numAffectedRecords int64
+		insertBeforeDelete bool
 	}{
 		{
 			name: "Nil filter", filter: nil, err: helper.NilInputError{},
@@ -939,12 +939,12 @@ func TestSQLBookmarkRepositoryDeleteWhereTest(t *testing.T) {
 
 func TestSQLBookmarkRepositoryCountWhereTest(t *testing.T) {
 	tests := []struct {
+		err                error
+		filter             *domain.BookmarkFilter
 		name               string
 		models             []*domain.Bookmark
-		filter             *domain.BookmarkFilter
-		err                error
-		insertBeforeCount  bool
 		numAffectedRecords int64
+		insertBeforeCount  bool
 	}{
 		{
 			name: "Nil filter", filter: nil, err: helper.NilInputError{},
@@ -1052,11 +1052,11 @@ func TestSQLBookmarkRepositoryCountWhereTest(t *testing.T) {
 
 func TestSQLBookmarkRepositoryCountAllTest(t *testing.T) {
 	tests := []struct {
+		err               error
 		name              string
 		models            []*domain.Bookmark
-		err               error
-		insertBeforeCount bool
 		numRecords        int64
+		insertBeforeCount bool
 	}{
 		{
 			name: "Two existing minimal entities, filter for title of first", numRecords: 2, insertBeforeCount: true,
@@ -1149,9 +1149,9 @@ func TestSQLBookmarkRepositoryCountAllTest(t *testing.T) {
 
 func TestSQLBookmarkRepositoryDoesExistTest(t *testing.T) {
 	tests := []struct {
-		name              string
-		model             *domain.Bookmark
 		err               error
+		model             *domain.Bookmark
+		name              string
 		insertBeforeCheck bool
 		doesExist         bool
 	}{
@@ -1222,10 +1222,10 @@ func TestSQLBookmarkRepositoryDoesExistTest(t *testing.T) {
 
 func TestSQLBookmarkRepositoryDoesExistWhereTest(t *testing.T) {
 	tests := []struct {
-		name              string
-		filter            *domain.BookmarkFilter
-		models            []*domain.Bookmark
 		err               error
+		filter            *domain.BookmarkFilter
+		name              string
+		models            []*domain.Bookmark
 		insertBeforeCheck bool
 		doesExist         bool
 	}{
@@ -1363,12 +1363,12 @@ func TestSQLBookmarkRepositoryDoesExistWhereTest(t *testing.T) {
 
 func TestSQLBookmarkRepositoryGetWhereTest(t *testing.T) {
 	tests := []struct {
-		name              string
-		filter            *domain.BookmarkFilter
-		models            []*domain.Bookmark
 		err               error
-		insertBeforeCheck bool
+		filter            *domain.BookmarkFilter
+		name              string
+		models            []*domain.Bookmark
 		numRecords        int
+		insertBeforeCheck bool
 	}{
 		{
 			name: "Two existing minimal entities, filter for title of first", numRecords: 1, insertBeforeCheck: true,
@@ -1504,12 +1504,12 @@ func TestSQLBookmarkRepositoryGetWhereTest(t *testing.T) {
 
 func TestSQLBookmarkRepositoryGetFirstWhereTest(t *testing.T) {
 	tests := []struct {
-		name              string
-		filter            *domain.BookmarkFilter
-		models            []*domain.Bookmark
 		err               error
-		insertBeforeCheck bool
+		filter            *domain.BookmarkFilter
+		name              string
+		models            []*domain.Bookmark
 		numRecords        int
+		insertBeforeCheck bool
 	}{
 		{
 			name: "Two existing minimal entities, filter for title of first", numRecords: 1, insertBeforeCheck: true,
@@ -1644,11 +1644,11 @@ func TestSQLBookmarkRepositoryGetFirstWhereTest(t *testing.T) {
 
 func TestSQLBookmarkRepositoryGetAllTest(t *testing.T) {
 	tests := []struct {
+		err               error
 		name              string
 		models            []*domain.Bookmark
-		err               error
-		insertBeforeCheck bool
 		numRecords        int
+		insertBeforeCheck bool
 	}{
 		{
 			name: "Two existing minimal entities", numRecords: 2, insertBeforeCheck: true,
@@ -1719,10 +1719,10 @@ func TestSQLBookmarkRepositoryGetAllTest(t *testing.T) {
 
 func TestSQLBookmarkRepositoryAddTypeTest(t *testing.T) {
 	tests := []struct {
+		err          error
 		name         string
 		type_        []string
 		preAddedType []string
-		err          error
 	}{
 		{
 			name: "One new type", type_: []string{"Text"},
@@ -1776,10 +1776,10 @@ func TestSQLBookmarkRepositoryAddTypeTest(t *testing.T) {
 
 func TestSQLBookmarkRepositoryUpdateTypeTest(t *testing.T) {
 	tests := []struct {
-		name               string
-		oldTypes           []string
-		newType            string
 		err                error
+		name               string
+		newType            string
+		oldTypes           []string
 		insertBeforeUpdate bool
 	}{
 		{
@@ -1831,10 +1831,10 @@ func TestSQLBookmarkRepositoryUpdateTypeTest(t *testing.T) {
 
 func TestSQLBookmarkRepositoryDeleteTypeTest(t *testing.T) {
 	tests := []struct {
+		err           error
 		name          string
 		type_         []string
 		preAddedTypes []string
-		err           error
 	}{
 		{
 			name: "Deleting non-existent type", type_: []string{"Text"},
