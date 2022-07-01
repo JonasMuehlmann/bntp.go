@@ -26,6 +26,7 @@ import (
 	 repoCommon "github.com/JonasMuehlmann/bntp.go/model/repository"
 	"container/list"
 	"fmt"
+    "errors"
 	"github.com/JonasMuehlmann/bntp.go/internal/helper"
 	"github.com/JonasMuehlmann/bntp.go/model"
 	"github.com/JonasMuehlmann/bntp.go/model/domain"
@@ -38,6 +39,7 @@ import (
     "github.com/volatiletech/sqlboiler/v4/queries"
     "github.com/volatiletech/sqlboiler/v4/queries/qm"
     log "github.com/sirupsen/logrus"
+	"github.com/stoewer/go-strcase"
     
     
     "time"
@@ -221,84 +223,84 @@ func buildQueryModFilterBookmark[T any](filterField BookmarkField, filterOperati
             panic("expected a scalar operand for FilterEqual operator")
         }
 
-        newQueryMod = append(newQueryMod, qm.Where(string(filterField)+" = ?", filterOperand.Operand))
+        newQueryMod = append(newQueryMod, qm.Where(strcase.SnakeCase(string(filterField))+" = ?", filterOperand.Operand))
     case model.FilterNEqual:
         filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[T])
         if !ok {
             panic("expected a scalar operand for FilterNEqual operator")
         }
 
-        newQueryMod = append(newQueryMod, qm.Where(string(filterField)+" != ?", filterOperand.Operand))
+        newQueryMod = append(newQueryMod, qm.Where(strcase.SnakeCase(string(filterField))+" != ?", filterOperand.Operand))
     case model.FilterGreaterThan:
         filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[T])
         if !ok {
             panic("expected a scalar operand for FilterGreaterThan operator")
         }
 
-        newQueryMod = append(newQueryMod, qm.Where(string(filterField)+" > ?", filterOperand.Operand))
+        newQueryMod = append(newQueryMod, qm.Where(strcase.SnakeCase(string(filterField))+" > ?", filterOperand.Operand))
     case model.FilterGreaterThanEqual:
         filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[T])
         if !ok {
             panic("expected a scalar operand for FilterGreaterThanEqual operator")
         }
 
-        newQueryMod = append(newQueryMod, qm.Where(string(filterField)+" >= ?", filterOperand.Operand))
+        newQueryMod = append(newQueryMod, qm.Where(strcase.SnakeCase(string(filterField))+" >= ?", filterOperand.Operand))
     case model.FilterLessThan:
         filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[T])
         if !ok {
             panic("expected a scalar operand for FilterLessThan operator")
         }
 
-        newQueryMod = append(newQueryMod, qm.Where(string(filterField)+" < ?", filterOperand.Operand))
+        newQueryMod = append(newQueryMod, qm.Where(strcase.SnakeCase(string(filterField))+" < ?", filterOperand.Operand))
     case model.FilterLessThanEqual:
         filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[T])
         if !ok {
             panic("expected a scalar operand for FilterLessThanEqual operator")
         }
 
-        newQueryMod = append(newQueryMod, qm.Where(string(filterField)+" <= ?", filterOperand.Operand))
+        newQueryMod = append(newQueryMod, qm.Where(strcase.SnakeCase(string(filterField))+" <= ?", filterOperand.Operand))
     case model.FilterIn:
         filterOperand, ok := filterOperation.Operand.(model.ListOperand[T])
         if !ok {
             panic("expected a list operand for FilterIn operator")
         }
 
-        newQueryMod = append(newQueryMod, qm.WhereIn(string(filterField)+" IN (?)", filterOperand.Operands))
+        newQueryMod = append(newQueryMod, qm.WhereIn(strcase.SnakeCase(string(filterField))+" IN (?)", filterOperand.Operands))
     case model.FilterNotIn:
         filterOperand, ok := filterOperation.Operand.(model.ListOperand[T])
         if !ok {
             panic("expected a list operand for FilterNotIn operator")
         }
 
-        newQueryMod = append(newQueryMod, qm.WhereNotIn(string(filterField)+" IN (?)", filterOperand.Operands))
+        newQueryMod = append(newQueryMod, qm.WhereNotIn(strcase.SnakeCase(string(filterField))+" IN (?)", filterOperand.Operands))
     case model.FilterBetween:
         filterOperand, ok := filterOperation.Operand.(model.RangeOperand[T])
         if !ok {
             panic("expected a scalar operand for FilterBetween operator")
         }
 
-        newQueryMod = append(newQueryMod, qm.Where(string(filterField)+" BETWEEN ? AND ?", filterOperand.Start, filterOperand.End))
+        newQueryMod = append(newQueryMod, qm.Where(strcase.SnakeCase(string(filterField))+" BETWEEN ? AND ?", filterOperand.Start, filterOperand.End))
     case model.FilterNotBetween:
         filterOperand, ok := filterOperation.Operand.(model.RangeOperand[T])
         if !ok {
             panic("expected a scalar operand for FilterNotBetween operator")
         }
 
-        newQueryMod = append(newQueryMod, qm.Where(string(filterField)+" NOT BETWEEN ? AND ?", filterOperand.Start, filterOperand.End))
+        newQueryMod = append(newQueryMod, qm.Where(strcase.SnakeCase(string(filterField))+" NOT BETWEEN ? AND ?", filterOperand.Start, filterOperand.End))
     case model.FilterLike:
         filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[T])
         if !ok {
             panic("expected a scalar operand for FilterLike operator")
         }
 
-        newQueryMod = append(newQueryMod, qm.Where(string(filterField)+" LIKE ?", filterOperand.Operand))
+        newQueryMod = append(newQueryMod, qm.Where(strcase.SnakeCase(string(filterField))+" LIKE ?", filterOperand.Operand))
     case model.FilterNotLike:
         filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[T])
         if !ok {
             panic("expected a scalar operand for FilterLike operator")
         }
 
-        newQueryMod = append(newQueryMod, qm.Where(string(filterField)+" NOT LIKE ?", filterOperand.Operand))
+        newQueryMod = append(newQueryMod, qm.Where(strcase.SnakeCase(string(filterField))+" NOT LIKE ?", filterOperand.Operand))
     case model.FilterOr:
         filterOperand, ok := filterOperation.Operand.(model.CompoundOperand[T])
         if !ok {
@@ -907,6 +909,10 @@ func (repo *PsqlBookmarkRepository) GetWhere(ctx context.Context, domainColumnFi
 
     var repositoryModels BookmarkSlice
     repositoryModels, err = Bookmarks(queryFilters...).All(ctx, repo.db)
+    if errors.Is(err, sql.ErrNoRows) {
+        err = helper.IneffectiveOperationError{Inner: err}
+    }
+
 
     records = make([]*domain.Bookmark, 0, len(repositoryModels))
 
@@ -951,6 +957,10 @@ func (repo *PsqlBookmarkRepository) GetFirstWhere(ctx context.Context, domainCol
     var repositoryModel *Bookmark
     repositoryModel, err = Bookmarks(queryFilters...).One(ctx, repo.db)
     if err != nil {
+            if errors.Is(err, sql.ErrNoRows) {
+                err = helper.IneffectiveOperationError{Inner: err}
+            }
+
         return
     }
 
@@ -972,6 +982,10 @@ func (repo *PsqlBookmarkRepository) GetAll(ctx context.Context) (records []*doma
     for _, repoModel := range repositoryModels {
         domainModel, err = repo.BookmarkRepositoryToDomainModel(ctx, repoModel)
         if err != nil {
+            if errors.Is(err, sql.ErrNoRows) {
+                err = helper.IneffectiveOperationError{Inner: err}
+            }
+
             return
         }
 
@@ -1131,7 +1145,7 @@ func (repo *PsqlBookmarkRepository) BookmarkDomainToRepositoryModel(ctx context.
 func (repo *PsqlBookmarkRepository) BookmarkRepositoryToDomainModel(ctx context.Context, repositoryModel any) (domainModel *domain.Bookmark, err error) {
     domainModel = new(domain.Bookmark)
 
-    repositoryModelConcrete := repositoryModel.(Bookmark)
+    repositoryModelConcrete := repositoryModel.(*Bookmark)
 
     domainModel.URL = repositoryModelConcrete.URL
     domainModel.ID = repositoryModelConcrete.ID

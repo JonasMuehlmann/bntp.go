@@ -27,6 +27,7 @@ import (
 	"os"
 	"path"
 	"runtime"
+	"time"
 
 	"github.com/JonasMuehlmann/goaoi"
 	log "github.com/sirupsen/logrus"
@@ -34,7 +35,8 @@ import (
 )
 
 const (
-	DateFormat           string = "helper.DateFormat"
+	// NOTE: This is the only format time marshaling supports, it is not configurable...
+	DateFormat           string = time.RFC3339
 	LogMessageEmptyInput        = "Returning early after receiving empty input"
 )
 

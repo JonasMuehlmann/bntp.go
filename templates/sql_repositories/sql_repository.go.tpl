@@ -30,6 +30,7 @@ import (
 	 repoCommon "github.com/JonasMuehlmann/bntp.go/model/repository"
 	"container/list"
 	"fmt"
+    "errors"
 	"github.com/JonasMuehlmann/bntp.go/internal/helper"
 	"github.com/JonasMuehlmann/bntp.go/model"
 	"github.com/JonasMuehlmann/bntp.go/model/domain"
@@ -805,6 +806,10 @@ func (repo *{{$StructName}}) GetWhere(ctx context.Context, domainColumnFilter *d
 
     var repositoryModels {{$EntityName}}Slice
     repositoryModels, err = {{$EntityName}}s(queryFilters...).All(ctx, repo.db)
+    if errors.Is(err, sql.ErrNoRows) {
+        err = helper.IneffectiveOperationError{Inner: err}
+    }
+
 
     records = make([]*domain.{{$EntityName}}, 0, len(repositoryModels))
 
@@ -849,6 +854,10 @@ func (repo *{{$StructName}}) GetFirstWhere(ctx context.Context, domainColumnFilt
     var repositoryModel *{{$EntityName}}
     repositoryModel, err = {{$EntityName}}s(queryFilters...).One(ctx, repo.db)
     if err != nil {
+            if errors.Is(err, sql.ErrNoRows) {
+                err = helper.IneffectiveOperationError{Inner: err}
+            }
+
         return
     }
 
@@ -870,6 +879,10 @@ func (repo *{{$StructName}}) GetAll(ctx context.Context) (records []*domain.{{$E
     for _, repoModel := range repositoryModels {
         domainModel, err = repo.{{$EntityName}}RepositoryToDomainModel(ctx, repoModel)
         if err != nil {
+            if errors.Is(err, sql.ErrNoRows) {
+                err = helper.IneffectiveOperationError{Inner: err}
+            }
+
             return
         }
 
