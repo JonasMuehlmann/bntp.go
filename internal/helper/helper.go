@@ -43,6 +43,7 @@ const (
 var (
 	EmptyInputError             = errors.New("empty input")
 	NonExistentPrimaryDataError = errors.New("the primary data to work with does not exist")
+	NopUpdaterError             = errors.New("The updater will leave the data unchanged")
 )
 
 type NilInputError struct {
@@ -65,6 +66,18 @@ func (err IneffectiveOperationError) Error() string {
 }
 
 func (err IneffectiveOperationError) Unwrap() error {
+	return err.Inner
+}
+
+type DuplicateInsertionError struct {
+	Inner error
+}
+
+func (err DuplicateInsertionError) Error() string {
+	return fmt.Sprintf("The operation would insert a duplicate: %v", err.Inner)
+}
+
+func (err DuplicateInsertionError) Unwrap() error {
 	return err.Inner
 }
 

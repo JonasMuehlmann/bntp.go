@@ -44,9 +44,9 @@ import (
     "github.com/volatiletech/sqlboiler/v4/queries/qm"
     log "github.com/sirupsen/logrus"
 	"github.com/stoewer/go-strcase"
+    "strings"
     {{ if eq $EntityName "Tag" }}
     "strconv"
-    "strings"
     {{ end }}
     {{ if ne $EntityName "Tag" }}
     "time"
@@ -332,6 +332,10 @@ func (repo *{{$StructName}}) Add(ctx context.Context, domainModels []*domain.{{$
 
 		err = repoModel.Insert(ctx, tx, boil.Infer())
 		if err != nil {
+            if strings.Contains(err.Error(), "UNIQUE") {
+                err = helper.DuplicateInsertionError{Inner: err}
+            }
+
 			return
 		}
 	}
@@ -383,6 +387,10 @@ func (repo *{{$StructName}}) Replace(ctx context.Context, domainModels []*domain
         var numAffectedRecords int64
 		numAffectedRecords, err = repoModel.Update(ctx, tx, boil.Infer())
 		if err != nil {
+            if strings.Contains(err.Error(), "UNIQUE") {
+                err = helper.DuplicateInsertionError{Inner: err}
+            }
+
 			return
 		}
 
@@ -441,6 +449,10 @@ func (repo *{{$StructName}}) Upsert(ctx context.Context, domainModels []*domain.
 		err = repoModel.Upsert(ctx, tx, false, []string{}, boil.Infer(), boil.Infer())
         {{end}}
 		if err != nil {
+            if strings.Contains(err.Error(), "UNIQUE") {
+                err = helper.DuplicateInsertionError{Inner: err}
+            }
+
 			return
 		}
 	}
@@ -469,6 +481,13 @@ func (repo *{{$StructName}}) Update(ctx context.Context, domainModels []*domain.
 
 	if  domainColumnUpdater == nil {
 		err = helper.NilInputError{}
+		log.Error(err)
+
+		return
+    }
+
+	if  domainColumnUpdater == (&domain.{{$EntityName}}Updater{}) {
+        err = helper.IneffectiveOperationError{Inner: helper.NopUpdaterError}
 		log.Error(err)
 
 		return
@@ -512,6 +531,10 @@ func (repo *{{$StructName}}) Update(ctx context.Context, domainModels []*domain.
         repoUpdater.ApplyToModel(repoModel)
         numAffectedRecords, err = repoModel.Update(ctx, tx, boil.Infer())
         if err != nil {
+            if strings.Contains(err.Error(), "UNIQUE") {
+                err = helper.DuplicateInsertionError{Inner: err}
+            }
+
             return
         }
 
@@ -539,6 +562,13 @@ func (repo *{{$StructName}}) UpdateWhere(ctx context.Context, domainColumnFilter
 
 	if  domainColumnUpdater == nil {
 		err = helper.NilInputError{}
+		log.Error(err)
+
+		return
+    }
+
+	if  domainColumnUpdater == (&domain.{{$EntityName}}Updater{}) {
+        err = helper.IneffectiveOperationError{Inner: helper.NopUpdaterError}
 		log.Error(err)
 
 		return
@@ -597,7 +627,15 @@ func (repo *{{$StructName}}) UpdateWhere(ctx context.Context, domainColumnFilter
 
     for _, repoModel := range modelsToUpdate {
         repoUpdater.ApplyToModel(repoModel)
-        repoModel.Update(ctx, tx, boil.Infer())
+        _, err = repoModel.Update(ctx, tx, boil.Infer())
+        if err != nil {
+            if strings.Contains(err.Error(), "UNIQUE") {
+                err = helper.DuplicateInsertionError{Inner: err}
+            }
+
+            return
+        }
+
     }
 
     tx.Commit()
@@ -899,7 +937,11 @@ func (repo *{{$StructName}}) AddType(ctx context.Context, types []string)  (err 
 
         err = repositoryModel.Insert(ctx, repo.db, boil.Infer())
         if err != nil {
-            return err
+            if strings.Contains(err.Error(), "UNIQUE") {
+                err = helper.DuplicateInsertionError{Inner: err}
+            }
+
+            return
         }
     }
 
@@ -908,6 +950,11 @@ func (repo *{{$StructName}}) AddType(ctx context.Context, types []string)  (err 
 
 func (repo *{{$StructName}}) DeleteType(ctx context.Context, types []string)  (err error){
     _, err = {{$EntityName}}Types({{$EntityName}}TypeWhere.{{$EntityName}}Type.IN(types)).DeleteAll(ctx, repo.db)
+    if err != nil {
+        if strings.Contains(err.Error(), "UNIQUE") {
+            err = helper.DuplicateInsertionError{Inner: err}
+        }
+    }
 
 	return
 }
@@ -916,12 +963,21 @@ func (repo *{{$StructName}}) UpdateType(ctx context.Context, oldType string, new
     var repositoryModel *{{$EntityName}}Type
     repositoryModel, err = {{$EntityName}}Types({{$EntityName}}TypeWhere.{{$EntityName}}Type.EQ(oldType)).One(ctx, repo.db)
     if err != nil {
-        return err
+        return
     }
 
     repositoryModel.{{$EntityName}}Type = newType
 
     _, err = repositoryModel.Update(ctx, repo.db, boil.Infer())
+    if err != nil {
+        if strings.Contains(err.Error(), "UNIQUE") {
+            err = helper.DuplicateInsertionError{Inner: err}
+        }
+
+        if errors.Is(err, sql.ErrNoRows) {
+            err = helper.IneffectiveOperationError{Inner: err}
+        }
+    }
 
     return
 }

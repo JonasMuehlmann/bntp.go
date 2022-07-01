@@ -40,6 +40,7 @@ import (
     "github.com/volatiletech/sqlboiler/v4/queries/qm"
     log "github.com/sirupsen/logrus"
 	"github.com/stoewer/go-strcase"
+    "strings"
     
     
     "time"
@@ -398,6 +399,10 @@ func (repo *Sqlite3DocumentRepository) Add(ctx context.Context, domainModels []*
 
 		err = repoModel.Insert(ctx, tx, boil.Infer())
 		if err != nil {
+            if strings.Contains(err.Error(), "UNIQUE") {
+                err = helper.DuplicateInsertionError{Inner: err}
+            }
+
 			return
 		}
 	}
@@ -449,6 +454,10 @@ func (repo *Sqlite3DocumentRepository) Replace(ctx context.Context, domainModels
         var numAffectedRecords int64
 		numAffectedRecords, err = repoModel.Update(ctx, tx, boil.Infer())
 		if err != nil {
+            if strings.Contains(err.Error(), "UNIQUE") {
+                err = helper.DuplicateInsertionError{Inner: err}
+            }
+
 			return
 		}
 
@@ -505,6 +514,10 @@ func (repo *Sqlite3DocumentRepository) Upsert(ctx context.Context, domainModels 
 		err = repoModel.Upsert(ctx, tx, false, []string{}, boil.Infer(), boil.Infer())
         
 		if err != nil {
+            if strings.Contains(err.Error(), "UNIQUE") {
+                err = helper.DuplicateInsertionError{Inner: err}
+            }
+
 			return
 		}
 	}
@@ -533,6 +546,13 @@ func (repo *Sqlite3DocumentRepository) Update(ctx context.Context, domainModels 
 
 	if  domainColumnUpdater == nil {
 		err = helper.NilInputError{}
+		log.Error(err)
+
+		return
+    }
+
+	if  domainColumnUpdater == (&domain.DocumentUpdater{}) {
+        err = helper.IneffectiveOperationError{Inner: helper.NopUpdaterError}
 		log.Error(err)
 
 		return
@@ -576,6 +596,10 @@ func (repo *Sqlite3DocumentRepository) Update(ctx context.Context, domainModels 
         repoUpdater.ApplyToModel(repoModel)
         numAffectedRecords, err = repoModel.Update(ctx, tx, boil.Infer())
         if err != nil {
+            if strings.Contains(err.Error(), "UNIQUE") {
+                err = helper.DuplicateInsertionError{Inner: err}
+            }
+
             return
         }
 
@@ -603,6 +627,13 @@ func (repo *Sqlite3DocumentRepository) UpdateWhere(ctx context.Context, domainCo
 
 	if  domainColumnUpdater == nil {
 		err = helper.NilInputError{}
+		log.Error(err)
+
+		return
+    }
+
+	if  domainColumnUpdater == (&domain.DocumentUpdater{}) {
+        err = helper.IneffectiveOperationError{Inner: helper.NopUpdaterError}
 		log.Error(err)
 
 		return
@@ -661,7 +692,15 @@ func (repo *Sqlite3DocumentRepository) UpdateWhere(ctx context.Context, domainCo
 
     for _, repoModel := range modelsToUpdate {
         repoUpdater.ApplyToModel(repoModel)
-        repoModel.Update(ctx, tx, boil.Infer())
+        _, err = repoModel.Update(ctx, tx, boil.Infer())
+        if err != nil {
+            if strings.Contains(err.Error(), "UNIQUE") {
+                err = helper.DuplicateInsertionError{Inner: err}
+            }
+
+            return
+        }
+
     }
 
     tx.Commit()
@@ -963,6 +1002,10 @@ func (repo *Sqlite3DocumentRepository) AddType(ctx context.Context, types []stri
 
         err = repositoryModel.Insert(ctx, repo.db, boil.Infer())
         if err != nil {
+            if strings.Contains(err.Error(), "UNIQUE") {
+                err = helper.DuplicateInsertionError{Inner: err}
+            }
+
             return err
         }
     }
@@ -972,6 +1015,11 @@ func (repo *Sqlite3DocumentRepository) AddType(ctx context.Context, types []stri
 
 func (repo *Sqlite3DocumentRepository) DeleteType(ctx context.Context, types []string)  (err error){
     _, err = DocumentTypes(DocumentTypeWhere.DocumentType.IN(types)).DeleteAll(ctx, repo.db)
+    if err != nil {
+        if strings.Contains(err.Error(), "UNIQUE") {
+            err = helper.DuplicateInsertionError{Inner: err}
+        }
+    }
 
 	return
 }
@@ -986,6 +1034,15 @@ func (repo *Sqlite3DocumentRepository) UpdateType(ctx context.Context, oldType s
     repositoryModel.DocumentType = newType
 
     _, err = repositoryModel.Update(ctx, repo.db, boil.Infer())
+    if err != nil {
+        if strings.Contains(err.Error(), "UNIQUE") {
+            err = helper.DuplicateInsertionError{Inner: err}
+        }
+
+        if errors.Is(err, sql.ErrNoRows) {
+            err = helper.IneffectiveOperationError{Inner: err}
+        }
+    }
 
     return
 }

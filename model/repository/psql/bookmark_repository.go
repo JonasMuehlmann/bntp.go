@@ -40,6 +40,7 @@ import (
     "github.com/volatiletech/sqlboiler/v4/queries/qm"
     log "github.com/sirupsen/logrus"
 	"github.com/stoewer/go-strcase"
+    "strings"
     
     
     "time"
@@ -437,6 +438,10 @@ func (repo *PsqlBookmarkRepository) Add(ctx context.Context, domainModels []*dom
 
 		err = repoModel.Insert(ctx, tx, boil.Infer())
 		if err != nil {
+            if strings.Contains(err.Error(), "UNIQUE") {
+                err = helper.DuplicateInsertionError{Inner: err}
+            }
+
 			return
 		}
 	}
@@ -488,6 +493,10 @@ func (repo *PsqlBookmarkRepository) Replace(ctx context.Context, domainModels []
         var numAffectedRecords int64
 		numAffectedRecords, err = repoModel.Update(ctx, tx, boil.Infer())
 		if err != nil {
+            if strings.Contains(err.Error(), "UNIQUE") {
+                err = helper.DuplicateInsertionError{Inner: err}
+            }
+
 			return
 		}
 
@@ -544,6 +553,10 @@ func (repo *PsqlBookmarkRepository) Upsert(ctx context.Context, domainModels []*
 		err = repoModel.Upsert(ctx, tx, false, []string{}, boil.Infer(), boil.Infer())
         
 		if err != nil {
+            if strings.Contains(err.Error(), "UNIQUE") {
+                err = helper.DuplicateInsertionError{Inner: err}
+            }
+
 			return
 		}
 	}
@@ -572,6 +585,13 @@ func (repo *PsqlBookmarkRepository) Update(ctx context.Context, domainModels []*
 
 	if  domainColumnUpdater == nil {
 		err = helper.NilInputError{}
+		log.Error(err)
+
+		return
+    }
+
+	if  domainColumnUpdater == (&domain.BookmarkUpdater{}) {
+        err = helper.IneffectiveOperationError{Inner: helper.NopUpdaterError}
 		log.Error(err)
 
 		return
@@ -615,6 +635,10 @@ func (repo *PsqlBookmarkRepository) Update(ctx context.Context, domainModels []*
         repoUpdater.ApplyToModel(repoModel)
         numAffectedRecords, err = repoModel.Update(ctx, tx, boil.Infer())
         if err != nil {
+            if strings.Contains(err.Error(), "UNIQUE") {
+                err = helper.DuplicateInsertionError{Inner: err}
+            }
+
             return
         }
 
@@ -642,6 +666,13 @@ func (repo *PsqlBookmarkRepository) UpdateWhere(ctx context.Context, domainColum
 
 	if  domainColumnUpdater == nil {
 		err = helper.NilInputError{}
+		log.Error(err)
+
+		return
+    }
+
+	if  domainColumnUpdater == (&domain.BookmarkUpdater{}) {
+        err = helper.IneffectiveOperationError{Inner: helper.NopUpdaterError}
 		log.Error(err)
 
 		return
@@ -700,7 +731,15 @@ func (repo *PsqlBookmarkRepository) UpdateWhere(ctx context.Context, domainColum
 
     for _, repoModel := range modelsToUpdate {
         repoUpdater.ApplyToModel(repoModel)
-        repoModel.Update(ctx, tx, boil.Infer())
+        _, err = repoModel.Update(ctx, tx, boil.Infer())
+        if err != nil {
+            if strings.Contains(err.Error(), "UNIQUE") {
+                err = helper.DuplicateInsertionError{Inner: err}
+            }
+
+            return
+        }
+
     }
 
     tx.Commit()
@@ -1002,6 +1041,10 @@ func (repo *PsqlBookmarkRepository) AddType(ctx context.Context, types []string)
 
         err = repositoryModel.Insert(ctx, repo.db, boil.Infer())
         if err != nil {
+            if strings.Contains(err.Error(), "UNIQUE") {
+                err = helper.DuplicateInsertionError{Inner: err}
+            }
+
             return err
         }
     }
@@ -1011,6 +1054,11 @@ func (repo *PsqlBookmarkRepository) AddType(ctx context.Context, types []string)
 
 func (repo *PsqlBookmarkRepository) DeleteType(ctx context.Context, types []string)  (err error){
     _, err = BookmarkTypes(BookmarkTypeWhere.BookmarkType.IN(types)).DeleteAll(ctx, repo.db)
+    if err != nil {
+        if strings.Contains(err.Error(), "UNIQUE") {
+            err = helper.DuplicateInsertionError{Inner: err}
+        }
+    }
 
 	return
 }
@@ -1025,6 +1073,15 @@ func (repo *PsqlBookmarkRepository) UpdateType(ctx context.Context, oldType stri
     repositoryModel.BookmarkType = newType
 
     _, err = repositoryModel.Update(ctx, repo.db, boil.Infer())
+    if err != nil {
+        if strings.Contains(err.Error(), "UNIQUE") {
+            err = helper.DuplicateInsertionError{Inner: err}
+        }
+
+        if errors.Is(err, sql.ErrNoRows) {
+            err = helper.IneffectiveOperationError{Inner: err}
+        }
+    }
 
     return
 }

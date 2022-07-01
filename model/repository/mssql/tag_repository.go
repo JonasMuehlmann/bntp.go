@@ -40,9 +40,9 @@ import (
     "github.com/volatiletech/sqlboiler/v4/queries/qm"
     log "github.com/sirupsen/logrus"
 	"github.com/stoewer/go-strcase"
+    "strings"
     
     "strconv"
-    "strings"
     
     
 )
@@ -378,6 +378,10 @@ func (repo *MssqlTagRepository) Add(ctx context.Context, domainModels []*domain.
 
 		err = repoModel.Insert(ctx, tx, boil.Infer())
 		if err != nil {
+            if strings.Contains(err.Error(), "UNIQUE") {
+                err = helper.DuplicateInsertionError{Inner: err}
+            }
+
 			return
 		}
 	}
@@ -429,6 +433,10 @@ func (repo *MssqlTagRepository) Replace(ctx context.Context, domainModels []*dom
         var numAffectedRecords int64
 		numAffectedRecords, err = repoModel.Update(ctx, tx, boil.Infer())
 		if err != nil {
+            if strings.Contains(err.Error(), "UNIQUE") {
+                err = helper.DuplicateInsertionError{Inner: err}
+            }
+
 			return
 		}
 
@@ -485,6 +493,10 @@ func (repo *MssqlTagRepository) Upsert(ctx context.Context, domainModels []*doma
 		err = repoModel.Upsert(ctx, tx, boil.Infer(), boil.Infer())
         
 		if err != nil {
+            if strings.Contains(err.Error(), "UNIQUE") {
+                err = helper.DuplicateInsertionError{Inner: err}
+            }
+
 			return
 		}
 	}
@@ -513,6 +525,13 @@ func (repo *MssqlTagRepository) Update(ctx context.Context, domainModels []*doma
 
 	if  domainColumnUpdater == nil {
 		err = helper.NilInputError{}
+		log.Error(err)
+
+		return
+    }
+
+	if  domainColumnUpdater == (&domain.TagUpdater{}) {
+        err = helper.IneffectiveOperationError{Inner: helper.NopUpdaterError}
 		log.Error(err)
 
 		return
@@ -556,6 +575,10 @@ func (repo *MssqlTagRepository) Update(ctx context.Context, domainModels []*doma
         repoUpdater.ApplyToModel(repoModel)
         numAffectedRecords, err = repoModel.Update(ctx, tx, boil.Infer())
         if err != nil {
+            if strings.Contains(err.Error(), "UNIQUE") {
+                err = helper.DuplicateInsertionError{Inner: err}
+            }
+
             return
         }
 
@@ -583,6 +606,13 @@ func (repo *MssqlTagRepository) UpdateWhere(ctx context.Context, domainColumnFil
 
 	if  domainColumnUpdater == nil {
 		err = helper.NilInputError{}
+		log.Error(err)
+
+		return
+    }
+
+	if  domainColumnUpdater == (&domain.TagUpdater{}) {
+        err = helper.IneffectiveOperationError{Inner: helper.NopUpdaterError}
 		log.Error(err)
 
 		return
@@ -641,7 +671,15 @@ func (repo *MssqlTagRepository) UpdateWhere(ctx context.Context, domainColumnFil
 
     for _, repoModel := range modelsToUpdate {
         repoUpdater.ApplyToModel(repoModel)
-        repoModel.Update(ctx, tx, boil.Infer())
+        _, err = repoModel.Update(ctx, tx, boil.Infer())
+        if err != nil {
+            if strings.Contains(err.Error(), "UNIQUE") {
+                err = helper.DuplicateInsertionError{Inner: err}
+            }
+
+            return
+        }
+
     }
 
     tx.Commit()
