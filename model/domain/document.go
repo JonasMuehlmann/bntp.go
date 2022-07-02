@@ -83,6 +83,40 @@ type DocumentFilter struct {
     
 }
 
+func (filter *DocumentFilter) IsDefault() bool {
+    if filter.CreatedAt.HasValue {
+        return false
+    }
+    if filter.UpdatedAt.HasValue {
+        return false
+    }
+    if filter.DeletedAt.HasValue {
+        return false
+    }
+    if filter.Path.HasValue {
+        return false
+    }
+    if filter.DocumentType.HasValue {
+        return false
+    }
+    if filter.Tags.HasValue {
+        return false
+    }
+    if filter.LinkedDocuments.HasValue {
+        return false
+    }
+    if filter.BacklinkedDocuments.HasValue {
+        return false
+    }
+    if filter.ID.HasValue {
+        return false
+    }
+    
+
+    return true
+}
+
+
 type DocumentUpdater struct {
     CreatedAt optional.Optional[model.UpdateOperation[time.Time]]
     UpdatedAt optional.Optional[model.UpdateOperation[time.Time]]
@@ -94,6 +128,39 @@ type DocumentUpdater struct {
     BacklinkedDocuments optional.Optional[model.UpdateOperation[[]*Document]]
     ID optional.Optional[model.UpdateOperation[int64]]
     
+}
+
+func (updater *DocumentUpdater) IsDefault() bool {
+    if updater.CreatedAt.HasValue {
+        return false
+    }
+    if updater.UpdatedAt.HasValue {
+        return false
+    }
+    if updater.DeletedAt.HasValue {
+        return false
+    }
+    if updater.Path.HasValue {
+        return false
+    }
+    if updater.DocumentType.HasValue {
+        return false
+    }
+    if updater.Tags.HasValue {
+        return false
+    }
+    if updater.LinkedDocuments.HasValue {
+        return false
+    }
+    if updater.BacklinkedDocuments.HasValue {
+        return false
+    }
+    if updater.ID.HasValue {
+        return false
+    }
+    
+
+    return true
 }
 
 const (

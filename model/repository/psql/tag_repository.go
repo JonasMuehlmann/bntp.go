@@ -26,7 +26,6 @@ import (
 	 repoCommon "github.com/JonasMuehlmann/bntp.go/model/repository"
 	"container/list"
 	"fmt"
-    "errors"
 	"github.com/JonasMuehlmann/bntp.go/internal/helper"
 	"github.com/JonasMuehlmann/bntp.go/model"
 	"github.com/JonasMuehlmann/bntp.go/model/domain"
@@ -490,7 +489,7 @@ func (repo *PsqlTagRepository) Upsert(ctx context.Context, domainModels []*domai
         }
 
         
-		err = repoModel.Upsert(ctx, tx, false, []string{}, boil.Infer(), boil.Infer())
+		err = repoModel.Upsert(ctx, tx, true, []string{}, boil.Infer(), boil.Infer())
         
 		if err != nil {
             if strings.Contains(err.Error(), "UNIQUE") {
@@ -530,7 +529,7 @@ func (repo *PsqlTagRepository) Update(ctx context.Context, domainModels []*domai
 		return
     }
 
-	if  domainColumnUpdater == (&domain.TagUpdater{}) {
+	if  domainColumnUpdater.IsDefault() {
         err = helper.IneffectiveOperationError{Inner: helper.NopUpdaterError}
 		log.Error(err)
 
@@ -611,7 +610,7 @@ func (repo *PsqlTagRepository) UpdateWhere(ctx context.Context, domainColumnFilt
 		return
     }
 
-	if  domainColumnUpdater == (&domain.TagUpdater{}) {
+	if  domainColumnUpdater.IsDefault() {
         err = helper.IneffectiveOperationError{Inner: helper.NopUpdaterError}
 		log.Error(err)
 
@@ -660,8 +659,6 @@ func (repo *PsqlTagRepository) UpdateWhere(ctx context.Context, domainColumnFilt
         return
     }
 
-    numAffectedRecords = int64(len(modelsToUpdate))
-
     var tx *sql.Tx
 
 	tx, err = repo.db.BeginTx(ctx, nil)
@@ -683,6 +680,8 @@ func (repo *PsqlTagRepository) UpdateWhere(ctx context.Context, domainColumnFilt
     }
 
     tx.Commit()
+
+    numAffectedRecords = int64(len(modelsToUpdate))
 
     return
 }
@@ -888,8 +887,14 @@ func (repo *PsqlTagRepository) GetWhere(ctx context.Context, domainColumnFilter 
 
     var repositoryModels TagSlice
     repositoryModels, err = Tags(queryFilters...).All(ctx, repo.db)
-    if errors.Is(err, sql.ErrNoRows) {
+    if err != nil {
+        return
+    }
+
+    if len(repositoryModels) == 0 {
         err = helper.IneffectiveOperationError{Inner: err}
+
+        return
     }
 
 
@@ -936,9 +941,11 @@ func (repo *PsqlTagRepository) GetFirstWhere(ctx context.Context, domainColumnFi
     var repositoryModel *Tag
     repositoryModel, err = Tags(queryFilters...).One(ctx, repo.db)
     if err != nil {
-            if errors.Is(err, sql.ErrNoRows) {
-                err = helper.IneffectiveOperationError{Inner: err}
-            }
+        return
+    }
+
+    if repositoryModel == nil {
+        err = helper.IneffectiveOperationError{Inner: err}
 
         return
     }
@@ -954,6 +961,12 @@ func (repo *PsqlTagRepository) GetAll(ctx context.Context) (records []*domain.Ta
     if err != nil {
         return
     }
+    if len(repositoryModels) == 0 {
+        err = helper.IneffectiveOperationError{Inner: err}
+
+        return
+    }
+
 
     records = make([]*domain.Tag, 0, len(repositoryModels))
 
@@ -961,10 +974,6 @@ func (repo *PsqlTagRepository) GetAll(ctx context.Context) (records []*domain.Ta
     for _, repoModel := range repositoryModels {
         domainModel, err = repo.TagRepositoryToDomainModel(ctx, repoModel)
         if err != nil {
-            if errors.Is(err, sql.ErrNoRows) {
-                err = helper.IneffectiveOperationError{Inner: err}
-            }
-
             return
         }
 

@@ -26,7 +26,6 @@ import (
 	 repoCommon "github.com/JonasMuehlmann/bntp.go/model/repository"
 	"container/list"
 	"fmt"
-    "errors"
 	"github.com/JonasMuehlmann/bntp.go/internal/helper"
 	"github.com/JonasMuehlmann/bntp.go/model"
 	"github.com/JonasMuehlmann/bntp.go/model/domain"
@@ -511,7 +510,7 @@ func (repo *PsqlDocumentRepository) Upsert(ctx context.Context, domainModels []*
         }
 
         
-		err = repoModel.Upsert(ctx, tx, false, []string{}, boil.Infer(), boil.Infer())
+		err = repoModel.Upsert(ctx, tx, true, []string{}, boil.Infer(), boil.Infer())
         
 		if err != nil {
             if strings.Contains(err.Error(), "UNIQUE") {
@@ -551,7 +550,7 @@ func (repo *PsqlDocumentRepository) Update(ctx context.Context, domainModels []*
 		return
     }
 
-	if  domainColumnUpdater == (&domain.DocumentUpdater{}) {
+	if  domainColumnUpdater.IsDefault() {
         err = helper.IneffectiveOperationError{Inner: helper.NopUpdaterError}
 		log.Error(err)
 
@@ -632,7 +631,7 @@ func (repo *PsqlDocumentRepository) UpdateWhere(ctx context.Context, domainColum
 		return
     }
 
-	if  domainColumnUpdater == (&domain.DocumentUpdater{}) {
+	if  domainColumnUpdater.IsDefault() {
         err = helper.IneffectiveOperationError{Inner: helper.NopUpdaterError}
 		log.Error(err)
 
@@ -681,8 +680,6 @@ func (repo *PsqlDocumentRepository) UpdateWhere(ctx context.Context, domainColum
         return
     }
 
-    numAffectedRecords = int64(len(modelsToUpdate))
-
     var tx *sql.Tx
 
 	tx, err = repo.db.BeginTx(ctx, nil)
@@ -704,6 +701,8 @@ func (repo *PsqlDocumentRepository) UpdateWhere(ctx context.Context, domainColum
     }
 
     tx.Commit()
+
+    numAffectedRecords = int64(len(modelsToUpdate))
 
     return
 }
@@ -909,8 +908,14 @@ func (repo *PsqlDocumentRepository) GetWhere(ctx context.Context, domainColumnFi
 
     var repositoryModels DocumentSlice
     repositoryModels, err = Documents(queryFilters...).All(ctx, repo.db)
-    if errors.Is(err, sql.ErrNoRows) {
+    if err != nil {
+        return
+    }
+
+    if len(repositoryModels) == 0 {
         err = helper.IneffectiveOperationError{Inner: err}
+
+        return
     }
 
 
@@ -957,9 +962,11 @@ func (repo *PsqlDocumentRepository) GetFirstWhere(ctx context.Context, domainCol
     var repositoryModel *Document
     repositoryModel, err = Documents(queryFilters...).One(ctx, repo.db)
     if err != nil {
-            if errors.Is(err, sql.ErrNoRows) {
-                err = helper.IneffectiveOperationError{Inner: err}
-            }
+        return
+    }
+
+    if repositoryModel == nil {
+        err = helper.IneffectiveOperationError{Inner: err}
 
         return
     }
@@ -975,6 +982,12 @@ func (repo *PsqlDocumentRepository) GetAll(ctx context.Context) (records []*doma
     if err != nil {
         return
     }
+    if len(repositoryModels) == 0 {
+        err = helper.IneffectiveOperationError{Inner: err}
+
+        return
+    }
+
 
     records = make([]*domain.Document, 0, len(repositoryModels))
 
@@ -982,10 +995,6 @@ func (repo *PsqlDocumentRepository) GetAll(ctx context.Context) (records []*doma
     for _, repoModel := range repositoryModels {
         domainModel, err = repo.DocumentRepositoryToDomainModel(ctx, repoModel)
         if err != nil {
-            if errors.Is(err, sql.ErrNoRows) {
-                err = helper.IneffectiveOperationError{Inner: err}
-            }
-
             return
         }
 
@@ -1030,14 +1039,16 @@ func (repo *PsqlDocumentRepository) UpdateType(ctx context.Context, oldType stri
 
     repositoryModel.DocumentType = newType
 
-    _, err = repositoryModel.Update(ctx, repo.db, boil.Infer())
+    var numAffectedRecords int64
+    numAffectedRecords, err = repositoryModel.Update(ctx, repo.db, boil.Infer())
     if err != nil {
         if strings.Contains(err.Error(), "UNIQUE") {
             err = helper.DuplicateInsertionError{Inner: err}
         }
+        if numAffectedRecords == 0 {
+            err = helper.NonExistentPrimaryDataError
 
-        if errors.Is(err, sql.ErrNoRows) {
-            err = helper.IneffectiveOperationError{Inner: err}
+            return
         }
     }
 

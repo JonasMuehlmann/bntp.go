@@ -26,7 +26,6 @@ import (
 	 repoCommon "github.com/JonasMuehlmann/bntp.go/model/repository"
 	"container/list"
 	"fmt"
-    "errors"
 	"github.com/JonasMuehlmann/bntp.go/internal/helper"
 	"github.com/JonasMuehlmann/bntp.go/model"
 	"github.com/JonasMuehlmann/bntp.go/model/domain"
@@ -530,7 +529,7 @@ func (repo *MssqlTagRepository) Update(ctx context.Context, domainModels []*doma
 		return
     }
 
-	if  domainColumnUpdater == (&domain.TagUpdater{}) {
+	if  domainColumnUpdater.IsDefault() {
         err = helper.IneffectiveOperationError{Inner: helper.NopUpdaterError}
 		log.Error(err)
 
@@ -611,7 +610,7 @@ func (repo *MssqlTagRepository) UpdateWhere(ctx context.Context, domainColumnFil
 		return
     }
 
-	if  domainColumnUpdater == (&domain.TagUpdater{}) {
+	if  domainColumnUpdater.IsDefault() {
         err = helper.IneffectiveOperationError{Inner: helper.NopUpdaterError}
 		log.Error(err)
 
@@ -660,8 +659,6 @@ func (repo *MssqlTagRepository) UpdateWhere(ctx context.Context, domainColumnFil
         return
     }
 
-    numAffectedRecords = int64(len(modelsToUpdate))
-
     var tx *sql.Tx
 
 	tx, err = repo.db.BeginTx(ctx, nil)
@@ -683,6 +680,8 @@ func (repo *MssqlTagRepository) UpdateWhere(ctx context.Context, domainColumnFil
     }
 
     tx.Commit()
+
+    numAffectedRecords = int64(len(modelsToUpdate))
 
     return
 }
@@ -888,8 +887,14 @@ func (repo *MssqlTagRepository) GetWhere(ctx context.Context, domainColumnFilter
 
     var repositoryModels TagSlice
     repositoryModels, err = Tags(queryFilters...).All(ctx, repo.db)
-    if errors.Is(err, sql.ErrNoRows) {
+    if err != nil {
+        return
+    }
+
+    if len(repositoryModels) == 0 {
         err = helper.IneffectiveOperationError{Inner: err}
+
+        return
     }
 
 
@@ -936,9 +941,11 @@ func (repo *MssqlTagRepository) GetFirstWhere(ctx context.Context, domainColumnF
     var repositoryModel *Tag
     repositoryModel, err = Tags(queryFilters...).One(ctx, repo.db)
     if err != nil {
-            if errors.Is(err, sql.ErrNoRows) {
-                err = helper.IneffectiveOperationError{Inner: err}
-            }
+        return
+    }
+
+    if repositoryModel == nil {
+        err = helper.IneffectiveOperationError{Inner: err}
 
         return
     }
@@ -954,6 +961,12 @@ func (repo *MssqlTagRepository) GetAll(ctx context.Context) (records []*domain.T
     if err != nil {
         return
     }
+    if len(repositoryModels) == 0 {
+        err = helper.IneffectiveOperationError{Inner: err}
+
+        return
+    }
+
 
     records = make([]*domain.Tag, 0, len(repositoryModels))
 
@@ -961,10 +974,6 @@ func (repo *MssqlTagRepository) GetAll(ctx context.Context) (records []*domain.T
     for _, repoModel := range repositoryModels {
         domainModel, err = repo.TagRepositoryToDomainModel(ctx, repoModel)
         if err != nil {
-            if errors.Is(err, sql.ErrNoRows) {
-                err = helper.IneffectiveOperationError{Inner: err}
-            }
-
             return
         }
 

@@ -26,7 +26,6 @@ import (
 	 repoCommon "github.com/JonasMuehlmann/bntp.go/model/repository"
 	"container/list"
 	"fmt"
-    "errors"
 	"github.com/JonasMuehlmann/bntp.go/internal/helper"
 	"github.com/JonasMuehlmann/bntp.go/model"
 	"github.com/JonasMuehlmann/bntp.go/model/domain"
@@ -590,7 +589,7 @@ func (repo *MssqlBookmarkRepository) Update(ctx context.Context, domainModels []
 		return
     }
 
-	if  domainColumnUpdater == (&domain.BookmarkUpdater{}) {
+	if  domainColumnUpdater.IsDefault() {
         err = helper.IneffectiveOperationError{Inner: helper.NopUpdaterError}
 		log.Error(err)
 
@@ -671,7 +670,7 @@ func (repo *MssqlBookmarkRepository) UpdateWhere(ctx context.Context, domainColu
 		return
     }
 
-	if  domainColumnUpdater == (&domain.BookmarkUpdater{}) {
+	if  domainColumnUpdater.IsDefault() {
         err = helper.IneffectiveOperationError{Inner: helper.NopUpdaterError}
 		log.Error(err)
 
@@ -720,8 +719,6 @@ func (repo *MssqlBookmarkRepository) UpdateWhere(ctx context.Context, domainColu
         return
     }
 
-    numAffectedRecords = int64(len(modelsToUpdate))
-
     var tx *sql.Tx
 
 	tx, err = repo.db.BeginTx(ctx, nil)
@@ -743,6 +740,8 @@ func (repo *MssqlBookmarkRepository) UpdateWhere(ctx context.Context, domainColu
     }
 
     tx.Commit()
+
+    numAffectedRecords = int64(len(modelsToUpdate))
 
     return
 }
@@ -948,8 +947,14 @@ func (repo *MssqlBookmarkRepository) GetWhere(ctx context.Context, domainColumnF
 
     var repositoryModels BookmarkSlice
     repositoryModels, err = Bookmarks(queryFilters...).All(ctx, repo.db)
-    if errors.Is(err, sql.ErrNoRows) {
+    if err != nil {
+        return
+    }
+
+    if len(repositoryModels) == 0 {
         err = helper.IneffectiveOperationError{Inner: err}
+
+        return
     }
 
 
@@ -996,9 +1001,11 @@ func (repo *MssqlBookmarkRepository) GetFirstWhere(ctx context.Context, domainCo
     var repositoryModel *Bookmark
     repositoryModel, err = Bookmarks(queryFilters...).One(ctx, repo.db)
     if err != nil {
-            if errors.Is(err, sql.ErrNoRows) {
-                err = helper.IneffectiveOperationError{Inner: err}
-            }
+        return
+    }
+
+    if repositoryModel == nil {
+        err = helper.IneffectiveOperationError{Inner: err}
 
         return
     }
@@ -1014,6 +1021,12 @@ func (repo *MssqlBookmarkRepository) GetAll(ctx context.Context) (records []*dom
     if err != nil {
         return
     }
+    if len(repositoryModels) == 0 {
+        err = helper.IneffectiveOperationError{Inner: err}
+
+        return
+    }
+
 
     records = make([]*domain.Bookmark, 0, len(repositoryModels))
 
@@ -1021,10 +1034,6 @@ func (repo *MssqlBookmarkRepository) GetAll(ctx context.Context) (records []*dom
     for _, repoModel := range repositoryModels {
         domainModel, err = repo.BookmarkRepositoryToDomainModel(ctx, repoModel)
         if err != nil {
-            if errors.Is(err, sql.ErrNoRows) {
-                err = helper.IneffectiveOperationError{Inner: err}
-            }
-
             return
         }
 
@@ -1069,14 +1078,16 @@ func (repo *MssqlBookmarkRepository) UpdateType(ctx context.Context, oldType str
 
     repositoryModel.BookmarkType = newType
 
-    _, err = repositoryModel.Update(ctx, repo.db, boil.Infer())
+    var numAffectedRecords int64
+    numAffectedRecords, err = repositoryModel.Update(ctx, repo.db, boil.Infer())
     if err != nil {
         if strings.Contains(err.Error(), "UNIQUE") {
             err = helper.DuplicateInsertionError{Inner: err}
         }
+        if numAffectedRecords == 0 {
+            err = helper.NonExistentPrimaryDataError
 
-        if errors.Is(err, sql.ErrNoRows) {
-            err = helper.IneffectiveOperationError{Inner: err}
+            return
         }
     }
 

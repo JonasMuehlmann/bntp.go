@@ -26,7 +26,6 @@ import (
 	 repoCommon "github.com/JonasMuehlmann/bntp.go/model/repository"
 	"container/list"
 	"fmt"
-    "errors"
 	"github.com/JonasMuehlmann/bntp.go/internal/helper"
 	"github.com/JonasMuehlmann/bntp.go/model"
 	"github.com/JonasMuehlmann/bntp.go/model/domain"
@@ -551,7 +550,7 @@ func (repo *MssqlDocumentRepository) Update(ctx context.Context, domainModels []
 		return
     }
 
-	if  domainColumnUpdater == (&domain.DocumentUpdater{}) {
+	if  domainColumnUpdater.IsDefault() {
         err = helper.IneffectiveOperationError{Inner: helper.NopUpdaterError}
 		log.Error(err)
 
@@ -632,7 +631,7 @@ func (repo *MssqlDocumentRepository) UpdateWhere(ctx context.Context, domainColu
 		return
     }
 
-	if  domainColumnUpdater == (&domain.DocumentUpdater{}) {
+	if  domainColumnUpdater.IsDefault() {
         err = helper.IneffectiveOperationError{Inner: helper.NopUpdaterError}
 		log.Error(err)
 
@@ -681,8 +680,6 @@ func (repo *MssqlDocumentRepository) UpdateWhere(ctx context.Context, domainColu
         return
     }
 
-    numAffectedRecords = int64(len(modelsToUpdate))
-
     var tx *sql.Tx
 
 	tx, err = repo.db.BeginTx(ctx, nil)
@@ -704,6 +701,8 @@ func (repo *MssqlDocumentRepository) UpdateWhere(ctx context.Context, domainColu
     }
 
     tx.Commit()
+
+    numAffectedRecords = int64(len(modelsToUpdate))
 
     return
 }
@@ -909,8 +908,14 @@ func (repo *MssqlDocumentRepository) GetWhere(ctx context.Context, domainColumnF
 
     var repositoryModels DocumentSlice
     repositoryModels, err = Documents(queryFilters...).All(ctx, repo.db)
-    if errors.Is(err, sql.ErrNoRows) {
+    if err != nil {
+        return
+    }
+
+    if len(repositoryModels) == 0 {
         err = helper.IneffectiveOperationError{Inner: err}
+
+        return
     }
 
 
@@ -957,9 +962,11 @@ func (repo *MssqlDocumentRepository) GetFirstWhere(ctx context.Context, domainCo
     var repositoryModel *Document
     repositoryModel, err = Documents(queryFilters...).One(ctx, repo.db)
     if err != nil {
-            if errors.Is(err, sql.ErrNoRows) {
-                err = helper.IneffectiveOperationError{Inner: err}
-            }
+        return
+    }
+
+    if repositoryModel == nil {
+        err = helper.IneffectiveOperationError{Inner: err}
 
         return
     }
@@ -975,6 +982,12 @@ func (repo *MssqlDocumentRepository) GetAll(ctx context.Context) (records []*dom
     if err != nil {
         return
     }
+    if len(repositoryModels) == 0 {
+        err = helper.IneffectiveOperationError{Inner: err}
+
+        return
+    }
+
 
     records = make([]*domain.Document, 0, len(repositoryModels))
 
@@ -982,10 +995,6 @@ func (repo *MssqlDocumentRepository) GetAll(ctx context.Context) (records []*dom
     for _, repoModel := range repositoryModels {
         domainModel, err = repo.DocumentRepositoryToDomainModel(ctx, repoModel)
         if err != nil {
-            if errors.Is(err, sql.ErrNoRows) {
-                err = helper.IneffectiveOperationError{Inner: err}
-            }
-
             return
         }
 
@@ -1030,14 +1039,16 @@ func (repo *MssqlDocumentRepository) UpdateType(ctx context.Context, oldType str
 
     repositoryModel.DocumentType = newType
 
-    _, err = repositoryModel.Update(ctx, repo.db, boil.Infer())
+    var numAffectedRecords int64
+    numAffectedRecords, err = repositoryModel.Update(ctx, repo.db, boil.Infer())
     if err != nil {
         if strings.Contains(err.Error(), "UNIQUE") {
             err = helper.DuplicateInsertionError{Inner: err}
         }
+        if numAffectedRecords == 0 {
+            err = helper.NonExistentPrimaryDataError
 
-        if errors.Is(err, sql.ErrNoRows) {
-            err = helper.IneffectiveOperationError{Inner: err}
+            return
         }
     }
 

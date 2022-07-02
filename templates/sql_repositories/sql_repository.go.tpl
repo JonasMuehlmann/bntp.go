@@ -30,7 +30,6 @@ import (
 	 repoCommon "github.com/JonasMuehlmann/bntp.go/model/repository"
 	"container/list"
 	"fmt"
-    "errors"
 	"github.com/JonasMuehlmann/bntp.go/internal/helper"
 	"github.com/JonasMuehlmann/bntp.go/model"
 	"github.com/JonasMuehlmann/bntp.go/model/domain"
@@ -446,7 +445,7 @@ func (repo *{{$StructName}}) Upsert(ctx context.Context, domainModels []*domain.
         {{ if eq .DatabaseName "mssql" }}
 		err = repoModel.Upsert(ctx, tx, boil.Infer(), boil.Infer())
         {{else}}
-		err = repoModel.Upsert(ctx, tx, false, []string{}, boil.Infer(), boil.Infer())
+		err = repoModel.Upsert(ctx, tx, true, []string{}, boil.Infer(), boil.Infer())
         {{end}}
 		if err != nil {
             if strings.Contains(err.Error(), "UNIQUE") {
@@ -486,7 +485,7 @@ func (repo *{{$StructName}}) Update(ctx context.Context, domainModels []*domain.
 		return
     }
 
-	if  domainColumnUpdater == (&domain.{{$EntityName}}Updater{}) {
+	if  domainColumnUpdater.IsDefault() {
         err = helper.IneffectiveOperationError{Inner: helper.NopUpdaterError}
 		log.Error(err)
 
@@ -567,7 +566,7 @@ func (repo *{{$StructName}}) UpdateWhere(ctx context.Context, domainColumnFilter
 		return
     }
 
-	if  domainColumnUpdater == (&domain.{{$EntityName}}Updater{}) {
+	if  domainColumnUpdater.IsDefault() {
         err = helper.IneffectiveOperationError{Inner: helper.NopUpdaterError}
 		log.Error(err)
 
@@ -616,8 +615,6 @@ func (repo *{{$StructName}}) UpdateWhere(ctx context.Context, domainColumnFilter
         return
     }
 
-    numAffectedRecords = int64(len(modelsToUpdate))
-
     var tx *sql.Tx
 
 	tx, err = repo.db.BeginTx(ctx, nil)
@@ -639,6 +636,8 @@ func (repo *{{$StructName}}) UpdateWhere(ctx context.Context, domainColumnFilter
     }
 
     tx.Commit()
+
+    numAffectedRecords = int64(len(modelsToUpdate))
 
     return
 }
@@ -844,8 +843,14 @@ func (repo *{{$StructName}}) GetWhere(ctx context.Context, domainColumnFilter *d
 
     var repositoryModels {{$EntityName}}Slice
     repositoryModels, err = {{$EntityName}}s(queryFilters...).All(ctx, repo.db)
-    if errors.Is(err, sql.ErrNoRows) {
+    if err != nil {
+        return
+    }
+
+    if len(repositoryModels) == 0 {
         err = helper.IneffectiveOperationError{Inner: err}
+
+        return
     }
 
 
@@ -892,9 +897,11 @@ func (repo *{{$StructName}}) GetFirstWhere(ctx context.Context, domainColumnFilt
     var repositoryModel *{{$EntityName}}
     repositoryModel, err = {{$EntityName}}s(queryFilters...).One(ctx, repo.db)
     if err != nil {
-            if errors.Is(err, sql.ErrNoRows) {
-                err = helper.IneffectiveOperationError{Inner: err}
-            }
+        return
+    }
+
+    if repositoryModel == nil {
+        err = helper.IneffectiveOperationError{Inner: err}
 
         return
     }
@@ -910,6 +917,12 @@ func (repo *{{$StructName}}) GetAll(ctx context.Context) (records []*domain.{{$E
     if err != nil {
         return
     }
+    if len(repositoryModels) == 0 {
+        err = helper.IneffectiveOperationError{Inner: err}
+
+        return
+    }
+
 
     records = make([]*domain.{{$EntityName}}, 0, len(repositoryModels))
 
@@ -917,10 +930,6 @@ func (repo *{{$StructName}}) GetAll(ctx context.Context) (records []*domain.{{$E
     for _, repoModel := range repositoryModels {
         domainModel, err = repo.{{$EntityName}}RepositoryToDomainModel(ctx, repoModel)
         if err != nil {
-            if errors.Is(err, sql.ErrNoRows) {
-                err = helper.IneffectiveOperationError{Inner: err}
-            }
-
             return
         }
 
@@ -965,14 +974,16 @@ func (repo *{{$StructName}}) UpdateType(ctx context.Context, oldType string, new
 
     repositoryModel.{{$EntityName}}Type = newType
 
-    _, err = repositoryModel.Update(ctx, repo.db, boil.Infer())
+    var numAffectedRecords int64
+    numAffectedRecords, err = repositoryModel.Update(ctx, repo.db, boil.Infer())
     if err != nil {
         if strings.Contains(err.Error(), "UNIQUE") {
             err = helper.DuplicateInsertionError{Inner: err}
         }
+        if numAffectedRecords == 0 {
+            err = helper.NonExistentPrimaryDataError
 
-        if errors.Is(err, sql.ErrNoRows) {
-            err = helper.IneffectiveOperationError{Inner: err}
+            return
         }
     }
 
