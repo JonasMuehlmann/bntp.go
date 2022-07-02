@@ -951,9 +951,6 @@ func (repo *{{$StructName}}) AddType(ctx context.Context, types []string)  (err 
 func (repo *{{$StructName}}) DeleteType(ctx context.Context, types []string)  (err error){
     _, err = {{$EntityName}}Types({{$EntityName}}TypeWhere.{{$EntityName}}Type.IN(types)).DeleteAll(ctx, repo.db)
     if err != nil {
-        if strings.Contains(err.Error(), "UNIQUE") {
-            err = helper.DuplicateInsertionError{Inner: err}
-        }
     }
 
 	return

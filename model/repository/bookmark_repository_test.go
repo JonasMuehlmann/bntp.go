@@ -132,6 +132,7 @@ func TestSQLBookmarkRepositoryAddTest(t *testing.T) {
 	}
 }
 
+// TODO: Implement duplication test.
 func TestSQLBookmarkRepositoryReplaceTest(t *testing.T) {
 	tests := []struct {
 		err            error
@@ -299,6 +300,7 @@ func TestSQLBookmarkRepositoryReplaceTest(t *testing.T) {
 	}
 }
 
+// TODO: Implement duplication test.
 func TestSQLBookmarkRepositoryUpsertTest(t *testing.T) {
 	tests := []struct {
 		err            error
@@ -467,6 +469,8 @@ func TestSQLBookmarkRepositoryUpsertTest(t *testing.T) {
 	}
 }
 
+// TODO: Implement duplication test
+// TODO: Implement nop updater test.
 func TestSQLBookmarkRepositoryUpdateTest(t *testing.T) {
 	tests := []struct {
 		err            error
@@ -626,6 +630,7 @@ func TestSQLBookmarkRepositoryUpdateTest(t *testing.T) {
 	}
 }
 
+// TODO: Implement duplication test.
 func TestSQLBookmarkRepositoryUpdateWhereTest(t *testing.T) {
 	tests := []struct {
 		err                error
@@ -1147,6 +1152,7 @@ func TestSQLBookmarkRepositoryCountAllTest(t *testing.T) {
 	}
 }
 
+// TODO: Implement nil input test.
 func TestSQLBookmarkRepositoryDoesExistTest(t *testing.T) {
 	tests := []struct {
 		err               error
@@ -1220,6 +1226,7 @@ func TestSQLBookmarkRepositoryDoesExistTest(t *testing.T) {
 	}
 }
 
+// TODO: Implement nil input test.
 func TestSQLBookmarkRepositoryDoesExistWhereTest(t *testing.T) {
 	tests := []struct {
 		err               error
@@ -1361,6 +1368,8 @@ func TestSQLBookmarkRepositoryDoesExistWhereTest(t *testing.T) {
 	}
 }
 
+// TODO: Implement nil filter test
+// TODO: Implement empty result test.
 func TestSQLBookmarkRepositoryGetWhereTest(t *testing.T) {
 	tests := []struct {
 		err               error
@@ -1502,6 +1511,7 @@ func TestSQLBookmarkRepositoryGetWhereTest(t *testing.T) {
 	}
 }
 
+// TODO: Implement nil filter test.
 func TestSQLBookmarkRepositoryGetFirstWhereTest(t *testing.T) {
 	tests := []struct {
 		err               error
@@ -1642,6 +1652,7 @@ func TestSQLBookmarkRepositoryGetFirstWhereTest(t *testing.T) {
 	}
 }
 
+// TODO: Implement empty result test.
 func TestSQLBookmarkRepositoryGetAllTest(t *testing.T) {
 	tests := []struct {
 		err               error
@@ -1774,6 +1785,7 @@ func TestSQLBookmarkRepositoryAddTypeTest(t *testing.T) {
 	}
 }
 
+// TODO: Implement duplication test.
 func TestSQLBookmarkRepositoryUpdateTypeTest(t *testing.T) {
 	tests := []struct {
 		err                error
