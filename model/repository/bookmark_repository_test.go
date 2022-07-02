@@ -132,7 +132,6 @@ func TestSQLBookmarkRepositoryAddTest(t *testing.T) {
 	}
 }
 
-// TODO: Implement duplication test.
 func TestSQLBookmarkRepositoryReplaceTest(t *testing.T) {
 	tests := []struct {
 		err            error
@@ -217,6 +216,58 @@ func TestSQLBookmarkRepositoryReplaceTest(t *testing.T) {
 			},
 		},
 		{
+			name: "Two existing minimal inputs, adding duplicated values", err: helper.DuplicateInsertionError{},
+			previousModels: []*domain.Bookmark{
+				{
+					CreatedAt:    time.Now(),
+					UpdatedAt:    time.Now(),
+					DeletedAt:    optional.Make(time.Now()),
+					URL:          "https://example.com",
+					Title:        optional.Make("My first bookmark"),
+					Tags:         []*domain.Tag{},
+					ID:           1,
+					IsCollection: false,
+					IsRead:       true,
+				},
+				{
+					CreatedAt:    time.Now(),
+					UpdatedAt:    time.Now(),
+					DeletedAt:    optional.Make(time.Now()),
+					URL:          "https://foo.example.com",
+					Title:        optional.Make("My second bookmark"),
+					Tags:         []*domain.Tag{},
+					ID:           2,
+					IsCollection: false,
+					IsRead:       true,
+				},
+			},
+
+			models: []*domain.Bookmark{
+				{
+					CreatedAt:    time.Now(),
+					UpdatedAt:    time.Now(),
+					DeletedAt:    optional.Make(time.Now()),
+					URL:          "https://example.com",
+					Title:        optional.Make("My first bookmark"),
+					ID:           1,
+					IsCollection: false,
+					IsRead:       true,
+				},
+				{
+					CreatedAt: time.Now(),
+					UpdatedAt: time.Now(),
+					DeletedAt: optional.Make(time.Now()),
+					// This is a duplicate!
+					URL:          "https://example.com",
+					Title:        optional.Make("My second bookmark"),
+					ID:           2,
+					IsCollection: false,
+					IsRead:       true,
+				},
+			},
+		},
+
+		{
 			name: "Two existing minimal inputs", models: []*domain.Bookmark{
 				{
 					CreatedAt:    time.Now(),
@@ -300,7 +351,6 @@ func TestSQLBookmarkRepositoryReplaceTest(t *testing.T) {
 	}
 }
 
-// TODO: Implement duplication test.
 func TestSQLBookmarkRepositoryUpsertTest(t *testing.T) {
 	tests := []struct {
 		err            error
@@ -378,6 +428,57 @@ func TestSQLBookmarkRepositoryUpsertTest(t *testing.T) {
 						Subtags:    []*domain.Tag{},
 						ID:         1,
 					}},
+					ID:           2,
+					IsCollection: false,
+					IsRead:       true,
+				},
+			},
+		},
+		{
+			name: "Two existing inputs, adding duplicated values", err: helper.DuplicateInsertionError{},
+			previousModels: []*domain.Bookmark{
+				{
+					CreatedAt:    time.Now(),
+					UpdatedAt:    time.Now(),
+					DeletedAt:    optional.Make(time.Now()),
+					URL:          "https://example.com",
+					Title:        optional.Make("My first bookmark"),
+					Tags:         []*domain.Tag{},
+					ID:           1,
+					IsCollection: false,
+					IsRead:       true,
+				},
+				{
+					CreatedAt:    time.Now(),
+					UpdatedAt:    time.Now(),
+					DeletedAt:    optional.Make(time.Now()),
+					URL:          "https://foo.example.com",
+					Title:        optional.Make("My second bookmark"),
+					Tags:         []*domain.Tag{},
+					ID:           2,
+					IsCollection: false,
+					IsRead:       true,
+				},
+			},
+
+			models: []*domain.Bookmark{
+				{
+					CreatedAt:    time.Now(),
+					UpdatedAt:    time.Now(),
+					DeletedAt:    optional.Make(time.Now()),
+					URL:          "https://example.com",
+					Title:        optional.Make("My first bookmark"),
+					ID:           1,
+					IsCollection: false,
+					IsRead:       true,
+				},
+				{
+					CreatedAt: time.Now(),
+					UpdatedAt: time.Now(),
+					DeletedAt: optional.Make(time.Now()),
+					// This is a duplicate
+					URL:          "https://example.com",
+					Title:        optional.Make("My second bookmark"),
 					ID:           2,
 					IsCollection: false,
 					IsRead:       true,
@@ -469,8 +570,6 @@ func TestSQLBookmarkRepositoryUpsertTest(t *testing.T) {
 	}
 }
 
-// TODO: Implement duplication test
-// TODO: Implement nop updater test.
 func TestSQLBookmarkRepositoryUpdateTest(t *testing.T) {
 	tests := []struct {
 		err            error
@@ -495,7 +594,7 @@ func TestSQLBookmarkRepositoryUpdateTest(t *testing.T) {
 			name: "One default-constructed input", models: []*domain.Bookmark{{}}, updater: &domain.BookmarkUpdater{}, err: helper.IneffectiveOperationError{},
 		},
 		{
-			name: "Two existing minimal inputs, nop updater", updater: &domain.BookmarkUpdater{},
+			name: "Two existing minimal inputs, nop updater", updater: &domain.BookmarkUpdater{}, err: helper.IneffectiveOperationError{},
 			previousModels: []*domain.Bookmark{
 				{
 					CreatedAt:    time.Now(),
@@ -541,6 +640,58 @@ func TestSQLBookmarkRepositoryUpdateTest(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "Two existing inputs, adding duplicated values", err: helper.DuplicateInsertionError{},
+			previousModels: []*domain.Bookmark{
+				{
+					CreatedAt:    time.Now(),
+					UpdatedAt:    time.Now(),
+					DeletedAt:    optional.Make(time.Now()),
+					URL:          "https://example.com",
+					Title:        optional.Make("My first bookmark"),
+					Tags:         []*domain.Tag{},
+					ID:           1,
+					IsCollection: false,
+					IsRead:       true,
+				},
+				{
+					CreatedAt:    time.Now(),
+					UpdatedAt:    time.Now(),
+					DeletedAt:    optional.Make(time.Now()),
+					URL:          "https://foo.example.com",
+					Title:        optional.Make("My second bookmark"),
+					Tags:         []*domain.Tag{},
+					ID:           2,
+					IsCollection: false,
+					IsRead:       true,
+				},
+			},
+
+			models: []*domain.Bookmark{
+				{
+					CreatedAt:    time.Now(),
+					UpdatedAt:    time.Now(),
+					DeletedAt:    optional.Make(time.Now()),
+					URL:          "https://example.com",
+					Title:        optional.Make("My first bookmark"),
+					ID:           1,
+					IsCollection: false,
+					IsRead:       true,
+				},
+				{
+					CreatedAt: time.Now(),
+					UpdatedAt: time.Now(),
+					DeletedAt: optional.Make(time.Now()),
+					// This is a duplicate
+					URL:          "https://example.com",
+					Title:        optional.Make("My second bookmark"),
+					ID:           2,
+					IsCollection: false,
+					IsRead:       true,
+				},
+			},
+		},
+
 		{
 			name: "Two existing minimal inputs, overwrite IsCollection",
 			updater: &domain.BookmarkUpdater{
@@ -630,7 +781,6 @@ func TestSQLBookmarkRepositoryUpdateTest(t *testing.T) {
 	}
 }
 
-// TODO: Implement duplication test.
 func TestSQLBookmarkRepositoryUpdateWhereTest(t *testing.T) {
 	tests := []struct {
 		err                error
@@ -651,7 +801,10 @@ func TestSQLBookmarkRepositoryUpdateWhereTest(t *testing.T) {
 			name: "Nil filter", updater: &domain.BookmarkUpdater{}, filter: nil, err: helper.NilInputError{},
 		},
 		{
-			name: "Two existing minimal inputs, filter for title of first", numAffectedRecords: 1, insertBeforeUpdate: true, updater: &domain.BookmarkUpdater{},
+			name: "Two existing minimal inputs, filter for title of first, update IsCollection", numAffectedRecords: 1, insertBeforeUpdate: true,
+			updater: &domain.BookmarkUpdater{
+				IsCollection: optional.Make(model.UpdateOperation[bool]{Operator: model.UpdateSet, Operand: true}),
+			},
 			filter: &domain.BookmarkFilter{
 				Title: optional.Make(model.FilterOperation[optional.Optional[string]]{
 					Operator: model.FilterEqual,
@@ -685,6 +838,34 @@ func TestSQLBookmarkRepositoryUpdateWhereTest(t *testing.T) {
 			name: "Two existing minimal inputs, overwrite IsCollection", numAffectedRecords: 2, insertBeforeUpdate: true, filter: &domain.BookmarkFilter{},
 			updater: &domain.BookmarkUpdater{
 				IsCollection: optional.Make(model.UpdateOperation[bool]{Operator: model.UpdateSet, Operand: true}),
+			},
+			models: []*domain.Bookmark{
+				{
+					CreatedAt:    time.Now(),
+					UpdatedAt:    time.Now(),
+					DeletedAt:    optional.Make(time.Now()),
+					URL:          "https://example.com",
+					Title:        optional.Make("My first bookmark"),
+					ID:           1,
+					IsCollection: false,
+					IsRead:       true,
+				},
+				{
+					CreatedAt:    time.Now(),
+					UpdatedAt:    time.Now(),
+					DeletedAt:    optional.Make(time.Now()),
+					URL:          "https://foo.example.com",
+					Title:        optional.Make("My second bookmark"),
+					ID:           2,
+					IsCollection: false,
+					IsRead:       true,
+				},
+			},
+		},
+		{
+			name: "Two existing minimal inputs, adding duplicated values", numAffectedRecords: 0, insertBeforeUpdate: true, filter: &domain.BookmarkFilter{}, err: helper.DuplicateInsertionError{},
+			updater: &domain.BookmarkUpdater{
+				URL: optional.Make(model.UpdateOperation[string]{Operator: model.UpdateSet, Operand: "https://example.com"}),
 			},
 			models: []*domain.Bookmark{
 				{
@@ -1152,7 +1333,6 @@ func TestSQLBookmarkRepositoryCountAllTest(t *testing.T) {
 	}
 }
 
-// TODO: Implement nil input test.
 func TestSQLBookmarkRepositoryDoesExistTest(t *testing.T) {
 	tests := []struct {
 		err               error
@@ -1161,6 +1341,9 @@ func TestSQLBookmarkRepositoryDoesExistTest(t *testing.T) {
 		insertBeforeCheck bool
 		doesExist         bool
 	}{
+		{
+			name: "Nil input", err: helper.NilInputError{},
+		},
 		{
 			name: "Existing minimal entity", doesExist: true, insertBeforeCheck: true,
 			model: &domain.Bookmark{
@@ -1226,7 +1409,6 @@ func TestSQLBookmarkRepositoryDoesExistTest(t *testing.T) {
 	}
 }
 
-// TODO: Implement nil input test.
 func TestSQLBookmarkRepositoryDoesExistWhereTest(t *testing.T) {
 	tests := []struct {
 		err               error
@@ -1236,6 +1418,9 @@ func TestSQLBookmarkRepositoryDoesExistWhereTest(t *testing.T) {
 		insertBeforeCheck bool
 		doesExist         bool
 	}{
+		{
+			name: "Nil input", filter: nil, err: helper.NilInputError{},
+		},
 		{
 			name: "Two existing minimal entities, filter for title of first", doesExist: true, insertBeforeCheck: true,
 			filter: &domain.BookmarkFilter{
@@ -1368,8 +1553,6 @@ func TestSQLBookmarkRepositoryDoesExistWhereTest(t *testing.T) {
 	}
 }
 
-// TODO: Implement nil filter test
-// TODO: Implement empty result test.
 func TestSQLBookmarkRepositoryGetWhereTest(t *testing.T) {
 	tests := []struct {
 		err               error
@@ -1379,6 +1562,17 @@ func TestSQLBookmarkRepositoryGetWhereTest(t *testing.T) {
 		numRecords        int
 		insertBeforeCheck bool
 	}{
+		{
+			name: "Nil input", filter: nil, err: helper.NilInputError{},
+		},
+		{
+			name: "Empty result", err: helper.IneffectiveOperationError{}, filter: &domain.BookmarkFilter{
+				Title: optional.Make(model.FilterOperation[optional.Optional[string]]{
+					Operator: model.FilterEqual,
+					Operand:  model.ScalarOperand[optional.Optional[string]]{Operand: optional.Make("My first bookmark")},
+				}),
+			},
+		},
 		{
 			name: "Two existing minimal entities, filter for title of first", numRecords: 1, insertBeforeCheck: true,
 			filter: &domain.BookmarkFilter{
@@ -1442,7 +1636,7 @@ func TestSQLBookmarkRepositoryGetWhereTest(t *testing.T) {
 			},
 		},
 		{
-			name: "Two non-existing minimal entities, filter for title of first",
+			name: "Two non-existing minimal entities, filter for title of first", insertBeforeCheck: true, numRecords: 1,
 			filter: &domain.BookmarkFilter{
 				Title: optional.Make(model.FilterOperation[optional.Optional[string]]{
 					Operator: model.FilterEqual,
@@ -1511,7 +1705,6 @@ func TestSQLBookmarkRepositoryGetWhereTest(t *testing.T) {
 	}
 }
 
-// TODO: Implement nil filter test.
 func TestSQLBookmarkRepositoryGetFirstWhereTest(t *testing.T) {
 	tests := []struct {
 		err               error
@@ -1521,6 +1714,9 @@ func TestSQLBookmarkRepositoryGetFirstWhereTest(t *testing.T) {
 		numRecords        int
 		insertBeforeCheck bool
 	}{
+		{
+			name: "Nil filter", filter: nil, err: helper.NilInputError{},
+		},
 		{
 			name: "Two existing minimal entities, filter for title of first", numRecords: 1, insertBeforeCheck: true,
 			filter: &domain.BookmarkFilter{
@@ -1652,7 +1848,6 @@ func TestSQLBookmarkRepositoryGetFirstWhereTest(t *testing.T) {
 	}
 }
 
-// TODO: Implement empty result test.
 func TestSQLBookmarkRepositoryGetAllTest(t *testing.T) {
 	tests := []struct {
 		err               error
@@ -1687,7 +1882,7 @@ func TestSQLBookmarkRepositoryGetAllTest(t *testing.T) {
 			},
 		},
 		{
-			name: "No entities", numRecords: 0,
+			name: "No entities", numRecords: 0, err: helper.IneffectiveOperationError{},
 		},
 	}
 
@@ -1785,7 +1980,6 @@ func TestSQLBookmarkRepositoryAddTypeTest(t *testing.T) {
 	}
 }
 
-// TODO: Implement duplication test.
 func TestSQLBookmarkRepositoryUpdateTypeTest(t *testing.T) {
 	tests := []struct {
 		err                error
