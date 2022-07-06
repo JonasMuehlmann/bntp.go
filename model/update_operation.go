@@ -54,6 +54,7 @@ func ApplyUpdater[T any](target *T, updateOperation UpdateOperation[T]) {
 		default:
 			panic("Can only append to string")
 		}
+		// TODO: Support slices
 	case UpdatePrepend:
 		switch t := any(target).(type) {
 		case *string:
