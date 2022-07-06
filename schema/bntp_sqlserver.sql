@@ -18,11 +18,11 @@ CREATE TABLE dirty_entries
 CREATE TABLE tags
 (
     id         BIGINT    PRIMARY KEY,
-    tag        VARCHAR(255)       NOT NULL UNIQUE,
+    tag        VARCHAR(255)       NOT NULL,
     parent_tag BIGINT    REFERENCES tags(id),
     -- Stores list of parent ids from root to self
     -- e.g. "1;2;3"
-    path       VARCHAR(255)       NOT NULL,
+    path       VARCHAR(255)       NOT NULL UNIQUE,
     -- Stores lis of children ids
     -- e.g. "1;2;3"
     children   VARCHAR(255)       NOT NULL

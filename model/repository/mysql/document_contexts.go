@@ -23,10 +23,11 @@ import (
 
 // DocumentContext is an object representing the database table.
 type DocumentContext struct {
-	L          documentContextL  `boil:"-" json:"-" toml:"-" yaml:"-"`
-	R          *documentContextR `boil:"-" json:"-" toml:"-" yaml:"-"`
-	DocumentID int64             `boil:"document_id" json:"document_id" toml:"document_id" yaml:"document_id"`
-	TagID      int64             `boil:"tag_id" json:"tag_id" toml:"tag_id" yaml:"tag_id"`
+	DocumentID int64 `boil:"document_id" json:"document_id" toml:"document_id" yaml:"document_id"`
+	TagID      int64 `boil:"tag_id" json:"tag_id" toml:"tag_id" yaml:"tag_id"`
+
+	R *documentContextR `boil:"-" json:"-" toml:"-" yaml:"-"`
+	L documentContextL  `boil:"-" json:"-" toml:"-" yaml:"-"`
 }
 
 var DocumentContextColumns = struct {

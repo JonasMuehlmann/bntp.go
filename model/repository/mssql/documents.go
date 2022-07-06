@@ -24,14 +24,15 @@ import (
 
 // Document is an object representing the database table.
 type Document struct {
-	L              documentL  `boil:"-" json:"-" toml:"-" yaml:"-"`
-	CreatedAt      time.Time  `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
-	UpdatedAt      time.Time  `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
-	R              *documentR `boil:"-" json:"-" toml:"-" yaml:"-"`
-	DeletedAt      null.Time  `boil:"deleted_at" json:"deleted_at,omitempty" toml:"deleted_at" yaml:"deleted_at,omitempty"`
+	ID             int64      `boil:"id" json:"id" toml:"id" yaml:"id"`
 	Path           string     `boil:"path" json:"path" toml:"path" yaml:"path"`
 	DocumentTypeID null.Int64 `boil:"document_type_id" json:"document_type_id,omitempty" toml:"document_type_id" yaml:"document_type_id,omitempty"`
-	ID             int64      `boil:"id" json:"id" toml:"id" yaml:"id"`
+	CreatedAt      time.Time  `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	UpdatedAt      time.Time  `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
+	DeletedAt      null.Time  `boil:"deleted_at" json:"deleted_at,omitempty" toml:"deleted_at" yaml:"deleted_at,omitempty"`
+
+	R *documentR `boil:"-" json:"-" toml:"-" yaml:"-"`
+	L documentL  `boil:"-" json:"-" toml:"-" yaml:"-"`
 }
 
 var DocumentColumns = struct {

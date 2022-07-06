@@ -24,13 +24,14 @@ import (
 
 // Tag is an object representing the database table.
 type Tag struct {
-	L         tagL       `boil:"-" json:"-" toml:"-" yaml:"-"`
-	R         *tagR      `boil:"-" json:"-" toml:"-" yaml:"-"`
+	ID        int64      `boil:"id" json:"id" toml:"id" yaml:"id"`
 	Tag       string     `boil:"tag" json:"tag" toml:"tag" yaml:"tag"`
+	ParentTag null.Int64 `boil:"parent_tag" json:"parent_tag,omitempty" toml:"parent_tag" yaml:"parent_tag,omitempty"`
 	Path      string     `boil:"path" json:"path" toml:"path" yaml:"path"`
 	Children  string     `boil:"children" json:"children" toml:"children" yaml:"children"`
-	ParentTag null.Int64 `boil:"parent_tag" json:"parent_tag,omitempty" toml:"parent_tag" yaml:"parent_tag,omitempty"`
-	ID        int64      `boil:"id" json:"id" toml:"id" yaml:"id"`
+
+	R *tagR `boil:"-" json:"-" toml:"-" yaml:"-"`
+	L tagL  `boil:"-" json:"-" toml:"-" yaml:"-"`
 }
 
 var TagColumns = struct {
@@ -645,7 +646,7 @@ func (o TagSlice) UpdateAll(ctx context.Context, exec boil.ContextExecutor, cols
 
 var mySQLTagUniqueColumns = []string{
 	"id",
-	"tag",
+	"path",
 }
 
 // Upsert attempts an insert using an executor, and does an update or ignore on conflict.
