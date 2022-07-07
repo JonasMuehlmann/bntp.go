@@ -1,6 +1,7 @@
 #!/usr/bin/env sh
 
 rm model/repository/**/*_repository.go || true
+rm model/repository/**/*_repository_test.go || true
 
 go run ./tools/schema_converter
 go run ./tools/generate_external_cli_documentation
