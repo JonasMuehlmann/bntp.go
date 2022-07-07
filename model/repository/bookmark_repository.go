@@ -23,7 +23,8 @@
 package repository
 
 import (
-    "context"
+	"context"
+
 	"github.com/JonasMuehlmann/bntp.go/model/domain"
 )
 
@@ -44,17 +45,16 @@ type BookmarkRepository interface {
 	GetWhere(ctx context.Context, domainFilter *domain.BookmarkFilter) (records []*domain.Bookmark, err error)
 	GetFirstWhere(ctx context.Context, domainFilter *domain.BookmarkFilter) (record *domain.Bookmark, err error)
 	GetAll(ctx context.Context) (records []*domain.Bookmark, err error)
-    
-    AddType(ctx context.Context, types  []string) error
-    DeleteType(ctx context.Context, types  []string) error
-    UpdateType(ctx context.Context, oldType string, newType string) error
 
-    GetTagRepository() TagRepository
-    
+	AddType(ctx context.Context, types []string) error
+	DeleteType(ctx context.Context, types []string) error
+	UpdateType(ctx context.Context, oldType string, newType string) error
 
-    BookmarkRepositoryToDomainModel(ctx context.Context, repositoryModel any) (domainModel *domain.Bookmark, err error)
-    BookmarkDomainToRepositoryModel(ctx context.Context, domainModel *domain.Bookmark) (repositoryModel any, err error)
+	GetTagRepository() TagRepository
 
-    BookmarkDomainToRepositoryFilter(ctx context.Context, domainFilter *domain.BookmarkFilter) (repositoryFilter any, err error)
-    BookmarkDomainToRepositoryUpdater(ctx context.Context, domainUpdater *domain.BookmarkUpdater) (repositoryUpdater any, err error)
+	BookmarkRepositoryToDomainModel(ctx context.Context, repositoryModel any) (domainModel *domain.Bookmark, err error)
+	BookmarkDomainToRepositoryModel(ctx context.Context, domainModel *domain.Bookmark) (repositoryModel any, err error)
+
+	BookmarkDomainToRepositoryFilter(ctx context.Context, domainFilter *domain.BookmarkFilter) (repositoryFilter any, err error)
+	BookmarkDomainToRepositoryUpdater(ctx context.Context, domainUpdater *domain.BookmarkUpdater) (repositoryUpdater any, err error)
 }
