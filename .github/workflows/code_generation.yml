@@ -82,7 +82,7 @@ jobs:
          go install golang.org/x/tools/cmd/goimports@latest
          
          cp schema/bntp_sqlite.sql test/bntp.sql
-         go generate ./...
+         ./code_generation.sh
          
          goimports -w ./**/*.go
          fieldalignment -fix ./bntp/... ./model/... || true
