@@ -24,6 +24,8 @@ import (
 	"reflect"
 	"strings"
 	"text/template"
+
+	"github.com/stoewer/go-strcase"
 )
 
 func UppercaseBeginning(str string) string {
@@ -96,4 +98,8 @@ var FullFuncMap = template.FuncMap{
 	"Pluralize":             Pluralize,
 	"Unslice":               Unslice,
 	"UnaliasSQLBoilerSlice": UnaliasSQLBoilerSlice,
+	"SnakeCase":             strcase.SnakeCase,
+	"CamelCase":             strcase.LowerCamelCase,
+	"PascalCase":            strcase.UpperCamelCase,
+	"KebabCase":             strcase.KebabCase,
 }

@@ -95,6 +95,41 @@ type BookmarkFilter struct {
 	BookmarkType optional.Optional[model.FilterOperation[optional.Optional[string]]]
 }
 
+func (filter *BookmarkFilter) IsDefault() bool {
+	if filter.CreatedAt.HasValue {
+		return false
+	}
+	if filter.UpdatedAt.HasValue {
+		return false
+	}
+	if filter.DeletedAt.HasValue {
+		return false
+	}
+	if filter.URL.HasValue {
+		return false
+	}
+	if filter.Title.HasValue {
+		return false
+	}
+	if filter.Tags.HasValue {
+		return false
+	}
+	if filter.ID.HasValue {
+		return false
+	}
+	if filter.IsCollection.HasValue {
+		return false
+	}
+	if filter.IsRead.HasValue {
+		return false
+	}
+	if filter.BookmarkType.HasValue {
+		return false
+	}
+
+	return true
+}
+
 type BookmarkUpdater struct {
 	CreatedAt    optional.Optional[model.UpdateOperation[time.Time]]
 	UpdatedAt    optional.Optional[model.UpdateOperation[time.Time]]
@@ -106,6 +141,41 @@ type BookmarkUpdater struct {
 	ID           optional.Optional[model.UpdateOperation[int64]]
 	IsCollection optional.Optional[model.UpdateOperation[bool]]
 	IsRead       optional.Optional[model.UpdateOperation[bool]]
+}
+
+func (updater *BookmarkUpdater) IsDefault() bool {
+	if updater.CreatedAt.HasValue {
+		return false
+	}
+	if updater.UpdatedAt.HasValue {
+		return false
+	}
+	if updater.DeletedAt.HasValue {
+		return false
+	}
+	if updater.URL.HasValue {
+		return false
+	}
+	if updater.Title.HasValue {
+		return false
+	}
+	if updater.Tags.HasValue {
+		return false
+	}
+	if updater.ID.HasValue {
+		return false
+	}
+	if updater.IsCollection.HasValue {
+		return false
+	}
+	if updater.IsRead.HasValue {
+		return false
+	}
+	if updater.BookmarkType.HasValue {
+		return false
+	}
+
+	return true
 }
 
 const (

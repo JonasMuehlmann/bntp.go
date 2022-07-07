@@ -57,10 +57,31 @@ type {{.StructName}}Filter struct {
     {{end}}
 }
 
+func (filter *{{.StructName}}Filter) IsDefault() bool {
+    {{range $field := .StructFields -}}
+    if filter.{{.FieldName}}.HasValue {
+        return false
+    }
+    {{end}}
+
+    return true
+}
+
+
 type {{$.StructName}}Updater struct {
     {{range $field := .StructFields -}}
     {{.FieldName}} optional.Optional[model.UpdateOperation[{{.FieldType}}]]
     {{end}}
+}
+
+func (updater *{{.StructName}}Updater) IsDefault() bool {
+    {{range $field := .StructFields -}}
+    if updater.{{.FieldName}}.HasValue {
+        return false
+    }
+    {{end}}
+
+    return true
 }
 
 const (

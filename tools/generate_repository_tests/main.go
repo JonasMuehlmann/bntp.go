@@ -25,12 +25,10 @@ import (
 	"text/template"
 
 	mssqlRepository "github.com/JonasMuehlmann/bntp.go/model/repository/mssql"
-	mysqlRepository "github.com/JonasMuehlmann/bntp.go/model/repository/mysql"
 	psqlRepository "github.com/JonasMuehlmann/bntp.go/model/repository/psql"
 	sqlite3Repository "github.com/JonasMuehlmann/bntp.go/model/repository/sqlite3"
 
 	"github.com/JonasMuehlmann/bntp.go/tools"
-	"github.com/JonasMuehlmann/goaoi"
 )
 
 type Entity struct {
@@ -66,16 +64,14 @@ type Database struct {
 	DatabaseName string
 }
 type Configuration struct {
-	EntityName     string
-	DatabaseName   string
-	StructFields   []tools.StructField
-	RelationFields []tools.StructField
+	EntityName   string
+	DatabaseName string
 }
 
 func main() {
 	for database, entities := range dbEntities {
 		for _, entity := range entities {
-			tmplRaw, err := os.ReadFile("templates/sql_repositories/sql_repository.go.tpl")
+			tmplRaw, err := os.ReadFile("templates/sql_repositories/repository_test.go.tpl")
 			if err != nil {
 				panic(err)
 			}
@@ -85,74 +81,14 @@ func main() {
 				panic(err)
 			}
 
-			outFile, err := os.Create("model/repository/" + database + "/" + tools.LowercaseBeginning(entity.EntityName) + "_repository.go")
+			outFile, err := os.Create("model/repository/" + database + "/" + tools.LowercaseBeginning(entity.EntityName) + "_repository_test.go")
 			if err != nil {
 				panic(err)
-			}
-
-			entityStruct := tools.NewStructModel(entity.Struct)
-
-			entityStruct.StructFields, err = goaoi.CopyExceptIfSlice(entityStruct.StructFields, func(s tools.StructField) bool { return s.FieldName == "R" || s.FieldName == "L" })
-			if err != nil {
-				panic(err)
-			}
-
-			var relationStruct tools.Struct
-
-			// **************************    sqlite3    *************************//
-			switch e := entity.Struct.(type) {
-			case sqlite3Repository.Bookmark:
-				e.R = e.R.NewStruct()
-				relationStruct = tools.NewStructModel(*e.R)
-			case sqlite3Repository.Document:
-				e.R = e.R.NewStruct()
-				relationStruct = tools.NewStructModel(*e.R)
-			case sqlite3Repository.Tag:
-				e.R = e.R.NewStruct()
-				relationStruct = tools.NewStructModel(*e.R)
-
-				// ***************************    mssql    **************************//
-			case mssqlRepository.Bookmark:
-				e.R = e.R.NewStruct()
-				relationStruct = tools.NewStructModel(*e.R)
-			case mssqlRepository.Document:
-				e.R = e.R.NewStruct()
-				relationStruct = tools.NewStructModel(*e.R)
-			case mssqlRepository.Tag:
-				e.R = e.R.NewStruct()
-				relationStruct = tools.NewStructModel(*e.R)
-
-				// ***************************    mysql    **************************//
-			case mysqlRepository.Bookmark:
-				e.R = e.R.NewStruct()
-				relationStruct = tools.NewStructModel(*e.R)
-			case mysqlRepository.Document:
-				e.R = e.R.NewStruct()
-				relationStruct = tools.NewStructModel(*e.R)
-			case mysqlRepository.Tag:
-				e.R = e.R.NewStruct()
-				relationStruct = tools.NewStructModel(*e.R)
-
-				// ***************************    psql    ***************************//
-			case psqlRepository.Bookmark:
-				e.R = e.R.NewStruct()
-				relationStruct = tools.NewStructModel(*e.R)
-			case psqlRepository.Document:
-				e.R = e.R.NewStruct()
-				relationStruct = tools.NewStructModel(*e.R)
-			case psqlRepository.Tag:
-				e.R = e.R.NewStruct()
-				relationStruct = tools.NewStructModel(*e.R)
-
-			default:
-				panic("Unhandled sql repository type")
 			}
 
 			err = tmpl.Execute(outFile, Configuration{
-				EntityName:     entity.EntityName,
-				DatabaseName:   database,
-				StructFields:   entityStruct.StructFields,
-				RelationFields: relationStruct.StructFields,
+				EntityName:   entity.EntityName,
+				DatabaseName: database,
 			})
 			if err != nil {
 				panic(err)

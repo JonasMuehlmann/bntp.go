@@ -468,7 +468,7 @@ func (m *BookmarkManager) AddType(ctx context.Context, types []string) error {
 		return err
 	}
 
-	return err
+	return nil
 }
 
 func (m *BookmarkManager) DeleteType(ctx context.Context, types []string) error {
@@ -497,7 +497,7 @@ func (m *BookmarkManager) DeleteType(ctx context.Context, types []string) error 
 		return err
 	}
 
-	return err
+	return nil
 }
 
 func (m *BookmarkManager) UpdateType(ctx context.Context, oldType string, newType string) error {
@@ -526,5 +526,5 @@ func (m *BookmarkManager) UpdateType(ctx context.Context, oldType string, newTyp
 		return err
 	}
 
-	return err
+	return nil
 }

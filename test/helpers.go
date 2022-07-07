@@ -2,13 +2,13 @@ package test
 
 import (
 	"bufio"
+	"database/sql"
 	"os"
 	"path/filepath"
 	"testing"
 
 	_ "embed"
 
-	"github.com/jmoiron/sqlx"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/stretchr/testify/assert"
 )
@@ -19,9 +19,9 @@ var TestDataTempDir = filepath.Join(os.TempDir(), "bntp_tests")
 var sqlSchema string
 
 // GetDB opens a copy of the test DB in memory.
-func GetDB(t *testing.T) (*sqlx.DB, error) {
+func GetDB() (*sql.DB, error) {
 	// Connect to new temporary database
-	db, err := sqlx.Open("sqlite3", ":memory:?_foreign_keys=1")
+	db, err := sql.Open("sqlite3", ":memory:?_foreign_keys=1")
 	if err != nil {
 		return nil, err
 	}

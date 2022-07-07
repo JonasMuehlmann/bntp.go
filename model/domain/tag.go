@@ -55,11 +55,45 @@ type TagFilter struct {
 	Subtags    optional.Optional[model.FilterOperation[*Tag]]
 }
 
+func (filter *TagFilter) IsDefault() bool {
+	if filter.ID.HasValue {
+		return false
+	}
+	if filter.ParentPath.HasValue {
+		return false
+	}
+	if filter.Tag.HasValue {
+		return false
+	}
+	if filter.Subtags.HasValue {
+		return false
+	}
+
+	return true
+}
+
 type TagUpdater struct {
 	Tag        optional.Optional[model.UpdateOperation[string]]
 	ParentPath optional.Optional[model.UpdateOperation[[]*Tag]]
 	Subtags    optional.Optional[model.UpdateOperation[[]*Tag]]
 	ID         optional.Optional[model.UpdateOperation[int64]]
+}
+
+func (updater *TagUpdater) IsDefault() bool {
+	if updater.ID.HasValue {
+		return false
+	}
+	if updater.ParentPath.HasValue {
+		return false
+	}
+	if updater.Tag.HasValue {
+		return false
+	}
+	if updater.Subtags.HasValue {
+		return false
+	}
+
+	return true
 }
 
 const (

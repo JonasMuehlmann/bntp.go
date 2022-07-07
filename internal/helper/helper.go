@@ -21,18 +21,65 @@
 package helper
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
 	"path"
 	"runtime"
+	"time"
 
 	"github.com/JonasMuehlmann/goaoi"
 	log "github.com/sirupsen/logrus"
 	"github.com/sirupsen/logrus/hooks/writer"
 )
 
-const DateFormat string = "helper.DateFormat"
+const (
+	// NOTE: This is the only format time marshaling supports, it is not configurable...
+	DateFormat           string = time.RFC3339
+	LogMessageEmptyInput        = "Returning early after receiving empty input"
+)
+
+var (
+	EmptyInputError             = errors.New("empty input")
+	NonExistentPrimaryDataError = errors.New("the primary data to work with does not exist")
+	NopUpdaterError             = errors.New("The updater will leave the data unchanged")
+)
+
+type NilInputError struct {
+	BadFieldOrParameter string
+}
+
+func (err NilInputError) Error() string {
+	if err.BadFieldOrParameter == "" {
+		return "Input contains a nil pointer"
+	}
+	return "Input contains a nil pointer in parameter or struct field " + err.BadFieldOrParameter
+}
+
+type IneffectiveOperationError struct {
+	Inner error
+}
+
+func (err IneffectiveOperationError) Error() string {
+	return fmt.Sprintf("The operation had no effect: %v", err.Inner)
+}
+
+func (err IneffectiveOperationError) Unwrap() error {
+	return err.Inner
+}
+
+type DuplicateInsertionError struct {
+	Inner error
+}
+
+func (err DuplicateInsertionError) Error() string {
+	return fmt.Sprintf("The operation would insert a duplicate: %v", err.Inner)
+}
+
+func (err DuplicateInsertionError) Unwrap() error {
+	return err.Inner
+}
 
 func NewDefaultLogger(logFile string, consoleLogLevel log.Level, fileLogLevel log.Level) *log.Logger {
 	callerPrettyfier := func(f *runtime.Frame) (string, string) {
