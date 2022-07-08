@@ -19,7 +19,7 @@ CREATE TABLE tags
 (
     id         BIGINT    PRIMARY KEY NOT NULL,
     tag        TEXT       NOT NULL,
-    parent_tag BIGINT    REFERENCES tags(id),
+    parent_tag BIGINT    REFERENCES tags(id) DEFERRABLE INITIALLY DEFERRED,
     -- Stores list of parent ids from root to self
     -- e.g. "1;2;3"
     path       TEXT       NOT NULL UNIQUE,
@@ -40,7 +40,7 @@ CREATE TABLE bookmarks
     is_read          BIGINT   NOT  NULL DEFAULT 0,
     title            TEXT      UNIQUE,
     url              TEXT      NOT NULL UNIQUE,
-    bookmark_type_id BIGINT   REFERENCES bookmark_types(id),
+    bookmark_type_id BIGINT   REFERENCES bookmark_types(id) DEFERRABLE INITIALLY DEFERRED,
     is_collection    BIGINT   NOT NULL DEFAULT 0,
     created_at       TIMESTAMP NOT NULL,
     updated_at       TIMESTAMP NOT NULL,
@@ -57,7 +57,7 @@ CREATE TABLE documents
 (
     id               BIGINT   PRIMARY KEY NOT NULL,
     path             TEXT      NOT NULL UNIQUE,
-    document_type_id BIGINT   REFERENCES document_types(id),
+    document_type_id BIGINT   REFERENCES document_types(id) DEFERRABLE INITIALLY DEFERRED,
     created_at       TIMESTAMP NOT NULL,
     updated_at       TIMESTAMP NOT NULL,
     deleted_at       TIMESTAMP
@@ -65,8 +65,8 @@ CREATE TABLE documents
 
 CREATE TABLE links
 (
-    source_id      BIGINT  NOT NULL REFERENCES documents(id),
-    destination_id BIGINT  NOT NULL REFERENCES documents(id),
+    source_id      BIGINT  NOT NULL REFERENCES documents(id) DEFERRABLE INITIALLY DEFERRED,
+    destination_id BIGINT  NOT NULL REFERENCES documents(id) DEFERRABLE INITIALLY DEFERRED,
 
     PRIMARY KEY(source_id, destination_id),
     CHECK(source_id != destination_id)
@@ -74,16 +74,16 @@ CREATE TABLE links
 
 CREATE TABLE bookmark_contexts
 (
-    bookmark_id BIGINT  NOT NULL REFERENCES bookmarks(id),
-    tag_id      BIGINT  NOT NULL REFERENCES tags(id),
+    bookmark_id BIGINT  NOT NULL REFERENCES bookmarks(id) DEFERRABLE INITIALLY DEFERRED,
+    tag_id      BIGINT  NOT NULL REFERENCES tags(id) DEFERRABLE INITIALLY DEFERRED,
 
     PRIMARY KEY(tag_id, bookmark_id)
 );
 
 CREATE TABLE document_contexts
 (
-    document_id BIGINT  NOT NULL REFERENCES documents(id),
-    tag_id      BIGINT  NOT NULL REFERENCES  tags(id),
+    document_id BIGINT  NOT NULL REFERENCES documents(id) DEFERRABLE INITIALLY DEFERRED,
+    tag_id      BIGINT  NOT NULL REFERENCES  tags(id) DEFERRABLE INITIALLY DEFERRED,
 
     PRIMARY KEY(tag_id, document_id)
 );

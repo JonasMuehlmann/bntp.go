@@ -19,7 +19,7 @@ CREATE TABLE tags
 (
     id         INTEGER    PRIMARY KEY,
     tag        VARCHAR(255)       NOT NULL,
-    parent_tag INTEGER    ,
+    parent_tag INTEGER     DEFERRABLE INITIALLY DEFERRED,
     -- Stores list of parent ids from root to self
     -- e.g. "1;2;3"
     path       VARCHAR(255)       NOT NULL UNIQUE,
@@ -40,7 +40,7 @@ CREATE TABLE bookmarks
     is_read          INTEGER   NOT  NULL DEFAULT 0,
     title            VARCHAR(255)      UNIQUE,
     url              VARCHAR(255)      NOT NULL UNIQUE,
-    bookmark_type_id INTEGER   ,
+    bookmark_type_id INTEGER    DEFERRABLE INITIALLY DEFERRED,
     is_collection    INTEGER   NOT NULL DEFAULT 0,
     created_at       DATETIME NOT NULL,
     updated_at       DATETIME NOT NULL,
@@ -57,7 +57,7 @@ CREATE TABLE documents
 (
     id               INTEGER   PRIMARY KEY,
     path             VARCHAR(255)      NOT NULL UNIQUE,
-    document_type_id INTEGER   ,
+    document_type_id INTEGER    DEFERRABLE INITIALLY DEFERRED,
     created_at       DATETIME NOT NULL,
     updated_at       DATETIME NOT NULL,
     deleted_at       DATETIME
@@ -65,8 +65,8 @@ CREATE TABLE documents
 
 CREATE TABLE links
 (
-    source_id      INTEGER  NOT NULL ,
-    destination_id INTEGER  NOT NULL ,
+    source_id      INTEGER  NOT NULL  DEFERRABLE INITIALLY DEFERRED,
+    destination_id INTEGER  NOT NULL  DEFERRABLE INITIALLY DEFERRED,
 
     PRIMARY KEY(source_id, destination_id),
     CHECK(source_id != destination_id)
@@ -74,16 +74,16 @@ CREATE TABLE links
 
 CREATE TABLE bookmark_contexts
 (
-    bookmark_id INTEGER  NOT NULL ,
-    tag_id      INTEGER  NOT NULL ,
+    bookmark_id INTEGER  NOT NULL  DEFERRABLE INITIALLY DEFERRED,
+    tag_id      INTEGER  NOT NULL  DEFERRABLE INITIALLY DEFERRED,
 
     PRIMARY KEY(tag_id, bookmark_id)
 );
 
 CREATE TABLE document_contexts
 (
-    document_id INTEGER  NOT NULL ,
-    tag_id      INTEGER  NOT NULL ,
+    document_id INTEGER  NOT NULL  DEFERRABLE INITIALLY DEFERRED,
+    tag_id      INTEGER  NOT NULL  DEFERRABLE INITIALLY DEFERRED,
 
     PRIMARY KEY(tag_id, document_id)
 );
