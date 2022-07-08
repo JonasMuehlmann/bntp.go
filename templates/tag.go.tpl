@@ -36,6 +36,23 @@ type {{.StructName}} struct {
     {{end}}
 }
 
+func (t *Tag) AddChildren(newChildren []*{{$StructName}}) {
+    t.Subtags = append(t.Subtags, newChildren...)
+
+    for _, child := range newChildren {
+        if len(child.ParentPath) == 0 {
+            child.ParentPath = make([]*{{$StructName}}, 1)
+        }
+
+        child.ParentPath[0] = t
+    }
+}
+
+func (t *Tag) AddDirectParent(newParent *{{$StructName}}) {
+    t.ParentPath = append(t.ParentPath, newParent)
+    newParent.Subtags = append(newParent.Subtags, t)
+}
+
 type {{.StructName}}Field string
 
 var {{.StructName}}Fields = struct {

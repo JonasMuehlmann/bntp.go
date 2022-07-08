@@ -28,10 +28,27 @@ import (
 )
 
 type Tag struct {
-	Tag        string `json:"tag" toml:"tag" yaml:"tag"`
-	ParentPath []*Tag `json:"parentPath" toml:"parentPath" yaml:"parentPath"`
-	Subtags    []*Tag `json:"subtags" toml:"subtags" yaml:"subtags"`
 	ID         int64  `json:"id" toml:"id" yaml:"id"`
+	ParentPath []*Tag `json:"parentPath" toml:"parentPath" yaml:"parentPath"`
+	Tag        string `json:"tag" toml:"tag" yaml:"tag"`
+	Subtags    []*Tag `json:"subtags" toml:"subtags" yaml:"subtags"`
+}
+
+func (t *Tag) AddChildren(newChildren []*Tag) {
+	t.Subtags = append(t.Subtags, newChildren...)
+
+	for _, child := range newChildren {
+		if len(child.ParentPath) == 0 {
+			child.ParentPath = make([]*Tag, 1)
+		}
+
+		child.ParentPath[0] = t
+	}
+}
+
+func (t *Tag) AddDirectParent(newParent *Tag) {
+	t.ParentPath = append(t.ParentPath, newParent)
+	newParent.Subtags = append(newParent.Subtags, t)
 }
 
 type TagField string
@@ -73,10 +90,10 @@ func (filter *TagFilter) IsDefault() bool {
 }
 
 type TagUpdater struct {
-	Tag        optional.Optional[model.UpdateOperation[string]]
-	ParentPath optional.Optional[model.UpdateOperation[[]*Tag]]
-	Subtags    optional.Optional[model.UpdateOperation[[]*Tag]]
 	ID         optional.Optional[model.UpdateOperation[int64]]
+	ParentPath optional.Optional[model.UpdateOperation[[]*Tag]]
+	Tag        optional.Optional[model.UpdateOperation[string]]
+	Subtags    optional.Optional[model.UpdateOperation[[]*Tag]]
 }
 
 func (updater *TagUpdater) IsDefault() bool {
