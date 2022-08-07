@@ -1,4 +1,4 @@
-![img](https://img.shields.io/badge/semver-2.0.0-green) [![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-yellow.svg)](https://conventionalcommits.org) [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit)
+![img](https://img.shields.io/badge/semver-2.0.0-green) [![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-yellow.svg)](https://conventionalcommits.org) [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit) [![codecov](https://codecov.io/gh/JonasMuehlmann/bntp.go/branch/main/graph/badge.svg?token=ngxdtOfn1f)](https://codecov.io/gh/JonasMuehlmann/bntp.go)
 
 # bntp.go
 Libraries and CLIs for my personal all-in-one productivity system including components like bookmarks, notes, todos, projects, etc. 
