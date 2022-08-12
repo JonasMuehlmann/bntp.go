@@ -11,10 +11,11 @@ import (
 	"github.com/JonasMuehlmann/bntp.go/model"
 	"github.com/JonasMuehlmann/bntp.go/model/domain"
 	repositoryCommon "github.com/JonasMuehlmann/bntp.go/model/repository"
-	repository "github.com/JonasMuehlmann/bntp.go/model/repository/sqlite3"
+	repository "github.com/JonasMuehlmann/bntp.go/model/repository/{{.DatabaseName}}"
 	testCommon "github.com/JonasMuehlmann/bntp.go/test"
 	"github.com/JonasMuehlmann/optional.go"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestSQL{{.EntityName}}RepositoryAddTest(t *testing.T) {
@@ -33,7 +34,7 @@ func TestSQL{{.EntityName}}RepositoryAddTest(t *testing.T) {
 			name: "Input containing nil value", models: []*domain.{{.EntityName}}{nil}, err: helper.NilInputError{},
 		},
 		{
-			name: "One default-constructed input", models: []*domain.{{.EntityName}}{{"{{}}"}},
+			name: "One default-constructed input", models: []*domain.{{.EntityName}}{{"{{}}"}}, err: helper.NilInputError{},
 		},
 		{
 			name: "Two regular inputs, non-existent dependencies", err: repositoryCommon.ReferenceToNonExistentDependencyError{}, models: []*domain.{{.EntityName}}{
@@ -205,28 +206,31 @@ func TestSQL{{.EntityName}}RepositoryAddTest(t *testing.T) {
 		test := test
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
+			defer testCommon.HandlePanic(t, test.name)
+
 			db, err := testCommon.GetDB()
-			assert.NoErrorf(t, err, test.name)
+            require.NoErrorf(t, err, test.name+", db open")
+            defer db.Close()
 
 			{{if or (eq .EntityName "Bookmark") (eq .EntityName "Document") }}
-		    tagRepo := new(repository.Sqlite3TagRepository)
+		    tagRepo := new(repository.{{UppercaseBeginning .DatabaseName}}TagRepository)
 
-			tagRepoAbstract, err := tagRepo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db})
+			tagRepoAbstract, err := tagRepo.New(repository.{{UppercaseBeginning .DatabaseName}}TagRepositoryConstructorArgs{DB: db})
 			assert.NoErrorf(t, err, test.name)
 
-			tagRepo = tagRepoAbstract.(*repository.Sqlite3TagRepository)
+			tagRepo = tagRepoAbstract.(*repository.{{UppercaseBeginning .DatabaseName}}TagRepository)
 		    {{ end }}
 
-			repo := new(repository.Sqlite3{{.EntityName}}Repository)
+			repo := new(repository.{{UppercaseBeginning .DatabaseName}}{{.EntityName}}Repository)
 
 			{{if and (ne .EntityName "Bookmark") (ne .EntityName "Document") }}
-		    repoAbstract, err := repo.New(repository.Sqlite3{{.EntityName}}RepositoryConstructorArgs{DB: db })
+		    repoAbstract, err := repo.New(repository.{{UppercaseBeginning .DatabaseName}}{{.EntityName}}RepositoryConstructorArgs{DB: db })
 		    {{ else }}
-		    repoAbstract, err := repo.New(repository.Sqlite3{{.EntityName}}RepositoryConstructorArgs{DB: db, TagRepository: tagRepo})
+		    repoAbstract, err := repo.New(repository.{{UppercaseBeginning .DatabaseName}}{{.EntityName}}RepositoryConstructorArgs{DB: db, TagRepository: tagRepo})
 		    {{ end }}
 			assert.NoErrorf(t, err, test.name)
 
-			repo = repoAbstract.(*repository.Sqlite3{{.EntityName}}Repository)
+			repo = repoAbstract.(*repository.{{UppercaseBeginning .DatabaseName}}{{.EntityName}}Repository)
 
 			err = repo.Add(context.Background(), test.models)
 			if test.err == nil {
@@ -255,7 +259,7 @@ func TestSQL{{.EntityName}}RepositoryReplaceTest(t *testing.T) {
 			name: "Input containing nil value", models: []*domain.{{.EntityName}}{nil}, err: helper.NilInputError{},
 		},
 		{
-			name: "One default-constructed input", models: []*domain.{{.EntityName}}{{"{{}}"}}, err: helper.IneffectiveOperationError{},
+			name: "One default-constructed input", models: []*domain.{{.EntityName}}{{"{{}}"}}, err: helper.NilInputError{},
 		},
 		{
 			name: "Two existing minimal inputs, adding non-existent dependencies", err: repositoryCommon.ReferenceToNonExistentDependencyError{},
@@ -687,28 +691,31 @@ func TestSQL{{.EntityName}}RepositoryReplaceTest(t *testing.T) {
 		test := test
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
+			defer testCommon.HandlePanic(t, test.name)
+
 			db, err := testCommon.GetDB()
-			assert.NoErrorf(t, err, test.name)
+            require.NoErrorf(t, err, test.name+", db open")
+            defer db.Close()
 
 			{{if or (eq .EntityName "Bookmark") (eq .EntityName "Document") }}
-		    tagRepo := new(repository.Sqlite3TagRepository)
+		    tagRepo := new(repository.{{UppercaseBeginning .DatabaseName}}TagRepository)
 
-			tagRepoAbstract, err := tagRepo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db})
+			tagRepoAbstract, err := tagRepo.New(repository.{{UppercaseBeginning .DatabaseName}}TagRepositoryConstructorArgs{DB: db})
 			assert.NoErrorf(t, err, test.name)
 
-			tagRepo = tagRepoAbstract.(*repository.Sqlite3TagRepository)
+			tagRepo = tagRepoAbstract.(*repository.{{UppercaseBeginning .DatabaseName}}TagRepository)
 		    {{ end }}
 
-			repo := new(repository.Sqlite3{{.EntityName}}Repository)
+			repo := new(repository.{{UppercaseBeginning .DatabaseName}}{{.EntityName}}Repository)
 
 			{{if and (ne .EntityName "Bookmark") (ne .EntityName "Document") }}
-		    repoAbstract, err := repo.New(repository.Sqlite3{{.EntityName}}RepositoryConstructorArgs{DB: db })
+		    repoAbstract, err := repo.New(repository.{{UppercaseBeginning .DatabaseName}}{{.EntityName}}RepositoryConstructorArgs{DB: db })
 		    {{ else }}
-		    repoAbstract, err := repo.New(repository.Sqlite3{{.EntityName}}RepositoryConstructorArgs{DB: db, TagRepository: tagRepo})
+		    repoAbstract, err := repo.New(repository.{{UppercaseBeginning .DatabaseName}}{{.EntityName}}RepositoryConstructorArgs{DB: db, TagRepository: tagRepo})
 		    {{ end }}
 			assert.NoErrorf(t, err, test.name)
 
-			repo = repoAbstract.(*repository.Sqlite3{{.EntityName}}Repository)
+			repo = repoAbstract.(*repository.{{UppercaseBeginning .DatabaseName}}{{.EntityName}}Repository)
 
 			if test.previousModels != nil {
 				err = repo.Add(context.Background(), test.previousModels)
@@ -742,7 +749,7 @@ func TestSQL{{.EntityName}}RepositoryUpsertTest(t *testing.T) {
 			name: "Input containing nil value", models: []*domain.{{.EntityName}}{nil}, err: helper.NilInputError{},
 		},
 		{
-			name: "One default-constructed input", models: []*domain.{{.EntityName}}{{"{{}}"}},
+			name: "One default-constructed input", models: []*domain.{{.EntityName}}{{"{{}}"}}, err: helper.NilInputError{},
 		},
 		{
 			name: "Two existing inputs, non-existent dependencies", err: repositoryCommon.ReferenceToNonExistentDependencyError{},
@@ -1168,28 +1175,31 @@ func TestSQL{{.EntityName}}RepositoryUpsertTest(t *testing.T) {
 		test := test
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
+			defer testCommon.HandlePanic(t, test.name)
+
 			db, err := testCommon.GetDB()
-			assert.NoErrorf(t, err, test.name)
+            require.NoErrorf(t, err, test.name+", db open")
+            defer db.Close()
 
 			{{if or (eq .EntityName "Bookmark") (eq .EntityName "Document") }}
-		    tagRepo := new(repository.Sqlite3TagRepository)
+		    tagRepo := new(repository.{{UppercaseBeginning .DatabaseName}}TagRepository)
 
-			tagRepoAbstract, err := tagRepo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db})
+			tagRepoAbstract, err := tagRepo.New(repository.{{UppercaseBeginning .DatabaseName}}TagRepositoryConstructorArgs{DB: db})
 			assert.NoErrorf(t, err, test.name)
 
-			tagRepo = tagRepoAbstract.(*repository.Sqlite3TagRepository)
+			tagRepo = tagRepoAbstract.(*repository.{{UppercaseBeginning .DatabaseName}}TagRepository)
 		    {{ end }}
 
-			repo := new(repository.Sqlite3{{.EntityName}}Repository)
+			repo := new(repository.{{UppercaseBeginning .DatabaseName}}{{.EntityName}}Repository)
 
 			{{if and (ne .EntityName "Bookmark") (ne .EntityName "Document") }}
-		    repoAbstract, err := repo.New(repository.Sqlite3{{.EntityName}}RepositoryConstructorArgs{DB: db })
+		    repoAbstract, err := repo.New(repository.{{UppercaseBeginning .DatabaseName}}{{.EntityName}}RepositoryConstructorArgs{DB: db })
 		    {{ else }}
-		    repoAbstract, err := repo.New(repository.Sqlite3{{.EntityName}}RepositoryConstructorArgs{DB: db, TagRepository: tagRepo})
+		    repoAbstract, err := repo.New(repository.{{UppercaseBeginning .DatabaseName}}{{.EntityName}}RepositoryConstructorArgs{DB: db, TagRepository: tagRepo})
 		    {{ end }}
 			assert.NoErrorf(t, err, test.name)
 
-			repo = repoAbstract.(*repository.Sqlite3{{.EntityName}}Repository)
+			repo = repoAbstract.(*repository.{{UppercaseBeginning .DatabaseName}}{{.EntityName}}Repository)
 
 			if test.previousModels != nil {
 				err = repo.Add(context.Background(), test.previousModels)
@@ -1227,7 +1237,7 @@ func TestSQL{{.EntityName}}RepositoryUpdateTest(t *testing.T) {
 			name: "Input containing nil value", models: []*domain.{{.EntityName}}{nil}, updater: &domain.{{.EntityName}}Updater{}, err: helper.NilInputError{},
 		},
 		{
-			name: "One default-constructed input", models: []*domain.{{.EntityName}}{{"{{}}"}}, updater: &domain.{{.EntityName}}Updater{}, err: helper.IneffectiveOperationError{},
+			name: "One default-constructed input", models: []*domain.{{.EntityName}}{{"{{}}"}}, updater: &domain.{{.EntityName}}Updater{}, err: helper.NilInputError{},
 		},
 		{
 			name: "Two existing minimal inputs, nop updater", updater: &domain.{{.EntityName}}Updater{}, err: helper.IneffectiveOperationError{},
@@ -1631,28 +1641,31 @@ func TestSQL{{.EntityName}}RepositoryUpdateTest(t *testing.T) {
 		test := test
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
+			defer testCommon.HandlePanic(t, test.name)
+
 			db, err := testCommon.GetDB()
-			assert.NoErrorf(t, err, test.name)
+            require.NoErrorf(t, err, test.name+", db open")
+            defer db.Close()
 
 			{{if or (eq .EntityName "Bookmark") (eq .EntityName "Document") }}
-		    tagRepo := new(repository.Sqlite3TagRepository)
+		    tagRepo := new(repository.{{UppercaseBeginning .DatabaseName}}TagRepository)
 
-			tagRepoAbstract, err := tagRepo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db})
+			tagRepoAbstract, err := tagRepo.New(repository.{{UppercaseBeginning .DatabaseName}}TagRepositoryConstructorArgs{DB: db})
 			assert.NoErrorf(t, err, test.name)
 
-			tagRepo = tagRepoAbstract.(*repository.Sqlite3TagRepository)
+			tagRepo = tagRepoAbstract.(*repository.{{UppercaseBeginning .DatabaseName}}TagRepository)
 		    {{ end }}
 
-			repo := new(repository.Sqlite3{{.EntityName}}Repository)
+			repo := new(repository.{{UppercaseBeginning .DatabaseName}}{{.EntityName}}Repository)
 
 			{{if and (ne .EntityName "Bookmark") (ne .EntityName "Document") }}
-		    repoAbstract, err := repo.New(repository.Sqlite3{{.EntityName}}RepositoryConstructorArgs{DB: db })
+		    repoAbstract, err := repo.New(repository.{{UppercaseBeginning .DatabaseName}}{{.EntityName}}RepositoryConstructorArgs{DB: db })
 		    {{ else }}
-		    repoAbstract, err := repo.New(repository.Sqlite3{{.EntityName}}RepositoryConstructorArgs{DB: db, TagRepository: tagRepo})
+		    repoAbstract, err := repo.New(repository.{{UppercaseBeginning .DatabaseName}}{{.EntityName}}RepositoryConstructorArgs{DB: db, TagRepository: tagRepo})
 		    {{ end }}
 			assert.NoErrorf(t, err, test.name)
 
-			repo = repoAbstract.(*repository.Sqlite3{{.EntityName}}Repository)
+			repo = repoAbstract.(*repository.{{UppercaseBeginning .DatabaseName}}{{.EntityName}}Repository)
 
 			if test.previousModels != nil {
 				err = repo.Add(context.Background(), test.previousModels)
@@ -1950,28 +1963,31 @@ func TestSQL{{.EntityName}}RepositoryUpdateWhereTest(t *testing.T) {
 		test := test
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
+			defer testCommon.HandlePanic(t, test.name)
+
 			db, err := testCommon.GetDB()
-			assert.NoErrorf(t, err, test.name)
+            require.NoErrorf(t, err, test.name+", db open")
+            defer db.Close()
 
 			{{if or (eq .EntityName "Bookmark") (eq .EntityName "Document") }}
-		    tagRepo := new(repository.Sqlite3TagRepository)
+		    tagRepo := new(repository.{{UppercaseBeginning .DatabaseName}}TagRepository)
 
-			tagRepoAbstract, err := tagRepo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db})
+			tagRepoAbstract, err := tagRepo.New(repository.{{UppercaseBeginning .DatabaseName}}TagRepositoryConstructorArgs{DB: db})
 			assert.NoErrorf(t, err, test.name)
 
-			tagRepo = tagRepoAbstract.(*repository.Sqlite3TagRepository)
+			tagRepo = tagRepoAbstract.(*repository.{{UppercaseBeginning .DatabaseName}}TagRepository)
 		    {{ end }}
 
-			repo := new(repository.Sqlite3{{.EntityName}}Repository)
+			repo := new(repository.{{UppercaseBeginning .DatabaseName}}{{.EntityName}}Repository)
 
 			{{if and (ne .EntityName "Bookmark") (ne .EntityName "Document") }}
-		    repoAbstract, err := repo.New(repository.Sqlite3{{.EntityName}}RepositoryConstructorArgs{DB: db })
+		    repoAbstract, err := repo.New(repository.{{UppercaseBeginning .DatabaseName}}{{.EntityName}}RepositoryConstructorArgs{DB: db })
 		    {{ else }}
-		    repoAbstract, err := repo.New(repository.Sqlite3{{.EntityName}}RepositoryConstructorArgs{DB: db, TagRepository: tagRepo})
+		    repoAbstract, err := repo.New(repository.{{UppercaseBeginning .DatabaseName}}{{.EntityName}}RepositoryConstructorArgs{DB: db, TagRepository: tagRepo})
 		    {{ end }}
 			assert.NoErrorf(t, err, test.name)
 
-			repo = repoAbstract.(*repository.Sqlite3{{.EntityName}}Repository)
+			repo = repoAbstract.(*repository.{{UppercaseBeginning .DatabaseName}}{{.EntityName}}Repository)
 
 			if test.insertBeforeUpdate {
 				err = repo.Add(context.Background(), test.models)
@@ -2006,7 +2022,7 @@ func TestSQL{{.EntityName}}RepositoryDeleteTest(t *testing.T) {
 			name: "Input containing nil value", models: []*domain.{{.EntityName}}{nil}, err: helper.NilInputError{},
 		},
 		{
-			name: "One default-constructed input", models: []*domain.{{.EntityName}}{{"{{}}"}},
+			name: "One default-constructed input", models: []*domain.{{.EntityName}}{{"{{}}"}}, err: helper.NilInputError{},
 		},
 		{
 			name: "Two minimal inputs", insertBeforeDelete: true, models: []*domain.{{.EntityName}}{
@@ -2078,28 +2094,31 @@ func TestSQL{{.EntityName}}RepositoryDeleteTest(t *testing.T) {
 		test := test
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
+			defer testCommon.HandlePanic(t, test.name)
+
 			db, err := testCommon.GetDB()
-			assert.NoErrorf(t, err, test.name)
+            require.NoErrorf(t, err, test.name+", db open")
+            defer db.Close()
 
 			{{if or (eq .EntityName "Bookmark") (eq .EntityName "Document") }}
-		    tagRepo := new(repository.Sqlite3TagRepository)
+		    tagRepo := new(repository.{{UppercaseBeginning .DatabaseName}}TagRepository)
 
-			tagRepoAbstract, err := tagRepo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db})
+			tagRepoAbstract, err := tagRepo.New(repository.{{UppercaseBeginning .DatabaseName}}TagRepositoryConstructorArgs{DB: db})
 			assert.NoErrorf(t, err, test.name)
 
-			tagRepo = tagRepoAbstract.(*repository.Sqlite3TagRepository)
+			tagRepo = tagRepoAbstract.(*repository.{{UppercaseBeginning .DatabaseName}}TagRepository)
 		    {{ end }}
 
-			repo := new(repository.Sqlite3{{.EntityName}}Repository)
+			repo := new(repository.{{UppercaseBeginning .DatabaseName}}{{.EntityName}}Repository)
 
 			{{if and (ne .EntityName "Bookmark") (ne .EntityName "Document") }}
-		    repoAbstract, err := repo.New(repository.Sqlite3{{.EntityName}}RepositoryConstructorArgs{DB: db })
+		    repoAbstract, err := repo.New(repository.{{UppercaseBeginning .DatabaseName}}{{.EntityName}}RepositoryConstructorArgs{DB: db })
 		    {{ else }}
-		    repoAbstract, err := repo.New(repository.Sqlite3{{.EntityName}}RepositoryConstructorArgs{DB: db, TagRepository: tagRepo})
+		    repoAbstract, err := repo.New(repository.{{UppercaseBeginning .DatabaseName}}{{.EntityName}}RepositoryConstructorArgs{DB: db, TagRepository: tagRepo})
 		    {{ end }}
 			assert.NoErrorf(t, err, test.name)
 
-			repo = repoAbstract.(*repository.Sqlite3{{.EntityName}}Repository)
+			repo = repoAbstract.(*repository.{{UppercaseBeginning .DatabaseName}}{{.EntityName}}Repository)
 
 			if test.insertBeforeDelete {
 				err = repo.Add(context.Background(), test.models)
@@ -2250,28 +2269,31 @@ func TestSQL{{.EntityName}}RepositoryDeleteWhereTest(t *testing.T) {
 		test := test
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
+			defer testCommon.HandlePanic(t, test.name)
+
 			db, err := testCommon.GetDB()
-			assert.NoErrorf(t, err, test.name)
+            require.NoErrorf(t, err, test.name+", db open")
+            defer db.Close()
 
 			{{if or (eq .EntityName "Bookmark") (eq .EntityName "Document") }}
-		    tagRepo := new(repository.Sqlite3TagRepository)
+		    tagRepo := new(repository.{{UppercaseBeginning .DatabaseName}}TagRepository)
 
-			tagRepoAbstract, err := tagRepo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db})
+			tagRepoAbstract, err := tagRepo.New(repository.{{UppercaseBeginning .DatabaseName}}TagRepositoryConstructorArgs{DB: db})
 			assert.NoErrorf(t, err, test.name)
 
-			tagRepo = tagRepoAbstract.(*repository.Sqlite3TagRepository)
+			tagRepo = tagRepoAbstract.(*repository.{{UppercaseBeginning .DatabaseName}}TagRepository)
 		    {{ end }}
 
-			repo := new(repository.Sqlite3{{.EntityName}}Repository)
+			repo := new(repository.{{UppercaseBeginning .DatabaseName}}{{.EntityName}}Repository)
 
 			{{if and (ne .EntityName "Bookmark") (ne .EntityName "Document") }}
-		    repoAbstract, err := repo.New(repository.Sqlite3{{.EntityName}}RepositoryConstructorArgs{DB: db })
+		    repoAbstract, err := repo.New(repository.{{UppercaseBeginning .DatabaseName}}{{.EntityName}}RepositoryConstructorArgs{DB: db })
 		    {{ else }}
-		    repoAbstract, err := repo.New(repository.Sqlite3{{.EntityName}}RepositoryConstructorArgs{DB: db, TagRepository: tagRepo})
+		    repoAbstract, err := repo.New(repository.{{UppercaseBeginning .DatabaseName}}{{.EntityName}}RepositoryConstructorArgs{DB: db, TagRepository: tagRepo})
 		    {{ end }}
 			assert.NoErrorf(t, err, test.name)
 
-			repo = repoAbstract.(*repository.Sqlite3{{.EntityName}}Repository)
+			repo = repoAbstract.(*repository.{{UppercaseBeginning .DatabaseName}}{{.EntityName}}Repository)
 
 			if test.insertBeforeDelete {
 				err = repo.Add(context.Background(), test.models)
@@ -2423,28 +2445,31 @@ func TestSQL{{.EntityName}}RepositoryCountWhereTest(t *testing.T) {
 		test := test
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
+			defer testCommon.HandlePanic(t, test.name)
+
 			db, err := testCommon.GetDB()
-			assert.NoErrorf(t, err, test.name)
+            require.NoErrorf(t, err, test.name+", db open")
+            defer db.Close()
 
 			{{if or (eq .EntityName "Bookmark") (eq .EntityName "Document") }}
-		    tagRepo := new(repository.Sqlite3TagRepository)
+		    tagRepo := new(repository.{{UppercaseBeginning .DatabaseName}}TagRepository)
 
-			tagRepoAbstract, err := tagRepo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db})
+			tagRepoAbstract, err := tagRepo.New(repository.{{UppercaseBeginning .DatabaseName}}TagRepositoryConstructorArgs{DB: db})
 			assert.NoErrorf(t, err, test.name)
 
-			tagRepo = tagRepoAbstract.(*repository.Sqlite3TagRepository)
+			tagRepo = tagRepoAbstract.(*repository.{{UppercaseBeginning .DatabaseName}}TagRepository)
 		    {{ end }}
 
-			repo := new(repository.Sqlite3{{.EntityName}}Repository)
+			repo := new(repository.{{UppercaseBeginning .DatabaseName}}{{.EntityName}}Repository)
 
 			{{if and (ne .EntityName "Bookmark") (ne .EntityName "Document") }}
-		    repoAbstract, err := repo.New(repository.Sqlite3{{.EntityName}}RepositoryConstructorArgs{DB: db })
+		    repoAbstract, err := repo.New(repository.{{UppercaseBeginning .DatabaseName}}{{.EntityName}}RepositoryConstructorArgs{DB: db })
 		    {{ else }}
-		    repoAbstract, err := repo.New(repository.Sqlite3{{.EntityName}}RepositoryConstructorArgs{DB: db, TagRepository: tagRepo})
+		    repoAbstract, err := repo.New(repository.{{UppercaseBeginning .DatabaseName}}{{.EntityName}}RepositoryConstructorArgs{DB: db, TagRepository: tagRepo})
 		    {{ end }}
 			assert.NoErrorf(t, err, test.name)
 
-			repo = repoAbstract.(*repository.Sqlite3{{.EntityName}}Repository)
+			repo = repoAbstract.(*repository.{{UppercaseBeginning .DatabaseName}}{{.EntityName}}Repository)
 
 			if test.insertBeforeCount {
 				err = repo.Add(context.Background(), test.models)
@@ -2594,28 +2619,31 @@ func TestSQL{{.EntityName}}RepositoryCountAllTest(t *testing.T) {
 		test := test
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
+			defer testCommon.HandlePanic(t, test.name)
+
 			db, err := testCommon.GetDB()
-			assert.NoErrorf(t, err, test.name)
+            require.NoErrorf(t, err, test.name+", db open")
+            defer db.Close()
 
 			{{if or (eq .EntityName "Bookmark") (eq .EntityName "Document") }}
-		    tagRepo := new(repository.Sqlite3TagRepository)
+		    tagRepo := new(repository.{{UppercaseBeginning .DatabaseName}}TagRepository)
 
-			tagRepoAbstract, err := tagRepo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db})
+			tagRepoAbstract, err := tagRepo.New(repository.{{UppercaseBeginning .DatabaseName}}TagRepositoryConstructorArgs{DB: db})
 			assert.NoErrorf(t, err, test.name)
 
-			tagRepo = tagRepoAbstract.(*repository.Sqlite3TagRepository)
+			tagRepo = tagRepoAbstract.(*repository.{{UppercaseBeginning .DatabaseName}}TagRepository)
 		    {{ end }}
 
-			repo := new(repository.Sqlite3{{.EntityName}}Repository)
+			repo := new(repository.{{UppercaseBeginning .DatabaseName}}{{.EntityName}}Repository)
 
 			{{if and (ne .EntityName "Bookmark") (ne .EntityName "Document") }}
-		    repoAbstract, err := repo.New(repository.Sqlite3{{.EntityName}}RepositoryConstructorArgs{DB: db })
+		    repoAbstract, err := repo.New(repository.{{UppercaseBeginning .DatabaseName}}{{.EntityName}}RepositoryConstructorArgs{DB: db })
 		    {{ else }}
-		    repoAbstract, err := repo.New(repository.Sqlite3{{.EntityName}}RepositoryConstructorArgs{DB: db, TagRepository: tagRepo})
+		    repoAbstract, err := repo.New(repository.{{UppercaseBeginning .DatabaseName}}{{.EntityName}}RepositoryConstructorArgs{DB: db, TagRepository: tagRepo})
 		    {{ end }}
 			assert.NoErrorf(t, err, test.name)
 
-			repo = repoAbstract.(*repository.Sqlite3{{.EntityName}}Repository)
+			repo = repoAbstract.(*repository.{{UppercaseBeginning .DatabaseName}}{{.EntityName}}Repository)
 
 			if test.insertBeforeCount {
 				err = repo.Add(context.Background(), test.models)
@@ -2716,28 +2744,31 @@ func TestSQL{{.EntityName}}RepositoryDoesExistTest(t *testing.T) {
 		test := test
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
+			defer testCommon.HandlePanic(t, test.name)
+
 			db, err := testCommon.GetDB()
-			assert.NoErrorf(t, err, test.name)
+            require.NoErrorf(t, err, test.name+", db open")
+            defer db.Close()
 
 			{{if or (eq .EntityName "Bookmark") (eq .EntityName "Document") }}
-		    tagRepo := new(repository.Sqlite3TagRepository)
+		    tagRepo := new(repository.{{UppercaseBeginning .DatabaseName}}TagRepository)
 
-			tagRepoAbstract, err := tagRepo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db})
+			tagRepoAbstract, err := tagRepo.New(repository.{{UppercaseBeginning .DatabaseName}}TagRepositoryConstructorArgs{DB: db})
 			assert.NoErrorf(t, err, test.name)
 
-			tagRepo = tagRepoAbstract.(*repository.Sqlite3TagRepository)
+			tagRepo = tagRepoAbstract.(*repository.{{UppercaseBeginning .DatabaseName}}TagRepository)
 		    {{ end }}
 
-			repo := new(repository.Sqlite3{{.EntityName}}Repository)
+			repo := new(repository.{{UppercaseBeginning .DatabaseName}}{{.EntityName}}Repository)
 
 			{{if and (ne .EntityName "Bookmark") (ne .EntityName "Document") }}
-		    repoAbstract, err := repo.New(repository.Sqlite3{{.EntityName}}RepositoryConstructorArgs{DB: db })
+		    repoAbstract, err := repo.New(repository.{{UppercaseBeginning .DatabaseName}}{{.EntityName}}RepositoryConstructorArgs{DB: db })
 		    {{ else }}
-		    repoAbstract, err := repo.New(repository.Sqlite3{{.EntityName}}RepositoryConstructorArgs{DB: db, TagRepository: tagRepo})
+		    repoAbstract, err := repo.New(repository.{{UppercaseBeginning .DatabaseName}}{{.EntityName}}RepositoryConstructorArgs{DB: db, TagRepository: tagRepo})
 		    {{ end }}
 			assert.NoErrorf(t, err, test.name)
 
-			repo = repoAbstract.(*repository.Sqlite3{{.EntityName}}Repository)
+			repo = repoAbstract.(*repository.{{UppercaseBeginning .DatabaseName}}{{.EntityName}}Repository)
 
 			if test.insertBeforeCheck {
 				err = repo.Add(context.Background(), []*domain.{{.EntityName}}{test.model})
@@ -3035,28 +3066,31 @@ func TestSQL{{.EntityName}}RepositoryDoesExistWhereTest(t *testing.T) {
 		test := test
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
+			defer testCommon.HandlePanic(t, test.name)
+
 			db, err := testCommon.GetDB()
-			assert.NoErrorf(t, err, test.name)
+            require.NoErrorf(t, err, test.name+", db open")
+            defer db.Close()
 
 			{{if or (eq .EntityName "Bookmark") (eq .EntityName "Document") }}
-		    tagRepo := new(repository.Sqlite3TagRepository)
+		    tagRepo := new(repository.{{UppercaseBeginning .DatabaseName}}TagRepository)
 
-			tagRepoAbstract, err := tagRepo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db})
+			tagRepoAbstract, err := tagRepo.New(repository.{{UppercaseBeginning .DatabaseName}}TagRepositoryConstructorArgs{DB: db})
 			assert.NoErrorf(t, err, test.name)
 
-			tagRepo = tagRepoAbstract.(*repository.Sqlite3TagRepository)
+			tagRepo = tagRepoAbstract.(*repository.{{UppercaseBeginning .DatabaseName}}TagRepository)
 		    {{ end }}
 
-			repo := new(repository.Sqlite3{{.EntityName}}Repository)
+			repo := new(repository.{{UppercaseBeginning .DatabaseName}}{{.EntityName}}Repository)
 
 			{{if and (ne .EntityName "Bookmark") (ne .EntityName "Document") }}
-		    repoAbstract, err := repo.New(repository.Sqlite3{{.EntityName}}RepositoryConstructorArgs{DB: db })
+		    repoAbstract, err := repo.New(repository.{{UppercaseBeginning .DatabaseName}}{{.EntityName}}RepositoryConstructorArgs{DB: db })
 		    {{ else }}
-		    repoAbstract, err := repo.New(repository.Sqlite3{{.EntityName}}RepositoryConstructorArgs{DB: db, TagRepository: tagRepo})
+		    repoAbstract, err := repo.New(repository.{{UppercaseBeginning .DatabaseName}}{{.EntityName}}RepositoryConstructorArgs{DB: db, TagRepository: tagRepo})
 		    {{ end }}
 			assert.NoErrorf(t, err, test.name)
 
-			repo = repoAbstract.(*repository.Sqlite3{{.EntityName}}Repository)
+			repo = repoAbstract.(*repository.{{UppercaseBeginning .DatabaseName}}{{.EntityName}}Repository)
 
 			if test.insertBeforeCheck {
 				err = repo.Add(context.Background(), test.models)
@@ -3383,28 +3417,31 @@ func TestSQL{{.EntityName}}RepositoryGetWhereTest(t *testing.T) {
 		test := test
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
+			defer testCommon.HandlePanic(t, test.name)
+
 			db, err := testCommon.GetDB()
-			assert.NoErrorf(t, err, test.name)
+            require.NoErrorf(t, err, test.name+", db open")
+            defer db.Close()
 
 			{{if or (eq .EntityName "Bookmark") (eq .EntityName "Document") }}
-		    tagRepo := new(repository.Sqlite3TagRepository)
+		    tagRepo := new(repository.{{UppercaseBeginning .DatabaseName}}TagRepository)
 
-			tagRepoAbstract, err := tagRepo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db})
+			tagRepoAbstract, err := tagRepo.New(repository.{{UppercaseBeginning .DatabaseName}}TagRepositoryConstructorArgs{DB: db})
 			assert.NoErrorf(t, err, test.name)
 
-			tagRepo = tagRepoAbstract.(*repository.Sqlite3TagRepository)
+			tagRepo = tagRepoAbstract.(*repository.{{UppercaseBeginning .DatabaseName}}TagRepository)
 		    {{ end }}
 
-			repo := new(repository.Sqlite3{{.EntityName}}Repository)
+			repo := new(repository.{{UppercaseBeginning .DatabaseName}}{{.EntityName}}Repository)
 
 			{{if and (ne .EntityName "Bookmark") (ne .EntityName "Document") }}
-		    repoAbstract, err := repo.New(repository.Sqlite3{{.EntityName}}RepositoryConstructorArgs{DB: db })
+		    repoAbstract, err := repo.New(repository.{{UppercaseBeginning .DatabaseName}}{{.EntityName}}RepositoryConstructorArgs{DB: db })
 		    {{ else }}
-		    repoAbstract, err := repo.New(repository.Sqlite3{{.EntityName}}RepositoryConstructorArgs{DB: db, TagRepository: tagRepo})
+		    repoAbstract, err := repo.New(repository.{{UppercaseBeginning .DatabaseName}}{{.EntityName}}RepositoryConstructorArgs{DB: db, TagRepository: tagRepo})
 		    {{ end }}
 			assert.NoErrorf(t, err, test.name)
 
-			repo = repoAbstract.(*repository.Sqlite3{{.EntityName}}Repository)
+			repo = repoAbstract.(*repository.{{UppercaseBeginning .DatabaseName}}{{.EntityName}}Repository)
 
 			if test.insertBeforeCheck {
 				err = repo.Add(context.Background(), test.models)
@@ -3645,28 +3682,31 @@ func TestSQL{{.EntityName}}RepositoryGetFirstWhereTest(t *testing.T) {
 		test := test
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
+			defer testCommon.HandlePanic(t, test.name)
+
 			db, err := testCommon.GetDB()
-			assert.NoErrorf(t, err, test.name)
+            require.NoErrorf(t, err, test.name+", db open")
+            defer db.Close()
 
 			{{if or (eq .EntityName "Bookmark") (eq .EntityName "Document") }}
-		    tagRepo := new(repository.Sqlite3TagRepository)
+		    tagRepo := new(repository.{{UppercaseBeginning .DatabaseName}}TagRepository)
 
-			tagRepoAbstract, err := tagRepo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db})
+			tagRepoAbstract, err := tagRepo.New(repository.{{UppercaseBeginning .DatabaseName}}TagRepositoryConstructorArgs{DB: db})
 			assert.NoErrorf(t, err, test.name)
 
-			tagRepo = tagRepoAbstract.(*repository.Sqlite3TagRepository)
+			tagRepo = tagRepoAbstract.(*repository.{{UppercaseBeginning .DatabaseName}}TagRepository)
 		    {{ end }}
 
-			repo := new(repository.Sqlite3{{.EntityName}}Repository)
+			repo := new(repository.{{UppercaseBeginning .DatabaseName}}{{.EntityName}}Repository)
 
 			{{if and (ne .EntityName "Bookmark") (ne .EntityName "Document") }}
-		    repoAbstract, err := repo.New(repository.Sqlite3{{.EntityName}}RepositoryConstructorArgs{DB: db })
+		    repoAbstract, err := repo.New(repository.{{UppercaseBeginning .DatabaseName}}{{.EntityName}}RepositoryConstructorArgs{DB: db })
 		    {{ else }}
-		    repoAbstract, err := repo.New(repository.Sqlite3{{.EntityName}}RepositoryConstructorArgs{DB: db, TagRepository: tagRepo})
+		    repoAbstract, err := repo.New(repository.{{UppercaseBeginning .DatabaseName}}{{.EntityName}}RepositoryConstructorArgs{DB: db, TagRepository: tagRepo})
 		    {{ end }}
 			assert.NoErrorf(t, err, test.name)
 
-			repo = repoAbstract.(*repository.Sqlite3{{.EntityName}}Repository)
+			repo = repoAbstract.(*repository.{{UppercaseBeginning .DatabaseName}}{{.EntityName}}Repository)
 
 			if test.insertBeforeCheck {
 				err = repo.Add(context.Background(), test.models)
@@ -3765,28 +3805,31 @@ func TestSQL{{.EntityName}}RepositoryGetAllTest(t *testing.T) {
 		test := test
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
+			defer testCommon.HandlePanic(t, test.name)
+
 			db, err := testCommon.GetDB()
-			assert.NoErrorf(t, err, test.name)
+            require.NoErrorf(t, err, test.name+", db open")
+            defer db.Close()
 
 			{{if or (eq .EntityName "Bookmark") (eq .EntityName "Document") }}
-		    tagRepo := new(repository.Sqlite3TagRepository)
+		    tagRepo := new(repository.{{UppercaseBeginning .DatabaseName}}TagRepository)
 
-			tagRepoAbstract, err := tagRepo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db})
+			tagRepoAbstract, err := tagRepo.New(repository.{{UppercaseBeginning .DatabaseName}}TagRepositoryConstructorArgs{DB: db})
 			assert.NoErrorf(t, err, test.name)
 
-			tagRepo = tagRepoAbstract.(*repository.Sqlite3TagRepository)
+			tagRepo = tagRepoAbstract.(*repository.{{UppercaseBeginning .DatabaseName}}TagRepository)
 		    {{ end }}
 
-			repo := new(repository.Sqlite3{{.EntityName}}Repository)
+			repo := new(repository.{{UppercaseBeginning .DatabaseName}}{{.EntityName}}Repository)
 
 			{{if and (ne .EntityName "Bookmark") (ne .EntityName "Document") }}
-		    repoAbstract, err := repo.New(repository.Sqlite3{{.EntityName}}RepositoryConstructorArgs{DB: db })
+		    repoAbstract, err := repo.New(repository.{{UppercaseBeginning .DatabaseName}}{{.EntityName}}RepositoryConstructorArgs{DB: db })
 		    {{ else }}
-		    repoAbstract, err := repo.New(repository.Sqlite3{{.EntityName}}RepositoryConstructorArgs{DB: db, TagRepository: tagRepo})
+		    repoAbstract, err := repo.New(repository.{{UppercaseBeginning .DatabaseName}}{{.EntityName}}RepositoryConstructorArgs{DB: db, TagRepository: tagRepo})
 		    {{ end }}
 			assert.NoErrorf(t, err, test.name)
 
-			repo = repoAbstract.(*repository.Sqlite3{{.EntityName}}Repository)
+			repo = repoAbstract.(*repository.{{UppercaseBeginning .DatabaseName}}{{.EntityName}}Repository)
 
 			if test.insertBeforeCheck {
 				err = repo.Add(context.Background(), test.models)
@@ -3830,28 +3873,31 @@ func TestSQL{{.EntityName}}RepositoryAddTypeTest(t *testing.T) {
 		test := test
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
+			defer testCommon.HandlePanic(t, test.name)
+
 			db, err := testCommon.GetDB()
-			assert.NoErrorf(t, err, test.name)
+            require.NoErrorf(t, err, test.name+", db open")
+            defer db.Close()
 
 			{{if or (eq .EntityName "Bookmark") (eq .EntityName "Document") }}
-		    tagRepo := new(repository.Sqlite3TagRepository)
+		    tagRepo := new(repository.{{UppercaseBeginning .DatabaseName}}TagRepository)
 
-			tagRepoAbstract, err := tagRepo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db})
+			tagRepoAbstract, err := tagRepo.New(repository.{{UppercaseBeginning .DatabaseName}}TagRepositoryConstructorArgs{DB: db})
 			assert.NoErrorf(t, err, test.name)
 
-			tagRepo = tagRepoAbstract.(*repository.Sqlite3TagRepository)
+			tagRepo = tagRepoAbstract.(*repository.{{UppercaseBeginning .DatabaseName}}TagRepository)
 		    {{ end }}
 
-			repo := new(repository.Sqlite3{{.EntityName}}Repository)
+			repo := new(repository.{{UppercaseBeginning .DatabaseName}}{{.EntityName}}Repository)
 
 			{{if and (ne .EntityName "Bookmark") (ne .EntityName "Document") }}
-		    repoAbstract, err := repo.New(repository.Sqlite3{{.EntityName}}RepositoryConstructorArgs{DB: db })
+		    repoAbstract, err := repo.New(repository.{{UppercaseBeginning .DatabaseName}}{{.EntityName}}RepositoryConstructorArgs{DB: db })
 		    {{ else }}
-		    repoAbstract, err := repo.New(repository.Sqlite3{{.EntityName}}RepositoryConstructorArgs{DB: db, TagRepository: tagRepo})
+		    repoAbstract, err := repo.New(repository.{{UppercaseBeginning .DatabaseName}}{{.EntityName}}RepositoryConstructorArgs{DB: db, TagRepository: tagRepo})
 		    {{ end }}
 			assert.NoErrorf(t, err, test.name)
 
-			repo = repoAbstract.(*repository.Sqlite3{{.EntityName}}Repository)
+			repo = repoAbstract.(*repository.{{UppercaseBeginning .DatabaseName}}{{.EntityName}}Repository)
 
 			if test.preAddedType != nil {
 				err = repo.AddType(context.Background(), test.preAddedType)
@@ -3891,28 +3937,31 @@ func TestSQL{{.EntityName}}RepositoryUpdateTypeTest(t *testing.T) {
 		test := test
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
+			defer testCommon.HandlePanic(t, test.name)
+
 			db, err := testCommon.GetDB()
-			assert.NoErrorf(t, err, test.name)
+            require.NoErrorf(t, err, test.name+", db open")
+            defer db.Close()
 
 			{{if or (eq .EntityName "Bookmark") (eq .EntityName "Document") }}
-		    tagRepo := new(repository.Sqlite3TagRepository)
+		    tagRepo := new(repository.{{UppercaseBeginning .DatabaseName}}TagRepository)
 
-			tagRepoAbstract, err := tagRepo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db})
+			tagRepoAbstract, err := tagRepo.New(repository.{{UppercaseBeginning .DatabaseName}}TagRepositoryConstructorArgs{DB: db})
 			assert.NoErrorf(t, err, test.name)
 
-			tagRepo = tagRepoAbstract.(*repository.Sqlite3TagRepository)
+			tagRepo = tagRepoAbstract.(*repository.{{UppercaseBeginning .DatabaseName}}TagRepository)
 		    {{ end }}
 
-			repo := new(repository.Sqlite3{{.EntityName}}Repository)
+			repo := new(repository.{{UppercaseBeginning .DatabaseName}}{{.EntityName}}Repository)
 
 			{{if and (ne .EntityName "Bookmark") (ne .EntityName "Document") }}
-		    repoAbstract, err := repo.New(repository.Sqlite3{{.EntityName}}RepositoryConstructorArgs{DB: db })
+		    repoAbstract, err := repo.New(repository.{{UppercaseBeginning .DatabaseName}}{{.EntityName}}RepositoryConstructorArgs{DB: db })
 		    {{ else }}
-		    repoAbstract, err := repo.New(repository.Sqlite3{{.EntityName}}RepositoryConstructorArgs{DB: db, TagRepository: tagRepo})
+		    repoAbstract, err := repo.New(repository.{{UppercaseBeginning .DatabaseName}}{{.EntityName}}RepositoryConstructorArgs{DB: db, TagRepository: tagRepo})
 		    {{ end }}
 			assert.NoErrorf(t, err, test.name)
 
-			repo = repoAbstract.(*repository.Sqlite3{{.EntityName}}Repository)
+			repo = repoAbstract.(*repository.{{UppercaseBeginning .DatabaseName}}{{.EntityName}}Repository)
 
 			if test.insertBeforeUpdate {
 				err = repo.AddType(context.Background(), test.oldTypes)
@@ -3951,28 +4000,31 @@ func TestSQL{{.EntityName}}RepositoryDeleteTypeTest(t *testing.T) {
 		test := test
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
+			defer testCommon.HandlePanic(t, test.name)
+
 			db, err := testCommon.GetDB()
-			assert.NoErrorf(t, err, test.name)
+            require.NoErrorf(t, err, test.name+", db open")
+            defer db.Close()
 
 			{{if or (eq .EntityName "Bookmark") (eq .EntityName "Document") }}
-		    tagRepo := new(repository.Sqlite3TagRepository)
+		    tagRepo := new(repository.{{UppercaseBeginning .DatabaseName}}TagRepository)
 
-			tagRepoAbstract, err := tagRepo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db})
+			tagRepoAbstract, err := tagRepo.New(repository.{{UppercaseBeginning .DatabaseName}}TagRepositoryConstructorArgs{DB: db})
 			assert.NoErrorf(t, err, test.name)
 
-			tagRepo = tagRepoAbstract.(*repository.Sqlite3TagRepository)
+			tagRepo = tagRepoAbstract.(*repository.{{UppercaseBeginning .DatabaseName}}TagRepository)
 		    {{ end }}
 
-			repo := new(repository.Sqlite3{{.EntityName}}Repository)
+			repo := new(repository.{{UppercaseBeginning .DatabaseName}}{{.EntityName}}Repository)
 
 			{{if and (ne .EntityName "Bookmark") (ne .EntityName "Document") }}
-		    repoAbstract, err := repo.New(repository.Sqlite3{{.EntityName}}RepositoryConstructorArgs{DB: db })
+		    repoAbstract, err := repo.New(repository.{{UppercaseBeginning .DatabaseName}}{{.EntityName}}RepositoryConstructorArgs{DB: db })
 		    {{ else }}
-		    repoAbstract, err := repo.New(repository.Sqlite3{{.EntityName}}RepositoryConstructorArgs{DB: db, TagRepository: tagRepo})
+		    repoAbstract, err := repo.New(repository.{{UppercaseBeginning .DatabaseName}}{{.EntityName}}RepositoryConstructorArgs{DB: db, TagRepository: tagRepo})
 		    {{ end }}
 			assert.NoErrorf(t, err, test.name)
 
-			repo = repoAbstract.(*repository.Sqlite3{{.EntityName}}Repository)
+			repo = repoAbstract.(*repository.{{UppercaseBeginning .DatabaseName}}{{.EntityName}}Repository)
 
 			if test.preAddedTypes != nil {
 				err = repo.AddType(context.Background(), test.preAddedTypes)
@@ -3989,3 +4041,95 @@ func TestSQL{{.EntityName}}RepositoryDeleteTypeTest(t *testing.T) {
 	}
 }
 {{ end }}
+
+
+func TestSQL{{.EntityName}}RepositoryTagModelConverter(t *testing.T) {
+			t.Parallel()
+			defer testCommon.HandlePanic(t, t.Name())
+
+			db, err := testCommon.GetDB()
+            require.NoError(t, err, ", db open")
+            defer db.Close()
+
+			{{if or (eq .EntityName "Bookmark") (eq .EntityName "Document") }}
+		    tagRepo := new(repository.{{UppercaseBeginning .DatabaseName}}TagRepository)
+
+			tagRepoAbstract, err := tagRepo.New(repository.{{UppercaseBeginning .DatabaseName}}TagRepositoryConstructorArgs{DB: db})
+			assert.NoError(t, err)
+
+			tagRepo = tagRepoAbstract.(*repository.{{UppercaseBeginning .DatabaseName}}TagRepository)
+		    {{ end }}
+
+			repo := new(repository.{{UppercaseBeginning .DatabaseName}}{{.EntityName}}Repository)
+
+			{{if and (ne .EntityName "Bookmark") (ne .EntityName "Document") }}
+		    repoAbstract, err := repo.New(repository.{{UppercaseBeginning .DatabaseName}}{{.EntityName}}RepositoryConstructorArgs{DB: db })
+		    {{ else }}
+		    repoAbstract, err := repo.New(repository.{{UppercaseBeginning .DatabaseName}}{{.EntityName}}RepositoryConstructorArgs{DB: db, TagRepository: tagRepo})
+		    {{ end }}
+			assert.NoError(t, err)
+
+			repo = repoAbstract.(*repository.{{UppercaseBeginning .DatabaseName}}{{.EntityName}}Repository)
+
+            parent1 :=&domain.Tag{
+                Tag:        "Software development",
+                ParentPath: []*domain.Tag{},
+                Subtags:    []*domain.Tag{},
+                ID:         1,
+            }
+
+            parent2 :=&domain.Tag{
+                Tag:        "Computer science",
+                ParentPath: []*domain.Tag{},
+                Subtags:    []*domain.Tag{},
+                ID:         2,
+            }
+
+            child1 := &domain.Tag{
+                Tag:        "Golang",
+                ParentPath: []*domain.Tag{},
+                Subtags:    []*domain.Tag{},
+                ID:         3,
+            }
+
+            child2 := &domain.Tag{
+                Tag:        "CPP",
+                ParentPath: []*domain.Tag{},
+                Subtags:    []*domain.Tag{},
+                ID:         4,
+            }
+
+            original := &domain.Tag{
+                Tag:        "Programming languages",
+                ParentPath: []*domain.Tag{},
+                Subtags:    []*domain.Tag{},
+                ID:         5,
+            }
+
+            original.AddChildren([]*domain.Tag{child1, child2})
+            original.AddDirectParent(parent2)
+            parent2.AddDirectParent(parent1)
+
+            {{if or (eq .EntityName "Bookmark") (eq .EntityName "Document") }}
+            {{/* TODO: Should we add all except their reference columns (AddMinimal() or AddSafe(), which does a two pass insert) */}}
+            err = repo.GetTagRepository().Add(context.Background(),  []*domain.Tag{parent1, parent2, child1, child2, original} )
+            {{ else }}
+            err = repo.Add(context.Background(),  []*domain.Tag{parent1, parent2, original, child1, child2} )
+            {{ end }}
+            assert.NoError(t, err)
+
+            {{if or (eq .EntityName "Bookmark") (eq .EntityName "Document") }}
+            repositoryModel, err := repo.GetTagRepository().TagDomainToRepositoryModel(context.Background(), original)
+            {{ else }}
+            repositoryModel, err := repo.TagDomainToRepositoryModel(context.Background(), original)
+            {{ end }}
+            assert.NoError(t, err)
+
+            {{if or (eq .EntityName "Bookmark") (eq .EntityName "Document") }}
+            convertedBack, err := repo.GetTagRepository().TagRepositoryToDomainModel(context.Background(), repositoryModel.(*repository.Tag))
+            {{ else }}
+            convertedBack, err := repo.TagRepositoryToDomainModel(context.Background(), repositoryModel.(*repository.Tag))
+            {{ end }}
+            assert.NoError(t, err)
+            assert.EqualValues(t, original, convertedBack)
+}

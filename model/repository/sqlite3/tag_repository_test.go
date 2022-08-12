@@ -3,6 +3,7 @@ package repository_test
 import (
 	"context"
 	"testing"
+    
 
 	"github.com/JonasMuehlmann/bntp.go/internal/helper"
 	"github.com/JonasMuehlmann/bntp.go/model"
@@ -12,6 +13,7 @@ import (
 	testCommon "github.com/JonasMuehlmann/bntp.go/test"
 	"github.com/JonasMuehlmann/optional.go"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestSQLTagRepositoryAddTest(t *testing.T) {
@@ -30,53 +32,72 @@ func TestSQLTagRepositoryAddTest(t *testing.T) {
 			name: "Input containing nil value", models: []*domain.Tag{nil}, err: helper.NilInputError{},
 		},
 		{
-			name: "One default-constructed input", models: []*domain.Tag{{}},
+			name: "One default-constructed input", models: []*domain.Tag{{}}, err: helper.NilInputError{},
 		},
 		{
 			name: "Two regular inputs, non-existent dependencies", err: repositoryCommon.ReferenceToNonExistentDependencyError{}, models: []*domain.Tag{
 				{
+					
+					
 
-					Tag:        "Programming",
-					ParentPath: []*domain.Tag{},
-					Subtags: []*domain.Tag{{
-						// This tag does not exist
-						Tag:        "Go",
+					
+						Tag:        "Programming",
 						ParentPath: []*domain.Tag{},
-						Subtags:    []*domain.Tag{},
-						ID:         2,
-					}},
-					ID: 1,
+						Subtags:    []*domain.Tag{{
+                            // This tag does not exist
+                            Tag:        "Go",
+                            ParentPath: []*domain.Tag{},
+                            Subtags:    []*domain.Tag{},
+                            ID:         2,
+                        }},
+						ID:         1,
+					
 				},
 				{
+					
+					
 
-					Tag:        "Operating Systems",
-					ParentPath: []*domain.Tag{},
-					Subtags: []*domain.Tag{{
-						// This tag does not exist
-						Tag:        "Linux",
+					
+						Tag:        "Operating Systems",
 						ParentPath: []*domain.Tag{},
-						Subtags:    []*domain.Tag{},
-						ID:         4,
-					}},
-					ID: 3,
+						Subtags:    []*domain.Tag{{
+                            // This tag does not exist
+                            Tag:        "Linux",
+                            ParentPath: []*domain.Tag{},
+                            Subtags:    []*domain.Tag{},
+                            ID:         4,
+                        }},
+						ID:         3,
+
+					
 				},
 			},
 		},
 		{
 			name: "Two minimal inputs", models: []*domain.Tag{
 				{
+					
+					
 
-					Tag:        "Programming",
-					ParentPath: []*domain.Tag{},
-					Subtags:    []*domain.Tag{},
-					ID:         1,
+					
+						Tag:        "Programming",
+						ParentPath: []*domain.Tag{},
+						Subtags:    []*domain.Tag{},
+						ID:         1,
+
+					
 				},
 				{
+					
+					
 
-					Tag:        "Operating Systems",
-					ParentPath: []*domain.Tag{},
-					Subtags:    []*domain.Tag{},
-					ID:         3,
+					
+						Tag:        "Operating Systems",
+						ParentPath: []*domain.Tag{},
+						Subtags:    []*domain.Tag{},
+						ID:         3,
+
+					
 				},
 			},
 		},
@@ -86,13 +107,19 @@ func TestSQLTagRepositoryAddTest(t *testing.T) {
 		test := test
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
+			defer testCommon.HandlePanic(t, test.name)
+
 			db, err := testCommon.GetDB()
-			assert.NoErrorf(t, err, test.name)
+            require.NoErrorf(t, err, test.name+", db open")
+            defer db.Close()
+
+			
 
 			repo := new(repository.Sqlite3TagRepository)
 
-			repoAbstract, err := repo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db})
-
+			
+		    repoAbstract, err := repo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db })
+		    
 			assert.NoErrorf(t, err, test.name)
 
 			repo = repoAbstract.(*repository.Sqlite3TagRepository)
@@ -124,53 +151,73 @@ func TestSQLTagRepositoryReplaceTest(t *testing.T) {
 			name: "Input containing nil value", models: []*domain.Tag{nil}, err: helper.NilInputError{},
 		},
 		{
-			name: "One default-constructed input", models: []*domain.Tag{{}}, err: helper.IneffectiveOperationError{},
+			name: "One default-constructed input", models: []*domain.Tag{{}}, err: helper.NilInputError{},
 		},
 		{
 			name: "Two existing minimal inputs, adding non-existent dependencies", err: repositoryCommon.ReferenceToNonExistentDependencyError{},
 			previousModels: []*domain.Tag{
 				{
+					
+					
 
-					Tag:        "Programming",
-					ParentPath: []*domain.Tag{},
-					Subtags:    []*domain.Tag{},
-					ID:         1,
+					
+						Tag:        "Programming",
+						ParentPath: []*domain.Tag{},
+						Subtags:    []*domain.Tag{},
+						ID:         1,
+
+					
 				},
 				{
+					
+					
 
-					Tag:        "Operating Systems",
-					ParentPath: []*domain.Tag{},
-					Subtags:    []*domain.Tag{},
-					ID:         3,
+					
+						Tag:        "Operating Systems",
+						ParentPath: []*domain.Tag{},
+						Subtags:    []*domain.Tag{},
+						ID:         3,
+
+					
 				},
 			},
 
 			models: []*domain.Tag{
 				{
+					
+					
 
-					Tag:        "Programming",
-					ParentPath: []*domain.Tag{},
-					Subtags: []*domain.Tag{{
-						// This tag does not exist
-						Tag:        "Go",
+					
+						Tag:        "Programming",
 						ParentPath: []*domain.Tag{},
-						Subtags:    []*domain.Tag{},
-						ID:         2,
-					}},
-					ID: 1,
+						Subtags:    []*domain.Tag{{
+                            // This tag does not exist
+                            Tag:        "Go",
+                            ParentPath: []*domain.Tag{},
+                            Subtags:    []*domain.Tag{},
+                            ID:         2,
+                        }},
+						ID:         1,
+
+					
 				},
 				{
+					
+					
 
-					Tag:        "Operating Systems",
-					ParentPath: []*domain.Tag{},
-					Subtags: []*domain.Tag{{
-						// This tag does not exist
-						Tag:        "Linux",
+					
+						Tag:        "Operating Systems",
 						ParentPath: []*domain.Tag{},
-						Subtags:    []*domain.Tag{},
-						ID:         4,
-					}},
-					ID: 3,
+						Subtags:    []*domain.Tag{{
+                            // This tag does not exist
+                            Tag:        "Linux",
+                            ParentPath: []*domain.Tag{},
+                            Subtags:    []*domain.Tag{},
+                            ID:         4,
+                        }},
+						ID:         3,
+
+					
 				},
 			},
 		},
@@ -178,47 +225,69 @@ func TestSQLTagRepositoryReplaceTest(t *testing.T) {
 			name: "Two existing minimal inputs, adding duplicated values", err: helper.DuplicateInsertionError{},
 			previousModels: []*domain.Tag{
 				{
+					
+					
 
-					Tag:        "Programming",
-					ParentPath: []*domain.Tag{},
-					Subtags:    []*domain.Tag{},
-					ID:         1,
+					
+						Tag:        "Programming",
+						ParentPath: []*domain.Tag{},
+						Subtags:    []*domain.Tag{},
+						ID:         1,
+
+
+					
 				},
 				{
+					
+					
 
-					Tag:        "Operating Systems",
-					ParentPath: []*domain.Tag{},
-					Subtags:    []*domain.Tag{},
-					ID:         3,
+					
+						Tag:        "Operating Systems",
+						ParentPath: []*domain.Tag{},
+						Subtags:    []*domain.Tag{},
+						ID:         3,
+
+
+					
 				},
 			},
 
 			models: []*domain.Tag{
 				{
+					
+					
 
-					Tag:        "Programming",
-					ParentPath: []*domain.Tag{},
-					Subtags: []*domain.Tag{{
-						// This tag does not exist
-						Tag:        "Go",
+					
+						Tag:        "Programming",
 						ParentPath: []*domain.Tag{},
-						Subtags:    []*domain.Tag{},
-						ID:         2,
-					}},
-					ID: 1,
+						Subtags:    []*domain.Tag{{
+                            // This tag does not exist
+                            Tag:        "Go",
+                            ParentPath: []*domain.Tag{},
+                            Subtags:    []*domain.Tag{},
+                            ID:         2,
+                        }},
+						ID:         1,
+
+					
 				},
 				{
+					
+					
 
-					Tag:        "Operating Systems",
-					ParentPath: []*domain.Tag{},
-					Subtags: []*domain.Tag{{
-						// This tag does not exist
-						Tag:        "Linux",
+					
+						Tag:        "Operating Systems",
 						ParentPath: []*domain.Tag{},
-						Subtags:    []*domain.Tag{},
-						ID:         4,
-					}},
-					ID: 3,
+						Subtags:    []*domain.Tag{{
+                            // This tag does not exist
+                            Tag:        "Linux",
+                            ParentPath: []*domain.Tag{},
+                            Subtags:    []*domain.Tag{},
+                            ID:         4,
+                        }},
+						ID:         3,
+
+					
 				},
 			},
 		},
@@ -226,34 +295,58 @@ func TestSQLTagRepositoryReplaceTest(t *testing.T) {
 		{
 			name: "Two existing minimal inputs", models: []*domain.Tag{
 				{
+					
+					
 
-					Tag:        "Programming",
-					ParentPath: []*domain.Tag{},
-					Subtags:    []*domain.Tag{},
-					ID:         1,
+					
+						Tag:        "Programming",
+						ParentPath: []*domain.Tag{},
+						Subtags:    []*domain.Tag{},
+						ID:         1,
+
+
+					
 				},
 				{
+					
+					
 
-					Tag:        "Operating Systems",
-					ParentPath: []*domain.Tag{},
-					Subtags:    []*domain.Tag{},
-					ID:         3,
+					
+						Tag:        "Operating Systems",
+						ParentPath: []*domain.Tag{},
+						Subtags:    []*domain.Tag{},
+						ID:         3,
+
+
+					
 				},
 			},
 			previousModels: []*domain.Tag{
 				{
+					
+					
 
-					Tag:        "Programming",
-					ParentPath: []*domain.Tag{},
-					Subtags:    []*domain.Tag{},
-					ID:         1,
+					
+						Tag:        "Programming",
+						ParentPath: []*domain.Tag{},
+						Subtags:    []*domain.Tag{},
+						ID:         1,
+
+
+					
 				},
 				{
+					
+					
 
-					Tag:        "Operating Systems",
-					ParentPath: []*domain.Tag{},
-					Subtags:    []*domain.Tag{},
-					ID:         3,
+					
+						Tag:        "Operating Systems",
+						ParentPath: []*domain.Tag{},
+						Subtags:    []*domain.Tag{},
+						ID:         3,
+
+
+					
 				},
 			},
 		},
@@ -263,13 +356,19 @@ func TestSQLTagRepositoryReplaceTest(t *testing.T) {
 		test := test
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
+			defer testCommon.HandlePanic(t, test.name)
+
 			db, err := testCommon.GetDB()
-			assert.NoErrorf(t, err, test.name)
+            require.NoErrorf(t, err, test.name+", db open")
+            defer db.Close()
+
+			
 
 			repo := new(repository.Sqlite3TagRepository)
 
-			repoAbstract, err := repo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db})
-
+			
+		    repoAbstract, err := repo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db })
+		    
 			assert.NoErrorf(t, err, test.name)
 
 			repo = repoAbstract.(*repository.Sqlite3TagRepository)
@@ -306,53 +405,75 @@ func TestSQLTagRepositoryUpsertTest(t *testing.T) {
 			name: "Input containing nil value", models: []*domain.Tag{nil}, err: helper.NilInputError{},
 		},
 		{
-			name: "One default-constructed input", models: []*domain.Tag{{}},
+			name: "One default-constructed input", models: []*domain.Tag{{}}, err: helper.NilInputError{},
 		},
 		{
 			name: "Two existing inputs, non-existent dependencies", err: repositoryCommon.ReferenceToNonExistentDependencyError{},
 			previousModels: []*domain.Tag{
 				{
+					
+					
 
-					Tag:        "Programming",
-					ParentPath: []*domain.Tag{},
-					Subtags:    []*domain.Tag{},
-					ID:         1,
+					
+						Tag:        "Programming",
+						ParentPath: []*domain.Tag{},
+						Subtags:    []*domain.Tag{},
+						ID:         1,
+
+
+					
 				},
 				{
+					
+					
 
-					Tag:        "Operating Systems",
-					ParentPath: []*domain.Tag{},
-					Subtags:    []*domain.Tag{},
-					ID:         3,
+					
+						Tag:        "Operating Systems",
+						ParentPath: []*domain.Tag{},
+						Subtags:    []*domain.Tag{},
+						ID:         3,
+
+
+					
 				},
 			},
 
 			models: []*domain.Tag{
 				{
+					
+					
 
-					Tag:        "Programming",
-					ParentPath: []*domain.Tag{},
-					Subtags: []*domain.Tag{{
-						// This tag does not exist
-						Tag:        "Go",
+					
+						Tag:        "Programming",
 						ParentPath: []*domain.Tag{},
-						Subtags:    []*domain.Tag{},
-						ID:         2,
-					}},
-					ID: 1,
+						Subtags:    []*domain.Tag{{
+                            // This tag does not exist
+                            Tag:        "Go",
+                            ParentPath: []*domain.Tag{},
+                            Subtags:    []*domain.Tag{},
+                            ID:         2,
+                        }},
+						ID:         1,
+
+					
 				},
 				{
+					
+					
 
-					Tag:        "Operating Systems",
-					ParentPath: []*domain.Tag{},
-					Subtags: []*domain.Tag{{
-						// This tag does not exist
-						Tag:        "Linux",
+					
+						Tag:        "Operating Systems",
 						ParentPath: []*domain.Tag{},
-						Subtags:    []*domain.Tag{},
-						ID:         4,
-					}},
-					ID: 3,
+						Subtags:    []*domain.Tag{{
+                            // This tag does not exist
+                            Tag:        "Linux",
+                            ParentPath: []*domain.Tag{},
+                            Subtags:    []*domain.Tag{},
+                            ID:         4,
+                        }},
+						ID:         3,
+
+					
 				},
 			},
 		},
@@ -360,35 +481,59 @@ func TestSQLTagRepositoryUpsertTest(t *testing.T) {
 			name: "Two existing inputs, adding duplicated values", err: helper.DuplicateInsertionError{},
 			previousModels: []*domain.Tag{
 				{
+					
+					
 
-					Tag:        "Programming",
-					ParentPath: []*domain.Tag{},
-					Subtags:    []*domain.Tag{},
-					ID:         1,
+					
+						Tag:        "Programming",
+						ParentPath: []*domain.Tag{},
+						Subtags:    []*domain.Tag{},
+						ID:         1,
+
+
+					
 				},
 				{
+					
+					
 
-					Tag:        "Operating Systems",
-					ParentPath: []*domain.Tag{},
-					Subtags:    []*domain.Tag{},
-					ID:         3,
+					
+						Tag:        "Operating Systems",
+						ParentPath: []*domain.Tag{},
+						Subtags:    []*domain.Tag{},
+						ID:         3,
+
+
+					
 				},
 			},
 
 			models: []*domain.Tag{
 				{
+					
+					
 
-					Tag:        "Programming",
-					ParentPath: []*domain.Tag{},
-					Subtags:    []*domain.Tag{},
-					ID:         1,
+					
+						Tag:        "Programming",
+						ParentPath: []*domain.Tag{},
+						Subtags:    []*domain.Tag{},
+						ID:         1,
+
+
+					
 				},
 				{
+					
+					
 
-					Tag:        "Programming",
-					ParentPath: []*domain.Tag{},
-					Subtags:    []*domain.Tag{},
-					ID:         3,
+					
+						Tag:        "Programming",
+						ParentPath: []*domain.Tag{},
+						Subtags:    []*domain.Tag{},
+						ID:         3,
+
+
+					
 				},
 			},
 		},
@@ -396,34 +541,58 @@ func TestSQLTagRepositoryUpsertTest(t *testing.T) {
 			name: "Two existing minimal inputs",
 			previousModels: []*domain.Tag{
 				{
+					
+					
 
-					Tag:        "Programming",
-					ParentPath: []*domain.Tag{},
-					Subtags:    []*domain.Tag{},
-					ID:         1,
+					
+						Tag:        "Programming",
+						ParentPath: []*domain.Tag{},
+						Subtags:    []*domain.Tag{},
+						ID:         1,
+
+
+					
 				},
 				{
+					
+					
 
-					Tag:        "Operating Systems",
-					ParentPath: []*domain.Tag{},
-					Subtags:    []*domain.Tag{},
-					ID:         3,
+					
+						Tag:        "Operating Systems",
+						ParentPath: []*domain.Tag{},
+						Subtags:    []*domain.Tag{},
+						ID:         3,
+
+
+					
 				},
 			},
 			models: []*domain.Tag{
 				{
+					
+					
 
-					Tag:        "Programming",
-					ParentPath: []*domain.Tag{},
-					Subtags:    []*domain.Tag{},
-					ID:         1,
+					
+						Tag:        "Programming",
+						ParentPath: []*domain.Tag{},
+						Subtags:    []*domain.Tag{},
+						ID:         1,
+
+
+					
 				},
 				{
+					
+					
 
-					Tag:        "Operating Systems",
-					ParentPath: []*domain.Tag{},
-					Subtags:    []*domain.Tag{},
-					ID:         3,
+					
+						Tag:        "Operating Systems",
+						ParentPath: []*domain.Tag{},
+						Subtags:    []*domain.Tag{},
+						ID:         3,
+
+
+					
 				},
 			},
 		},
@@ -433,13 +602,19 @@ func TestSQLTagRepositoryUpsertTest(t *testing.T) {
 		test := test
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
+			defer testCommon.HandlePanic(t, test.name)
+
 			db, err := testCommon.GetDB()
-			assert.NoErrorf(t, err, test.name)
+            require.NoErrorf(t, err, test.name+", db open")
+            defer db.Close()
+
+			
 
 			repo := new(repository.Sqlite3TagRepository)
 
-			repoAbstract, err := repo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db})
-
+			
+		    repoAbstract, err := repo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db })
+		    
 			assert.NoErrorf(t, err, test.name)
 
 			repo = repoAbstract.(*repository.Sqlite3TagRepository)
@@ -480,40 +655,64 @@ func TestSQLTagRepositoryUpdateTest(t *testing.T) {
 			name: "Input containing nil value", models: []*domain.Tag{nil}, updater: &domain.TagUpdater{}, err: helper.NilInputError{},
 		},
 		{
-			name: "One default-constructed input", models: []*domain.Tag{{}}, updater: &domain.TagUpdater{}, err: helper.IneffectiveOperationError{},
+			name: "One default-constructed input", models: []*domain.Tag{{}}, updater: &domain.TagUpdater{}, err: helper.NilInputError{},
 		},
 		{
 			name: "Two existing minimal inputs, nop updater", updater: &domain.TagUpdater{}, err: helper.IneffectiveOperationError{},
 			previousModels: []*domain.Tag{
 				{
+					
+					
 
-					Tag:        "Programming",
-					ParentPath: []*domain.Tag{},
-					Subtags:    []*domain.Tag{},
-					ID:         1,
+					
+						Tag:        "Programming",
+						ParentPath: []*domain.Tag{},
+						Subtags:    []*domain.Tag{},
+						ID:         1,
+
+
+					
 				},
 				{
+					
+					
 
-					Tag:        "Operating Systems",
-					ParentPath: []*domain.Tag{},
-					Subtags:    []*domain.Tag{},
-					ID:         3,
+					
+						Tag:        "Operating Systems",
+						ParentPath: []*domain.Tag{},
+						Subtags:    []*domain.Tag{},
+						ID:         3,
+
+
+					
 				},
 			},
 			models: []*domain.Tag{
 				{
+					
+					
 
-					Tag:        "Programming",
-					ParentPath: []*domain.Tag{},
-					Subtags:    []*domain.Tag{},
-					ID:         1,
+					
+						Tag:        "Programming",
+						ParentPath: []*domain.Tag{},
+						Subtags:    []*domain.Tag{},
+						ID:         1,
+
+
+					
 				},
 				{
+					
+					
 
-					Tag:        "Operating Systems",
-					ParentPath: []*domain.Tag{},
-					Subtags:    []*domain.Tag{},
-					ID:         3,
+					
+						Tag:        "Operating Systems",
+						ParentPath: []*domain.Tag{},
+						Subtags:    []*domain.Tag{},
+						ID:         3,
+
+
+					
 				},
 			},
 		},
@@ -521,77 +720,124 @@ func TestSQLTagRepositoryUpdateTest(t *testing.T) {
 			name: "Two existing inputs, adding duplicated values", err: helper.DuplicateInsertionError{},
 			previousModels: []*domain.Tag{
 				{
+					
+					
 
-					Tag:        "Programming",
-					ParentPath: []*domain.Tag{},
-					Subtags:    []*domain.Tag{},
-					ID:         1,
+					
+						Tag:        "Programming",
+						ParentPath: []*domain.Tag{},
+						Subtags:    []*domain.Tag{},
+						ID:         1,
+
+
+					
 				},
 				{
+					
+					
 
-					Tag:        "Operating Systems",
-					ParentPath: []*domain.Tag{},
-					Subtags:    []*domain.Tag{},
-					ID:         3,
+					
+                        Tag:        "Operating Systems",
+						ParentPath: []*domain.Tag{},
+						Subtags:    []*domain.Tag{},
+						ID:         3,
+
+
+					
 				},
 			},
 
 			models: []*domain.Tag{
 				{
+					
+					
 
-					Tag:        "Programming",
-					ParentPath: []*domain.Tag{},
-					Subtags:    []*domain.Tag{},
-					ID:         1,
+					
+						Tag:        "Programming",
+						ParentPath: []*domain.Tag{},
+						Subtags:    []*domain.Tag{},
+						ID:         1,
+
+
+					
 				},
 				{
+					
+					
 
-					Tag:        "Programming",
-					ParentPath: []*domain.Tag{},
-					Subtags:    []*domain.Tag{},
-					ID:         3,
+					
+						Tag:        "Programming",
+						ParentPath: []*domain.Tag{},
+						Subtags:    []*domain.Tag{},
+						ID:         3,
+
+
+					
 				},
 			},
 		},
 
 		{
-
+            
 			name: "Two existing minimal inputs, prepend to Tag",
 			updater: &domain.TagUpdater{
-				Tag: optional.Make(model.UpdateOperation[string]{Operator: model.UpdatePrepend, Operand: "New "}),
+                Tag: optional.Make(model.UpdateOperation[string]{Operator: model.UpdatePrepend, Operand: "New "}),
 			},
-
+            
 			previousModels: []*domain.Tag{
 				{
+					
+					
 
-					Tag:        "Programming",
-					ParentPath: []*domain.Tag{},
-					Subtags:    []*domain.Tag{},
-					ID:         1,
+					
+						Tag:        "Programming",
+						ParentPath: []*domain.Tag{},
+						Subtags:    []*domain.Tag{},
+						ID:         1,
+
+					
 				},
 				{
+					
+					
 
-					Tag:        "Operating Systems",
-					ParentPath: []*domain.Tag{},
-					Subtags:    []*domain.Tag{},
-					ID:         3,
+					
+						Tag:        "Operating Systems",
+						ParentPath: []*domain.Tag{},
+						Subtags:    []*domain.Tag{},
+						ID:         3,
+
+
+					
 				},
 			},
 
 			models: []*domain.Tag{
 				{
+					
+					
 
-					Tag:        "Programming",
-					ParentPath: []*domain.Tag{},
-					Subtags:    []*domain.Tag{},
-					ID:         1,
+					
+						Tag:        "Programming",
+						ParentPath: []*domain.Tag{},
+						Subtags:    []*domain.Tag{},
+						ID:         1,
+
+
+					
 				},
 				{
+					
+					
 
-					Tag:        "Operating Systems",
-					ParentPath: []*domain.Tag{},
-					Subtags:    []*domain.Tag{},
-					ID:         3,
+					
+						Tag:        "Operating Systems",
+						ParentPath: []*domain.Tag{},
+						Subtags:    []*domain.Tag{},
+						ID:         3,
+
+
+					
 				},
 			},
 		},
@@ -601,13 +847,19 @@ func TestSQLTagRepositoryUpdateTest(t *testing.T) {
 		test := test
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
+			defer testCommon.HandlePanic(t, test.name)
+
 			db, err := testCommon.GetDB()
-			assert.NoErrorf(t, err, test.name)
+            require.NoErrorf(t, err, test.name+", db open")
+            defer db.Close()
+
+			
 
 			repo := new(repository.Sqlite3TagRepository)
 
-			repoAbstract, err := repo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db})
-
+			
+		    repoAbstract, err := repo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db })
+		    
 			assert.NoErrorf(t, err, test.name)
 
 			repo = repoAbstract.(*repository.Sqlite3TagRepository)
@@ -647,10 +899,10 @@ func TestSQLTagRepositoryUpdateWhereTest(t *testing.T) {
 			name: "Nil filter", updater: &domain.TagUpdater{}, filter: nil, err: helper.NilInputError{},
 		},
 		{
-
-			name: "Two existing minimal inputs, filter for tag of first, prepend to Tag", numAffectedRecords: 1, insertBeforeUpdate: true,
+            
+			name: "Two existing minimal inputs, filter for tag of first, prepend to Tag",numAffectedRecords: 1, insertBeforeUpdate: true,
 			updater: &domain.TagUpdater{
-				Tag: optional.Make(model.UpdateOperation[string]{Operator: model.UpdatePrepend, Operand: "New "}),
+                Tag: optional.Make(model.UpdateOperation[string]{Operator: model.UpdatePrepend, Operand: "New "}),
 			},
 			filter: &domain.TagFilter{
 				Tag: optional.Make(model.FilterOperation[string]{
@@ -658,69 +910,105 @@ func TestSQLTagRepositoryUpdateWhereTest(t *testing.T) {
 					Operand:  model.ScalarOperand[string]{Operand: "Programming"},
 				}),
 			},
-
+            
 			models: []*domain.Tag{
 				{
+					
+					
 
-					Tag:        "Programming",
-					ParentPath: []*domain.Tag{},
-					Subtags:    []*domain.Tag{},
-					ID:         1,
+					
+						Tag:        "Programming",
+						ParentPath: []*domain.Tag{},
+						Subtags:    []*domain.Tag{},
+						ID:         1,
+
+
+					
 				},
 				{
+					
+					
 
-					Tag:        "Operating Systems",
-					ParentPath: []*domain.Tag{},
-					Subtags:    []*domain.Tag{},
-					ID:         3,
+					
+						Tag:        "Operating Systems",
+						ParentPath: []*domain.Tag{},
+						Subtags:    []*domain.Tag{},
+						ID:         3,
+
+
+					
 				},
 			},
 		},
 		{
-
-			name: "Two existing minimal inputs, prepend to Tag", numAffectedRecords: 2, insertBeforeUpdate: true, filter: &domain.TagFilter{},
+            
+			name: "Two existing minimal inputs, prepend to Tag",numAffectedRecords: 2, insertBeforeUpdate: true, filter: &domain.TagFilter{},
 			updater: &domain.TagUpdater{
-				Tag: optional.Make(model.UpdateOperation[string]{Operator: model.UpdatePrepend, Operand: "New "}),
+                Tag: optional.Make(model.UpdateOperation[string]{Operator: model.UpdatePrepend, Operand: "New "}),
 			},
-
+            
 			models: []*domain.Tag{
 				{
+					
+					
 
-					Tag:        "Programming",
-					ParentPath: []*domain.Tag{},
-					Subtags:    []*domain.Tag{},
-					ID:         1,
+					
+						Tag:        "Programming",
+						ParentPath: []*domain.Tag{},
+						Subtags:    []*domain.Tag{},
+						ID:         1,
+
+
+					
 				},
 				{
+					
+					
 
-					Tag:        "Operating Systems",
-					ParentPath: []*domain.Tag{},
-					Subtags:    []*domain.Tag{},
-					ID:         3,
+					
+						Tag:        "Operating Systems",
+						ParentPath: []*domain.Tag{},
+						Subtags:    []*domain.Tag{},
+						ID:         3,
+
+
+					
 				},
 			},
 		},
 		{
 			name: "Two existing minimal inputs, adding duplicated values", numAffectedRecords: 0, insertBeforeUpdate: true, filter: &domain.TagFilter{}, err: helper.DuplicateInsertionError{},
-
+            
 			updater: &domain.TagUpdater{
-				Tag: optional.Make(model.UpdateOperation[string]{Operator: model.UpdatePrepend, Operand: "New "}),
+                Tag: optional.Make(model.UpdateOperation[string]{Operator: model.UpdatePrepend, Operand: "New "}),
 			},
-
+            
 			models: []*domain.Tag{
 				{
+					
+					
 
-					Tag:        "Programming",
-					ParentPath: []*domain.Tag{},
-					Subtags:    []*domain.Tag{},
-					ID:         1,
+					
+						Tag:        "Programming",
+						ParentPath: []*domain.Tag{},
+						Subtags:    []*domain.Tag{},
+						ID:         1,
+
+
+					
 				},
 				{
+					
+					
 
-					Tag:        "Operating Systems",
-					ParentPath: []*domain.Tag{},
-					Subtags:    []*domain.Tag{},
-					ID:         3,
+					
+						Tag:        "Operating Systems",
+						ParentPath: []*domain.Tag{},
+						Subtags:    []*domain.Tag{},
+						ID:         3,
+
+
+					
 				},
 			},
 		},
@@ -730,13 +1018,19 @@ func TestSQLTagRepositoryUpdateWhereTest(t *testing.T) {
 		test := test
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
+			defer testCommon.HandlePanic(t, test.name)
+
 			db, err := testCommon.GetDB()
-			assert.NoErrorf(t, err, test.name)
+            require.NoErrorf(t, err, test.name+", db open")
+            defer db.Close()
+
+			
 
 			repo := new(repository.Sqlite3TagRepository)
 
-			repoAbstract, err := repo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db})
-
+			
+		    repoAbstract, err := repo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db })
+		    
 			assert.NoErrorf(t, err, test.name)
 
 			repo = repoAbstract.(*repository.Sqlite3TagRepository)
@@ -774,23 +1068,35 @@ func TestSQLTagRepositoryDeleteTest(t *testing.T) {
 			name: "Input containing nil value", models: []*domain.Tag{nil}, err: helper.NilInputError{},
 		},
 		{
-			name: "One default-constructed input", models: []*domain.Tag{{}},
+			name: "One default-constructed input", models: []*domain.Tag{{}}, err: helper.NilInputError{},
 		},
 		{
 			name: "Two minimal inputs", insertBeforeDelete: true, models: []*domain.Tag{
 				{
+					
+					
 
-					Tag:        "Programming",
-					ParentPath: []*domain.Tag{},
-					Subtags:    []*domain.Tag{},
-					ID:         1,
+					
+						Tag:        "Programming",
+						ParentPath: []*domain.Tag{},
+						Subtags:    []*domain.Tag{},
+						ID:         1,
+
+
+					
 				},
 				{
+					
+					
 
-					Tag:        "Operating Systems",
-					ParentPath: []*domain.Tag{},
-					Subtags:    []*domain.Tag{},
-					ID:         3,
+					
+						Tag:        "Operating Systems",
+						ParentPath: []*domain.Tag{},
+						Subtags:    []*domain.Tag{},
+						ID:         3,
+
+
+					
 				},
 			},
 		},
@@ -800,13 +1106,19 @@ func TestSQLTagRepositoryDeleteTest(t *testing.T) {
 		test := test
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
+			defer testCommon.HandlePanic(t, test.name)
+
 			db, err := testCommon.GetDB()
-			assert.NoErrorf(t, err, test.name)
+            require.NoErrorf(t, err, test.name+", db open")
+            defer db.Close()
+
+			
 
 			repo := new(repository.Sqlite3TagRepository)
 
-			repoAbstract, err := repo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db})
-
+			
+		    repoAbstract, err := repo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db })
+		    
 			assert.NoErrorf(t, err, test.name)
 
 			repo = repoAbstract.(*repository.Sqlite3TagRepository)
@@ -839,7 +1151,7 @@ func TestSQLTagRepositoryDeleteWhereTest(t *testing.T) {
 			name: "Nil filter", filter: nil, err: helper.NilInputError{},
 		},
 		{
-
+            
 			name: "Two existing minimal inputs, filter for tag of first", numAffectedRecords: 1, insertBeforeDelete: true,
 			filter: &domain.TagFilter{
 				Tag: optional.Make(model.FilterOperation[string]{
@@ -847,26 +1159,38 @@ func TestSQLTagRepositoryDeleteWhereTest(t *testing.T) {
 					Operand:  model.ScalarOperand[string]{Operand: "Programming"},
 				}),
 			},
-
+            
 			models: []*domain.Tag{
 				{
+					
+					
 
-					Tag:        "Programming",
-					ParentPath: []*domain.Tag{},
-					Subtags:    []*domain.Tag{},
-					ID:         1,
+					
+						Tag:        "Programming",
+						ParentPath: []*domain.Tag{},
+						Subtags:    []*domain.Tag{},
+						ID:         1,
+
+
+					
 				},
 				{
+					
+					
 
-					Tag:        "Operating Systems",
-					ParentPath: []*domain.Tag{},
-					Subtags:    []*domain.Tag{},
-					ID:         3,
+					
+						Tag:        "Operating Systems",
+						ParentPath: []*domain.Tag{},
+						Subtags:    []*domain.Tag{},
+						ID:         3,
+
+
+					
 				},
 			},
 		},
 		{
-
+            
 			name: "Two non-existing minimal inputs, filter for tag of first",
 			filter: &domain.TagFilter{
 				Tag: optional.Make(model.FilterOperation[string]{
@@ -874,6 +1198,7 @@ func TestSQLTagRepositoryDeleteWhereTest(t *testing.T) {
 					Operand:  model.ScalarOperand[string]{Operand: "Programming"},
 				}),
 			},
+            
 		},
 	}
 
@@ -881,13 +1206,19 @@ func TestSQLTagRepositoryDeleteWhereTest(t *testing.T) {
 		test := test
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
+			defer testCommon.HandlePanic(t, test.name)
+
 			db, err := testCommon.GetDB()
-			assert.NoErrorf(t, err, test.name)
+            require.NoErrorf(t, err, test.name+", db open")
+            defer db.Close()
+
+			
 
 			repo := new(repository.Sqlite3TagRepository)
 
-			repoAbstract, err := repo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db})
-
+			
+		    repoAbstract, err := repo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db })
+		    
 			assert.NoErrorf(t, err, test.name)
 
 			repo = repoAbstract.(*repository.Sqlite3TagRepository)
@@ -921,7 +1252,7 @@ func TestSQLTagRepositoryCountWhereTest(t *testing.T) {
 			name: "Nil filter", filter: nil, err: helper.NilInputError{},
 		},
 		{
-
+            
 			name: "Two existing minimal inputs, filter for tag of first", numAffectedRecords: 1, insertBeforeCount: true,
 			filter: &domain.TagFilter{
 				Tag: optional.Make(model.FilterOperation[string]{
@@ -929,26 +1260,38 @@ func TestSQLTagRepositoryCountWhereTest(t *testing.T) {
 					Operand:  model.ScalarOperand[string]{Operand: "Programming"},
 				}),
 			},
-
+            
 			models: []*domain.Tag{
 				{
+					
+					
 
-					Tag:        "Programming",
-					ParentPath: []*domain.Tag{},
-					Subtags:    []*domain.Tag{},
-					ID:         1,
+					
+						Tag:        "Programming",
+						ParentPath: []*domain.Tag{},
+						Subtags:    []*domain.Tag{},
+						ID:         1,
+
+
+					
 				},
 				{
+					
+					
 
-					Tag:        "Operating Systems",
-					ParentPath: []*domain.Tag{},
-					Subtags:    []*domain.Tag{},
-					ID:         3,
+					
+						Tag:        "Operating Systems",
+						ParentPath: []*domain.Tag{},
+						Subtags:    []*domain.Tag{},
+						ID:         3,
+
+
+					
 				},
 			},
 		},
 		{
-
+            
 			name: "Two existing minimal inputs, filter for tag",
 			filter: &domain.TagFilter{
 				Tag: optional.Make(model.FilterOperation[string]{
@@ -956,20 +1299,27 @@ func TestSQLTagRepositoryCountWhereTest(t *testing.T) {
 					Operand:  model.ScalarOperand[string]{Operand: "Programming"},
 				}),
 			},
-		},
+            
+            },
 	}
 
 	for _, test := range tests {
 		test := test
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
+			defer testCommon.HandlePanic(t, test.name)
+
 			db, err := testCommon.GetDB()
-			assert.NoErrorf(t, err, test.name)
+            require.NoErrorf(t, err, test.name+", db open")
+            defer db.Close()
+
+			
 
 			repo := new(repository.Sqlite3TagRepository)
 
-			repoAbstract, err := repo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db})
-
+			
+		    repoAbstract, err := repo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db })
+		    
 			assert.NoErrorf(t, err, test.name)
 
 			repo = repoAbstract.(*repository.Sqlite3TagRepository)
@@ -1002,18 +1352,30 @@ func TestSQLTagRepositoryCountAllTest(t *testing.T) {
 			name: "Two existing minimal entities, filter for all", numRecords: 2, insertBeforeCount: true,
 			models: []*domain.Tag{
 				{
+					
+					
 
-					Tag:        "Programming",
-					ParentPath: []*domain.Tag{},
-					Subtags:    []*domain.Tag{},
-					ID:         1,
+					
+						Tag:        "Programming",
+						ParentPath: []*domain.Tag{},
+						Subtags:    []*domain.Tag{},
+						ID:         1,
+
+
+					
 				},
 				{
+					
+					
 
-					Tag:        "Operating Systems",
-					ParentPath: []*domain.Tag{},
-					Subtags:    []*domain.Tag{},
-					ID:         3,
+					
+						Tag:        "Operating Systems",
+						ParentPath: []*domain.Tag{},
+						Subtags:    []*domain.Tag{},
+						ID:         3,
+
+
+					
 				},
 			},
 		},
@@ -1021,18 +1383,30 @@ func TestSQLTagRepositoryCountAllTest(t *testing.T) {
 			name: "Two non-existing minimal entities, filter for all",
 			models: []*domain.Tag{
 				{
+					
+					
 
-					Tag:        "Programming",
-					ParentPath: []*domain.Tag{},
-					Subtags:    []*domain.Tag{},
-					ID:         1,
+					
+						Tag:        "Programming",
+						ParentPath: []*domain.Tag{},
+						Subtags:    []*domain.Tag{},
+						ID:         1,
+
+
+					
 				},
 				{
+					
+					
 
-					Tag:        "Operating Systems",
-					ParentPath: []*domain.Tag{},
-					Subtags:    []*domain.Tag{},
-					ID:         3,
+					
+						Tag:        "Operating Systems",
+						ParentPath: []*domain.Tag{},
+						Subtags:    []*domain.Tag{},
+						ID:         3,
+
+
+					
 				},
 			},
 		},
@@ -1042,13 +1416,19 @@ func TestSQLTagRepositoryCountAllTest(t *testing.T) {
 		test := test
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
+			defer testCommon.HandlePanic(t, test.name)
+
 			db, err := testCommon.GetDB()
-			assert.NoErrorf(t, err, test.name)
+            require.NoErrorf(t, err, test.name+", db open")
+            defer db.Close()
+
+			
 
 			repo := new(repository.Sqlite3TagRepository)
 
-			repoAbstract, err := repo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db})
-
+			
+		    repoAbstract, err := repo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db })
+		    
 			assert.NoErrorf(t, err, test.name)
 
 			repo = repoAbstract.(*repository.Sqlite3TagRepository)
@@ -1083,21 +1463,33 @@ func TestSQLTagRepositoryDoesExistTest(t *testing.T) {
 		{
 			name: "Existing minimal entity", doesExist: true, insertBeforeCheck: true,
 			model: &domain.Tag{
+				
+					
 
-				Tag:        "Programming",
-				ParentPath: []*domain.Tag{},
-				Subtags:    []*domain.Tag{},
-				ID:         1,
+					
+						Tag:        "Programming",
+						ParentPath: []*domain.Tag{},
+						Subtags:    []*domain.Tag{},
+						ID:         1,
+
+
+					
 			},
 		},
 		{
 			name: "Non-existing minimal entities",
 			model: &domain.Tag{
+				
+					
 
-				Tag:        "Programming",
-				ParentPath: []*domain.Tag{},
-				Subtags:    []*domain.Tag{},
-				ID:         1,
+					
+						Tag:        "Programming",
+						ParentPath: []*domain.Tag{},
+						Subtags:    []*domain.Tag{},
+						ID:         1,
+
+
+					
 			},
 		},
 	}
@@ -1106,13 +1498,19 @@ func TestSQLTagRepositoryDoesExistTest(t *testing.T) {
 		test := test
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
+			defer testCommon.HandlePanic(t, test.name)
+
 			db, err := testCommon.GetDB()
-			assert.NoErrorf(t, err, test.name)
+            require.NoErrorf(t, err, test.name+", db open")
+            defer db.Close()
+
+			
 
 			repo := new(repository.Sqlite3TagRepository)
 
-			repoAbstract, err := repo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db})
-
+			
+		    repoAbstract, err := repo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db })
+		    
 			assert.NoErrorf(t, err, test.name)
 
 			repo = repoAbstract.(*repository.Sqlite3TagRepository)
@@ -1146,34 +1544,46 @@ func TestSQLTagRepositoryDoesExistWhereTest(t *testing.T) {
 			name: "Nil input", filter: nil, err: helper.NilInputError{},
 		},
 		{
-
-			name: "Two existing minimal inputs, filter for tag of first", doesExist: true, insertBeforeCheck: true,
+            
+			name: "Two existing minimal inputs, filter for tag of first",doesExist: true, insertBeforeCheck: true,
 			filter: &domain.TagFilter{
 				Tag: optional.Make(model.FilterOperation[string]{
 					Operator: model.FilterEqual,
 					Operand:  model.ScalarOperand[string]{Operand: "Programming"},
 				}),
 			},
-
+            
 			models: []*domain.Tag{
 				{
+					
+					
 
-					Tag:        "Programming",
-					ParentPath: []*domain.Tag{},
-					Subtags:    []*domain.Tag{},
-					ID:         1,
+					
+						Tag:        "Programming",
+						ParentPath: []*domain.Tag{},
+						Subtags:    []*domain.Tag{},
+						ID:         1,
+
+
+					
 				},
 				{
+					
+					
 
-					Tag:        "Operating Systems",
-					ParentPath: []*domain.Tag{},
-					Subtags:    []*domain.Tag{},
-					ID:         3,
+					
+						Tag:        "Operating Systems",
+						ParentPath: []*domain.Tag{},
+						Subtags:    []*domain.Tag{},
+						ID:         3,
+
+
+					
 				},
 			},
 		},
 		{
-
+            
 			name: "Two existing minimal inputs, filter for tag of both", doesExist: true, insertBeforeCheck: true,
 			filter: &domain.TagFilter{
 				Tag: optional.Make(model.FilterOperation[string]{
@@ -1181,26 +1591,38 @@ func TestSQLTagRepositoryDoesExistWhereTest(t *testing.T) {
 					Operand:  model.ScalarOperand[string]{Operand: ""},
 				}),
 			},
-
+            
 			models: []*domain.Tag{
 				{
+					
+					
 
-					Tag:        "Programming",
-					ParentPath: []*domain.Tag{},
-					Subtags:    []*domain.Tag{},
-					ID:         1,
+					
+						Tag:        "Programming",
+						ParentPath: []*domain.Tag{},
+						Subtags:    []*domain.Tag{},
+						ID:         1,
+
+
+					
 				},
 				{
+					
+					
 
-					Tag:        "Operating Systems",
-					ParentPath: []*domain.Tag{},
-					Subtags:    []*domain.Tag{},
-					ID:         3,
+					
+						Tag:        "Operating Systems",
+						ParentPath: []*domain.Tag{},
+						Subtags:    []*domain.Tag{},
+						ID:         3,
+
+
+					
 				},
 			},
 		},
 		{
-
+            
 			name: "Two existing minimal inputs, filter for tag of first",
 			filter: &domain.TagFilter{
 				Tag: optional.Make(model.FilterOperation[string]{
@@ -1208,21 +1630,33 @@ func TestSQLTagRepositoryDoesExistWhereTest(t *testing.T) {
 					Operand:  model.ScalarOperand[string]{Operand: "Programming"},
 				}),
 			},
-
+            
 			models: []*domain.Tag{
 				{
+					
+					
 
-					Tag:        "Programming",
-					ParentPath: []*domain.Tag{},
-					Subtags:    []*domain.Tag{},
-					ID:         1,
+					
+						Tag:        "Programming",
+						ParentPath: []*domain.Tag{},
+						Subtags:    []*domain.Tag{},
+						ID:         1,
+
+
+					
 				},
 				{
+					
+					
 
-					Tag:        "Operating Systems",
-					ParentPath: []*domain.Tag{},
-					Subtags:    []*domain.Tag{},
-					ID:         3,
+					
+						Tag:        "Operating Systems",
+						ParentPath: []*domain.Tag{},
+						Subtags:    []*domain.Tag{},
+						ID:         3,
+
+
+					
 				},
 			},
 		},
@@ -1232,13 +1666,19 @@ func TestSQLTagRepositoryDoesExistWhereTest(t *testing.T) {
 		test := test
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
+			defer testCommon.HandlePanic(t, test.name)
+
 			db, err := testCommon.GetDB()
-			assert.NoErrorf(t, err, test.name)
+            require.NoErrorf(t, err, test.name+", db open")
+            defer db.Close()
+
+			
 
 			repo := new(repository.Sqlite3TagRepository)
 
-			repoAbstract, err := repo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db})
-
+			
+		    repoAbstract, err := repo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db })
+		    
 			assert.NoErrorf(t, err, test.name)
 
 			repo = repoAbstract.(*repository.Sqlite3TagRepository)
@@ -1273,92 +1713,129 @@ func TestSQLTagRepositoryGetWhereTest(t *testing.T) {
 		},
 		{
 			name: "Empty result", err: helper.IneffectiveOperationError{},
-
+            
 			filter: &domain.TagFilter{
 				Tag: optional.Make(model.FilterOperation[string]{
 					Operator: model.FilterEqual,
 					Operand:  model.ScalarOperand[string]{Operand: "Programming"},
 				}),
 			},
+            
 		},
 		{
-
-			name: "Two existing minimal inputs, filter for tag of first", numRecords: 1, insertBeforeCheck: true,
+            
+			name: "Two existing minimal inputs, filter for tag of first",numRecords: 1, insertBeforeCheck: true,
 			filter: &domain.TagFilter{
 				Tag: optional.Make(model.FilterOperation[string]{
 					Operator: model.FilterEqual,
 					Operand:  model.ScalarOperand[string]{Operand: "Programming"},
 				}),
 			},
-
+            
 			models: []*domain.Tag{
 				{
+					
+					
 
-					Tag:        "Programming",
-					ParentPath: []*domain.Tag{},
-					Subtags:    []*domain.Tag{},
-					ID:         1,
+					
+						Tag:        "Programming",
+						ParentPath: []*domain.Tag{},
+						Subtags:    []*domain.Tag{},
+						ID:         1,
+
+
+					
 				},
 				{
+					
+					
 
-					Tag:        "Operating Systems",
-					ParentPath: []*domain.Tag{},
-					Subtags:    []*domain.Tag{},
-					ID:         3,
+					
+						Tag:        "Operating Systems",
+						ParentPath: []*domain.Tag{},
+						Subtags:    []*domain.Tag{},
+						ID:         3,
+
+
+					
 				},
 			},
 		},
 		{
-
-			name: "Two existing minimal inputs, filter for tag of ", numRecords: 2, insertBeforeCheck: true,
+            
+			name: "Two existing minimal inputs, filter for tag of ",numRecords: 2, insertBeforeCheck: true,
 			filter: &domain.TagFilter{
 				Tag: optional.Make(model.FilterOperation[string]{
 					Operator: model.FilterNEqual,
 					Operand:  model.ScalarOperand[string]{Operand: ""},
 				}),
 			},
-
+            
 			models: []*domain.Tag{
 				{
+					
+					
 
-					Tag:        "Programming",
-					ParentPath: []*domain.Tag{},
-					Subtags:    []*domain.Tag{},
-					ID:         1,
+					
+						Tag:        "Programming",
+						ParentPath: []*domain.Tag{},
+						Subtags:    []*domain.Tag{},
+						ID:         1,
+
+
+					
 				},
 				{
+					
+					
 
-					Tag:        "Operating Systems",
-					ParentPath: []*domain.Tag{},
-					Subtags:    []*domain.Tag{},
-					ID:         3,
+					
+						Tag:        "Operating Systems",
+						ParentPath: []*domain.Tag{},
+						Subtags:    []*domain.Tag{},
+						ID:         3,
+
+
+					
 				},
 			},
 		},
 		{
-
-			name: "Two existing minimal inputs, filter for tag of first", numRecords: 1, insertBeforeCheck: true,
+            
+			name: "Two existing minimal inputs, filter for tag of first",numRecords: 1, insertBeforeCheck: true,
 			filter: &domain.TagFilter{
 				Tag: optional.Make(model.FilterOperation[string]{
 					Operator: model.FilterEqual,
 					Operand:  model.ScalarOperand[string]{Operand: "Programming"},
 				}),
 			},
-
+            
 			models: []*domain.Tag{
 				{
+					
+					
 
-					Tag:        "Programming",
-					ParentPath: []*domain.Tag{},
-					Subtags:    []*domain.Tag{},
-					ID:         1,
+					
+						Tag:        "Programming",
+						ParentPath: []*domain.Tag{},
+						Subtags:    []*domain.Tag{},
+						ID:         1,
+
+
+					
 				},
 				{
+					
+					
 
-					Tag:        "Operating Systems",
-					ParentPath: []*domain.Tag{},
-					Subtags:    []*domain.Tag{},
-					ID:         3,
+					
+						Tag:        "Operating Systems",
+						ParentPath: []*domain.Tag{},
+						Subtags:    []*domain.Tag{},
+						ID:         3,
+
+
+					
 				},
 			},
 		},
@@ -1368,13 +1845,19 @@ func TestSQLTagRepositoryGetWhereTest(t *testing.T) {
 		test := test
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
+			defer testCommon.HandlePanic(t, test.name)
+
 			db, err := testCommon.GetDB()
-			assert.NoErrorf(t, err, test.name)
+            require.NoErrorf(t, err, test.name+", db open")
+            defer db.Close()
+
+			
 
 			repo := new(repository.Sqlite3TagRepository)
 
-			repoAbstract, err := repo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db})
-
+			
+		    repoAbstract, err := repo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db })
+		    
 			assert.NoErrorf(t, err, test.name)
 
 			repo = repoAbstract.(*repository.Sqlite3TagRepository)
@@ -1408,82 +1891,113 @@ func TestSQLTagRepositoryGetFirstWhereTest(t *testing.T) {
 			name: "Nil filter", filter: nil, err: helper.NilInputError{},
 		},
 		{
-
-			name: "Two existing minimal inputs, filter for tag of first", numRecords: 1, insertBeforeCheck: true,
+            
+			name: "Two existing minimal inputs, filter for tag of first",numRecords: 1, insertBeforeCheck: true,
 			filter: &domain.TagFilter{
 				Tag: optional.Make(model.FilterOperation[string]{
 					Operator: model.FilterEqual,
 					Operand:  model.ScalarOperand[string]{Operand: "Programming"},
 				}),
 			},
-
+            
 			models: []*domain.Tag{
 				{
+					
+					
 
-					Tag:        "Programming",
-					ParentPath: []*domain.Tag{},
-					Subtags:    []*domain.Tag{},
-					ID:         1,
+					
+						Tag:        "Programming",
+						ParentPath: []*domain.Tag{},
+						Subtags:    []*domain.Tag{},
+						ID:         1,
+
+
+					
 				},
 				{
+					
+					
 
-					Tag:        "Operating Systems",
-					ParentPath: []*domain.Tag{},
-					Subtags:    []*domain.Tag{},
-					ID:         3,
+					
+						Tag:        "Operating Systems",
+						ParentPath: []*domain.Tag{},
+						Subtags:    []*domain.Tag{},
+						ID:         3,
+
+
+					
 				},
 			},
 		},
 		{
-
-			name: "Two existing minimal inputs, filter for tag of both", numRecords: 2, insertBeforeCheck: true,
+            
+			name: "Two existing minimal inputs, filter for tag of both",numRecords: 2, insertBeforeCheck: true,
 			filter: &domain.TagFilter{
 				Tag: optional.Make(model.FilterOperation[string]{
 					Operator: model.FilterNEqual,
 					Operand:  model.ScalarOperand[string]{Operand: ""},
 				}),
 			},
-
+            
 			models: []*domain.Tag{
 				{
+					
+					
 
-					Tag:        "Programming",
-					ParentPath: []*domain.Tag{},
-					Subtags:    []*domain.Tag{},
-					ID:         1,
+					
+						Tag:        "Programming",
+						ParentPath: []*domain.Tag{},
+						Subtags:    []*domain.Tag{},
+						ID:         1,
+
+
+					
 				},
 				{
+					
+					
 
-					Tag:        "Operating Systems",
-					ParentPath: []*domain.Tag{},
-					Subtags:    []*domain.Tag{},
-					ID:         3,
+					
+						Tag:        "Operating Systems",
+						ParentPath: []*domain.Tag{},
+						Subtags:    []*domain.Tag{},
+						ID:         3,
+
+
+					
 				},
 			},
 		},
 		{
-
-			name: "Two existing minimal inputs, filter for tag of first", err: &helper.IneffectiveOperationError{},
+            
+			name: "Two existing minimal inputs, filter for tag of first",err: &helper.IneffectiveOperationError{},
 			filter: &domain.TagFilter{
 				Tag: optional.Make(model.FilterOperation[string]{
 					Operator: model.FilterEqual,
 					Operand:  model.ScalarOperand[string]{Operand: "Programming"},
 				}),
 			},
-		},
+            
+        },
 	}
 
 	for _, test := range tests {
 		test := test
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
+			defer testCommon.HandlePanic(t, test.name)
+
 			db, err := testCommon.GetDB()
-			assert.NoErrorf(t, err, test.name)
+            require.NoErrorf(t, err, test.name+", db open")
+            defer db.Close()
+
+			
 
 			repo := new(repository.Sqlite3TagRepository)
 
-			repoAbstract, err := repo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db})
-
+			
+		    repoAbstract, err := repo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db })
+		    
 			assert.NoErrorf(t, err, test.name)
 
 			repo = repoAbstract.(*repository.Sqlite3TagRepository)
@@ -1515,18 +2029,30 @@ func TestSQLTagRepositoryGetAllTest(t *testing.T) {
 			name: "Two existing minimal entities", numRecords: 2, insertBeforeCheck: true,
 			models: []*domain.Tag{
 				{
+					
+					
 
-					Tag:        "Programming",
-					ParentPath: []*domain.Tag{},
-					Subtags:    []*domain.Tag{},
-					ID:         1,
+					
+						Tag:        "Programming",
+						ParentPath: []*domain.Tag{},
+						Subtags:    []*domain.Tag{},
+						ID:         1,
+
+
+					
 				},
 				{
+					
+					
 
-					Tag:        "Operating Systems",
-					ParentPath: []*domain.Tag{},
-					Subtags:    []*domain.Tag{},
-					ID:         3,
+					
+						Tag:        "Operating Systems",
+						ParentPath: []*domain.Tag{},
+						Subtags:    []*domain.Tag{},
+						ID:         3,
+
+
+					
 				},
 			},
 		},
@@ -1539,13 +2065,19 @@ func TestSQLTagRepositoryGetAllTest(t *testing.T) {
 		test := test
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
+			defer testCommon.HandlePanic(t, test.name)
+
 			db, err := testCommon.GetDB()
-			assert.NoErrorf(t, err, test.name)
+            require.NoErrorf(t, err, test.name+", db open")
+            defer db.Close()
+
+			
 
 			repo := new(repository.Sqlite3TagRepository)
 
-			repoAbstract, err := repo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db})
-
+			
+		    repoAbstract, err := repo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db })
+		    
 			assert.NoErrorf(t, err, test.name)
 
 			repo = repoAbstract.(*repository.Sqlite3TagRepository)
@@ -1564,4 +2096,82 @@ func TestSQLTagRepositoryGetAllTest(t *testing.T) {
 			assert.Equalf(t, test.numRecords, len(records), test.name)
 		})
 	}
+}
+
+
+
+
+func TestSQLTagRepositoryTagModelConverter(t *testing.T) {
+			t.Parallel()
+			defer testCommon.HandlePanic(t, t.Name())
+
+			db, err := testCommon.GetDB()
+            require.NoError(t, err, ", db open")
+            defer db.Close()
+
+			
+
+			repo := new(repository.Sqlite3TagRepository)
+
+			
+		    repoAbstract, err := repo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db })
+		    
+			assert.NoError(t, err)
+
+			repo = repoAbstract.(*repository.Sqlite3TagRepository)
+
+            parent1 :=&domain.Tag{
+                Tag:        "Software development",
+                ParentPath: []*domain.Tag{},
+                Subtags:    []*domain.Tag{},
+                ID:         1,
+            }
+
+            parent2 :=&domain.Tag{
+                Tag:        "Computer science",
+                ParentPath: []*domain.Tag{},
+                Subtags:    []*domain.Tag{},
+                ID:         2,
+            }
+
+            child1 := &domain.Tag{
+                Tag:        "Golang",
+                ParentPath: []*domain.Tag{},
+                Subtags:    []*domain.Tag{},
+                ID:         3,
+            }
+
+            child2 := &domain.Tag{
+                Tag:        "CPP",
+                ParentPath: []*domain.Tag{},
+                Subtags:    []*domain.Tag{},
+                ID:         4,
+            }
+
+            original := &domain.Tag{
+                Tag:        "Programming languages",
+                ParentPath: []*domain.Tag{},
+                Subtags:    []*domain.Tag{},
+                ID:         5,
+            }
+
+            original.AddChildren([]*domain.Tag{child1, child2})
+            original.AddDirectParent(parent2)
+            parent2.AddDirectParent(parent1)
+
+            
+            err = repo.Add(context.Background(),  []*domain.Tag{parent1, parent2, original, child1, child2} )
+            
+            assert.NoError(t, err)
+
+            
+            repositoryModel, err := repo.TagDomainToRepositoryModel(context.Background(), original)
+            
+            assert.NoError(t, err)
+
+            
+            convertedBack, err := repo.TagRepositoryToDomainModel(context.Background(), repositoryModel.(*repository.Tag))
+            
+            assert.NoError(t, err)
+            assert.EqualValues(t, original, convertedBack)
 }

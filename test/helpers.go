@@ -96,3 +96,9 @@ func ResetStdout(t *testing.T, reader *os.File, writer *os.File) {
 
 	os.Stdout = os.Stderr
 }
+
+func HandlePanic(t *testing.T, name string) {
+	if err := recover(); err != nil {
+		assert.Fail(t, name, err)
+	}
+}
