@@ -3,31 +3,54 @@ package test
 import (
 	"bufio"
 	"database/sql"
+	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	_ "embed"
 
+	"github.com/JonasMuehlmann/goaoi"
+	"github.com/google/uuid"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/stretchr/testify/assert"
 )
 
 var TestDataTempDir = filepath.Join(os.TempDir(), "bntp_tests")
 
-//go:embed bntp.sql
-var sqlSchema string
-
 // GetDB opens a copy of the test DB in memory.
 func GetDB() (*sql.DB, error) {
 	// Connect to new temporary database
-	db, err := sql.Open("sqlite3", ":memory:?_foreign_keys=1")
+	// db, err := sql.Open("sqlite3", ":memory:?_foreign_keys=1")
+	// db, err := sql.Open("sqlite3", "file::memory:?_foreign_keys=1")
+	db, err := sql.Open("sqlite3", "file:"+uuid.NewString()+"?mode=memory&cache=shared&_foreign_keys=1")
+	if err != nil {
+		return nil, err
+	}
+	// db.SetMaxIdleConns(1)
+	// db.SetMaxOpenConns(1)
+
+	cwd, err := os.Getwd()
 	if err != nil {
 		return nil, err
 	}
 
-	// Load schema
-	_, err = db.Exec(sqlSchema)
+	parentDirs := strings.Split(cwd, string(os.PathSeparator))
+
+	iProjectRoot, err := goaoi.FindIfSlice(parentDirs, goaoi.AreEqualPartial("bntp.go"))
+	if err != nil {
+		return nil, err
+	}
+
+	schemaFilePath := string(os.PathSeparator) + filepath.Join(filepath.Join(parentDirs[:iProjectRoot+1]...), "schema", "bntp_sqlite.sql")
+
+	sqlSchema, err := ioutil.ReadFile(schemaFilePath)
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = db.Exec(string(sqlSchema))
 	if err != nil {
 		return nil, err
 	}
