@@ -3,7 +3,7 @@ module github.com/JonasMuehlmann/bntp.go
 go 1.18
 
 require (
-	github.com/JonasMuehlmann/goaoi v1.4.0
+	github.com/JonasMuehlmann/goaoi v0.7.0
 	github.com/barweiss/go-tuple v1.0.2
 	github.com/friendsofgo/errors v0.9.2
 	github.com/ghodss/yaml v1.0.0
@@ -17,11 +17,11 @@ require (
 	github.com/spf13/cobra v1.4.0
 	github.com/spf13/viper v1.11.0
 	github.com/stoewer/go-strcase v1.2.0
-	github.com/stretchr/testify v1.7.2
+	github.com/stretchr/testify v1.8.0
 	github.com/volatiletech/null/v8 v8.1.2
 	github.com/volatiletech/sqlboiler/v4 v4.10.2
 	github.com/volatiletech/strmangle v0.0.3
-	golang.org/x/exp v0.0.0-20220414153411-bcd21879b8fd
+	golang.org/x/exp v0.0.0-20220706164943-b4a6d9510983
 )
 
 require (
@@ -34,6 +34,7 @@ require (
 	github.com/Azure/go-autorest/logger v0.2.1 // indirect
 	github.com/Azure/go-autorest/tracing v0.6.0 // indirect
 	github.com/Azure/go-ntlmssp v0.0.0-20200615164410-66371956d46c // indirect
+	github.com/JonasMuehlmann/datastructures.go v0.23.0 // indirect
 	github.com/Max-Sum/base32768 v0.0.0-20191205131208-7937843c71d5 // indirect
 	github.com/Microsoft/go-winio v0.5.1 // indirect
 	github.com/StackExchange/wmi v1.2.1 // indirect
@@ -59,7 +60,6 @@ require (
 	github.com/golang-jwt/jwt/v4 v4.1.0 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
-	github.com/google/go-cmp v0.5.8 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/googleapis/gax-go/v2 v2.3.0 // indirect
@@ -144,7 +144,7 @@ require (
 )
 
 require (
-	github.com/JonasMuehlmann/optional.go v1.3.0
+	github.com/JonasMuehlmann/optional.go v1.5.0
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 )
