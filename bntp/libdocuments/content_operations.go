@@ -53,12 +53,12 @@ func RemoveTags(ctx context.Context, content string, tags []string) (string, err
 	lineTags := strings.Split(lines[iTagLine], ",")
 
 	unary_predicate := func(tag string) bool {
-		_, err := goaoi.FindSlice(tags, tag)
+		_, err := goaoi.FindIfSlice(tags, goaoi.AreEqualPartial(tag))
 
 		return err != nil && !errors.As(err, &goaoi.ElementNotFoundError{})
 	}
 
-	lineTags, err = goaoi.CopyExceptIfSlice(lineTags, unary_predicate)
+	lineTags, err = goaoi.TakeIfSlice(lineTags, goaoi.NegateUnaryPredicate(unary_predicate))
 	if err != nil {
 		return "", err
 	}
@@ -125,12 +125,12 @@ func RemoveLinks(ctx context.Context, content string, links []string) (string, e
 	}
 
 	unary_predicate = func(link string) bool {
-		_, err := goaoi.FindSlice(linksLinesToRemove, link)
+		_, err := goaoi.FindIfSlice(linksLinesToRemove, goaoi.AreEqualPartial(link))
 
 		return err != nil && !errors.As(err, &goaoi.ElementNotFoundError{})
 	}
 
-	newLinksLines, err := goaoi.CopyExceptIfSlice(links[iLinksLinesStart:iLinksLinesEnd], unary_predicate)
+	newLinksLines, err := goaoi.TakeIfSlice(links[iLinksLinesStart:iLinksLinesEnd], goaoi.NegateUnaryPredicate(unary_predicate))
 	if err != nil {
 		return "", err
 	}
@@ -197,12 +197,12 @@ func RemoveBacklinks(ctx context.Context, content string, backlinks []string) (s
 	}
 
 	unary_predicate = func(link string) bool {
-		_, err := goaoi.FindSlice(linksLinesToRemove, link)
+		_, err := goaoi.FindIfSlice(linksLinesToRemove, goaoi.AreEqualPartial(link))
 
 		return err != nil && !errors.As(err, &goaoi.ElementNotFoundError{})
 	}
 
-	newBacklinksLines, err := goaoi.CopyExceptIfSlice(backlinks[iBacklinksLinesStart:iBacklinksLinesEnd], unary_predicate)
+	newBacklinksLines, err := goaoi.TakeIfSlice(backlinks[iBacklinksLinesStart:iBacklinksLinesEnd], goaoi.NegateUnaryPredicate(unary_predicate))
 	if err != nil {
 		return "", err
 	}
@@ -213,19 +213,19 @@ func RemoveBacklinks(ctx context.Context, content string, backlinks []string) (s
 }
 
 func findTagsLine(lines []string) (int, error) {
-	iTagsLineHeading, err := goaoi.FindSlice(lines, "# Tags")
+	iTagsLineHeading, err := goaoi.FindIfSlice(lines, goaoi.AreEqualPartial("# Tags"))
 
 	return 1 + iTagsLineHeading, err
 }
 
 func findLinksLinesStart(lines []string) (int, error) {
-	iLinksLineHeading, err := goaoi.FindSlice(lines, "# Links")
+	iLinksLineHeading, err := goaoi.FindIfSlice(lines, goaoi.AreEqualPartial("# Links"))
 
 	return 1 + iLinksLineHeading, err
 }
 
 func findBacklinksLinesStart(lines []string) (int, error) {
-	iBacklinksLineHeading, err := goaoi.FindSlice(lines, "# Backlinks")
+	iBacklinksLineHeading, err := goaoi.FindIfSlice(lines, goaoi.AreEqualPartial("# Backlinks"))
 
 	return 1 + iBacklinksLineHeading, err
 }

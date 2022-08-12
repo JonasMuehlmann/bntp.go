@@ -665,7 +665,7 @@ func (m *DocumentContentManager) UpdateDocumentContentsFromFilterAndUpdater(ctx 
 			if err != nil {
 				return err
 			}
-			err = m.handleSetBacklinks(ctx, updater.BacklinkedDocuments.Wrappee.Operand, linksExtractor, oldDocuments)
+			err = m.handlePushBacklinks(ctx, updater.BacklinkedDocuments.Wrappee.Operand, linksExtractor, oldDocuments)
 			if err != nil {
 				return err
 			}
@@ -765,7 +765,7 @@ func (m *DocumentContentManager) handleClearBacklinks(ctx context.Context, docum
 	return nil
 }
 
-func (m *DocumentContentManager) handleSetBacklinks(ctx context.Context, documents []*domain.Document, linksExtractor func(oldDocument *domain.Document) string, oldDocuments []*domain.Document) error {
+func (m *DocumentContentManager) handlePushBacklinks(ctx context.Context, documents []*domain.Document, linksExtractor func(oldDocument *domain.Document) string, oldDocuments []*domain.Document) error {
 	addedPathBacklinks := make([]tuple.T2[string, []string], 0, 10)
 
 	addedBacklinks, err := goaoi.TransformCopySliceUnsafe(documents, linksExtractor)

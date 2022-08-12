@@ -300,7 +300,37 @@ func (repo *{{$StructName}}) Add(ctx context.Context, domainModels []*domain.{{$
         return
     }
 
-	err = goaoi.AnyOfSlice(domainModels, goaoi.AreEqualPartial[*domain.{{$EntityName}}](nil))
+	err = goaoi.AnyOfSlice(domainModels, func (e *domain.{{$EntityName}}) bool {return e == nil || e.IsDefault()})
+	if err == nil{
+		err = helper.NilInputError{}
+		log.Error(err)
+
+		return
+	}
+
+    err = repo.AddMinimal(ctx, domainModels)
+    if err != nil {
+        return err
+    }
+
+    err = repo.Replace(ctx, domainModels)
+    if err != nil {
+        return err
+    }
+
+    return
+}
+
+func (repo *{{$StructName}}) AddMinimal(ctx context.Context, domainModels []*domain.{{$EntityName}})  (err error){
+    if len(domainModels) == 0 {
+        log.Debug(helper.LogMessageEmptyInput)
+
+        err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
+
+        return
+    }
+
+	err = goaoi.AnyOfSlice(domainModels, func (e *domain.{{$EntityName}}) bool {return e == nil || e.IsDefault()})
 	if err == nil{
 		err = helper.NilInputError{}
 		log.Error(err)
@@ -309,7 +339,7 @@ func (repo *{{$StructName}}) Add(ctx context.Context, domainModels []*domain.{{$
 	}
 
     var repositoryModels []any
-    repositoryModels, err = goaoi.TransformCopySlice(domainModels, repo.Get{{$EntityName}}DomainToRepositoryModel(ctx))
+    repositoryModels, err = goaoi.TransformCopySlice(domainModels, repo.Get{{$EntityName}}DomainToRepositoryModelMinimal(ctx))
 	if err != nil {
 		return
 	}
@@ -354,7 +384,7 @@ func (repo *{{$StructName}}) Replace(ctx context.Context, domainModels []*domain
         return
     }
 
-	err = goaoi.AnyOfSlice(domainModels, goaoi.AreEqualPartial[*domain.{{$EntityName}}](nil))
+	err = goaoi.AnyOfSlice(domainModels, func (e *domain.{{$EntityName}}) bool {return e == nil || e.IsDefault()})
 	if err == nil{
 		err = helper.NilInputError{}
 		log.Error(err)
@@ -394,7 +424,18 @@ func (repo *{{$StructName}}) Replace(ctx context.Context, domainModels []*domain
 		}
 
         if numAffectedRecords == 0 {
-            err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError}
+            var doExist []bool
+			// This seems to try to open a new connction but the db is locked.
+			// All methods should take an optional parameter to pass on the outer transaction.
+			// Otherwise fall back to raw sqlboiler.
+			doExist, err = goaoi.TransformCopySlice(domainModels, func(tag *domain.{{$EntityName}}) (bool, error) { return repo.DoesExist(ctx, tag) })
+			if err != nil {
+				return
+			}
+			if goaoi.NoneOfSlice(doExist, goaoi.AreEqualPartial(true)) == nil {
+				err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError}
+
+			}
 
             return
         }
@@ -413,7 +454,7 @@ func (repo *{{$StructName}}) Upsert(ctx context.Context, domainModels []*domain.
         return
     }
 
-	err = goaoi.AnyOfSlice(domainModels, goaoi.AreEqualPartial[*domain.{{$EntityName}}](nil))
+	err = goaoi.AnyOfSlice(domainModels, func (e *domain.{{$EntityName}}) bool {return e == nil || e.IsDefault()})
 	if err == nil{
 		err = helper.NilInputError{}
 		log.Error(err)
@@ -470,7 +511,7 @@ func (repo *{{$StructName}}) Update(ctx context.Context, domainModels []*domain.
         return
     }
 
-	err = goaoi.AnyOfSlice(domainModels, goaoi.AreEqualPartial[*domain.{{$EntityName}}](nil))
+	err = goaoi.AnyOfSlice(domainModels, func (e *domain.{{$EntityName}}) bool {return e == nil || e.IsDefault()})
 	if err == nil{
 		err = helper.NilInputError{}
 		log.Error(err)
@@ -651,7 +692,7 @@ func (repo *{{$StructName}}) Delete(ctx context.Context, domainModels []*domain.
         return
     }
 
-	err = goaoi.AnyOfSlice(domainModels, goaoi.AreEqualPartial[*domain.{{$EntityName}}](nil))
+	err = goaoi.AnyOfSlice(domainModels, func (e *domain.{{$EntityName}}) bool {return e == nil || e.IsDefault()})
 	if err == nil{
 		err = helper.NilInputError{}
 		log.Error(err)
@@ -1012,6 +1053,11 @@ func (repo *{{$StructName}}) Get{{$EntityName}}RepositoryToDomainModel(ctx conte
     }
 }
 
+func (repo *{{$StructName}}) Get{{$EntityName}}DomainToRepositoryModelMinimal(ctx context.Context) func(domainModel *domain.{{$EntityName}}) (repositoryModel any, err error) {
+    return func(domainModel *domain.{{$EntityName}}) (repositoryModel any, err error) {
+        return repo.{{$EntityName}}DomainToRepositoryModelMinimal(ctx, domainModel)
+    }
+}
 
 //******************************************************************//
 //                          Model Converter                         //
@@ -1073,7 +1119,6 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryModel(ctx context.
     if domainModel.Tags != nil {
         repositoryModelConcrete.R.Tags = make(TagSlice, 0, len(domainModel.Tags))
         for _,  domainTag := range domainModel.Tags {
-        {{/* TODO: This fails if the tags don't exist already, they have to be added beforehand, this should be done in the managers though! */}}
             repositoryTag, err = Tags(TagWhere.Tag.EQ(domainTag.Tag)).One(ctx, repo.db)
             if err != nil {
                 err = repoCommon.ReferenceToNonExistentDependencyError{Inner: err}
@@ -1105,6 +1150,61 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryModel(ctx context.
             repositoryModelConcrete.R.{{$EntityName}}Type = nil
         }
 	}
+
+    repositoryModel = repositoryModelConcrete
+
+    return
+}
+
+func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryModelMinimal(ctx context.Context, domainModel *domain.{{$EntityName}}) ( repositoryModel any, err error)  {
+    repositoryModelConcrete := new({{$EntityName}})
+    repositoryModelConcrete.R = repositoryModelConcrete.R.NewStruct()
+
+    repositoryModelConcrete.URL = domainModel.URL
+    repositoryModelConcrete.ID = domainModel.ID
+
+
+    //**********************    Set Timestamps    **********************//
+    {{ if eq .DatabaseName "sqlite3"}}
+    repositoryModelConcrete.CreatedAt = domainModel.CreatedAt.Format(helper.DateFormat)
+    repositoryModelConcrete.UpdatedAt = domainModel.UpdatedAt.Format(helper.DateFormat)
+
+    if domainModel.DeletedAt.HasValue {
+        repositoryModelConcrete.DeletedAt.Valid = true
+        repositoryModelConcrete.DeletedAt.String = domainModel.DeletedAt.Wrappee.Format(helper.DateFormat)
+    }
+    {{else}}
+    repositoryModelConcrete.CreatedAt = domainModel.CreatedAt
+    repositoryModelConcrete.UpdatedAt = domainModel.UpdatedAt
+
+    if domainModel.DeletedAt.HasValue {
+        var convertedTime null.Time
+        convertedTime, err = repoCommon.OptionalTimeToNullTime(domainModel.DeletedAt)
+        if err != nil {
+            return
+        }
+
+        repositoryModelConcrete.DeletedAt = convertedTime
+    }
+    {{end}}
+
+
+    //*************************    Set Title    ************************//
+    if domainModel.Title.HasValue {
+        repositoryModelConcrete.Title.Valid = true
+        repositoryModelConcrete.Title.String = domainModel.Title.Wrappee
+    }
+
+
+
+    //******************    Set IsRead/IsCollection    *****************//
+    if domainModel.IsRead {
+        repositoryModelConcrete.IsRead = 1
+    }
+
+    if domainModel.IsCollection {
+        repositoryModelConcrete.IsCollection = 1
+    }
 
     repositoryModel = repositoryModelConcrete
 
@@ -1148,20 +1248,20 @@ func (repo *{{$StructName}}) {{$EntityName}}RepositoryToDomainModel(ctx context.
             return
         }
 
-        domainModel.DeletedAt.Push(t)
+        domainModel.DeletedAt.Set(t)
     }
     {{else}}
     domainModel.CreatedAt = repositoryModelConcrete.CreatedAt
     domainModel.UpdatedAt = repositoryModelConcrete.UpdatedAt
 
     if repositoryModelConcrete.DeletedAt.Valid {
-        domainModel.DeletedAt.Push(repositoryModelConcrete.DeletedAt.Time)
+        domainModel.DeletedAt.Set(repositoryModelConcrete.DeletedAt.Time)
     }
     {{end}}
 
     //*************************    Set Title    ************************//
     if repositoryModelConcrete.Title.Valid {
-        domainModel.Title.Push(repositoryModelConcrete.Title.String)
+        domainModel.Title.Set(repositoryModelConcrete.Title.String)
     }
 
     //******************    Set IsRead/IsCollection    *****************//
@@ -1286,6 +1386,43 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryModel(ctx context.
     return
 }
 
+func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryModelMinimal(ctx context.Context, domainModel *domain.{{$EntityName}}) (repositoryModel any, err error)  {
+    repositoryModelConcrete := new({{$EntityName}})
+    repositoryModelConcrete.R = repositoryModelConcrete.R.NewStruct()
+
+    repositoryModelConcrete.Path = domainModel.Path
+    repositoryModelConcrete.ID = domainModel.ID
+
+
+    //**********************    Set Timestamps    **********************//
+    {{ if eq .DatabaseName "sqlite3"}}
+    repositoryModelConcrete.CreatedAt = domainModel.CreatedAt.Format(helper.DateFormat)
+    repositoryModelConcrete.UpdatedAt = domainModel.UpdatedAt.Format(helper.DateFormat)
+
+    if domainModel.DeletedAt.HasValue {
+        repositoryModelConcrete.DeletedAt.Valid = true
+        repositoryModelConcrete.DeletedAt.String = domainModel.DeletedAt.Wrappee.Format(helper.DateFormat)
+    }
+    {{else}}
+    repositoryModelConcrete.CreatedAt = domainModel.CreatedAt
+    repositoryModelConcrete.UpdatedAt = domainModel.UpdatedAt
+
+    if domainModel.DeletedAt.HasValue {
+        var convertedTime null.Time
+        convertedTime, err = repoCommon.OptionalTimeToNullTime(domainModel.DeletedAt)
+        if err != nil {
+            return
+        }
+
+        repositoryModelConcrete.DeletedAt = convertedTime
+    }
+    {{end}}
+
+    repositoryModel = repositoryModelConcrete
+
+    return
+}
+
 func (repo *{{$StructName}}) {{$EntityName}}RepositoryToDomainModel(ctx context.Context, repositoryModel any) (domainModel *domain.{{$EntityName}}, err error) {
     domainModel = new(domain.{{$EntityName}})
 
@@ -1322,14 +1459,14 @@ func (repo *{{$StructName}}) {{$EntityName}}RepositoryToDomainModel(ctx context.
             return
         }
 
-        domainModel.DeletedAt.Push(t)
+        domainModel.DeletedAt.Set(t)
     }
     {{else}}
     domainModel.CreatedAt = repositoryModelConcrete.CreatedAt
     domainModel.UpdatedAt = repositoryModelConcrete.UpdatedAt
 
     if repositoryModelConcrete.DeletedAt.Valid {
-        domainModel.DeletedAt.Push(repositoryModelConcrete.DeletedAt.Time)
+        domainModel.DeletedAt.Set(repositoryModelConcrete.DeletedAt.Time)
     }
     {{end}}
 
@@ -1376,7 +1513,6 @@ func (repo *{{$StructName}}) {{$EntityName}}RepositoryToDomainModel(ctx context.
 {{if eq $EntityName "Tag"}}
 func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryModel(ctx context.Context, domainModel *domain.{{$EntityName}}) (repositoryModel any, err error)  {
 
-// TODO: make sure to insert all tags in ParentPath and Subtags into db
     repositoryModelConcrete := new({{$EntityName}})
     repositoryModelConcrete.R = repositoryModelConcrete.R.NewStruct()
 
@@ -1385,21 +1521,74 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryModel(ctx context.
 
 
 //***********************    Set Parent{{$EntityName}}    **********************//
-    if len(domainModel.ParentPath) > 0 {
-        repositoryModelConcrete.Parent{{$EntityName}} = null.NewInt64(domainModel.ParentPath[len(domainModel.ParentPath) - 1].ID, true)
+   	if len(domainModel.ParentPath) > 0 {
+		var repositoryParentTag *Tag
+
+		domainParentTag := domainModel.ParentPath[len(domainModel.ParentPath)-1]
+		repositoryParentTag, err = Tags(TagWhere.ID.EQ(domainParentTag.ID)).One(ctx, repo.db)
+		if err != nil {
+			err = repoCommon.ReferenceToNonExistentDependencyError{Inner: err}
+
+			return
+		}
+
+		repositoryModelConcrete.ParentTag = null.NewInt64(repositoryParentTag.ID, true)
+	}
+//*************************    Set Path    *************************//
+	if len(domainModel.ParentPath) > 1 {
+		var repositoryParentTag *Tag
+		for _, tag := range domainModel.ParentPath[:len(domainModel.ParentPath)-1] {
+			repositoryParentTag, err = Tags(TagWhere.ID.EQ(tag.ID)).One(ctx, repo.db)
+			if err != nil {
+				err = repoCommon.ReferenceToNonExistentDependencyError{Inner: err}
+
+				return
+			}
+			repositoryModelConcrete.Path += strconv.FormatInt(repositoryParentTag.ID, 10) + ";"
+		}
+	}
+
+	repositoryModelConcrete.Path += strconv.FormatInt(domainModel.ID, 10)
+//************************    Set Children  ************************//
+	if len(domainModel.Subtags) > 0 {
+		var repositoryChildTag *Tag
+		for _, tag := range domainModel.Subtags[:len(domainModel.Subtags)-1] {
+			repositoryChildTag, err = Tags(TagWhere.ID.EQ(tag.ID)).One(ctx, repo.db)
+			if err != nil {
+				err = repoCommon.ReferenceToNonExistentDependencyError{Inner: err}
+
+				return
+			}
+
+			repositoryModelConcrete.Children += strconv.FormatInt(repositoryChildTag.ID, 10) + ";"
+		}
+		lastChild := domainModel.Subtags[len(domainModel.Subtags)-1]
+		repositoryChildTag, err = Tags(TagWhere.ID.EQ(lastChild.ID)).One(ctx, repo.db)
+		if err != nil {
+			err = repoCommon.ReferenceToNonExistentDependencyError{Inner: err}
+
+			return
+		}
+        repositoryModelConcrete.Children += strconv.FormatInt(repositoryChildTag.ID, 10)
     }
 
-//*************************    Set Path    *************************//
-for _, tag := range domainModel.ParentPath {
-    repositoryModelConcrete.Path += strconv.FormatInt(tag.ID, 10) + ";"
+
+
+    repositoryModel = repositoryModelConcrete
+
+    return
 }
 
-repositoryModelConcrete.Path += strconv.FormatInt(domainModel.ID, 10)
+func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryModelMinimal(ctx context.Context, domainModel *domain.{{$EntityName}}) (repositoryModel any, err error)  {
 
-//************************    Set Children  ************************//
-for _, tag := range domainModel.Subtags {
-    repositoryModelConcrete.Children += strconv.FormatInt(tag.ID, 10) + ";"
-}
+    repositoryModelConcrete := new({{$EntityName}})
+    repositoryModelConcrete.R = repositoryModelConcrete.R.NewStruct()
+
+    repositoryModelConcrete.ID = domainModel.ID
+    repositoryModelConcrete.{{$EntityName}} = domainModel.{{$EntityName}}
+
+	repositoryModelConcrete.Path = strconv.FormatInt(domainModel.ID, 10)
+
 
     repositoryModel = repositoryModelConcrete
 
@@ -1408,8 +1597,9 @@ for _, tag := range domainModel.Subtags {
 
 // TODO: These functions should be context aware
 func (repo *{{$StructName}}) {{$EntityName}}RepositoryToDomainModel(ctx context.Context, repositoryModel any) (domainModel *domain.{{$EntityName}}, err error) {
-// TODO: make sure to insert all tags in ParentPath and Subtags into db
     domainModel = new(domain.{{$EntityName}})
+    domainModel.Subtags = make([]*domain.Tag, 0)
+    domainModel.ParentPath = make([]*domain.Tag, 0)
 
     repositoryModelConcrete := repositoryModel.(*{{$EntityName}})
 
@@ -1421,23 +1611,25 @@ var parent{{$EntityName}}ID int64
 var parent{{$EntityName}} *{{$EntityName}}
 var domainParent{{$EntityName}} *domain.{{$EntityName}}
 
-for _, parent{{$EntityName}}IDRaw := range strings.Split(repositoryModelConcrete.Path, ";")[:len(repositoryModelConcrete.Path)-2]{
-    parent{{$EntityName}}ID, err = strconv.ParseInt(parent{{$EntityName}}IDRaw, 10, 64)
-    if err != nil {
-        return
-    }
+if len(repositoryModelConcrete.Path) > 1 {
+    for _, parent{{$EntityName}}IDRaw := range strings.Split(repositoryModelConcrete.Path, ";")[:len(repositoryModelConcrete.Path) - 2]{
+        parent{{$EntityName}}ID, err = strconv.ParseInt(parent{{$EntityName}}IDRaw, 10, 64)
+        if err != nil {
+            return
+        }
 
-    parent{{$EntityName}}, err = {{$EntityName}}s({{$EntityName}}Where.ID.EQ(parent{{$EntityName}}ID)).One(ctx, repo.db)
-    if err != nil {
-        return
-    }
+        parent{{$EntityName}}, err = {{$EntityName}}s({{$EntityName}}Where.ID.EQ(parent{{$EntityName}}ID)).One(ctx, repo.db)
+        if err != nil {
+            return
+        }
 
-    domainParent{{$EntityName}}, err = repo.{{$EntityName}}RepositoryToDomainModel(ctx, parent{{$EntityName}})
-    if err != nil {
-        return
-    }
+        domainParent{{$EntityName}}, err = repo.{{$EntityName}}RepositoryToDomainModel(ctx, parent{{$EntityName}})
+        if err != nil {
+            return
+        }
 
-    domainModel.ParentPath = append(domainModel.ParentPath, domainParent{{$EntityName}})
+        domainModel.ParentPath = append(domainModel.ParentPath, domainParent{{$EntityName}})
+    }
 }
 
 //************************    Set Subtags ************************//
@@ -1445,7 +1637,7 @@ var child{{$EntityName}}ID int64
 var child{{$EntityName}} *{{$EntityName}}
 var domainChild{{$EntityName}} *domain.{{$EntityName}}
 
-for _, child{{$EntityName}}IDRaw := range strings.Split(repositoryModelConcrete.Children, ";")[:len(repositoryModelConcrete.Children)-2]{
+for _, child{{$EntityName}}IDRaw := range strings.Split(repositoryModelConcrete.Children, ";")[:len(repositoryModelConcrete.Children)-1]{
     child{{$EntityName}}ID, err = strconv.ParseInt(child{{$EntityName}}IDRaw, 10, 64)
     if err != nil {
         return
@@ -1489,7 +1681,7 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryFilter(ctx context
             return
         }
 
-        repositoryFilterConcrete.CreatedAt.Push(convertedFilter)
+        repositoryFilterConcrete.CreatedAt.Set(convertedFilter)
     }
     if domainFilter.UpdatedAt.HasValue {
         var convertedFilter model.FilterOperation[string]
@@ -1499,7 +1691,7 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryFilter(ctx context
             return
         }
 
-        repositoryFilterConcrete.UpdatedAt.Push(convertedFilter)
+        repositoryFilterConcrete.UpdatedAt.Set(convertedFilter)
     }
     if domainFilter.DeletedAt.HasValue {
         var convertedFilter model.FilterOperation[null.String]
@@ -1509,7 +1701,7 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryFilter(ctx context
             return
         }
 
-        repositoryFilterConcrete.DeletedAt.Push(convertedFilter)
+        repositoryFilterConcrete.DeletedAt.Set(convertedFilter)
     }
     {{else}}
     repositoryFilterConcrete.CreatedAt = domainFilter.CreatedAt
@@ -1523,7 +1715,7 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryFilter(ctx context
             return
         }
 
-        repositoryFilterConcrete.DeletedAt.Push(convertedFilter)
+        repositoryFilterConcrete.DeletedAt.Set(convertedFilter)
     }
     {{end}}
 
@@ -1537,7 +1729,7 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryFilter(ctx context
             return
         }
 
-        repositoryFilterConcrete.Title.Push(convertedFilter)
+        repositoryFilterConcrete.Title.Set(convertedFilter)
     }
 
 
@@ -1551,7 +1743,7 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryFilter(ctx context
             return
         }
 
-        repositoryFilterConcrete.IsRead.Push(convertedFilter)
+        repositoryFilterConcrete.IsRead.Set(convertedFilter)
     }
 
     if domainFilter.IsCollection.HasValue {
@@ -1562,7 +1754,7 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryFilter(ctx context
             return
         }
 
-        repositoryFilterConcrete.IsCollection.Push(convertedFilter)
+        repositoryFilterConcrete.IsCollection.Set(convertedFilter)
     }
 
 
@@ -1576,7 +1768,7 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryFilter(ctx context
             return
         }
 
-        repositoryFilterConcrete.Tags.Push(convertedFilter)
+        repositoryFilterConcrete.Tags.Set(convertedFilter)
     }
 
     //*************************    Set Type    *************************//
@@ -1614,8 +1806,8 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryFilter(ctx context
         }
 
 
-        repositoryFilterConcrete.{{$EntityName}}Type.Push(convertedTypeFilter)
-        repositoryFilterConcrete.{{$EntityName}}TypeID.Push(convertedTypeIDFilter)
+        repositoryFilterConcrete.{{$EntityName}}Type.Set(convertedTypeFilter)
+        repositoryFilterConcrete.{{$EntityName}}TypeID.Set(convertedTypeIDFilter)
     }
 
     repositoryFilter = repositoryFilterConcrete
@@ -1642,7 +1834,7 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryFilter(ctx context
             return
         }
 
-        repositoryFilterConcrete.CreatedAt.Push(convertedFilter)
+        repositoryFilterConcrete.CreatedAt.Set(convertedFilter)
     }
     if domainFilter.UpdatedAt.HasValue {
         var convertedFilter model.FilterOperation[string]
@@ -1652,7 +1844,7 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryFilter(ctx context
             return
         }
 
-        repositoryFilterConcrete.UpdatedAt.Push(convertedFilter)
+        repositoryFilterConcrete.UpdatedAt.Set(convertedFilter)
     }
     if domainFilter.DeletedAt.HasValue {
         var convertedFilter model.FilterOperation[null.String]
@@ -1662,7 +1854,7 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryFilter(ctx context
             return
         }
 
-        repositoryFilterConcrete.DeletedAt.Push(convertedFilter)
+        repositoryFilterConcrete.DeletedAt.Set(convertedFilter)
     }
     {{else}}
     repositoryFilterConcrete.CreatedAt = domainFilter.CreatedAt
@@ -1676,7 +1868,7 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryFilter(ctx context
             return
         }
 
-        repositoryFilterConcrete.DeletedAt.Push(convertedFilter)
+        repositoryFilterConcrete.DeletedAt.Set(convertedFilter)
     }
     {{end}}
 
@@ -1689,7 +1881,7 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryFilter(ctx context
             return
         }
 
-        repositoryFilterConcrete.Tags.Push(convertedFilter)
+        repositoryFilterConcrete.Tags.Set(convertedFilter)
     }
 
     //*************************    Set Type    *************************//
@@ -1726,8 +1918,8 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryFilter(ctx context
         }
 
 
-        repositoryFilterConcrete.{{$EntityName}}Type.Push(convertedTypeFilter)
-        repositoryFilterConcrete.{{$EntityName}}TypeID.Push(convertedTypeIDFilter)
+        repositoryFilterConcrete.{{$EntityName}}Type.Set(convertedTypeFilter)
+        repositoryFilterConcrete.{{$EntityName}}TypeID.Set(convertedTypeIDFilter)
     }
 
 
@@ -1740,7 +1932,7 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryFilter(ctx context
             return
         }
 
-        repositoryFilterConcrete.Source{{$EntityName}}s.Push(convertedFilter)
+        repositoryFilterConcrete.Source{{$EntityName}}s.Set(convertedFilter)
     }
     if domainFilter.Backlinked{{$EntityName}}s.HasValue {
         var convertedFilter model.FilterOperation[*{{$EntityName}}]
@@ -1750,7 +1942,7 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryFilter(ctx context
             return
         }
 
-        repositoryFilterConcrete.Destination{{$EntityName}}s.Push(convertedFilter)
+        repositoryFilterConcrete.Destination{{$EntityName}}s.Set(convertedFilter)
     }
 
     repositoryFilter = repositoryFilterConcrete
@@ -1775,7 +1967,7 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryFilter(ctx context
 			return
 		}
 
-		repositoryFilterConcrete.Parent{{$EntityName}}{{$EntityName}}.Push(convertedParent{{$EntityName}}{{$EntityName}}Filter)
+		repositoryFilterConcrete.Parent{{$EntityName}}{{$EntityName}}.Set(convertedParent{{$EntityName}}{{$EntityName}}Filter)
 		//*************************    Set Path    *************************//
 		var convertedPathFilter model.FilterOperation[string]
 
@@ -1784,7 +1976,7 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryFilter(ctx context
 			return
 		}
 
-		repositoryFilterConcrete.Path.Push(convertedPathFilter)
+		repositoryFilterConcrete.Path.Set(convertedPathFilter)
 		//**********************    Set Parent{{$EntityName}}    ***********************//
 		var convertedParent{{$EntityName}}Filter model.FilterOperation[null.Int64]
 
@@ -1793,7 +1985,7 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryFilter(ctx context
 			return
 		}
 
-		repositoryFilterConcrete.Parent{{$EntityName}}.Push(convertedParent{{$EntityName}}Filter)
+		repositoryFilterConcrete.Parent{{$EntityName}}.Set(convertedParent{{$EntityName}}Filter)
 	}
 
 	//**********************    Set child tags *********************//
@@ -1805,7 +1997,7 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryFilter(ctx context
 			return
 		}
 
-		repositoryFilterConcrete.Children.Push(convertedFilter)
+		repositoryFilterConcrete.Children.Set(convertedFilter)
 	}
 
     repositoryFilter = repositoryFilterConcrete
@@ -1828,9 +2020,9 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryUpdater(ctx contex
             return
         }
 
-        repositoryUpdaterConcrete.CreatedAt.Push(model.UpdateOperation[string]{Operator: domainUpdater.CreatedAt.Wrappee.Operator, Operand: convertedUpdater})
+        repositoryUpdaterConcrete.CreatedAt.Set(model.UpdateOperation[string]{Operator: domainUpdater.CreatedAt.Wrappee.Operator, Operand: convertedUpdater})
         {{ else }}
-        repositoryUpdaterConcrete.CreatedAt.Push(model.UpdateOperation[time.Time]{Operator: domainUpdater.CreatedAt.Wrappee.Operator, Operand: domainUpdater.CreatedAt.Wrappee.Operand})
+        repositoryUpdaterConcrete.CreatedAt.Set(model.UpdateOperation[time.Time]{Operator: domainUpdater.CreatedAt.Wrappee.Operator, Operand: domainUpdater.CreatedAt.Wrappee.Operand})
         {{ end}}
     }
 
@@ -1842,9 +2034,9 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryUpdater(ctx contex
             return
         }
 
-        repositoryUpdaterConcrete.UpdatedAt.Push(model.UpdateOperation[string]{Operator: domainUpdater.UpdatedAt.Wrappee.Operator, Operand: convertedUpdater})
+        repositoryUpdaterConcrete.UpdatedAt.Set(model.UpdateOperation[string]{Operator: domainUpdater.UpdatedAt.Wrappee.Operator, Operand: convertedUpdater})
         {{ else }}
-        repositoryUpdaterConcrete.UpdatedAt.Push(model.UpdateOperation[time.Time]{Operator: domainUpdater.UpdatedAt.Wrappee.Operator, Operand: domainUpdater.UpdatedAt.Wrappee.Operand})
+        repositoryUpdaterConcrete.UpdatedAt.Set(model.UpdateOperation[time.Time]{Operator: domainUpdater.UpdatedAt.Wrappee.Operator, Operand: domainUpdater.UpdatedAt.Wrappee.Operand})
         {{ end }}
     }
 
@@ -1856,7 +2048,7 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryUpdater(ctx contex
             return
         }
 
-        repositoryUpdaterConcrete.DeletedAt.Push(model.UpdateOperation[null.String]{Operator: domainUpdater.UpdatedAt.Wrappee.Operator, Operand: convertedUpdater})
+        repositoryUpdaterConcrete.DeletedAt.Set(model.UpdateOperation[null.String]{Operator: domainUpdater.UpdatedAt.Wrappee.Operator, Operand: convertedUpdater})
         {{ else }}
         var convertedTime null.Time
         convertedTime, err = repoCommon.OptionalTimeToNullTime(domainUpdater.DeletedAt.Wrappee.Operand)
@@ -1864,12 +2056,12 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryUpdater(ctx contex
             return
         }
 
-        repositoryUpdaterConcrete.DeletedAt.Push(model.UpdateOperation[null.Time]{Operator: domainUpdater.UpdatedAt.Wrappee.Operator, Operand: convertedTime})
+        repositoryUpdaterConcrete.DeletedAt.Set(model.UpdateOperation[null.Time]{Operator: domainUpdater.UpdatedAt.Wrappee.Operator, Operand: convertedTime})
         {{ end }}
     }
 
 	if domainUpdater.URL.HasValue {
-        repositoryUpdaterConcrete.URL.Push(model.UpdateOperation[string]{Operator: domainUpdater.URL.Wrappee.Operator, Operand: repositoryUpdaterConcrete.URL.Wrappee.Operand})
+        repositoryUpdaterConcrete.URL.Set(model.UpdateOperation[string]{Operator: domainUpdater.URL.Wrappee.Operator, Operand: repositoryUpdaterConcrete.URL.Wrappee.Operand})
     }
 
 	if domainUpdater.Title.HasValue {
@@ -1879,7 +2071,7 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryUpdater(ctx contex
             return
         }
 
-        repositoryUpdaterConcrete.Title.Push(model.UpdateOperation[null.String]{Operator: domainUpdater.Title.Wrappee.Operator, Operand: convertedUpdater})
+        repositoryUpdaterConcrete.Title.Set(model.UpdateOperation[null.String]{Operator: domainUpdater.Title.Wrappee.Operator, Operand: convertedUpdater})
     }
 
 	if domainUpdater.Tags.HasValue {
@@ -1895,11 +2087,11 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryUpdater(ctx contex
             convertedUpdater = append(convertedUpdater, rawTag.(*Tag))
         }
 
-        repositoryUpdaterConcrete.Tags.Push(model.UpdateOperation[TagSlice]{Operator: domainUpdater.Tags.Wrappee.Operator, Operand: convertedUpdater})
+        repositoryUpdaterConcrete.Tags.Set(model.UpdateOperation[TagSlice]{Operator: domainUpdater.Tags.Wrappee.Operator, Operand: convertedUpdater})
     }
 
 	if domainUpdater.ID.HasValue {
-        repositoryUpdaterConcrete.ID.Push(model.UpdateOperation[int64]{Operator: domainUpdater.ID.Wrappee.Operator, Operand: repositoryUpdaterConcrete.ID.Wrappee.Operand})
+        repositoryUpdaterConcrete.ID.Set(model.UpdateOperation[int64]{Operator: domainUpdater.ID.Wrappee.Operator, Operand: repositoryUpdaterConcrete.ID.Wrappee.Operand})
     }
 
 	if domainUpdater.IsCollection.HasValue {
@@ -1909,7 +2101,7 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryUpdater(ctx contex
             return
         }
 
-        repositoryUpdaterConcrete.IsCollection.Push(model.UpdateOperation[int64]{Operator: domainUpdater.IsCollection.Wrappee.Operator, Operand: convertedUpdater})
+        repositoryUpdaterConcrete.IsCollection.Set(model.UpdateOperation[int64]{Operator: domainUpdater.IsCollection.Wrappee.Operator, Operand: convertedUpdater})
     }
 
 	if domainUpdater.IsRead.HasValue {
@@ -1919,7 +2111,7 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryUpdater(ctx contex
             return
         }
 
-        repositoryUpdaterConcrete.IsRead.Push(model.UpdateOperation[int64]{Operator: domainUpdater.IsRead.Wrappee.Operator, Operand: convertedUpdater})
+        repositoryUpdaterConcrete.IsRead.Set(model.UpdateOperation[int64]{Operator: domainUpdater.IsRead.Wrappee.Operator, Operand: convertedUpdater})
     }
 
 	if domainUpdater.{{$EntityName}}Type.HasValue {
@@ -1933,7 +2125,7 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryUpdater(ctx contex
             converted{{$EntityName}}Type = nil
         }
 
-        repositoryUpdaterConcrete.{{$EntityName}}Type.Push(model.UpdateOperation[*{{$EntityName}}Type]{Operator: domainUpdater.{{$EntityName}}Type.Wrappee.Operator, Operand: converted{{$EntityName}}Type})
+        repositoryUpdaterConcrete.{{$EntityName}}Type.Set(model.UpdateOperation[*{{$EntityName}}Type]{Operator: domainUpdater.{{$EntityName}}Type.Wrappee.Operator, Operand: converted{{$EntityName}}Type})
     }
 
     repositoryUpdater = repositoryUpdaterConcrete
@@ -1957,11 +2149,11 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryUpdater(ctx contex
             convertedUpdater = nil
         }
 
-        repositoryUpdaterConcrete.{{$EntityName}}Type.Push(model.UpdateOperation[*{{$EntityName}}Type]{Operator: domainUpdater.{{$EntityName}}Type.Wrappee.Operator, Operand: convertedUpdater})
+        repositoryUpdaterConcrete.{{$EntityName}}Type.Set(model.UpdateOperation[*{{$EntityName}}Type]{Operator: domainUpdater.{{$EntityName}}Type.Wrappee.Operator, Operand: convertedUpdater})
     }
 
 	if domainUpdater.Path.HasValue {
-        repositoryUpdaterConcrete.Path.Push(model.UpdateOperation[string]{Operator: domainUpdater.Path.Wrappee.Operator, Operand: repositoryUpdaterConcrete.Path.Wrappee.Operand})
+        repositoryUpdaterConcrete.Path.Set(model.UpdateOperation[string]{Operator: domainUpdater.Path.Wrappee.Operator, Operand: repositoryUpdaterConcrete.Path.Wrappee.Operand})
     }
 
 	if domainUpdater.CreatedAt.HasValue {
@@ -1972,9 +2164,9 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryUpdater(ctx contex
             return
         }
 
-        repositoryUpdaterConcrete.CreatedAt.Push(model.UpdateOperation[string]{Operator: domainUpdater.CreatedAt.Wrappee.Operator, Operand: convertedUpdater})
+        repositoryUpdaterConcrete.CreatedAt.Set(model.UpdateOperation[string]{Operator: domainUpdater.CreatedAt.Wrappee.Operator, Operand: convertedUpdater})
         {{ else }}
-        repositoryUpdaterConcrete.CreatedAt.Push(model.UpdateOperation[time.Time]{Operator: domainUpdater.CreatedAt.Wrappee.Operator, Operand: domainUpdater.CreatedAt.Wrappee.Operand})
+        repositoryUpdaterConcrete.CreatedAt.Set(model.UpdateOperation[time.Time]{Operator: domainUpdater.CreatedAt.Wrappee.Operator, Operand: domainUpdater.CreatedAt.Wrappee.Operand})
         {{ end}}
     }
 
@@ -1986,9 +2178,9 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryUpdater(ctx contex
             return
         }
 
-        repositoryUpdaterConcrete.UpdatedAt.Push(model.UpdateOperation[string]{Operator: domainUpdater.UpdatedAt.Wrappee.Operator, Operand: convertedUpdater})
+        repositoryUpdaterConcrete.UpdatedAt.Set(model.UpdateOperation[string]{Operator: domainUpdater.UpdatedAt.Wrappee.Operator, Operand: convertedUpdater})
         {{ else }}
-        repositoryUpdaterConcrete.UpdatedAt.Push(model.UpdateOperation[time.Time]{Operator: domainUpdater.UpdatedAt.Wrappee.Operator, Operand: domainUpdater.UpdatedAt.Wrappee.Operand})
+        repositoryUpdaterConcrete.UpdatedAt.Set(model.UpdateOperation[time.Time]{Operator: domainUpdater.UpdatedAt.Wrappee.Operator, Operand: domainUpdater.UpdatedAt.Wrappee.Operand})
         {{ end }}
     }
 
@@ -2000,7 +2192,7 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryUpdater(ctx contex
             return
         }
 
-        repositoryUpdaterConcrete.DeletedAt.Push(model.UpdateOperation[null.String]{Operator: domainUpdater.UpdatedAt.Wrappee.Operator, Operand: convertedUpdater})
+        repositoryUpdaterConcrete.DeletedAt.Set(model.UpdateOperation[null.String]{Operator: domainUpdater.UpdatedAt.Wrappee.Operator, Operand: convertedUpdater})
         {{ else }}
         var convertedTime null.Time
         convertedTime, err = repoCommon.OptionalTimeToNullTime(domainUpdater.DeletedAt.Wrappee.Operand)
@@ -2008,7 +2200,7 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryUpdater(ctx contex
             return
         }
 
-        repositoryUpdaterConcrete.DeletedAt.Push(model.UpdateOperation[null.Time]{Operator: domainUpdater.UpdatedAt.Wrappee.Operator, Operand: convertedTime})
+        repositoryUpdaterConcrete.DeletedAt.Set(model.UpdateOperation[null.Time]{Operator: domainUpdater.UpdatedAt.Wrappee.Operator, Operand: convertedTime})
         {{ end }}
     }
 
@@ -2025,7 +2217,7 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryUpdater(ctx contex
             convertedUpdater = append(convertedUpdater, rawTag.(*Tag))
         }
 
-        repositoryUpdaterConcrete.Tags.Push(model.UpdateOperation[TagSlice]{Operator: domainUpdater.Tags.Wrappee.Operator, Operand: convertedUpdater})
+        repositoryUpdaterConcrete.Tags.Set(model.UpdateOperation[TagSlice]{Operator: domainUpdater.Tags.Wrappee.Operator, Operand: convertedUpdater})
     }
 
 	if domainUpdater.Linked{{$EntityName}}s.HasValue {
@@ -2041,7 +2233,7 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryUpdater(ctx contex
             convertedUpdater = append(convertedUpdater, converted{{$EntityName}}Raw.(*{{$EntityName}}))
         }
 
-        repositoryUpdaterConcrete.Destination{{$EntityName}}s.Push(model.UpdateOperation[{{$EntityName}}Slice]{Operator: domainUpdater.Linked{{$EntityName}}s.Wrappee.Operator, Operand: convertedUpdater})
+        repositoryUpdaterConcrete.Destination{{$EntityName}}s.Set(model.UpdateOperation[{{$EntityName}}Slice]{Operator: domainUpdater.Linked{{$EntityName}}s.Wrappee.Operator, Operand: convertedUpdater})
     }
 
 	if domainUpdater.Backlinked{{$EntityName}}s.HasValue {
@@ -2057,11 +2249,11 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryUpdater(ctx contex
             convertedUpdater = append(convertedUpdater, converted{{$EntityName}}Raw.(*{{$EntityName}}))
         }
 
-        repositoryUpdaterConcrete.Source{{$EntityName}}s.Push(model.UpdateOperation[{{$EntityName}}Slice]{Operator: domainUpdater.Backlinked{{$EntityName}}s.Wrappee.Operator, Operand: convertedUpdater})
+        repositoryUpdaterConcrete.Source{{$EntityName}}s.Set(model.UpdateOperation[{{$EntityName}}Slice]{Operator: domainUpdater.Backlinked{{$EntityName}}s.Wrappee.Operator, Operand: convertedUpdater})
     }
 
 	if domainUpdater.ID.HasValue {
-        repositoryUpdaterConcrete.ID.Push(model.UpdateOperation[int64]{Operator: domainUpdater.ID.Wrappee.Operator, Operand: repositoryUpdaterConcrete.ID.Wrappee.Operand})
+        repositoryUpdaterConcrete.ID.Set(model.UpdateOperation[int64]{Operator: domainUpdater.ID.Wrappee.Operator, Operand: repositoryUpdaterConcrete.ID.Wrappee.Operand})
     }
 
     repositoryUpdater = repositoryUpdaterConcrete
@@ -2075,7 +2267,7 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryUpdater(ctx contex
 
 	//**************************    Set tag    *************************//
 	if domainUpdater.{{$EntityName}}.HasValue {
-		repositoryUpdaterConcrete.{{$EntityName}}.Push(model.UpdateOperation[string]{Operator: domainUpdater.{{$EntityName}}.Wrappee.Operator, Operand: repositoryUpdaterConcrete.{{$EntityName}}.Wrappee.Operand})
+		repositoryUpdaterConcrete.{{$EntityName}}.Set(model.UpdateOperation[string]{Operator: domainUpdater.{{$EntityName}}.Wrappee.Operator, Operand: repositoryUpdaterConcrete.{{$EntityName}}.Wrappee.Operand})
 	}
 
 	//***********    Set ParentPath    ***********//
@@ -2087,8 +2279,8 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryUpdater(ctx contex
 			return
 		}
 
-		repositoryUpdaterConcrete.Parent{{$EntityName}}{{$EntityName}}.Push(model.UpdateOperation[*{{$EntityName}}]{Operator: domainUpdater.ParentPath.Wrappee.Operator, Operand: converted{{$EntityName}}Raw.(*Tag)})
-		repositoryUpdaterConcrete.Parent{{$EntityName}}.Push(model.UpdateOperation[null.Int64]{Operator: domainUpdater.ParentPath.Wrappee.Operator, Operand: null.NewInt64(converted{{$EntityName}}Raw.(*Tag).ID, true)})
+		repositoryUpdaterConcrete.Parent{{$EntityName}}{{$EntityName}}.Set(model.UpdateOperation[*{{$EntityName}}]{Operator: domainUpdater.ParentPath.Wrappee.Operator, Operand: converted{{$EntityName}}Raw.(*Tag)})
+		repositoryUpdaterConcrete.Parent{{$EntityName}}.Set(model.UpdateOperation[null.Int64]{Operator: domainUpdater.ParentPath.Wrappee.Operator, Operand: null.NewInt64(converted{{$EntityName}}Raw.(*Tag).ID, true)})
 
 		pathIDs := make([]string, 0, len(domainUpdater.ParentPath.Wrappee.Operand)+1)
 		for _, tag := range domainUpdater.ParentPath.Wrappee.Operand {
@@ -2097,7 +2289,7 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryUpdater(ctx contex
 
 		pathIDs = append(pathIDs, strconv.FormatInt(tag.ID, 10))
 
-		repositoryUpdaterConcrete.Path.Push(model.UpdateOperation[string]{Operator: domainUpdater.ParentPath.Wrappee.Operator, Operand: strings.Join(pathIDs, ";")})
+		repositoryUpdaterConcrete.Path.Set(model.UpdateOperation[string]{Operator: domainUpdater.ParentPath.Wrappee.Operator, Operand: strings.Join(pathIDs, ";")})
 	}
 
 	//***********************    Set Children    ***********************//
@@ -2107,12 +2299,12 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryUpdater(ctx contex
 			pathIDs = append(pathIDs, strconv.FormatInt(tag.ID, 10))
 		}
 
-		repositoryUpdaterConcrete.Children.Push(model.UpdateOperation[string]{Operator: domainUpdater.Subtags.Wrappee.Operator, Operand: strings.Join(pathIDs, ";")})
+		repositoryUpdaterConcrete.Children.Set(model.UpdateOperation[string]{Operator: domainUpdater.Subtags.Wrappee.Operator, Operand: strings.Join(pathIDs, ";")})
 	}
 
 	//**************************    Set ID    **************************//
 	if domainUpdater.ID.HasValue {
-		repositoryUpdaterConcrete.ID.Push(model.UpdateOperation[int64]{Operator: domainUpdater.ID.Wrappee.Operator, Operand: repositoryUpdaterConcrete.ID.Wrappee.Operand})
+		repositoryUpdaterConcrete.ID.Set(model.UpdateOperation[int64]{Operator: domainUpdater.ID.Wrappee.Operator, Operand: repositoryUpdaterConcrete.ID.Wrappee.Operand})
 	}
 
     repositoryUpdater = repositoryUpdaterConcrete

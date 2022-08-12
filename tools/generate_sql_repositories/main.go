@@ -92,7 +92,7 @@ func main() {
 
 			entityStruct := tools.NewStructModel(entity.Struct)
 
-			entityStruct.StructFields, err = goaoi.CopyExceptIfSlice(entityStruct.StructFields, func(s tools.StructField) bool { return s.FieldName == "R" || s.FieldName == "L" })
+			entityStruct.StructFields, err = goaoi.TakeIfSlice(entityStruct.StructFields, goaoi.NegateUnaryPredicate(func(s tools.StructField) bool { return s.FieldName == "R" || s.FieldName == "L" }))
 			if err != nil {
 				panic(err)
 			}
