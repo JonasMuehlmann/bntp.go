@@ -39,6 +39,22 @@ type {{.StructName}} struct {
     {{end}}
 }
 
+
+func (t *{{.StructName}}) IsDefault() bool {
+    {{range $field := .StructFields -}}
+    {{ if eq "[" (slice .FieldType 0 1) }}
+    if t.{{.FieldName}} != nil {
+    {{ else }}
+    var {{.FieldName}}Zero {{.FieldType}}
+    if t.{{.FieldName}} != {{.FieldName}}Zero {
+    {{ end }}
+        return false
+    }
+    {{end}}
+
+    return true
+}
+
 type {{.StructName}}Field string
 
 var {{.StructName}}Fields = struct {

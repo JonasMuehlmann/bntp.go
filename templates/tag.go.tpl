@@ -36,6 +36,22 @@ type {{.StructName}} struct {
     {{end}}
 }
 
+
+func (t *{{.StructName}}) IsDefault() bool {
+    {{range $field := .StructFields -}}
+    {{ if eq "[" (slice .FieldType 0 1) }}
+    if t.{{.FieldName}} != nil {
+    {{ else }}
+    var {{.FieldName}}Zero {{.FieldType}}
+    if t.{{.FieldName}} != {{.FieldName}}Zero {
+    {{ end }}
+        return false
+    }
+    {{end}}
+
+    return true
+}
+
 func (t *Tag) AddChildren(newChildren []*{{$StructName}}) {
     t.Subtags = append(t.Subtags, newChildren...)
 
@@ -51,6 +67,10 @@ func (t *Tag) AddChildren(newChildren []*{{$StructName}}) {
 func (t *Tag) AddDirectParent(newParent *{{$StructName}}) {
     t.ParentPath = append(t.ParentPath, newParent)
     newParent.Subtags = append(newParent.Subtags, t)
+
+    for _, child := range t.Subtags {
+        child.ParentPath = append(child.ParentPath, newParent)
+    }
 }
 
 type {{.StructName}}Field string
