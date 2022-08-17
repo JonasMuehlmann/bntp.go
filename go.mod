@@ -9,6 +9,7 @@ require (
 	github.com/ghodss/yaml v1.0.0
 	github.com/go-playground/validator/v10 v10.10.1
 	github.com/gocarina/gocsv v0.0.0-20220310154401-d4df709ca055
+	github.com/google/uuid v1.3.0
 	github.com/mattn/go-sqlite3 v1.14.12
 	github.com/mitchellh/mapstructure v1.4.3
 	github.com/rclone/rclone v1.58.1
@@ -61,7 +62,6 @@ require (
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
-	github.com/google/uuid v1.3.0 // indirect
 	github.com/googleapis/gax-go/v2 v2.3.0 // indirect
 	github.com/hashicorp/go-uuid v1.0.2 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect

@@ -470,20 +470,19 @@ func (repo *MssqlTagRepository) Replace(ctx context.Context, domainModels []*dom
 		}
 
         if numAffectedRecords == 0 {
-            var doExist []bool
-			// This seems to try to open a new connction but the db is locked.
-			// All methods should take an optional parameter to pass on the outer transaction.
-			// Otherwise fall back to raw sqlboiler.
-			doExist, err = goaoi.TransformCopySlice(domainModels, func(tag *domain.Tag) (bool, error) { return repo.DoesExist(ctx, tag) })
-			if err != nil {
-				return
-			}
-			if goaoi.NoneOfSlice(doExist, goaoi.AreEqualPartial(true)) == nil {
-				err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError}
+            var doesExist bool
+            for _, repositoryTag := range repositoryModels {
+                doesExist, err = Tags(TagWhere.ID.EQ(repositoryTag.(*Tag).ID)).Exists(ctx, tx)
+                if err != nil {
+                    return err
+                }
 
-			}
+                if !doesExist {
+                    err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError}
 
-            return
+                    return
+                }
+            }
         }
 	}
 

@@ -491,20 +491,19 @@ func (repo *Sqlite3DocumentRepository) Replace(ctx context.Context, domainModels
 		}
 
         if numAffectedRecords == 0 {
-            var doExist []bool
-			// This seems to try to open a new connction but the db is locked.
-			// All methods should take an optional parameter to pass on the outer transaction.
-			// Otherwise fall back to raw sqlboiler.
-			doExist, err = goaoi.TransformCopySlice(domainModels, func(tag *domain.Document) (bool, error) { return repo.DoesExist(ctx, tag) })
-			if err != nil {
-				return
-			}
-			if goaoi.NoneOfSlice(doExist, goaoi.AreEqualPartial(true)) == nil {
-				err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError}
+            var doesExist bool
+            for _, repositoryDocument := range repositoryModels {
+                doesExist, err = Documents(DocumentWhere.ID.EQ(repositoryDocument.(*Document).ID)).Exists(ctx, tx)
+                if err != nil {
+                    return err
+                }
 
-			}
+                if !doesExist {
+                    err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError}
 
-            return
+                    return
+                }
+            }
         }
 	}
 
