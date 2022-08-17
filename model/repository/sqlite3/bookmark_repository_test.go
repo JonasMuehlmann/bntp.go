@@ -3,9 +3,8 @@ package repository_test
 import (
 	"context"
 	"testing"
-    
+
 	"time"
-    
 
 	"github.com/JonasMuehlmann/bntp.go/internal/helper"
 	"github.com/JonasMuehlmann/bntp.go/model"
@@ -39,7 +38,7 @@ func TestSQLBookmarkRepositoryAddTest(t *testing.T) {
 		{
 			name: "Two regular inputs, non-existent dependencies", err: repositoryCommon.ReferenceToNonExistentDependencyError{}, models: []*domain.Bookmark{
 				{
-					
+
 					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
@@ -57,13 +56,9 @@ func TestSQLBookmarkRepositoryAddTest(t *testing.T) {
 					ID:           1,
 					IsCollection: false,
 					IsRead:       true,
-					
-					
-
-					
 				},
 				{
-					
+
 					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
@@ -81,17 +76,13 @@ func TestSQLBookmarkRepositoryAddTest(t *testing.T) {
 					ID:           2,
 					IsCollection: false,
 					IsRead:       true,
-					
-					
-
-					
 				},
 			},
 		},
 		{
 			name: "Two minimal inputs", models: []*domain.Bookmark{
 				{
-					
+
 					CreatedAt:    time.Now(),
 					UpdatedAt:    time.Now(),
 					DeletedAt:    optional.Make(time.Now()),
@@ -100,13 +91,9 @@ func TestSQLBookmarkRepositoryAddTest(t *testing.T) {
 					ID:           1,
 					IsCollection: false,
 					IsRead:       true,
-					
-					
-
-					
 				},
 				{
-					
+
 					CreatedAt:    time.Now(),
 					UpdatedAt:    time.Now(),
 					DeletedAt:    optional.Make(time.Now()),
@@ -115,10 +102,6 @@ func TestSQLBookmarkRepositoryAddTest(t *testing.T) {
 					ID:           2,
 					IsCollection: false,
 					IsRead:       true,
-					
-					
-
-					
 				},
 			},
 		},
@@ -131,23 +114,20 @@ func TestSQLBookmarkRepositoryAddTest(t *testing.T) {
 			defer testCommon.HandlePanic(t, test.name)
 
 			db, err := testCommon.GetDB()
-            require.NoErrorf(t, err, test.name+", db open")
-            defer db.Close()
+			require.NoErrorf(t, err, test.name+", db open")
+			defer db.Close()
 
-			
-		    tagRepo := new(repository.Sqlite3TagRepository)
+			tagRepo := new(repository.Sqlite3TagRepository)
 
 			tagRepoAbstract, err := tagRepo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db})
 			assert.NoErrorf(t, err, test.name)
 
 			tagRepo = tagRepoAbstract.(*repository.Sqlite3TagRepository)
-		    
 
 			repo := new(repository.Sqlite3BookmarkRepository)
 
-			
-		    repoAbstract, err := repo.New(repository.Sqlite3BookmarkRepositoryConstructorArgs{DB: db, TagRepository: tagRepo})
-		    
+			repoAbstract, err := repo.New(repository.Sqlite3BookmarkRepositoryConstructorArgs{DB: db, TagRepository: tagRepo})
+
 			assert.NoErrorf(t, err, test.name)
 
 			repo = repoAbstract.(*repository.Sqlite3BookmarkRepository)
@@ -185,7 +165,7 @@ func TestSQLBookmarkRepositoryReplaceTest(t *testing.T) {
 			name: "Two existing minimal inputs, adding non-existent dependencies", err: repositoryCommon.ReferenceToNonExistentDependencyError{},
 			previousModels: []*domain.Bookmark{
 				{
-					
+
 					CreatedAt:    time.Now(),
 					UpdatedAt:    time.Now(),
 					DeletedAt:    optional.Make(time.Now()),
@@ -195,13 +175,9 @@ func TestSQLBookmarkRepositoryReplaceTest(t *testing.T) {
 					ID:           1,
 					IsCollection: false,
 					IsRead:       true,
-					
-					
-
-					
 				},
 				{
-					
+
 					CreatedAt:    time.Now(),
 					UpdatedAt:    time.Now(),
 					DeletedAt:    optional.Make(time.Now()),
@@ -211,16 +187,12 @@ func TestSQLBookmarkRepositoryReplaceTest(t *testing.T) {
 					ID:           2,
 					IsCollection: false,
 					IsRead:       true,
-					
-					
-
-					
 				},
 			},
 
 			models: []*domain.Bookmark{
 				{
-					
+
 					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
@@ -236,13 +208,9 @@ func TestSQLBookmarkRepositoryReplaceTest(t *testing.T) {
 					ID:           1,
 					IsCollection: false,
 					IsRead:       true,
-					
-					
-
-					
 				},
 				{
-					
+
 					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
@@ -258,10 +226,6 @@ func TestSQLBookmarkRepositoryReplaceTest(t *testing.T) {
 					ID:           2,
 					IsCollection: false,
 					IsRead:       true,
-					
-					
-
-					
 				},
 			},
 		},
@@ -269,7 +233,7 @@ func TestSQLBookmarkRepositoryReplaceTest(t *testing.T) {
 			name: "Two existing minimal inputs, adding duplicated values", err: helper.DuplicateInsertionError{},
 			previousModels: []*domain.Bookmark{
 				{
-					
+
 					CreatedAt:    time.Now(),
 					UpdatedAt:    time.Now(),
 					DeletedAt:    optional.Make(time.Now()),
@@ -279,13 +243,9 @@ func TestSQLBookmarkRepositoryReplaceTest(t *testing.T) {
 					ID:           1,
 					IsCollection: false,
 					IsRead:       true,
-					
-					
-
-					
 				},
 				{
-					
+
 					CreatedAt:    time.Now(),
 					UpdatedAt:    time.Now(),
 					DeletedAt:    optional.Make(time.Now()),
@@ -295,16 +255,12 @@ func TestSQLBookmarkRepositoryReplaceTest(t *testing.T) {
 					ID:           2,
 					IsCollection: false,
 					IsRead:       true,
-					
-					
-
-					
 				},
 			},
 
 			models: []*domain.Bookmark{
 				{
-					
+
 					CreatedAt:    time.Now(),
 					UpdatedAt:    time.Now(),
 					DeletedAt:    optional.Make(time.Now()),
@@ -313,13 +269,9 @@ func TestSQLBookmarkRepositoryReplaceTest(t *testing.T) {
 					ID:           1,
 					IsCollection: false,
 					IsRead:       true,
-					
-					
-
-					
 				},
 				{
-					
+
 					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
@@ -329,10 +281,6 @@ func TestSQLBookmarkRepositoryReplaceTest(t *testing.T) {
 					ID:           2,
 					IsCollection: false,
 					IsRead:       true,
-					
-					
-
-					
 				},
 			},
 		},
@@ -340,7 +288,7 @@ func TestSQLBookmarkRepositoryReplaceTest(t *testing.T) {
 		{
 			name: "Two existing minimal inputs", models: []*domain.Bookmark{
 				{
-					
+
 					CreatedAt:    time.Now(),
 					UpdatedAt:    time.Now(),
 					DeletedAt:    optional.Make(time.Now()),
@@ -349,13 +297,9 @@ func TestSQLBookmarkRepositoryReplaceTest(t *testing.T) {
 					ID:           1,
 					IsCollection: false,
 					IsRead:       true,
-					
-					
-
-					
 				},
 				{
-					
+
 					CreatedAt:    time.Now(),
 					UpdatedAt:    time.Now(),
 					DeletedAt:    optional.Make(time.Now()),
@@ -364,15 +308,11 @@ func TestSQLBookmarkRepositoryReplaceTest(t *testing.T) {
 					ID:           2,
 					IsCollection: true,
 					IsRead:       true,
-					
-					
-
-					
 				},
 			},
 			previousModels: []*domain.Bookmark{
 				{
-					
+
 					CreatedAt:    time.Now(),
 					UpdatedAt:    time.Now(),
 					DeletedAt:    optional.Make(time.Now()),
@@ -381,13 +321,9 @@ func TestSQLBookmarkRepositoryReplaceTest(t *testing.T) {
 					ID:           1,
 					IsCollection: false,
 					IsRead:       true,
-					
-					
-
-					
 				},
 				{
-					
+
 					CreatedAt:    time.Now(),
 					UpdatedAt:    time.Now(),
 					DeletedAt:    optional.Make(time.Now()),
@@ -396,10 +332,6 @@ func TestSQLBookmarkRepositoryReplaceTest(t *testing.T) {
 					ID:           2,
 					IsCollection: true,
 					IsRead:       true,
-					
-					
-
-					
 				},
 			},
 		},
@@ -412,23 +344,20 @@ func TestSQLBookmarkRepositoryReplaceTest(t *testing.T) {
 			defer testCommon.HandlePanic(t, test.name)
 
 			db, err := testCommon.GetDB()
-            require.NoErrorf(t, err, test.name+", db open")
-            defer db.Close()
+			require.NoErrorf(t, err, test.name+", db open")
+			defer db.Close()
 
-			
-		    tagRepo := new(repository.Sqlite3TagRepository)
+			tagRepo := new(repository.Sqlite3TagRepository)
 
 			tagRepoAbstract, err := tagRepo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db})
 			assert.NoErrorf(t, err, test.name)
 
 			tagRepo = tagRepoAbstract.(*repository.Sqlite3TagRepository)
-		    
 
 			repo := new(repository.Sqlite3BookmarkRepository)
 
-			
-		    repoAbstract, err := repo.New(repository.Sqlite3BookmarkRepositoryConstructorArgs{DB: db, TagRepository: tagRepo})
-		    
+			repoAbstract, err := repo.New(repository.Sqlite3BookmarkRepositoryConstructorArgs{DB: db, TagRepository: tagRepo})
+
 			assert.NoErrorf(t, err, test.name)
 
 			repo = repoAbstract.(*repository.Sqlite3BookmarkRepository)
@@ -471,7 +400,7 @@ func TestSQLBookmarkRepositoryUpsertTest(t *testing.T) {
 			name: "Two existing inputs, non-existent dependencies", err: repositoryCommon.ReferenceToNonExistentDependencyError{},
 			previousModels: []*domain.Bookmark{
 				{
-					
+
 					CreatedAt:    time.Now(),
 					UpdatedAt:    time.Now(),
 					DeletedAt:    optional.Make(time.Now()),
@@ -481,13 +410,9 @@ func TestSQLBookmarkRepositoryUpsertTest(t *testing.T) {
 					ID:           1,
 					IsCollection: false,
 					IsRead:       true,
-					
-					
-
-					
 				},
 				{
-					
+
 					CreatedAt:    time.Now(),
 					UpdatedAt:    time.Now(),
 					DeletedAt:    optional.Make(time.Now()),
@@ -497,16 +422,12 @@ func TestSQLBookmarkRepositoryUpsertTest(t *testing.T) {
 					ID:           2,
 					IsCollection: false,
 					IsRead:       true,
-					
-					
-
-					
 				},
 			},
 
 			models: []*domain.Bookmark{
 				{
-					
+
 					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
@@ -522,13 +443,9 @@ func TestSQLBookmarkRepositoryUpsertTest(t *testing.T) {
 					ID:           1,
 					IsCollection: false,
 					IsRead:       true,
-					
-					
-
-					
 				},
 				{
-					
+
 					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
@@ -544,10 +461,6 @@ func TestSQLBookmarkRepositoryUpsertTest(t *testing.T) {
 					ID:           2,
 					IsCollection: false,
 					IsRead:       true,
-					
-					
-
-					
 				},
 			},
 		},
@@ -555,7 +468,7 @@ func TestSQLBookmarkRepositoryUpsertTest(t *testing.T) {
 			name: "Two existing inputs, adding duplicated values", err: helper.DuplicateInsertionError{},
 			previousModels: []*domain.Bookmark{
 				{
-					
+
 					CreatedAt:    time.Now(),
 					UpdatedAt:    time.Now(),
 					DeletedAt:    optional.Make(time.Now()),
@@ -565,13 +478,9 @@ func TestSQLBookmarkRepositoryUpsertTest(t *testing.T) {
 					ID:           1,
 					IsCollection: false,
 					IsRead:       true,
-					
-					
-
-					
 				},
 				{
-					
+
 					CreatedAt:    time.Now(),
 					UpdatedAt:    time.Now(),
 					DeletedAt:    optional.Make(time.Now()),
@@ -581,16 +490,12 @@ func TestSQLBookmarkRepositoryUpsertTest(t *testing.T) {
 					ID:           2,
 					IsCollection: false,
 					IsRead:       true,
-					
-					
-
-					
 				},
 			},
 
 			models: []*domain.Bookmark{
 				{
-					
+
 					CreatedAt:    time.Now(),
 					UpdatedAt:    time.Now(),
 					DeletedAt:    optional.Make(time.Now()),
@@ -599,13 +504,9 @@ func TestSQLBookmarkRepositoryUpsertTest(t *testing.T) {
 					ID:           1,
 					IsCollection: false,
 					IsRead:       true,
-					
-					
-
-					
 				},
 				{
-					
+
 					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
@@ -615,10 +516,6 @@ func TestSQLBookmarkRepositoryUpsertTest(t *testing.T) {
 					ID:           2,
 					IsCollection: false,
 					IsRead:       true,
-					
-					
-
-					
 				},
 			},
 		},
@@ -626,7 +523,7 @@ func TestSQLBookmarkRepositoryUpsertTest(t *testing.T) {
 			name: "Two existing minimal inputs",
 			previousModels: []*domain.Bookmark{
 				{
-					
+
 					CreatedAt:    time.Now(),
 					UpdatedAt:    time.Now(),
 					DeletedAt:    optional.Make(time.Now()),
@@ -635,13 +532,9 @@ func TestSQLBookmarkRepositoryUpsertTest(t *testing.T) {
 					ID:           1,
 					IsCollection: false,
 					IsRead:       true,
-					
-					
-
-					
 				},
 				{
-					
+
 					CreatedAt:    time.Now(),
 					UpdatedAt:    time.Now(),
 					DeletedAt:    optional.Make(time.Now()),
@@ -650,15 +543,11 @@ func TestSQLBookmarkRepositoryUpsertTest(t *testing.T) {
 					ID:           2,
 					IsCollection: false,
 					IsRead:       true,
-					
-					
-
-					
 				},
 			},
 			models: []*domain.Bookmark{
 				{
-					
+
 					CreatedAt:    time.Now(),
 					UpdatedAt:    time.Now(),
 					DeletedAt:    optional.Make(time.Now()),
@@ -667,13 +556,9 @@ func TestSQLBookmarkRepositoryUpsertTest(t *testing.T) {
 					ID:           1,
 					IsCollection: true,
 					IsRead:       true,
-					
-					
-
-					
 				},
 				{
-					
+
 					CreatedAt:    time.Now(),
 					UpdatedAt:    time.Now(),
 					DeletedAt:    optional.Make(time.Now()),
@@ -682,10 +567,6 @@ func TestSQLBookmarkRepositoryUpsertTest(t *testing.T) {
 					ID:           2,
 					IsCollection: true,
 					IsRead:       true,
-					
-					
-
-					
 				},
 			},
 		},
@@ -698,23 +579,20 @@ func TestSQLBookmarkRepositoryUpsertTest(t *testing.T) {
 			defer testCommon.HandlePanic(t, test.name)
 
 			db, err := testCommon.GetDB()
-            require.NoErrorf(t, err, test.name+", db open")
-            defer db.Close()
+			require.NoErrorf(t, err, test.name+", db open")
+			defer db.Close()
 
-			
-		    tagRepo := new(repository.Sqlite3TagRepository)
+			tagRepo := new(repository.Sqlite3TagRepository)
 
 			tagRepoAbstract, err := tagRepo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db})
 			assert.NoErrorf(t, err, test.name)
 
 			tagRepo = tagRepoAbstract.(*repository.Sqlite3TagRepository)
-		    
 
 			repo := new(repository.Sqlite3BookmarkRepository)
 
-			
-		    repoAbstract, err := repo.New(repository.Sqlite3BookmarkRepositoryConstructorArgs{DB: db, TagRepository: tagRepo})
-		    
+			repoAbstract, err := repo.New(repository.Sqlite3BookmarkRepositoryConstructorArgs{DB: db, TagRepository: tagRepo})
+
 			assert.NoErrorf(t, err, test.name)
 
 			repo = repoAbstract.(*repository.Sqlite3BookmarkRepository)
@@ -761,7 +639,7 @@ func TestSQLBookmarkRepositoryUpdateTest(t *testing.T) {
 			name: "Two existing minimal inputs, nop updater", updater: &domain.BookmarkUpdater{}, err: helper.IneffectiveOperationError{},
 			previousModels: []*domain.Bookmark{
 				{
-					
+
 					CreatedAt:    time.Now(),
 					UpdatedAt:    time.Now(),
 					DeletedAt:    optional.Make(time.Now()),
@@ -770,13 +648,9 @@ func TestSQLBookmarkRepositoryUpdateTest(t *testing.T) {
 					ID:           1,
 					IsCollection: false,
 					IsRead:       true,
-					
-					
-
-					
 				},
 				{
-					
+
 					CreatedAt:    time.Now(),
 					UpdatedAt:    time.Now(),
 					DeletedAt:    optional.Make(time.Now()),
@@ -785,15 +659,11 @@ func TestSQLBookmarkRepositoryUpdateTest(t *testing.T) {
 					ID:           2,
 					IsCollection: false,
 					IsRead:       true,
-					
-					
-
-					
 				},
 			},
 			models: []*domain.Bookmark{
 				{
-					
+
 					CreatedAt:    time.Now(),
 					UpdatedAt:    time.Now(),
 					DeletedAt:    optional.Make(time.Now()),
@@ -802,13 +672,9 @@ func TestSQLBookmarkRepositoryUpdateTest(t *testing.T) {
 					ID:           1,
 					IsCollection: false,
 					IsRead:       true,
-					
-					
-
-					
 				},
 				{
-					
+
 					CreatedAt:    time.Now(),
 					UpdatedAt:    time.Now(),
 					DeletedAt:    optional.Make(time.Now()),
@@ -817,10 +683,6 @@ func TestSQLBookmarkRepositoryUpdateTest(t *testing.T) {
 					ID:           2,
 					IsCollection: false,
 					IsRead:       true,
-					
-					
-
-					
 				},
 			},
 		},
@@ -828,7 +690,7 @@ func TestSQLBookmarkRepositoryUpdateTest(t *testing.T) {
 			name: "Two existing inputs, adding duplicated values", err: helper.DuplicateInsertionError{},
 			previousModels: []*domain.Bookmark{
 				{
-					
+
 					CreatedAt:    time.Now(),
 					UpdatedAt:    time.Now(),
 					DeletedAt:    optional.Make(time.Now()),
@@ -838,13 +700,9 @@ func TestSQLBookmarkRepositoryUpdateTest(t *testing.T) {
 					ID:           1,
 					IsCollection: false,
 					IsRead:       true,
-					
-					
-
-					
 				},
 				{
-					
+
 					CreatedAt:    time.Now(),
 					UpdatedAt:    time.Now(),
 					DeletedAt:    optional.Make(time.Now()),
@@ -854,16 +712,12 @@ func TestSQLBookmarkRepositoryUpdateTest(t *testing.T) {
 					ID:           2,
 					IsCollection: false,
 					IsRead:       true,
-					
-					
-
-					
 				},
 			},
 
 			models: []*domain.Bookmark{
 				{
-					
+
 					CreatedAt:    time.Now(),
 					UpdatedAt:    time.Now(),
 					DeletedAt:    optional.Make(time.Now()),
@@ -872,13 +726,9 @@ func TestSQLBookmarkRepositoryUpdateTest(t *testing.T) {
 					ID:           1,
 					IsCollection: false,
 					IsRead:       true,
-					
-					
-
-					
 				},
 				{
-					
+
 					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
@@ -888,24 +738,20 @@ func TestSQLBookmarkRepositoryUpdateTest(t *testing.T) {
 					ID:           2,
 					IsCollection: false,
 					IsRead:       true,
-					
-					
-
-					
 				},
 			},
 		},
 
 		{
-            
+
 			name: "Two existing minimal inputs, overwrite IsCollection",
 			updater: &domain.BookmarkUpdater{
 				IsCollection: optional.Make(model.UpdateOperation[bool]{Operator: model.UpdateSet, Operand: true}),
 			},
-            
+
 			previousModels: []*domain.Bookmark{
 				{
-					
+
 					CreatedAt:    time.Now(),
 					UpdatedAt:    time.Now(),
 					DeletedAt:    optional.Make(time.Now()),
@@ -914,13 +760,9 @@ func TestSQLBookmarkRepositoryUpdateTest(t *testing.T) {
 					ID:           1,
 					IsCollection: false,
 					IsRead:       true,
-					
-					
-
-					
 				},
 				{
-					
+
 					CreatedAt:    time.Now(),
 					UpdatedAt:    time.Now(),
 					DeletedAt:    optional.Make(time.Now()),
@@ -929,16 +771,12 @@ func TestSQLBookmarkRepositoryUpdateTest(t *testing.T) {
 					ID:           2,
 					IsCollection: false,
 					IsRead:       true,
-					
-					
-
-					
 				},
 			},
 
 			models: []*domain.Bookmark{
 				{
-					
+
 					CreatedAt:    time.Now(),
 					UpdatedAt:    time.Now(),
 					DeletedAt:    optional.Make(time.Now()),
@@ -947,13 +785,9 @@ func TestSQLBookmarkRepositoryUpdateTest(t *testing.T) {
 					ID:           1,
 					IsCollection: false,
 					IsRead:       true,
-					
-					
-
-					
 				},
 				{
-					
+
 					CreatedAt:    time.Now(),
 					UpdatedAt:    time.Now(),
 					DeletedAt:    optional.Make(time.Now()),
@@ -962,10 +796,6 @@ func TestSQLBookmarkRepositoryUpdateTest(t *testing.T) {
 					ID:           2,
 					IsCollection: false,
 					IsRead:       true,
-					
-					
-
-					
 				},
 			},
 		},
@@ -978,23 +808,20 @@ func TestSQLBookmarkRepositoryUpdateTest(t *testing.T) {
 			defer testCommon.HandlePanic(t, test.name)
 
 			db, err := testCommon.GetDB()
-            require.NoErrorf(t, err, test.name+", db open")
-            defer db.Close()
+			require.NoErrorf(t, err, test.name+", db open")
+			defer db.Close()
 
-			
-		    tagRepo := new(repository.Sqlite3TagRepository)
+			tagRepo := new(repository.Sqlite3TagRepository)
 
 			tagRepoAbstract, err := tagRepo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db})
 			assert.NoErrorf(t, err, test.name)
 
 			tagRepo = tagRepoAbstract.(*repository.Sqlite3TagRepository)
-		    
 
 			repo := new(repository.Sqlite3BookmarkRepository)
 
-			
-		    repoAbstract, err := repo.New(repository.Sqlite3BookmarkRepositoryConstructorArgs{DB: db, TagRepository: tagRepo})
-		    
+			repoAbstract, err := repo.New(repository.Sqlite3BookmarkRepositoryConstructorArgs{DB: db, TagRepository: tagRepo})
+
 			assert.NoErrorf(t, err, test.name)
 
 			repo = repoAbstract.(*repository.Sqlite3BookmarkRepository)
@@ -1034,7 +861,7 @@ func TestSQLBookmarkRepositoryUpdateWhereTest(t *testing.T) {
 			name: "Nil filter", updater: &domain.BookmarkUpdater{}, filter: nil, err: helper.NilInputError{},
 		},
 		{
-            
+
 			name: "Two existing minimal inputs, filter for title of first, update IsCollection", numAffectedRecords: 1, insertBeforeUpdate: true,
 			updater: &domain.BookmarkUpdater{
 				IsCollection: optional.Make(model.UpdateOperation[bool]{Operator: model.UpdateSet, Operand: true}),
@@ -1045,10 +872,10 @@ func TestSQLBookmarkRepositoryUpdateWhereTest(t *testing.T) {
 					Operand:  model.ScalarOperand[optional.Optional[string]]{Operand: optional.Make("My first bookmark")},
 				}),
 			},
-            
+
 			models: []*domain.Bookmark{
 				{
-					
+
 					CreatedAt:    time.Now(),
 					UpdatedAt:    time.Now(),
 					DeletedAt:    optional.Make(time.Now()),
@@ -1057,13 +884,9 @@ func TestSQLBookmarkRepositoryUpdateWhereTest(t *testing.T) {
 					ID:           1,
 					IsCollection: false,
 					IsRead:       true,
-					
-					
-
-					
 				},
 				{
-					
+
 					CreatedAt:    time.Now(),
 					UpdatedAt:    time.Now(),
 					DeletedAt:    optional.Make(time.Now()),
@@ -1072,23 +895,19 @@ func TestSQLBookmarkRepositoryUpdateWhereTest(t *testing.T) {
 					ID:           2,
 					IsCollection: false,
 					IsRead:       true,
-					
-					
-
-					
 				},
 			},
 		},
 		{
-            
+
 			name: "Two existing minimal inputs, overwrite IsCollection", numAffectedRecords: 2, insertBeforeUpdate: true, filter: &domain.BookmarkFilter{},
 			updater: &domain.BookmarkUpdater{
 				IsCollection: optional.Make(model.UpdateOperation[bool]{Operator: model.UpdateSet, Operand: true}),
 			},
-            
+
 			models: []*domain.Bookmark{
 				{
-					
+
 					CreatedAt:    time.Now(),
 					UpdatedAt:    time.Now(),
 					DeletedAt:    optional.Make(time.Now()),
@@ -1097,13 +916,9 @@ func TestSQLBookmarkRepositoryUpdateWhereTest(t *testing.T) {
 					ID:           1,
 					IsCollection: false,
 					IsRead:       true,
-					
-					
-
-					
 				},
 				{
-					
+
 					CreatedAt:    time.Now(),
 					UpdatedAt:    time.Now(),
 					DeletedAt:    optional.Make(time.Now()),
@@ -1112,23 +927,19 @@ func TestSQLBookmarkRepositoryUpdateWhereTest(t *testing.T) {
 					ID:           2,
 					IsCollection: false,
 					IsRead:       true,
-					
-					
-
-					
 				},
 			},
 		},
 		{
 			name: "Two existing minimal inputs, adding duplicated values", numAffectedRecords: 0, insertBeforeUpdate: true, filter: &domain.BookmarkFilter{}, err: helper.DuplicateInsertionError{},
-            
+
 			updater: &domain.BookmarkUpdater{
 				URL: optional.Make(model.UpdateOperation[string]{Operator: model.UpdateSet, Operand: "https://example.com"}),
 			},
-            
+
 			models: []*domain.Bookmark{
 				{
-					
+
 					CreatedAt:    time.Now(),
 					UpdatedAt:    time.Now(),
 					DeletedAt:    optional.Make(time.Now()),
@@ -1137,13 +948,9 @@ func TestSQLBookmarkRepositoryUpdateWhereTest(t *testing.T) {
 					ID:           1,
 					IsCollection: false,
 					IsRead:       true,
-					
-					
-
-					
 				},
 				{
-					
+
 					CreatedAt:    time.Now(),
 					UpdatedAt:    time.Now(),
 					DeletedAt:    optional.Make(time.Now()),
@@ -1152,10 +959,6 @@ func TestSQLBookmarkRepositoryUpdateWhereTest(t *testing.T) {
 					ID:           2,
 					IsCollection: false,
 					IsRead:       true,
-					
-					
-
-					
 				},
 			},
 		},
@@ -1168,23 +971,20 @@ func TestSQLBookmarkRepositoryUpdateWhereTest(t *testing.T) {
 			defer testCommon.HandlePanic(t, test.name)
 
 			db, err := testCommon.GetDB()
-            require.NoErrorf(t, err, test.name+", db open")
-            defer db.Close()
+			require.NoErrorf(t, err, test.name+", db open")
+			defer db.Close()
 
-			
-		    tagRepo := new(repository.Sqlite3TagRepository)
+			tagRepo := new(repository.Sqlite3TagRepository)
 
 			tagRepoAbstract, err := tagRepo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db})
 			assert.NoErrorf(t, err, test.name)
 
 			tagRepo = tagRepoAbstract.(*repository.Sqlite3TagRepository)
-		    
 
 			repo := new(repository.Sqlite3BookmarkRepository)
 
-			
-		    repoAbstract, err := repo.New(repository.Sqlite3BookmarkRepositoryConstructorArgs{DB: db, TagRepository: tagRepo})
-		    
+			repoAbstract, err := repo.New(repository.Sqlite3BookmarkRepositoryConstructorArgs{DB: db, TagRepository: tagRepo})
+
 			assert.NoErrorf(t, err, test.name)
 
 			repo = repoAbstract.(*repository.Sqlite3BookmarkRepository)
@@ -1227,7 +1027,7 @@ func TestSQLBookmarkRepositoryDeleteTest(t *testing.T) {
 		{
 			name: "Two minimal inputs", insertBeforeDelete: true, models: []*domain.Bookmark{
 				{
-					
+
 					CreatedAt:    time.Now(),
 					UpdatedAt:    time.Now(),
 					DeletedAt:    optional.Make(time.Now()),
@@ -1236,13 +1036,9 @@ func TestSQLBookmarkRepositoryDeleteTest(t *testing.T) {
 					ID:           1,
 					IsCollection: false,
 					IsRead:       true,
-					
-					
-
-					
 				},
 				{
-					
+
 					CreatedAt:    time.Now(),
 					UpdatedAt:    time.Now(),
 					DeletedAt:    optional.Make(time.Now()),
@@ -1251,10 +1047,6 @@ func TestSQLBookmarkRepositoryDeleteTest(t *testing.T) {
 					ID:           2,
 					IsCollection: false,
 					IsRead:       true,
-					
-					
-
-					
 				},
 			},
 		},
@@ -1267,23 +1059,20 @@ func TestSQLBookmarkRepositoryDeleteTest(t *testing.T) {
 			defer testCommon.HandlePanic(t, test.name)
 
 			db, err := testCommon.GetDB()
-            require.NoErrorf(t, err, test.name+", db open")
-            defer db.Close()
+			require.NoErrorf(t, err, test.name+", db open")
+			defer db.Close()
 
-			
-		    tagRepo := new(repository.Sqlite3TagRepository)
+			tagRepo := new(repository.Sqlite3TagRepository)
 
 			tagRepoAbstract, err := tagRepo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db})
 			assert.NoErrorf(t, err, test.name)
 
 			tagRepo = tagRepoAbstract.(*repository.Sqlite3TagRepository)
-		    
 
 			repo := new(repository.Sqlite3BookmarkRepository)
 
-			
-		    repoAbstract, err := repo.New(repository.Sqlite3BookmarkRepositoryConstructorArgs{DB: db, TagRepository: tagRepo})
-		    
+			repoAbstract, err := repo.New(repository.Sqlite3BookmarkRepositoryConstructorArgs{DB: db, TagRepository: tagRepo})
+
 			assert.NoErrorf(t, err, test.name)
 
 			repo = repoAbstract.(*repository.Sqlite3BookmarkRepository)
@@ -1316,7 +1105,7 @@ func TestSQLBookmarkRepositoryDeleteWhereTest(t *testing.T) {
 			name: "Nil filter", filter: nil, err: helper.NilInputError{},
 		},
 		{
-            
+
 			name: "Two existing minimal inputs, filter for title of first", numAffectedRecords: 1, insertBeforeDelete: true,
 			filter: &domain.BookmarkFilter{
 				Title: optional.Make(model.FilterOperation[optional.Optional[string]]{
@@ -1324,10 +1113,10 @@ func TestSQLBookmarkRepositoryDeleteWhereTest(t *testing.T) {
 					Operand:  model.ScalarOperand[optional.Optional[string]]{Operand: optional.Make("My first bookmark")},
 				}),
 			},
-            
+
 			models: []*domain.Bookmark{
 				{
-					
+
 					CreatedAt:    time.Now(),
 					UpdatedAt:    time.Now(),
 					DeletedAt:    optional.Make(time.Now()),
@@ -1336,13 +1125,9 @@ func TestSQLBookmarkRepositoryDeleteWhereTest(t *testing.T) {
 					ID:           1,
 					IsCollection: false,
 					IsRead:       true,
-					
-					
-
-					
 				},
 				{
-					
+
 					CreatedAt:    time.Now(),
 					UpdatedAt:    time.Now(),
 					DeletedAt:    optional.Make(time.Now()),
@@ -1351,15 +1136,11 @@ func TestSQLBookmarkRepositoryDeleteWhereTest(t *testing.T) {
 					ID:           2,
 					IsCollection: false,
 					IsRead:       true,
-					
-					
-
-					
 				},
 			},
 		},
 		{
-            
+
 			name: "Two non-existing minimal inputs, filter for title",
 			filter: &domain.BookmarkFilter{
 				Title: optional.Make(model.FilterOperation[optional.Optional[string]]{
@@ -1367,7 +1148,6 @@ func TestSQLBookmarkRepositoryDeleteWhereTest(t *testing.T) {
 					Operand:  model.ScalarOperand[optional.Optional[string]]{Operand: optional.Make("My first bookmark")},
 				}),
 			},
-            
 		},
 	}
 
@@ -1378,23 +1158,20 @@ func TestSQLBookmarkRepositoryDeleteWhereTest(t *testing.T) {
 			defer testCommon.HandlePanic(t, test.name)
 
 			db, err := testCommon.GetDB()
-            require.NoErrorf(t, err, test.name+", db open")
-            defer db.Close()
+			require.NoErrorf(t, err, test.name+", db open")
+			defer db.Close()
 
-			
-		    tagRepo := new(repository.Sqlite3TagRepository)
+			tagRepo := new(repository.Sqlite3TagRepository)
 
 			tagRepoAbstract, err := tagRepo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db})
 			assert.NoErrorf(t, err, test.name)
 
 			tagRepo = tagRepoAbstract.(*repository.Sqlite3TagRepository)
-		    
 
 			repo := new(repository.Sqlite3BookmarkRepository)
 
-			
-		    repoAbstract, err := repo.New(repository.Sqlite3BookmarkRepositoryConstructorArgs{DB: db, TagRepository: tagRepo})
-		    
+			repoAbstract, err := repo.New(repository.Sqlite3BookmarkRepositoryConstructorArgs{DB: db, TagRepository: tagRepo})
+
 			assert.NoErrorf(t, err, test.name)
 
 			repo = repoAbstract.(*repository.Sqlite3BookmarkRepository)
@@ -1428,7 +1205,7 @@ func TestSQLBookmarkRepositoryCountWhereTest(t *testing.T) {
 			name: "Nil filter", filter: nil, err: helper.NilInputError{},
 		},
 		{
-            
+
 			name: "Two existing minimal entities, filter for title of first", numAffectedRecords: 1, insertBeforeCount: true,
 			filter: &domain.BookmarkFilter{
 				Title: optional.Make(model.FilterOperation[optional.Optional[string]]{
@@ -1436,10 +1213,10 @@ func TestSQLBookmarkRepositoryCountWhereTest(t *testing.T) {
 					Operand:  model.ScalarOperand[optional.Optional[string]]{Operand: optional.Make("My first bookmark")},
 				}),
 			},
-            
+
 			models: []*domain.Bookmark{
 				{
-					
+
 					CreatedAt:    time.Now(),
 					UpdatedAt:    time.Now(),
 					DeletedAt:    optional.Make(time.Now()),
@@ -1448,13 +1225,9 @@ func TestSQLBookmarkRepositoryCountWhereTest(t *testing.T) {
 					ID:           1,
 					IsCollection: false,
 					IsRead:       true,
-					
-					
-
-					
 				},
 				{
-					
+
 					CreatedAt:    time.Now(),
 					UpdatedAt:    time.Now(),
 					DeletedAt:    optional.Make(time.Now()),
@@ -1463,15 +1236,11 @@ func TestSQLBookmarkRepositoryCountWhereTest(t *testing.T) {
 					ID:           2,
 					IsCollection: false,
 					IsRead:       true,
-					
-					
-
-					
 				},
 			},
 		},
 		{
-            
+
 			name: "Two non-existing minimal entities, filter for title",
 			filter: &domain.BookmarkFilter{
 				Title: optional.Make(model.FilterOperation[optional.Optional[string]]{
@@ -1479,8 +1248,7 @@ func TestSQLBookmarkRepositoryCountWhereTest(t *testing.T) {
 					Operand:  model.ScalarOperand[optional.Optional[string]]{Operand: optional.Make("My first bookmark")},
 				}),
 			},
-            
-            },
+		},
 	}
 
 	for _, test := range tests {
@@ -1490,23 +1258,20 @@ func TestSQLBookmarkRepositoryCountWhereTest(t *testing.T) {
 			defer testCommon.HandlePanic(t, test.name)
 
 			db, err := testCommon.GetDB()
-            require.NoErrorf(t, err, test.name+", db open")
-            defer db.Close()
+			require.NoErrorf(t, err, test.name+", db open")
+			defer db.Close()
 
-			
-		    tagRepo := new(repository.Sqlite3TagRepository)
+			tagRepo := new(repository.Sqlite3TagRepository)
 
 			tagRepoAbstract, err := tagRepo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db})
 			assert.NoErrorf(t, err, test.name)
 
 			tagRepo = tagRepoAbstract.(*repository.Sqlite3TagRepository)
-		    
 
 			repo := new(repository.Sqlite3BookmarkRepository)
 
-			
-		    repoAbstract, err := repo.New(repository.Sqlite3BookmarkRepositoryConstructorArgs{DB: db, TagRepository: tagRepo})
-		    
+			repoAbstract, err := repo.New(repository.Sqlite3BookmarkRepositoryConstructorArgs{DB: db, TagRepository: tagRepo})
+
 			assert.NoErrorf(t, err, test.name)
 
 			repo = repoAbstract.(*repository.Sqlite3BookmarkRepository)
@@ -1539,7 +1304,7 @@ func TestSQLBookmarkRepositoryCountAllTest(t *testing.T) {
 			name: "Two existing minimal entities, filter for all", numRecords: 2, insertBeforeCount: true,
 			models: []*domain.Bookmark{
 				{
-					
+
 					CreatedAt:    time.Now(),
 					UpdatedAt:    time.Now(),
 					DeletedAt:    optional.Make(time.Now()),
@@ -1548,13 +1313,9 @@ func TestSQLBookmarkRepositoryCountAllTest(t *testing.T) {
 					ID:           1,
 					IsCollection: false,
 					IsRead:       true,
-					
-					
-
-					
 				},
 				{
-					
+
 					CreatedAt:    time.Now(),
 					UpdatedAt:    time.Now(),
 					DeletedAt:    optional.Make(time.Now()),
@@ -1563,10 +1324,6 @@ func TestSQLBookmarkRepositoryCountAllTest(t *testing.T) {
 					ID:           2,
 					IsCollection: false,
 					IsRead:       true,
-					
-					
-
-					
 				},
 			},
 		},
@@ -1574,7 +1331,7 @@ func TestSQLBookmarkRepositoryCountAllTest(t *testing.T) {
 			name: "Two non-existing minimal entities, filter for all",
 			models: []*domain.Bookmark{
 				{
-					
+
 					CreatedAt:    time.Now(),
 					UpdatedAt:    time.Now(),
 					DeletedAt:    optional.Make(time.Now()),
@@ -1583,13 +1340,9 @@ func TestSQLBookmarkRepositoryCountAllTest(t *testing.T) {
 					ID:           1,
 					IsCollection: false,
 					IsRead:       true,
-					
-					
-
-					
 				},
 				{
-					
+
 					CreatedAt:    time.Now(),
 					UpdatedAt:    time.Now(),
 					DeletedAt:    optional.Make(time.Now()),
@@ -1598,10 +1351,6 @@ func TestSQLBookmarkRepositoryCountAllTest(t *testing.T) {
 					ID:           2,
 					IsCollection: false,
 					IsRead:       true,
-					
-					
-
-					
 				},
 			},
 		},
@@ -1614,23 +1363,20 @@ func TestSQLBookmarkRepositoryCountAllTest(t *testing.T) {
 			defer testCommon.HandlePanic(t, test.name)
 
 			db, err := testCommon.GetDB()
-            require.NoErrorf(t, err, test.name+", db open")
-            defer db.Close()
+			require.NoErrorf(t, err, test.name+", db open")
+			defer db.Close()
 
-			
-		    tagRepo := new(repository.Sqlite3TagRepository)
+			tagRepo := new(repository.Sqlite3TagRepository)
 
 			tagRepoAbstract, err := tagRepo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db})
 			assert.NoErrorf(t, err, test.name)
 
 			tagRepo = tagRepoAbstract.(*repository.Sqlite3TagRepository)
-		    
 
 			repo := new(repository.Sqlite3BookmarkRepository)
 
-			
-		    repoAbstract, err := repo.New(repository.Sqlite3BookmarkRepositoryConstructorArgs{DB: db, TagRepository: tagRepo})
-		    
+			repoAbstract, err := repo.New(repository.Sqlite3BookmarkRepositoryConstructorArgs{DB: db, TagRepository: tagRepo})
+
 			assert.NoErrorf(t, err, test.name)
 
 			repo = repoAbstract.(*repository.Sqlite3BookmarkRepository)
@@ -1665,8 +1411,8 @@ func TestSQLBookmarkRepositoryDoesExistTest(t *testing.T) {
 		{
 			name: "Existing minimal entity", doesExist: true, insertBeforeCheck: true,
 			model: &domain.Bookmark{
-				
-					CreatedAt:    time.Now(),
+
+				CreatedAt:    time.Now(),
 				UpdatedAt:    time.Now(),
 				DeletedAt:    optional.Make(time.Now()),
 				URL:          "https://example.com",
@@ -1674,17 +1420,13 @@ func TestSQLBookmarkRepositoryDoesExistTest(t *testing.T) {
 				ID:           1,
 				IsCollection: false,
 				IsRead:       true,
-					
-					
-
-					
 			},
 		},
 		{
 			name: "Non-existing minimal entities",
 			model: &domain.Bookmark{
-				
-					CreatedAt:    time.Now(),
+
+				CreatedAt:    time.Now(),
 				UpdatedAt:    time.Now(),
 				DeletedAt:    optional.Make(time.Now()),
 				URL:          "https://example.com",
@@ -1692,10 +1434,6 @@ func TestSQLBookmarkRepositoryDoesExistTest(t *testing.T) {
 				ID:           1,
 				IsCollection: false,
 				IsRead:       true,
-					
-					
-
-					
 			},
 		},
 	}
@@ -1707,23 +1445,20 @@ func TestSQLBookmarkRepositoryDoesExistTest(t *testing.T) {
 			defer testCommon.HandlePanic(t, test.name)
 
 			db, err := testCommon.GetDB()
-            require.NoErrorf(t, err, test.name+", db open")
-            defer db.Close()
+			require.NoErrorf(t, err, test.name+", db open")
+			defer db.Close()
 
-			
-		    tagRepo := new(repository.Sqlite3TagRepository)
+			tagRepo := new(repository.Sqlite3TagRepository)
 
 			tagRepoAbstract, err := tagRepo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db})
 			assert.NoErrorf(t, err, test.name)
 
 			tagRepo = tagRepoAbstract.(*repository.Sqlite3TagRepository)
-		    
 
 			repo := new(repository.Sqlite3BookmarkRepository)
 
-			
-		    repoAbstract, err := repo.New(repository.Sqlite3BookmarkRepositoryConstructorArgs{DB: db, TagRepository: tagRepo})
-		    
+			repoAbstract, err := repo.New(repository.Sqlite3BookmarkRepositoryConstructorArgs{DB: db, TagRepository: tagRepo})
+
 			assert.NoErrorf(t, err, test.name)
 
 			repo = repoAbstract.(*repository.Sqlite3BookmarkRepository)
@@ -1757,7 +1492,7 @@ func TestSQLBookmarkRepositoryDoesExistWhereTest(t *testing.T) {
 			name: "Nil input", filter: nil, err: helper.NilInputError{},
 		},
 		{
-            
+
 			name: "Two existing minimal entities, filter for title of first", doesExist: true, insertBeforeCheck: true,
 			filter: &domain.BookmarkFilter{
 				Title: optional.Make(model.FilterOperation[optional.Optional[string]]{
@@ -1765,10 +1500,10 @@ func TestSQLBookmarkRepositoryDoesExistWhereTest(t *testing.T) {
 					Operand:  model.ScalarOperand[optional.Optional[string]]{Operand: optional.Make("My first bookmark")},
 				}),
 			},
-            
+
 			models: []*domain.Bookmark{
 				{
-					
+
 					CreatedAt:    time.Now(),
 					UpdatedAt:    time.Now(),
 					DeletedAt:    optional.Make(time.Now()),
@@ -1777,13 +1512,9 @@ func TestSQLBookmarkRepositoryDoesExistWhereTest(t *testing.T) {
 					ID:           1,
 					IsCollection: false,
 					IsRead:       true,
-					
-					
-
-					
 				},
 				{
-					
+
 					CreatedAt:    time.Now(),
 					UpdatedAt:    time.Now(),
 					DeletedAt:    optional.Make(time.Now()),
@@ -1792,15 +1523,11 @@ func TestSQLBookmarkRepositoryDoesExistWhereTest(t *testing.T) {
 					ID:           2,
 					IsCollection: false,
 					IsRead:       true,
-					
-					
-
-					
 				},
 			},
 		},
 		{
-            
+
 			name: "Two existing minimal entities, filter for IsCollection of both", doesExist: true, insertBeforeCheck: true,
 			filter: &domain.BookmarkFilter{
 				IsCollection: optional.Make(model.FilterOperation[bool]{
@@ -1808,10 +1535,10 @@ func TestSQLBookmarkRepositoryDoesExistWhereTest(t *testing.T) {
 					Operand:  model.ScalarOperand[bool]{Operand: false},
 				}),
 			},
-            
+
 			models: []*domain.Bookmark{
 				{
-					
+
 					CreatedAt:    time.Now(),
 					UpdatedAt:    time.Now(),
 					DeletedAt:    optional.Make(time.Now()),
@@ -1820,13 +1547,9 @@ func TestSQLBookmarkRepositoryDoesExistWhereTest(t *testing.T) {
 					ID:           1,
 					IsCollection: false,
 					IsRead:       true,
-					
-					
-
-					
 				},
 				{
-					
+
 					CreatedAt:    time.Now(),
 					UpdatedAt:    time.Now(),
 					DeletedAt:    optional.Make(time.Now()),
@@ -1835,15 +1558,11 @@ func TestSQLBookmarkRepositoryDoesExistWhereTest(t *testing.T) {
 					ID:           2,
 					IsCollection: false,
 					IsRead:       true,
-					
-					
-
-					
 				},
 			},
 		},
 		{
-            
+
 			name: "Two non-existing minimal entities, filter for title of first",
 			filter: &domain.BookmarkFilter{
 				Title: optional.Make(model.FilterOperation[optional.Optional[string]]{
@@ -1851,10 +1570,10 @@ func TestSQLBookmarkRepositoryDoesExistWhereTest(t *testing.T) {
 					Operand:  model.ScalarOperand[optional.Optional[string]]{Operand: optional.Make("My first bookmark")},
 				}),
 			},
-            
+
 			models: []*domain.Bookmark{
 				{
-					
+
 					CreatedAt:    time.Now(),
 					UpdatedAt:    time.Now(),
 					DeletedAt:    optional.Make(time.Now()),
@@ -1863,13 +1582,9 @@ func TestSQLBookmarkRepositoryDoesExistWhereTest(t *testing.T) {
 					ID:           1,
 					IsCollection: false,
 					IsRead:       true,
-					
-					
-
-					
 				},
 				{
-					
+
 					CreatedAt:    time.Now(),
 					UpdatedAt:    time.Now(),
 					DeletedAt:    optional.Make(time.Now()),
@@ -1878,10 +1593,6 @@ func TestSQLBookmarkRepositoryDoesExistWhereTest(t *testing.T) {
 					ID:           2,
 					IsCollection: false,
 					IsRead:       true,
-					
-					
-
-					
 				},
 			},
 		},
@@ -1894,23 +1605,20 @@ func TestSQLBookmarkRepositoryDoesExistWhereTest(t *testing.T) {
 			defer testCommon.HandlePanic(t, test.name)
 
 			db, err := testCommon.GetDB()
-            require.NoErrorf(t, err, test.name+", db open")
-            defer db.Close()
+			require.NoErrorf(t, err, test.name+", db open")
+			defer db.Close()
 
-			
-		    tagRepo := new(repository.Sqlite3TagRepository)
+			tagRepo := new(repository.Sqlite3TagRepository)
 
 			tagRepoAbstract, err := tagRepo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db})
 			assert.NoErrorf(t, err, test.name)
 
 			tagRepo = tagRepoAbstract.(*repository.Sqlite3TagRepository)
-		    
 
 			repo := new(repository.Sqlite3BookmarkRepository)
 
-			
-		    repoAbstract, err := repo.New(repository.Sqlite3BookmarkRepositoryConstructorArgs{DB: db, TagRepository: tagRepo})
-		    
+			repoAbstract, err := repo.New(repository.Sqlite3BookmarkRepositoryConstructorArgs{DB: db, TagRepository: tagRepo})
+
 			assert.NoErrorf(t, err, test.name)
 
 			repo = repoAbstract.(*repository.Sqlite3BookmarkRepository)
@@ -1945,17 +1653,16 @@ func TestSQLBookmarkRepositoryGetWhereTest(t *testing.T) {
 		},
 		{
 			name: "Empty result", err: helper.IneffectiveOperationError{},
-            
-            filter: &domain.BookmarkFilter{
+
+			filter: &domain.BookmarkFilter{
 				Title: optional.Make(model.FilterOperation[optional.Optional[string]]{
 					Operator: model.FilterEqual,
 					Operand:  model.ScalarOperand[optional.Optional[string]]{Operand: optional.Make("My first bookmark")},
 				}),
 			},
-            
 		},
 		{
-            
+
 			name: "Two existing minimal entities, filter for title of first", numRecords: 1, insertBeforeCheck: true,
 			filter: &domain.BookmarkFilter{
 				Title: optional.Make(model.FilterOperation[optional.Optional[string]]{
@@ -1963,10 +1670,10 @@ func TestSQLBookmarkRepositoryGetWhereTest(t *testing.T) {
 					Operand:  model.ScalarOperand[optional.Optional[string]]{Operand: optional.Make("My first bookmark")},
 				}),
 			},
-            
+
 			models: []*domain.Bookmark{
 				{
-					
+
 					CreatedAt:    time.Now(),
 					UpdatedAt:    time.Now(),
 					DeletedAt:    optional.Make(time.Now()),
@@ -1975,13 +1682,9 @@ func TestSQLBookmarkRepositoryGetWhereTest(t *testing.T) {
 					ID:           1,
 					IsCollection: false,
 					IsRead:       true,
-					
-					
-
-					
 				},
 				{
-					
+
 					CreatedAt:    time.Now(),
 					UpdatedAt:    time.Now(),
 					DeletedAt:    optional.Make(time.Now()),
@@ -1990,15 +1693,11 @@ func TestSQLBookmarkRepositoryGetWhereTest(t *testing.T) {
 					ID:           2,
 					IsCollection: false,
 					IsRead:       true,
-					
-					
-
-					
 				},
 			},
 		},
 		{
-            
+
 			name: "Two existing minimal entities, filter for IsCollection of both", numRecords: 2, insertBeforeCheck: true,
 			filter: &domain.BookmarkFilter{
 				IsCollection: optional.Make(model.FilterOperation[bool]{
@@ -2006,10 +1705,10 @@ func TestSQLBookmarkRepositoryGetWhereTest(t *testing.T) {
 					Operand:  model.ScalarOperand[bool]{Operand: false},
 				}),
 			},
-            
+
 			models: []*domain.Bookmark{
 				{
-					
+
 					CreatedAt:    time.Now(),
 					UpdatedAt:    time.Now(),
 					DeletedAt:    optional.Make(time.Now()),
@@ -2018,13 +1717,9 @@ func TestSQLBookmarkRepositoryGetWhereTest(t *testing.T) {
 					ID:           1,
 					IsCollection: false,
 					IsRead:       true,
-					
-					
-
-					
 				},
 				{
-					
+
 					CreatedAt:    time.Now(),
 					UpdatedAt:    time.Now(),
 					DeletedAt:    optional.Make(time.Now()),
@@ -2033,15 +1728,11 @@ func TestSQLBookmarkRepositoryGetWhereTest(t *testing.T) {
 					ID:           2,
 					IsCollection: false,
 					IsRead:       true,
-					
-					
-
-					
 				},
 			},
 		},
 		{
-            
+
 			name: "Two non-existing minimal entities, filter for title of first", insertBeforeCheck: true, numRecords: 1,
 			filter: &domain.BookmarkFilter{
 				Title: optional.Make(model.FilterOperation[optional.Optional[string]]{
@@ -2049,10 +1740,10 @@ func TestSQLBookmarkRepositoryGetWhereTest(t *testing.T) {
 					Operand:  model.ScalarOperand[optional.Optional[string]]{Operand: optional.Make("My first bookmark")},
 				}),
 			},
-            
+
 			models: []*domain.Bookmark{
 				{
-					
+
 					CreatedAt:    time.Now(),
 					UpdatedAt:    time.Now(),
 					DeletedAt:    optional.Make(time.Now()),
@@ -2061,13 +1752,9 @@ func TestSQLBookmarkRepositoryGetWhereTest(t *testing.T) {
 					ID:           1,
 					IsCollection: false,
 					IsRead:       true,
-					
-					
-
-					
 				},
 				{
-					
+
 					CreatedAt:    time.Now(),
 					UpdatedAt:    time.Now(),
 					DeletedAt:    optional.Make(time.Now()),
@@ -2076,10 +1763,6 @@ func TestSQLBookmarkRepositoryGetWhereTest(t *testing.T) {
 					ID:           2,
 					IsCollection: false,
 					IsRead:       true,
-					
-					
-
-					
 				},
 			},
 		},
@@ -2092,23 +1775,20 @@ func TestSQLBookmarkRepositoryGetWhereTest(t *testing.T) {
 			defer testCommon.HandlePanic(t, test.name)
 
 			db, err := testCommon.GetDB()
-            require.NoErrorf(t, err, test.name+", db open")
-            defer db.Close()
+			require.NoErrorf(t, err, test.name+", db open")
+			defer db.Close()
 
-			
-		    tagRepo := new(repository.Sqlite3TagRepository)
+			tagRepo := new(repository.Sqlite3TagRepository)
 
 			tagRepoAbstract, err := tagRepo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db})
 			assert.NoErrorf(t, err, test.name)
 
 			tagRepo = tagRepoAbstract.(*repository.Sqlite3TagRepository)
-		    
 
 			repo := new(repository.Sqlite3BookmarkRepository)
 
-			
-		    repoAbstract, err := repo.New(repository.Sqlite3BookmarkRepositoryConstructorArgs{DB: db, TagRepository: tagRepo})
-		    
+			repoAbstract, err := repo.New(repository.Sqlite3BookmarkRepositoryConstructorArgs{DB: db, TagRepository: tagRepo})
+
 			assert.NoErrorf(t, err, test.name)
 
 			repo = repoAbstract.(*repository.Sqlite3BookmarkRepository)
@@ -2142,7 +1822,7 @@ func TestSQLBookmarkRepositoryGetFirstWhereTest(t *testing.T) {
 			name: "Nil filter", filter: nil, err: helper.NilInputError{},
 		},
 		{
-            
+
 			name: "Two existing minimal entities, filter for title of first", numRecords: 1, insertBeforeCheck: true,
 			filter: &domain.BookmarkFilter{
 				Title: optional.Make(model.FilterOperation[optional.Optional[string]]{
@@ -2150,10 +1830,10 @@ func TestSQLBookmarkRepositoryGetFirstWhereTest(t *testing.T) {
 					Operand:  model.ScalarOperand[optional.Optional[string]]{Operand: optional.Make("My first bookmark")},
 				}),
 			},
-            
+
 			models: []*domain.Bookmark{
 				{
-					
+
 					CreatedAt:    time.Now(),
 					UpdatedAt:    time.Now(),
 					DeletedAt:    optional.Make(time.Now()),
@@ -2162,13 +1842,9 @@ func TestSQLBookmarkRepositoryGetFirstWhereTest(t *testing.T) {
 					ID:           1,
 					IsCollection: false,
 					IsRead:       true,
-					
-					
-
-					
 				},
 				{
-					
+
 					CreatedAt:    time.Now(),
 					UpdatedAt:    time.Now(),
 					DeletedAt:    optional.Make(time.Now()),
@@ -2177,15 +1853,11 @@ func TestSQLBookmarkRepositoryGetFirstWhereTest(t *testing.T) {
 					ID:           2,
 					IsCollection: false,
 					IsRead:       true,
-					
-					
-
-					
 				},
 			},
 		},
 		{
-            
+
 			name: "Two existing minimal entities, filter for IsCollection of both", numRecords: 2, insertBeforeCheck: true,
 			filter: &domain.BookmarkFilter{
 				IsCollection: optional.Make(model.FilterOperation[bool]{
@@ -2193,10 +1865,10 @@ func TestSQLBookmarkRepositoryGetFirstWhereTest(t *testing.T) {
 					Operand:  model.ScalarOperand[bool]{Operand: false},
 				}),
 			},
-            
+
 			models: []*domain.Bookmark{
 				{
-					
+
 					CreatedAt:    time.Now(),
 					UpdatedAt:    time.Now(),
 					DeletedAt:    optional.Make(time.Now()),
@@ -2205,13 +1877,9 @@ func TestSQLBookmarkRepositoryGetFirstWhereTest(t *testing.T) {
 					ID:           1,
 					IsCollection: false,
 					IsRead:       true,
-					
-					
-
-					
 				},
 				{
-					
+
 					CreatedAt:    time.Now(),
 					UpdatedAt:    time.Now(),
 					DeletedAt:    optional.Make(time.Now()),
@@ -2220,15 +1888,11 @@ func TestSQLBookmarkRepositoryGetFirstWhereTest(t *testing.T) {
 					ID:           2,
 					IsCollection: false,
 					IsRead:       true,
-					
-					
-
-					
 				},
 			},
 		},
 		{
-            
+
 			name: "Two non-existing minimal entities, filter for title of first", err: &helper.IneffectiveOperationError{},
 			filter: &domain.BookmarkFilter{
 				Title: optional.Make(model.FilterOperation[optional.Optional[string]]{
@@ -2236,8 +1900,7 @@ func TestSQLBookmarkRepositoryGetFirstWhereTest(t *testing.T) {
 					Operand:  model.ScalarOperand[optional.Optional[string]]{Operand: optional.Make("My first bookmark")},
 				}),
 			},
-            
-        },
+		},
 	}
 
 	for _, test := range tests {
@@ -2247,23 +1910,20 @@ func TestSQLBookmarkRepositoryGetFirstWhereTest(t *testing.T) {
 			defer testCommon.HandlePanic(t, test.name)
 
 			db, err := testCommon.GetDB()
-            require.NoErrorf(t, err, test.name+", db open")
-            defer db.Close()
+			require.NoErrorf(t, err, test.name+", db open")
+			defer db.Close()
 
-			
-		    tagRepo := new(repository.Sqlite3TagRepository)
+			tagRepo := new(repository.Sqlite3TagRepository)
 
 			tagRepoAbstract, err := tagRepo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db})
 			assert.NoErrorf(t, err, test.name)
 
 			tagRepo = tagRepoAbstract.(*repository.Sqlite3TagRepository)
-		    
 
 			repo := new(repository.Sqlite3BookmarkRepository)
 
-			
-		    repoAbstract, err := repo.New(repository.Sqlite3BookmarkRepositoryConstructorArgs{DB: db, TagRepository: tagRepo})
-		    
+			repoAbstract, err := repo.New(repository.Sqlite3BookmarkRepositoryConstructorArgs{DB: db, TagRepository: tagRepo})
+
 			assert.NoErrorf(t, err, test.name)
 
 			repo = repoAbstract.(*repository.Sqlite3BookmarkRepository)
@@ -2295,7 +1955,7 @@ func TestSQLBookmarkRepositoryGetAllTest(t *testing.T) {
 			name: "Two existing minimal entities", numRecords: 2, insertBeforeCheck: true,
 			models: []*domain.Bookmark{
 				{
-					
+
 					CreatedAt:    time.Now(),
 					UpdatedAt:    time.Now(),
 					DeletedAt:    optional.Make(time.Now()),
@@ -2304,13 +1964,9 @@ func TestSQLBookmarkRepositoryGetAllTest(t *testing.T) {
 					ID:           1,
 					IsCollection: false,
 					IsRead:       true,
-					
-					
-
-					
 				},
 				{
-					
+
 					CreatedAt:    time.Now(),
 					UpdatedAt:    time.Now(),
 					DeletedAt:    optional.Make(time.Now()),
@@ -2319,10 +1975,6 @@ func TestSQLBookmarkRepositoryGetAllTest(t *testing.T) {
 					ID:           2,
 					IsCollection: false,
 					IsRead:       true,
-					
-					
-
-					
 				},
 			},
 		},
@@ -2338,23 +1990,20 @@ func TestSQLBookmarkRepositoryGetAllTest(t *testing.T) {
 			defer testCommon.HandlePanic(t, test.name)
 
 			db, err := testCommon.GetDB()
-            require.NoErrorf(t, err, test.name+", db open")
-            defer db.Close()
+			require.NoErrorf(t, err, test.name+", db open")
+			defer db.Close()
 
-			
-		    tagRepo := new(repository.Sqlite3TagRepository)
+			tagRepo := new(repository.Sqlite3TagRepository)
 
 			tagRepoAbstract, err := tagRepo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db})
 			assert.NoErrorf(t, err, test.name)
 
 			tagRepo = tagRepoAbstract.(*repository.Sqlite3TagRepository)
-		    
 
 			repo := new(repository.Sqlite3BookmarkRepository)
 
-			
-		    repoAbstract, err := repo.New(repository.Sqlite3BookmarkRepositoryConstructorArgs{DB: db, TagRepository: tagRepo})
-		    
+			repoAbstract, err := repo.New(repository.Sqlite3BookmarkRepositoryConstructorArgs{DB: db, TagRepository: tagRepo})
+
 			assert.NoErrorf(t, err, test.name)
 
 			repo = repoAbstract.(*repository.Sqlite3BookmarkRepository)
@@ -2374,7 +2023,6 @@ func TestSQLBookmarkRepositoryGetAllTest(t *testing.T) {
 		})
 	}
 }
-
 
 func TestSQLBookmarkRepositoryAddTypeTest(t *testing.T) {
 	tests := []struct {
@@ -2404,23 +2052,20 @@ func TestSQLBookmarkRepositoryAddTypeTest(t *testing.T) {
 			defer testCommon.HandlePanic(t, test.name)
 
 			db, err := testCommon.GetDB()
-            require.NoErrorf(t, err, test.name+", db open")
-            defer db.Close()
+			require.NoErrorf(t, err, test.name+", db open")
+			defer db.Close()
 
-			
-		    tagRepo := new(repository.Sqlite3TagRepository)
+			tagRepo := new(repository.Sqlite3TagRepository)
 
 			tagRepoAbstract, err := tagRepo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db})
 			assert.NoErrorf(t, err, test.name)
 
 			tagRepo = tagRepoAbstract.(*repository.Sqlite3TagRepository)
-		    
 
 			repo := new(repository.Sqlite3BookmarkRepository)
 
-			
-		    repoAbstract, err := repo.New(repository.Sqlite3BookmarkRepositoryConstructorArgs{DB: db, TagRepository: tagRepo})
-		    
+			repoAbstract, err := repo.New(repository.Sqlite3BookmarkRepositoryConstructorArgs{DB: db, TagRepository: tagRepo})
+
 			assert.NoErrorf(t, err, test.name)
 
 			repo = repoAbstract.(*repository.Sqlite3BookmarkRepository)
@@ -2466,23 +2111,20 @@ func TestSQLBookmarkRepositoryUpdateTypeTest(t *testing.T) {
 			defer testCommon.HandlePanic(t, test.name)
 
 			db, err := testCommon.GetDB()
-            require.NoErrorf(t, err, test.name+", db open")
-            defer db.Close()
+			require.NoErrorf(t, err, test.name+", db open")
+			defer db.Close()
 
-			
-		    tagRepo := new(repository.Sqlite3TagRepository)
+			tagRepo := new(repository.Sqlite3TagRepository)
 
 			tagRepoAbstract, err := tagRepo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db})
 			assert.NoErrorf(t, err, test.name)
 
 			tagRepo = tagRepoAbstract.(*repository.Sqlite3TagRepository)
-		    
 
 			repo := new(repository.Sqlite3BookmarkRepository)
 
-			
-		    repoAbstract, err := repo.New(repository.Sqlite3BookmarkRepositoryConstructorArgs{DB: db, TagRepository: tagRepo})
-		    
+			repoAbstract, err := repo.New(repository.Sqlite3BookmarkRepositoryConstructorArgs{DB: db, TagRepository: tagRepo})
+
 			assert.NoErrorf(t, err, test.name)
 
 			repo = repoAbstract.(*repository.Sqlite3BookmarkRepository)
@@ -2527,23 +2169,20 @@ func TestSQLBookmarkRepositoryDeleteTypeTest(t *testing.T) {
 			defer testCommon.HandlePanic(t, test.name)
 
 			db, err := testCommon.GetDB()
-            require.NoErrorf(t, err, test.name+", db open")
-            defer db.Close()
+			require.NoErrorf(t, err, test.name+", db open")
+			defer db.Close()
 
-			
-		    tagRepo := new(repository.Sqlite3TagRepository)
+			tagRepo := new(repository.Sqlite3TagRepository)
 
 			tagRepoAbstract, err := tagRepo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db})
 			assert.NoErrorf(t, err, test.name)
 
 			tagRepo = tagRepoAbstract.(*repository.Sqlite3TagRepository)
-		    
 
 			repo := new(repository.Sqlite3BookmarkRepository)
 
-			
-		    repoAbstract, err := repo.New(repository.Sqlite3BookmarkRepositoryConstructorArgs{DB: db, TagRepository: tagRepo})
-		    
+			repoAbstract, err := repo.New(repository.Sqlite3BookmarkRepositoryConstructorArgs{DB: db, TagRepository: tagRepo})
+
 			assert.NoErrorf(t, err, test.name)
 
 			repo = repoAbstract.(*repository.Sqlite3BookmarkRepository)
@@ -2563,87 +2202,78 @@ func TestSQLBookmarkRepositoryDeleteTypeTest(t *testing.T) {
 	}
 }
 
-
-
 func TestSQLBookmarkRepositoryTagModelConverter(t *testing.T) {
-			t.Parallel()
-			defer testCommon.HandlePanic(t, t.Name())
+	t.Parallel()
+	defer testCommon.HandlePanic(t, t.Name())
 
-			db, err := testCommon.GetDB()
-            require.NoError(t, err, ", db open")
-            defer db.Close()
+	db, err := testCommon.GetDB()
+	require.NoError(t, err, ", db open")
+	defer db.Close()
 
-			
-		    tagRepo := new(repository.Sqlite3TagRepository)
+	tagRepo := new(repository.Sqlite3TagRepository)
 
-			tagRepoAbstract, err := tagRepo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db})
-			assert.NoError(t, err)
+	tagRepoAbstract, err := tagRepo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db})
+	assert.NoError(t, err)
 
-			tagRepo = tagRepoAbstract.(*repository.Sqlite3TagRepository)
-		    
+	tagRepo = tagRepoAbstract.(*repository.Sqlite3TagRepository)
 
-			repo := new(repository.Sqlite3BookmarkRepository)
+	repo := new(repository.Sqlite3BookmarkRepository)
 
-			
-		    repoAbstract, err := repo.New(repository.Sqlite3BookmarkRepositoryConstructorArgs{DB: db, TagRepository: tagRepo})
-		    
-			assert.NoError(t, err)
+	repoAbstract, err := repo.New(repository.Sqlite3BookmarkRepositoryConstructorArgs{DB: db, TagRepository: tagRepo})
 
-			repo = repoAbstract.(*repository.Sqlite3BookmarkRepository)
+	assert.NoError(t, err)
 
-            parent1 :=&domain.Tag{
-                Tag:        "Software development",
-                ParentPath: []*domain.Tag{},
-                Subtags:    []*domain.Tag{},
-                ID:         1,
-            }
+	repo = repoAbstract.(*repository.Sqlite3BookmarkRepository)
 
-            parent2 :=&domain.Tag{
-                Tag:        "Computer science",
-                ParentPath: []*domain.Tag{},
-                Subtags:    []*domain.Tag{},
-                ID:         2,
-            }
+	parent1 := &domain.Tag{
+		Tag:        "Software development",
+		ParentPath: []*domain.Tag{},
+		Subtags:    []*domain.Tag{},
+		ID:         1,
+	}
 
-            child1 := &domain.Tag{
-                Tag:        "Golang",
-                ParentPath: []*domain.Tag{},
-                Subtags:    []*domain.Tag{},
-                ID:         3,
-            }
+	parent2 := &domain.Tag{
+		Tag:        "Computer science",
+		ParentPath: []*domain.Tag{},
+		Subtags:    []*domain.Tag{},
+		ID:         2,
+	}
 
-            child2 := &domain.Tag{
-                Tag:        "CPP",
-                ParentPath: []*domain.Tag{},
-                Subtags:    []*domain.Tag{},
-                ID:         4,
-            }
+	child1 := &domain.Tag{
+		Tag:        "Golang",
+		ParentPath: []*domain.Tag{},
+		Subtags:    []*domain.Tag{},
+		ID:         3,
+	}
 
-            original := &domain.Tag{
-                Tag:        "Programming languages",
-                ParentPath: []*domain.Tag{},
-                Subtags:    []*domain.Tag{},
-                ID:         5,
-            }
+	child2 := &domain.Tag{
+		Tag:        "CPP",
+		ParentPath: []*domain.Tag{},
+		Subtags:    []*domain.Tag{},
+		ID:         4,
+	}
 
-            original.AddChildren([]*domain.Tag{child1, child2})
-            original.AddDirectParent(parent2)
-            parent2.AddDirectParent(parent1)
+	original := &domain.Tag{
+		Tag:        "Programming languages",
+		ParentPath: []*domain.Tag{},
+		Subtags:    []*domain.Tag{},
+		ID:         5,
+	}
 
-            
-            
-            err = repo.GetTagRepository().Add(context.Background(),  []*domain.Tag{parent1, parent2, child1, child2, original} )
-            
-            assert.NoError(t, err)
+	original.AddChildren([]*domain.Tag{child1, child2})
+	original.AddDirectParent(parent2)
+	parent2.AddDirectParent(parent1)
 
-            
-            repositoryModel, err := repo.GetTagRepository().TagDomainToRepositoryModel(context.Background(), original)
-            
-            assert.NoError(t, err)
+	err = repo.GetTagRepository().Add(context.Background(), []*domain.Tag{parent1, parent2, child1, child2, original})
 
-            
-            convertedBack, err := repo.GetTagRepository().TagRepositoryToDomainModel(context.Background(), repositoryModel.(*repository.Tag))
-            
-            assert.NoError(t, err)
-            assert.EqualValues(t, original, convertedBack)
+	assert.NoError(t, err)
+
+	repositoryModel, err := repo.GetTagRepository().TagDomainToRepositoryModel(context.Background(), original)
+
+	assert.NoError(t, err)
+
+	convertedBack, err := repo.GetTagRepository().TagRepositoryToDomainModel(context.Background(), repositoryModel.(*repository.Tag))
+
+	assert.NoError(t, err)
+	assert.EqualValues(t, original, convertedBack)
 }
