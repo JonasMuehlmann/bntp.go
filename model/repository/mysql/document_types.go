@@ -76,7 +76,7 @@ var (
 	documentTypeColumnsWithoutDefault = []string{"id", "document_type"}
 	documentTypeColumnsWithDefault    = []string{}
 	documentTypePrimaryKeyColumns     = []string{"id"}
-	documentTypeGeneratedColumns      =[]string{}
+	documentTypeGeneratedColumns      = []string{}
 )
 
 type (
