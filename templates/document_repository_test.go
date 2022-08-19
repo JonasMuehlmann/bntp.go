@@ -3,15 +3,14 @@ package repository_test
 import (
 	"context"
 	"testing"
-    
+
 	"time"
-    
 
 	"github.com/JonasMuehlmann/bntp.go/internal/helper"
 	"github.com/JonasMuehlmann/bntp.go/model"
 	"github.com/JonasMuehlmann/bntp.go/model/domain"
 	repositoryCommon "github.com/JonasMuehlmann/bntp.go/model/repository"
-	repository "github.com/JonasMuehlmann/bntp.go/model/repository/mssql"
+	repository "github.com/JonasMuehlmann/bntp.go/model/repository/sqlite3"
 	testCommon "github.com/JonasMuehlmann/bntp.go/test"
 	"github.com/JonasMuehlmann/optional.go"
 	"github.com/stretchr/testify/assert"
@@ -23,6 +22,7 @@ func TestSQLDocumentRepositoryAddTest(t *testing.T) {
 		err    error
 		name   string
 		models []*domain.Document
+		tags   []*domain.Tag
 	}{
 		{
 			name: "Empty input", models: []*domain.Document{}, err: helper.IneffectiveOperationError{},
@@ -39,75 +39,48 @@ func TestSQLDocumentRepositoryAddTest(t *testing.T) {
 		{
 			name: "Two regular inputs, non-existent dependencies", err: repositoryCommon.ReferenceToNonExistentDependencyError{}, models: []*domain.Document{
 				{
-					
-					
+
 					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
-					Path:       "path/to/file",
+					Path:      "path/to/file",
 					// These tags do not exist!
-					Tags: []*domain.Tag{{
-						Tag:        "Test",
-						ParentPath: []*domain.Tag{},
-						Subtags:    []*domain.Tag{},
-						ID:         1,
-                    }},
+					TagIDs: []int64{1},
 					// This type does not exist
 					DocumentType: optional.Make("Note"),
 					ID:           1,
-					
-
-					
 				},
 				{
-					
-					
-                    CreatedAt: time.Now(),
+
+					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
-					Path:       "path/to/other/file",
+					Path:      "path/to/other/file",
 					// These tags do not exist!
-					Tags: []*domain.Tag{{
-						Tag:        "Test",
-						ParentPath: []*domain.Tag{},
-						Subtags:    []*domain.Tag{},
-						ID:         1,
-                    }},
+					TagIDs: []int64{1},
 					// This type does not exist
 					DocumentType: optional.Make("Note"),
 					ID:           2,
-
-					
-
-					
 				},
 			},
 		},
 		{
 			name: "Two minimal inputs", models: []*domain.Document{
 				{
-					
-					
-                    CreatedAt: time.Now(),
+
+					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
-					Path:       "path/to/file",
-                    ID:         1,
-					
-
-					
+					Path:      "path/to/file",
+					ID:        1,
 				},
 				{
-					
-					
-                    CreatedAt: time.Now(),
+
+					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
-					Path:       "path/to/other/file",
-                    ID:         2,
-					
-
-					
+					Path:      "path/to/other/file",
+					ID:        2,
 				},
 			},
 		},
@@ -120,26 +93,23 @@ func TestSQLDocumentRepositoryAddTest(t *testing.T) {
 			defer testCommon.HandlePanic(t, test.name)
 
 			db, err := testCommon.GetDB()
-            require.NoErrorf(t, err, test.name+", db open")
-            defer db.Close()
+			require.NoErrorf(t, err, test.name+", db open")
+			defer db.Close()
 
-			
-		    tagRepo := new(repository.MssqlTagRepository)
+			tagRepo := new(repository.Sqlite3TagRepository)
 
-			tagRepoAbstract, err := tagRepo.New(repository.MssqlTagRepositoryConstructorArgs{DB: db})
+			tagRepoAbstract, err := tagRepo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db})
 			assert.NoErrorf(t, err, test.name)
 
-			tagRepo = tagRepoAbstract.(*repository.MssqlTagRepository)
-		    
+			tagRepo = tagRepoAbstract.(*repository.Sqlite3TagRepository)
 
-			repo := new(repository.MssqlDocumentRepository)
+			repo := new(repository.Sqlite3DocumentRepository)
 
-			
-		    repoAbstract, err := repo.New(repository.MssqlDocumentRepositoryConstructorArgs{DB: db, TagRepository: tagRepo})
-		    
+			repoAbstract, err := repo.New(repository.Sqlite3DocumentRepositoryConstructorArgs{DB: db, TagRepository: tagRepo})
+
 			assert.NoErrorf(t, err, test.name)
 
-			repo = repoAbstract.(*repository.MssqlDocumentRepository)
+			repo = repoAbstract.(*repository.Sqlite3DocumentRepository)
 
 			err = repo.Add(context.Background(), test.models)
 			if test.err == nil {
@@ -174,75 +144,49 @@ func TestSQLDocumentRepositoryReplaceTest(t *testing.T) {
 			name: "Two existing minimal inputs, adding non-existent dependencies", err: repositoryCommon.ReferenceToNonExistentDependencyError{},
 			previousModels: []*domain.Document{
 				{
-					
-					
-                    CreatedAt: time.Now(),
+
+					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
-					Path:       "path/to/file",
-					Tags: []*domain.Tag{},
-					ID:           1,
-					
+					Path:      "path/to/file",
 
-					
+					ID: 1,
 				},
 				{
-					
-					
-                    CreatedAt: time.Now(),
+
+					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
-					Path:       "path/to/other/file",
-					Tags: []*domain.Tag{},
-					ID:           2,
-					
+					Path:      "path/to/other/file",
 
-					
+					ID: 2,
 				},
 			},
 
 			models: []*domain.Document{
 				{
-					
-					
-                    CreatedAt: time.Now(),
+
+					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
-					Path:       "path/to/file",
+					Path:      "path/to/file",
 					// These tags do not exist!
-					Tags: []*domain.Tag{{
-						Tag:        "Test",
-						ParentPath: []*domain.Tag{},
-						Subtags:    []*domain.Tag{},
-						ID:         1,
-                    }},
+					TagIDs: []int64{1},
 					// This type does not exist
 					DocumentType: optional.Make("Note"),
 					ID:           1,
-					
-
-					
 				},
 				{
-					
-					
-                    CreatedAt: time.Now(),
+
+					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
-					Path:       "path/to/other/file",
+					Path:      "path/to/other/file",
 					// These tags do not exist!
-					Tags: []*domain.Tag{{
-						Tag:        "Test",
-						ParentPath: []*domain.Tag{},
-						Subtags:    []*domain.Tag{},
-						ID:         1,
-                    }},
+					TagIDs: []int64{1},
 					// This type does not exist
 					DocumentType: optional.Make("Note"),
 					ID:           2,
-					
-
-					
 				},
 			},
 		},
@@ -250,59 +194,40 @@ func TestSQLDocumentRepositoryReplaceTest(t *testing.T) {
 			name: "Two existing minimal inputs, adding duplicated values", err: helper.DuplicateInsertionError{},
 			previousModels: []*domain.Document{
 				{
-					
-					
-                    CreatedAt: time.Now(),
+
+					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
-					Path:       "path/to/file",
-                    ID:         1,
-					
-
-					
+					Path:      "path/to/file",
+					ID:        1,
 				},
 				{
-					
-					
-                    CreatedAt: time.Now(),
+
+					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
-					Path:       "path/to/other/file",
-                    ID:         2,
-
-					
-
-					
+					Path:      "path/to/other/file",
+					ID:        2,
 				},
 			},
 
 			models: []*domain.Document{
 				{
-					
-					
-                    CreatedAt: time.Now(),
+
+					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
-					Path:       "path/to/file",
-                    ID:         1,
-
-					
-
-					
+					Path:      "path/to/file",
+					ID:        1,
 				},
 				{
-					
-					
-                    CreatedAt: time.Now(),
+
+					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
 					// This is a duplicate!
-					Path:       "path/to/file",
-                    ID:         2,
-
-					
-
-					
+					Path: "path/to/file",
+					ID:   2,
 				},
 			},
 		},
@@ -310,58 +235,38 @@ func TestSQLDocumentRepositoryReplaceTest(t *testing.T) {
 		{
 			name: "Two existing minimal inputs", models: []*domain.Document{
 				{
-					
-					
-                    CreatedAt: time.Now(),
+
+					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
-					Path:       "path/to/file",
-                    ID:         1,
-
-					
-
-					
+					Path:      "path/to/file",
+					ID:        1,
 				},
 				{
-					
-					
-                    CreatedAt: time.Now(),
+
+					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
-					Path:       "path/to/other/file",
-                    ID:         2,
-
-					
-
-					
+					Path:      "path/to/other/file",
+					ID:        2,
 				},
 			},
 			previousModels: []*domain.Document{
 				{
-					
-					
-                    CreatedAt: time.Now(),
+
+					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
-					Path:       "path/to/file",
-                    ID:         1,
-
-					
-
-					
+					Path:      "path/to/file",
+					ID:        1,
 				},
 				{
-					
-					
-                    CreatedAt: time.Now(),
+
+					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
-					Path:       "path/to/other/file",
-                    ID:         2,
-
-					
-
-					
+					Path:      "path/to/other/file",
+					ID:        2,
 				},
 			},
 		},
@@ -374,26 +279,23 @@ func TestSQLDocumentRepositoryReplaceTest(t *testing.T) {
 			defer testCommon.HandlePanic(t, test.name)
 
 			db, err := testCommon.GetDB()
-            require.NoErrorf(t, err, test.name+", db open")
-            defer db.Close()
+			require.NoErrorf(t, err, test.name+", db open")
+			defer db.Close()
 
-			
-		    tagRepo := new(repository.MssqlTagRepository)
+			tagRepo := new(repository.Sqlite3TagRepository)
 
-			tagRepoAbstract, err := tagRepo.New(repository.MssqlTagRepositoryConstructorArgs{DB: db})
+			tagRepoAbstract, err := tagRepo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db})
 			assert.NoErrorf(t, err, test.name)
 
-			tagRepo = tagRepoAbstract.(*repository.MssqlTagRepository)
-		    
+			tagRepo = tagRepoAbstract.(*repository.Sqlite3TagRepository)
 
-			repo := new(repository.MssqlDocumentRepository)
+			repo := new(repository.Sqlite3DocumentRepository)
 
-			
-		    repoAbstract, err := repo.New(repository.MssqlDocumentRepositoryConstructorArgs{DB: db, TagRepository: tagRepo})
-		    
+			repoAbstract, err := repo.New(repository.Sqlite3DocumentRepositoryConstructorArgs{DB: db, TagRepository: tagRepo})
+
 			assert.NoErrorf(t, err, test.name)
 
-			repo = repoAbstract.(*repository.MssqlDocumentRepository)
+			repo = repoAbstract.(*repository.Sqlite3DocumentRepository)
 
 			if test.previousModels != nil {
 				err = repo.Add(context.Background(), test.previousModels)
@@ -433,196 +335,130 @@ func TestSQLDocumentRepositoryUpsertTest(t *testing.T) {
 			name: "Two existing inputs, non-existent dependencies", err: repositoryCommon.ReferenceToNonExistentDependencyError{},
 			previousModels: []*domain.Document{
 				{
-					
-					
+
 					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
 					Path:      "path/to/file",
-					Tags: []*domain.Tag{},
-					ID: 1,
-					
 
-					
+					ID: 1,
 				},
 				{
-					
-					
+
 					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
 					Path:      "path/to/other/file",
-					Tags: []*domain.Tag{},
-					ID:           2,
-					
 
-					
+					ID: 2,
 				},
 			},
 
 			models: []*domain.Document{
 				{
-					
-					
+
 					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
 					Path:      "path/to/file",
 					// These tags do not exist!
-					Tags: []*domain.Tag{{
-						Tag:        "Test",
-						ParentPath: []*domain.Tag{},
-						Subtags:    []*domain.Tag{},
-						ID:         1,
-                    }},
+					TagIDs: []int64{1},
 					// This type does not exist
 					DocumentType: optional.Make("Note"),
-					ID: 1,
-
-					
-
-					
+					ID:           1,
 				},
 				{
-					
-					
+
 					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
 					Path:      "path/to/other/file",
-					Tags: []*domain.Tag{{
-						Tag:        "Test",
-						ParentPath: []*domain.Tag{},
-						Subtags:    []*domain.Tag{},
-						ID:         1,
-                    }},
+					TagIDs:    []int64{1},
 					// This type does not exist
 					DocumentType: optional.Make("Note"),
 					ID:           2,
-
-					
-
-					
 				},
 			},
 		},
+
 		{
 			name: "Two existing inputs, adding duplicated values", err: helper.DuplicateInsertionError{},
 			previousModels: []*domain.Document{
 				{
-					
-					
-                    CreatedAt: time.Now(),
+
+					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
-					Path:       "path/to/file",
-                    ID:         1,
-
-					
-
-					
+					Path:      "path/to/file",
+					ID:        1,
 				},
 				{
-					
-					
-                    CreatedAt: time.Now(),
+
+					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
-					Path:       "path/to/other/file",
-                    ID:         2,
-
-					
-
-					
+					Path:      "path/to/other/file",
+					ID:        2,
 				},
 			},
 
 			models: []*domain.Document{
 				{
-					
-					
-                    CreatedAt: time.Now(),
+
+					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
-					Path:       "path/to/file",
-                    ID:         1,
-
-					
-
-					
+					Path:      "path/to/file",
+					ID:        1,
 				},
 				{
-					
-					
-                    CreatedAt: time.Now(),
+
+					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
 					// This is a duplicate
-					Path:       "path/to/file",
-                    ID:         2,
-
-					
-
-					
+					Path: "path/to/file",
+					ID:   2,
 				},
 			},
 		},
+
 		{
 			name: "Two existing minimal inputs",
 			previousModels: []*domain.Document{
 				{
-					
-					
-                    CreatedAt: time.Now(),
+
+					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
-					Path:       "path/to/file",
-                    ID:         1,
-
-					
-
-					
+					Path:      "path/to/file",
+					ID:        1,
 				},
 				{
-					
-					
-                    CreatedAt: time.Now(),
+
+					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
-					Path:       "path/to/other/file",
-                    ID:         2,
-
-					
-
-					
+					Path:      "path/to/other/file",
+					ID:        2,
 				},
 			},
 			models: []*domain.Document{
 				{
-					
-					
-                    CreatedAt: time.Now(),
+
+					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
-					Path:       "path/to/file",
-                    ID:         1,
-
-					
-
-					
+					Path:      "path/to/file",
+					ID:        1,
 				},
 				{
-					
-					
-                    CreatedAt: time.Now(),
+
+					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
-					Path:       "path/to/other/file",
-                    ID:         2,
-
-					
-
-					
+					Path:      "path/to/other/file",
+					ID:        2,
 				},
 			},
 		},
@@ -635,26 +471,23 @@ func TestSQLDocumentRepositoryUpsertTest(t *testing.T) {
 			defer testCommon.HandlePanic(t, test.name)
 
 			db, err := testCommon.GetDB()
-            require.NoErrorf(t, err, test.name+", db open")
-            defer db.Close()
+			require.NoErrorf(t, err, test.name+", db open")
+			defer db.Close()
 
-			
-		    tagRepo := new(repository.MssqlTagRepository)
+			tagRepo := new(repository.Sqlite3TagRepository)
 
-			tagRepoAbstract, err := tagRepo.New(repository.MssqlTagRepositoryConstructorArgs{DB: db})
+			tagRepoAbstract, err := tagRepo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db})
 			assert.NoErrorf(t, err, test.name)
 
-			tagRepo = tagRepoAbstract.(*repository.MssqlTagRepository)
-		    
+			tagRepo = tagRepoAbstract.(*repository.Sqlite3TagRepository)
 
-			repo := new(repository.MssqlDocumentRepository)
+			repo := new(repository.Sqlite3DocumentRepository)
 
-			
-		    repoAbstract, err := repo.New(repository.MssqlDocumentRepositoryConstructorArgs{DB: db, TagRepository: tagRepo})
-		    
+			repoAbstract, err := repo.New(repository.Sqlite3DocumentRepositoryConstructorArgs{DB: db, TagRepository: tagRepo})
+
 			assert.NoErrorf(t, err, test.name)
 
-			repo = repoAbstract.(*repository.MssqlDocumentRepository)
+			repo = repoAbstract.(*repository.Sqlite3DocumentRepository)
 
 			if test.previousModels != nil {
 				err = repo.Add(context.Background(), test.previousModels)
@@ -698,59 +531,38 @@ func TestSQLDocumentRepositoryUpdateTest(t *testing.T) {
 			name: "Two existing minimal inputs, nop updater", updater: &domain.DocumentUpdater{}, err: helper.IneffectiveOperationError{},
 			previousModels: []*domain.Document{
 				{
-					
-					
-                    CreatedAt: time.Now(),
+
+					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
-					Path:       "path/to/file",
-                    ID:         1,
-
-					
-
-					
+					Path:      "path/to/file",
+					ID:        1,
 				},
 				{
-					
-					
-                    CreatedAt: time.Now(),
+
+					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
-					Path:       "path/to/other/file",
-                    ID:         2,
-
-
-					
-
-					
+					Path:      "path/to/other/file",
+					ID:        2,
 				},
 			},
 			models: []*domain.Document{
 				{
-					
-					
-                    CreatedAt: time.Now(),
+
+					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
-					Path:       "path/to/file",
-                    ID:         1,
-
-					
-
-					
+					Path:      "path/to/file",
+					ID:        1,
 				},
 				{
-					
-					
-                    CreatedAt: time.Now(),
+
+					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
-					Path:       "path/to/other/file",
-                    ID:         2,
-
-					
-
-					
+					Path:      "path/to/other/file",
+					ID:        2,
 				},
 			},
 		},
@@ -758,131 +570,86 @@ func TestSQLDocumentRepositoryUpdateTest(t *testing.T) {
 			name: "Two existing inputs, adding duplicated values", err: helper.DuplicateInsertionError{},
 			previousModels: []*domain.Document{
 				{
-					
-					
-                    CreatedAt: time.Now(),
+
+					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
-					Path:       "path/to/file",
-                    ID:         1,
-
-					
-
-					
+					Path:      "path/to/file",
+					ID:        1,
 				},
 				{
-					
-					
-                    CreatedAt: time.Now(),
+
+					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
-					Path:       "path/to/other/file",
-                    ID:         2,
-
-
-					
-
-					
+					Path:      "path/to/other/file",
+					ID:        2,
 				},
 			},
 
 			models: []*domain.Document{
 				{
-					
-					
-                    CreatedAt: time.Now(),
+
+					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
-					Path:       "path/to/file",
-                    ID:         1,
-
-					
-
-					
+					Path:      "path/to/file",
+					ID:        1,
 				},
 				{
-					
-					
-                    CreatedAt: time.Now(),
+
+					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
 					// This is a duplicate
-					Path:       "path/to/file",
-                    ID:         2,
-
-
-					
-
-					
+					Path: "path/to/file",
+					ID:   2,
 				},
 			},
 		},
 
 		{
-            
+
 			name: "Two existing minimal inputs, prepend to Path",
 			updater: &domain.DocumentUpdater{
-                Path: optional.Make(model.UpdateOperation[string]{Operator: model.UpdatePrepend, Operand: "new/"}),
+				Path: optional.Make(model.UpdateOperation[string]{Operator: model.UpdatePrepend, Operand: "new/"}),
 			},
-            
+
 			previousModels: []*domain.Document{
 				{
-					
-					
-                    CreatedAt: time.Now(),
+
+					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
-					Path:       "path/to/file",
-                    ID:         1,
-
-					
-
-					
+					Path:      "path/to/file",
+					ID:        1,
 				},
 				{
-					
-					
-                    CreatedAt: time.Now(),
+
+					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
-					Path:       "path/to/other/file",
-                    ID:         2,
-
-
-					
-
-					
+					Path:      "path/to/other/file",
+					ID:        2,
 				},
 			},
 
 			models: []*domain.Document{
 				{
-					
-					
-                    CreatedAt: time.Now(),
+
+					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
-					Path:       "path/to/file",
-                    ID:         1,
-
-
-					
-
-					
+					Path:      "path/to/file",
+					ID:        1,
 				},
 				{
-					
-					
-                    CreatedAt: time.Now(),
+
+					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
-					Path:       "path/to/other/file",
-                    ID:         2,
-
-
-					
-
-					
+					Path:      "path/to/other/file",
+					ID:        2,
 				},
 			},
 		},
@@ -895,26 +662,23 @@ func TestSQLDocumentRepositoryUpdateTest(t *testing.T) {
 			defer testCommon.HandlePanic(t, test.name)
 
 			db, err := testCommon.GetDB()
-            require.NoErrorf(t, err, test.name+", db open")
-            defer db.Close()
+			require.NoErrorf(t, err, test.name+", db open")
+			defer db.Close()
 
-			
-		    tagRepo := new(repository.MssqlTagRepository)
+			tagRepo := new(repository.Sqlite3TagRepository)
 
-			tagRepoAbstract, err := tagRepo.New(repository.MssqlTagRepositoryConstructorArgs{DB: db})
+			tagRepoAbstract, err := tagRepo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db})
 			assert.NoErrorf(t, err, test.name)
 
-			tagRepo = tagRepoAbstract.(*repository.MssqlTagRepository)
-		    
+			tagRepo = tagRepoAbstract.(*repository.Sqlite3TagRepository)
 
-			repo := new(repository.MssqlDocumentRepository)
+			repo := new(repository.Sqlite3DocumentRepository)
 
-			
-		    repoAbstract, err := repo.New(repository.MssqlDocumentRepositoryConstructorArgs{DB: db, TagRepository: tagRepo})
-		    
+			repoAbstract, err := repo.New(repository.Sqlite3DocumentRepositoryConstructorArgs{DB: db, TagRepository: tagRepo})
+
 			assert.NoErrorf(t, err, test.name)
 
-			repo = repoAbstract.(*repository.MssqlDocumentRepository)
+			repo = repoAbstract.(*repository.Sqlite3DocumentRepository)
 
 			if test.previousModels != nil {
 				err = repo.Add(context.Background(), test.previousModels)
@@ -951,122 +715,87 @@ func TestSQLDocumentRepositoryUpdateWhereTest(t *testing.T) {
 			name: "Nil filter", updater: &domain.DocumentUpdater{}, filter: nil, err: helper.NilInputError{},
 		},
 		{
-            
+
 			name: "Two existing minimal inputs, filter for path of first, prepend to path", numAffectedRecords: 1, insertBeforeUpdate: true,
 			updater: &domain.DocumentUpdater{
-				Path : optional.Make(model.UpdateOperation[string]{Operator: model.UpdatePrepend, Operand: "new/"}),
+				Path: optional.Make(model.UpdateOperation[string]{Operator: model.UpdatePrepend, Operand: "new/"}),
 			},
 			filter: &domain.DocumentFilter{
-				Path : optional.Make(model.FilterOperation[string]{
+				Path: optional.Make(model.FilterOperation[string]{
 					Operator: model.FilterEqual,
 					Operand:  model.ScalarOperand[string]{Operand: "path/to/file"},
 				}),
 			},
-            
+
 			models: []*domain.Document{
 				{
-					
-					
-                    CreatedAt: time.Now(),
+
+					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
-					Path:       "path/to/file",
-                    ID:         1,
-
-
-					
-
-					
+					Path:      "path/to/file",
+					ID:        1,
 				},
 				{
-					
-					
-                    CreatedAt: time.Now(),
+
+					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
-					Path:       "path/to/other/file",
-                    ID:         2,
-
-
-					
-
-					
+					Path:      "path/to/other/file",
+					ID:        2,
 				},
 			},
 		},
 		{
-            
+
 			name: "Two existing minimal inputs, prepend to path", numAffectedRecords: 2, insertBeforeUpdate: true, filter: &domain.DocumentFilter{},
 			updater: &domain.DocumentUpdater{
-				Path : optional.Make(model.UpdateOperation[string]{Operator: model.UpdatePrepend, Operand: "new/"}),
+				Path: optional.Make(model.UpdateOperation[string]{Operator: model.UpdatePrepend, Operand: "new/"}),
 			},
-            
+
 			models: []*domain.Document{
 				{
-					
-					
-                    CreatedAt: time.Now(),
+
+					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
-					Path:       "path/to/file",
-                    ID:         1,
-
-
-					
-
-					
+					Path:      "path/to/file",
+					ID:        1,
 				},
 				{
-					
-					
-                    CreatedAt: time.Now(),
+
+					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
-					Path:       "path/to/other/file",
-                    ID:         2,
-
-
-					
-
-					
+					Path:      "path/to/other/file",
+					ID:        2,
 				},
 			},
 		},
+
 		{
 			name: "Two existing minimal inputs, adding duplicated values", numAffectedRecords: 0, insertBeforeUpdate: true, filter: &domain.DocumentFilter{}, err: helper.DuplicateInsertionError{},
-            
+
 			updater: &domain.DocumentUpdater{
-				Path : optional.Make(model.UpdateOperation[string]{Operator: model.UpdateSet, Operand: "path/to/file"}),
+				Path: optional.Make(model.UpdateOperation[string]{Operator: model.UpdateSet, Operand: "path/to/file"}),
 			},
-            
+
 			models: []*domain.Document{
 				{
-					
-					
-                    CreatedAt: time.Now(),
+
+					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
-					Path:       "path/to/file",
-                    ID:         1,
-
-
-					
-
-					
+					Path:      "path/to/file",
+					ID:        1,
 				},
 				{
-					
-					
-                    CreatedAt: time.Now(),
+
+					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
-					Path:       "path/to/other/file",
-                    ID:         2,
-
-
-					
-
-					
+					Path:      "path/to/other/file",
+					ID:        2,
 				},
 			},
 		},
@@ -1079,26 +808,23 @@ func TestSQLDocumentRepositoryUpdateWhereTest(t *testing.T) {
 			defer testCommon.HandlePanic(t, test.name)
 
 			db, err := testCommon.GetDB()
-            require.NoErrorf(t, err, test.name+", db open")
-            defer db.Close()
+			require.NoErrorf(t, err, test.name+", db open")
+			defer db.Close()
 
-			
-		    tagRepo := new(repository.MssqlTagRepository)
+			tagRepo := new(repository.Sqlite3TagRepository)
 
-			tagRepoAbstract, err := tagRepo.New(repository.MssqlTagRepositoryConstructorArgs{DB: db})
+			tagRepoAbstract, err := tagRepo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db})
 			assert.NoErrorf(t, err, test.name)
 
-			tagRepo = tagRepoAbstract.(*repository.MssqlTagRepository)
-		    
+			tagRepo = tagRepoAbstract.(*repository.Sqlite3TagRepository)
 
-			repo := new(repository.MssqlDocumentRepository)
+			repo := new(repository.Sqlite3DocumentRepository)
 
-			
-		    repoAbstract, err := repo.New(repository.MssqlDocumentRepositoryConstructorArgs{DB: db, TagRepository: tagRepo})
-		    
+			repoAbstract, err := repo.New(repository.Sqlite3DocumentRepositoryConstructorArgs{DB: db, TagRepository: tagRepo})
+
 			assert.NoErrorf(t, err, test.name)
 
-			repo = repoAbstract.(*repository.MssqlDocumentRepository)
+			repo = repoAbstract.(*repository.Sqlite3DocumentRepository)
 
 			if test.insertBeforeUpdate {
 				err = repo.Add(context.Background(), test.models)
@@ -1138,32 +864,20 @@ func TestSQLDocumentRepositoryDeleteTest(t *testing.T) {
 		{
 			name: "Two minimal inputs", insertBeforeDelete: true, models: []*domain.Document{
 				{
-					
-					
-                    CreatedAt: time.Now(),
+
+					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
-					Path:       "path/to/file",
-                    ID:         1,
-
-
-					
-
-					
+					Path:      "path/to/file",
+					ID:        1,
 				},
 				{
-					
-					
-                    CreatedAt: time.Now(),
+
+					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
-					Path:       "path/to/other/file",
-                    ID:         2,
-
-
-					
-
-					
+					Path:      "path/to/other/file",
+					ID:        2,
 				},
 			},
 		},
@@ -1176,26 +890,23 @@ func TestSQLDocumentRepositoryDeleteTest(t *testing.T) {
 			defer testCommon.HandlePanic(t, test.name)
 
 			db, err := testCommon.GetDB()
-            require.NoErrorf(t, err, test.name+", db open")
-            defer db.Close()
+			require.NoErrorf(t, err, test.name+", db open")
+			defer db.Close()
 
-			
-		    tagRepo := new(repository.MssqlTagRepository)
+			tagRepo := new(repository.Sqlite3TagRepository)
 
-			tagRepoAbstract, err := tagRepo.New(repository.MssqlTagRepositoryConstructorArgs{DB: db})
+			tagRepoAbstract, err := tagRepo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db})
 			assert.NoErrorf(t, err, test.name)
 
-			tagRepo = tagRepoAbstract.(*repository.MssqlTagRepository)
-		    
+			tagRepo = tagRepoAbstract.(*repository.Sqlite3TagRepository)
 
-			repo := new(repository.MssqlDocumentRepository)
+			repo := new(repository.Sqlite3DocumentRepository)
 
-			
-		    repoAbstract, err := repo.New(repository.MssqlDocumentRepositoryConstructorArgs{DB: db, TagRepository: tagRepo})
-		    
+			repoAbstract, err := repo.New(repository.Sqlite3DocumentRepositoryConstructorArgs{DB: db, TagRepository: tagRepo})
+
 			assert.NoErrorf(t, err, test.name)
 
-			repo = repoAbstract.(*repository.MssqlDocumentRepository)
+			repo = repoAbstract.(*repository.Sqlite3DocumentRepository)
 
 			if test.insertBeforeDelete {
 				err = repo.Add(context.Background(), test.models)
@@ -1225,56 +936,43 @@ func TestSQLDocumentRepositoryDeleteWhereTest(t *testing.T) {
 			name: "Nil filter", filter: nil, err: helper.NilInputError{},
 		},
 		{
-            
+
 			name: "Two existing minimal inputs, filter for path of first", numAffectedRecords: 1, insertBeforeDelete: true,
 			filter: &domain.DocumentFilter{
 				Path: optional.Make(model.FilterOperation[string]{
 					Operator: model.FilterEqual,
 					Operand:  model.ScalarOperand[string]{Operand: "path/to/file"},
 				}),
-            },
-            
+			},
+
 			models: []*domain.Document{
 				{
-					
-					
-                    CreatedAt: time.Now(),
+
+					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
-					Path:       "path/to/file",
-                    ID:         1,
-
-
-					
-
-					
+					Path:      "path/to/file",
+					ID:        1,
 				},
 				{
-					
-					
-                    CreatedAt: time.Now(),
+
+					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
-					Path:       "path/to/other/file",
-                    ID:         2,
-
-
-					
-
-					
+					Path:      "path/to/other/file",
+					ID:        2,
 				},
 			},
 		},
 		{
-            
+
 			name: "Two non-existing minimal inputs, filter for path",
 			filter: &domain.DocumentFilter{
 				Path: optional.Make(model.FilterOperation[string]{
 					Operator: model.FilterEqual,
 					Operand:  model.ScalarOperand[string]{Operand: "path/to/file"},
 				}),
-            },
-            
+			},
 		},
 	}
 
@@ -1285,26 +983,23 @@ func TestSQLDocumentRepositoryDeleteWhereTest(t *testing.T) {
 			defer testCommon.HandlePanic(t, test.name)
 
 			db, err := testCommon.GetDB()
-            require.NoErrorf(t, err, test.name+", db open")
-            defer db.Close()
+			require.NoErrorf(t, err, test.name+", db open")
+			defer db.Close()
 
-			
-		    tagRepo := new(repository.MssqlTagRepository)
+			tagRepo := new(repository.Sqlite3TagRepository)
 
-			tagRepoAbstract, err := tagRepo.New(repository.MssqlTagRepositoryConstructorArgs{DB: db})
+			tagRepoAbstract, err := tagRepo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db})
 			assert.NoErrorf(t, err, test.name)
 
-			tagRepo = tagRepoAbstract.(*repository.MssqlTagRepository)
-		    
+			tagRepo = tagRepoAbstract.(*repository.Sqlite3TagRepository)
 
-			repo := new(repository.MssqlDocumentRepository)
+			repo := new(repository.Sqlite3DocumentRepository)
 
-			
-		    repoAbstract, err := repo.New(repository.MssqlDocumentRepositoryConstructorArgs{DB: db, TagRepository: tagRepo})
-		    
+			repoAbstract, err := repo.New(repository.Sqlite3DocumentRepositoryConstructorArgs{DB: db, TagRepository: tagRepo})
+
 			assert.NoErrorf(t, err, test.name)
 
-			repo = repoAbstract.(*repository.MssqlDocumentRepository)
+			repo = repoAbstract.(*repository.Sqlite3DocumentRepository)
 
 			if test.insertBeforeDelete {
 				err = repo.Add(context.Background(), test.models)
@@ -1335,57 +1030,44 @@ func TestSQLDocumentRepositoryCountWhereTest(t *testing.T) {
 			name: "Nil filter", filter: nil, err: helper.NilInputError{},
 		},
 		{
-            
+
 			name: "Two existing minimal entities, filter for path of first", numAffectedRecords: 1, insertBeforeCount: true,
 			filter: &domain.DocumentFilter{
 				Path: optional.Make(model.FilterOperation[string]{
 					Operator: model.FilterEqual,
 					Operand:  model.ScalarOperand[string]{Operand: "path/to/file"},
 				}),
-            },
-            
+			},
+
 			models: []*domain.Document{
 				{
-					
-					
-                    CreatedAt: time.Now(),
+
+					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
-					Path:       "path/to/file",
-                    ID:         1,
-
-
-					
-
-					
+					Path:      "path/to/file",
+					ID:        1,
 				},
 				{
-					
-					
-                    CreatedAt: time.Now(),
+
+					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
-					Path:       "path/to/other/file",
-                    ID:         2,
-
-
-					
-
-					
+					Path:      "path/to/other/file",
+					ID:        2,
 				},
 			},
 		},
 		{
-            
+
 			name: "Two existing minimal entities, filter for path",
 			filter: &domain.DocumentFilter{
 				Path: optional.Make(model.FilterOperation[string]{
 					Operator: model.FilterEqual,
 					Operand:  model.ScalarOperand[string]{Operand: "path/to/file"},
 				}),
-            },
-            
-            },
+			},
+		},
 	}
 
 	for _, test := range tests {
@@ -1395,26 +1077,23 @@ func TestSQLDocumentRepositoryCountWhereTest(t *testing.T) {
 			defer testCommon.HandlePanic(t, test.name)
 
 			db, err := testCommon.GetDB()
-            require.NoErrorf(t, err, test.name+", db open")
-            defer db.Close()
+			require.NoErrorf(t, err, test.name+", db open")
+			defer db.Close()
 
-			
-		    tagRepo := new(repository.MssqlTagRepository)
+			tagRepo := new(repository.Sqlite3TagRepository)
 
-			tagRepoAbstract, err := tagRepo.New(repository.MssqlTagRepositoryConstructorArgs{DB: db})
+			tagRepoAbstract, err := tagRepo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db})
 			assert.NoErrorf(t, err, test.name)
 
-			tagRepo = tagRepoAbstract.(*repository.MssqlTagRepository)
-		    
+			tagRepo = tagRepoAbstract.(*repository.Sqlite3TagRepository)
 
-			repo := new(repository.MssqlDocumentRepository)
+			repo := new(repository.Sqlite3DocumentRepository)
 
-			
-		    repoAbstract, err := repo.New(repository.MssqlDocumentRepositoryConstructorArgs{DB: db, TagRepository: tagRepo})
-		    
+			repoAbstract, err := repo.New(repository.Sqlite3DocumentRepositoryConstructorArgs{DB: db, TagRepository: tagRepo})
+
 			assert.NoErrorf(t, err, test.name)
 
-			repo = repoAbstract.(*repository.MssqlDocumentRepository)
+			repo = repoAbstract.(*repository.Sqlite3DocumentRepository)
 
 			if test.insertBeforeCount {
 				err = repo.Add(context.Background(), test.models)
@@ -1444,54 +1123,28 @@ func TestSQLDocumentRepositoryCountAllTest(t *testing.T) {
 			name: "Two existing minimal entities, filter for all", numRecords: 2, insertBeforeCount: true,
 			models: []*domain.Document{
 				{
-					
-					
-                    CreatedAt: time.Now(),
+
+					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
-					Path:       "path/to/file",
-                    ID:         1,
-
-
-					
-
-					
+					Path:      "path/to/file",
+					ID:        1,
 				},
 				{
-					
-					
-                    CreatedAt: time.Now(),
+
+					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
-					Path:       "path/to/other/file",
-                    ID:         2,
-
-
-					
-
-					
+					Path:      "path/to/other/file",
+					ID:        2,
 				},
 			},
 		},
 		{
 			name: "Two non-existing minimal entities, filter for all",
 			models: []*domain.Document{
-				{
-					
-					
-
-					
-
-					
-				},
-				{
-					
-					
-
-					
-
-					
-				},
+				{},
+				{},
 			},
 		},
 	}
@@ -1503,26 +1156,23 @@ func TestSQLDocumentRepositoryCountAllTest(t *testing.T) {
 			defer testCommon.HandlePanic(t, test.name)
 
 			db, err := testCommon.GetDB()
-            require.NoErrorf(t, err, test.name+", db open")
-            defer db.Close()
+			require.NoErrorf(t, err, test.name+", db open")
+			defer db.Close()
 
-			
-		    tagRepo := new(repository.MssqlTagRepository)
+			tagRepo := new(repository.Sqlite3TagRepository)
 
-			tagRepoAbstract, err := tagRepo.New(repository.MssqlTagRepositoryConstructorArgs{DB: db})
+			tagRepoAbstract, err := tagRepo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db})
 			assert.NoErrorf(t, err, test.name)
 
-			tagRepo = tagRepoAbstract.(*repository.MssqlTagRepository)
-		    
+			tagRepo = tagRepoAbstract.(*repository.Sqlite3TagRepository)
 
-			repo := new(repository.MssqlDocumentRepository)
+			repo := new(repository.Sqlite3DocumentRepository)
 
-			
-		    repoAbstract, err := repo.New(repository.MssqlDocumentRepositoryConstructorArgs{DB: db, TagRepository: tagRepo})
-		    
+			repoAbstract, err := repo.New(repository.Sqlite3DocumentRepositoryConstructorArgs{DB: db, TagRepository: tagRepo})
+
 			assert.NoErrorf(t, err, test.name)
 
-			repo = repoAbstract.(*repository.MssqlDocumentRepository)
+			repo = repoAbstract.(*repository.Sqlite3DocumentRepository)
 
 			if test.insertBeforeCount {
 				err = repo.Add(context.Background(), test.models)
@@ -1554,35 +1204,23 @@ func TestSQLDocumentRepositoryDoesExistTest(t *testing.T) {
 		{
 			name: "Existing minimal entity", doesExist: true, insertBeforeCheck: true,
 			model: &domain.Document{
-				
-					
-                    CreatedAt: time.Now(),
-					UpdatedAt: time.Now(),
-					DeletedAt: optional.Make(time.Now()),
-					Path:       "path/to/file",
-                    ID:         1,
 
-
-					
-
-					
+				CreatedAt: time.Now(),
+				UpdatedAt: time.Now(),
+				DeletedAt: optional.Make(time.Now()),
+				Path:      "path/to/file",
+				ID:        1,
 			},
 		},
 		{
 			name: "Non-existing minimal entities",
 			model: &domain.Document{
-				
-					
-                    CreatedAt: time.Now(),
-					UpdatedAt: time.Now(),
-					DeletedAt: optional.Make(time.Now()),
-					Path:       "path/to/file",
-                    ID:         1,
 
-
-					
-
-					
+				CreatedAt: time.Now(),
+				UpdatedAt: time.Now(),
+				DeletedAt: optional.Make(time.Now()),
+				Path:      "path/to/file",
+				ID:        1,
 			},
 		},
 	}
@@ -1594,26 +1232,23 @@ func TestSQLDocumentRepositoryDoesExistTest(t *testing.T) {
 			defer testCommon.HandlePanic(t, test.name)
 
 			db, err := testCommon.GetDB()
-            require.NoErrorf(t, err, test.name+", db open")
-            defer db.Close()
+			require.NoErrorf(t, err, test.name+", db open")
+			defer db.Close()
 
-			
-		    tagRepo := new(repository.MssqlTagRepository)
+			tagRepo := new(repository.Sqlite3TagRepository)
 
-			tagRepoAbstract, err := tagRepo.New(repository.MssqlTagRepositoryConstructorArgs{DB: db})
+			tagRepoAbstract, err := tagRepo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db})
 			assert.NoErrorf(t, err, test.name)
 
-			tagRepo = tagRepoAbstract.(*repository.MssqlTagRepository)
-		    
+			tagRepo = tagRepoAbstract.(*repository.Sqlite3TagRepository)
 
-			repo := new(repository.MssqlDocumentRepository)
+			repo := new(repository.Sqlite3DocumentRepository)
 
-			
-		    repoAbstract, err := repo.New(repository.MssqlDocumentRepositoryConstructorArgs{DB: db, TagRepository: tagRepo})
-		    
+			repoAbstract, err := repo.New(repository.Sqlite3DocumentRepositoryConstructorArgs{DB: db, TagRepository: tagRepo})
+
 			assert.NoErrorf(t, err, test.name)
 
-			repo = repoAbstract.(*repository.MssqlDocumentRepository)
+			repo = repoAbstract.(*repository.Sqlite3DocumentRepository)
 
 			if test.insertBeforeCheck {
 				err = repo.Add(context.Background(), []*domain.Document{test.model})
@@ -1644,120 +1279,89 @@ func TestSQLDocumentRepositoryDoesExistWhereTest(t *testing.T) {
 			name: "Nil input", filter: nil, err: helper.NilInputError{},
 		},
 		{
-            
+
 			name: "Two existing minimal inputs, filter for path of first", doesExist: true, insertBeforeCheck: true,
 			filter: &domain.DocumentFilter{
-				Path : optional.Make(model.FilterOperation[string]{
+				Path: optional.Make(model.FilterOperation[string]{
 					Operator: model.FilterEqual,
 					Operand:  model.ScalarOperand[string]{Operand: "path/to/file"},
 				}),
-            },
-            
+			},
+
 			models: []*domain.Document{
 				{
-					
-					
-                    CreatedAt: time.Now(),
+
+					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
-					Path:       "path/to/file",
-                    ID:         1,
-
-					
-
-					
+					Path:      "path/to/file",
+					ID:        1,
 				},
 				{
-					
-					
-                    CreatedAt: time.Now(),
+
+					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
-					Path:       "path/to/other/file",
-                    ID:         2,
-
-					
-
-					
+					Path:      "path/to/other/file",
+					ID:        2,
 				},
 			},
 		},
 		{
-            
+
 			name: "Two existing minimal inputs, filter for path of both", doesExist: true, insertBeforeCheck: true,
 			filter: &domain.DocumentFilter{
 				Path: optional.Make(model.FilterOperation[string]{
 					Operator: model.FilterLike,
 					Operand:  model.ScalarOperand[string]{Operand: "path/to/%"},
 				}),
-            },
-            
+			},
+
 			models: []*domain.Document{
 				{
-					
-					
-                    CreatedAt: time.Now(),
+
+					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
-					Path:       "path/to/file",
-                    ID:         1,
-
-					
-
-					
+					Path:      "path/to/file",
+					ID:        1,
 				},
 				{
-					
-					
-                    CreatedAt: time.Now(),
+
+					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
-					Path:       "path/to/other/file",
-                    ID:         2,
-
-					
-
-					
+					Path:      "path/to/other/file",
+					ID:        2,
 				},
 			},
 		},
 		{
-            
+
 			name: "Two existing minimal inputs, filter for path of first",
 			filter: &domain.DocumentFilter{
 				Path: optional.Make(model.FilterOperation[string]{
 					Operator: model.FilterEqual,
 					Operand:  model.ScalarOperand[string]{Operand: "path/to/file"},
 				}),
-            },
-            
+			},
+
 			models: []*domain.Document{
 				{
-					
-					
-                    CreatedAt: time.Now(),
+
+					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
-					Path:       "path/to/file",
-                    ID:         1,
-
-					
-
-					
+					Path:      "path/to/file",
+					ID:        1,
 				},
 				{
-					
-					
-                    CreatedAt: time.Now(),
+
+					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
-					Path:       "path/to/other/file",
-                    ID:         2,
-
-
-					
-
-					
+					Path:      "path/to/other/file",
+					ID:        2,
 				},
 			},
 		},
@@ -1770,26 +1374,23 @@ func TestSQLDocumentRepositoryDoesExistWhereTest(t *testing.T) {
 			defer testCommon.HandlePanic(t, test.name)
 
 			db, err := testCommon.GetDB()
-            require.NoErrorf(t, err, test.name+", db open")
-            defer db.Close()
+			require.NoErrorf(t, err, test.name+", db open")
+			defer db.Close()
 
-			
-		    tagRepo := new(repository.MssqlTagRepository)
+			tagRepo := new(repository.Sqlite3TagRepository)
 
-			tagRepoAbstract, err := tagRepo.New(repository.MssqlTagRepositoryConstructorArgs{DB: db})
+			tagRepoAbstract, err := tagRepo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db})
 			assert.NoErrorf(t, err, test.name)
 
-			tagRepo = tagRepoAbstract.(*repository.MssqlTagRepository)
-		    
+			tagRepo = tagRepoAbstract.(*repository.Sqlite3TagRepository)
 
-			repo := new(repository.MssqlDocumentRepository)
+			repo := new(repository.Sqlite3DocumentRepository)
 
-			
-		    repoAbstract, err := repo.New(repository.MssqlDocumentRepositoryConstructorArgs{DB: db, TagRepository: tagRepo})
-		    
+			repoAbstract, err := repo.New(repository.Sqlite3DocumentRepositoryConstructorArgs{DB: db, TagRepository: tagRepo})
+
 			assert.NoErrorf(t, err, test.name)
 
-			repo = repoAbstract.(*repository.MssqlDocumentRepository)
+			repo = repoAbstract.(*repository.Sqlite3DocumentRepository)
 
 			if test.insertBeforeCheck {
 				err = repo.Add(context.Background(), test.models)
@@ -1821,134 +1422,98 @@ func TestSQLDocumentRepositoryGetWhereTest(t *testing.T) {
 		},
 		{
 			name: "Empty result", err: helper.IneffectiveOperationError{},
-            
+
 			filter: &domain.DocumentFilter{
 				Path: optional.Make(model.FilterOperation[string]{
 					Operator: model.FilterEqual,
 					Operand:  model.ScalarOperand[string]{Operand: "path/to/file"},
 				}),
-            },
-            
+			},
 		},
 		{
-            
+
 			name: "Two existing minimal entities, filter for path of first", numRecords: 1, insertBeforeCheck: true,
 			filter: &domain.DocumentFilter{
 				Path: optional.Make(model.FilterOperation[string]{
 					Operator: model.FilterEqual,
 					Operand:  model.ScalarOperand[string]{Operand: "path/to/file"},
 				}),
-            },
-            
+			},
+
 			models: []*domain.Document{
 				{
-					
-					
-                    CreatedAt: time.Now(),
+
+					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
-					Path:       "path/to/file",
-                    ID:         1,
-
-
-					
-
-					
+					Path:      "path/to/file",
+					ID:        1,
 				},
 				{
-					
-					
-                    CreatedAt: time.Now(),
+
+					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
-					Path:       "path/to/other/file",
-                    ID:         2,
-
-
-					
-
-					
+					Path:      "path/to/other/file",
+					ID:        2,
 				},
 			},
 		},
 		{
-            
+
 			name: "Two existing minimal entities, filter for path of both", numRecords: 2, insertBeforeCheck: true,
 			filter: &domain.DocumentFilter{
 				Path: optional.Make(model.FilterOperation[string]{
 					Operator: model.FilterLike,
 					Operand:  model.ScalarOperand[string]{Operand: "path/to/%"},
 				}),
-            },
-            
+			},
+
 			models: []*domain.Document{
 				{
-					
-					
-                    CreatedAt: time.Now(),
+
+					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
-					Path:       "path/to/file",
-                    ID:         1,
-
-					
-
-					
+					Path:      "path/to/file",
+					ID:        1,
 				},
 				{
-					
-					
-                    CreatedAt: time.Now(),
+
+					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
-					Path:       "path/to/other/file",
-                    ID:         2,
-
-
-					
-
-					
+					Path:      "path/to/other/file",
+					ID:        2,
 				},
 			},
 		},
 		{
-            
+
 			name: "Two existing minimal entities, filter for path of first", numRecords: 1, insertBeforeCheck: true,
 			filter: &domain.DocumentFilter{
 				Path: optional.Make(model.FilterOperation[string]{
 					Operator: model.FilterEqual,
 					Operand:  model.ScalarOperand[string]{Operand: "path/to/file"},
 				}),
-            },
-            
+			},
+
 			models: []*domain.Document{
 				{
-					
-					
-                    CreatedAt: time.Now(),
+
+					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
-					Path:       "path/to/file",
-                    ID:         1,
-
-
-					
-
-					
+					Path:      "path/to/file",
+					ID:        1,
 				},
 				{
-					
-					
-                    CreatedAt: time.Now(),
+
+					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
-					Path:       "path/to/other/file",
-                    ID:         2,
-
-
-					
-
-					
+					Path:      "path/to/other/file",
+					ID:        2,
 				},
 			},
 		},
@@ -1961,26 +1526,23 @@ func TestSQLDocumentRepositoryGetWhereTest(t *testing.T) {
 			defer testCommon.HandlePanic(t, test.name)
 
 			db, err := testCommon.GetDB()
-            require.NoErrorf(t, err, test.name+", db open")
-            defer db.Close()
+			require.NoErrorf(t, err, test.name+", db open")
+			defer db.Close()
 
-			
-		    tagRepo := new(repository.MssqlTagRepository)
+			tagRepo := new(repository.Sqlite3TagRepository)
 
-			tagRepoAbstract, err := tagRepo.New(repository.MssqlTagRepositoryConstructorArgs{DB: db})
+			tagRepoAbstract, err := tagRepo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db})
 			assert.NoErrorf(t, err, test.name)
 
-			tagRepo = tagRepoAbstract.(*repository.MssqlTagRepository)
-		    
+			tagRepo = tagRepoAbstract.(*repository.Sqlite3TagRepository)
 
-			repo := new(repository.MssqlDocumentRepository)
+			repo := new(repository.Sqlite3DocumentRepository)
 
-			
-		    repoAbstract, err := repo.New(repository.MssqlDocumentRepositoryConstructorArgs{DB: db, TagRepository: tagRepo})
-		    
+			repoAbstract, err := repo.New(repository.Sqlite3DocumentRepositoryConstructorArgs{DB: db, TagRepository: tagRepo})
+
 			assert.NoErrorf(t, err, test.name)
 
-			repo = repoAbstract.(*repository.MssqlDocumentRepository)
+			repo = repoAbstract.(*repository.Sqlite3DocumentRepository)
 
 			if test.insertBeforeCheck {
 				err = repo.Add(context.Background(), test.models)
@@ -2011,98 +1573,73 @@ func TestSQLDocumentRepositoryGetFirstWhereTest(t *testing.T) {
 			name: "Nil filter", filter: nil, err: helper.NilInputError{},
 		},
 		{
-            
+
 			name: "Two existing minimal inputs, filter for path of first", numRecords: 1, insertBeforeCheck: true,
 			filter: &domain.DocumentFilter{
 				Path: optional.Make(model.FilterOperation[string]{
 					Operator: model.FilterEqual,
 					Operand:  model.ScalarOperand[string]{Operand: "path/to/file"},
 				}),
-            },
-            
+			},
+
 			models: []*domain.Document{
 				{
-					
-					
-                    CreatedAt: time.Now(),
+
+					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
-					Path:       "path/to/file",
-                    ID:         1,
-
-
-					
-
-					
+					Path:      "path/to/file",
+					ID:        1,
 				},
 				{
-					
-					
-                    CreatedAt: time.Now(),
+
+					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
-					Path:       "path/to/other/file",
-                    ID:         2,
-
-
-					
-
-					
+					Path:      "path/to/other/file",
+					ID:        2,
 				},
 			},
 		},
 		{
-            
+
 			name: "Two existing minimal inputs, filter for path of both", numRecords: 2, insertBeforeCheck: true,
 			filter: &domain.DocumentFilter{
 				Path: optional.Make(model.FilterOperation[string]{
 					Operator: model.FilterLike,
 					Operand:  model.ScalarOperand[string]{Operand: "path/to/%"},
 				}),
-            },
-            
+			},
+
 			models: []*domain.Document{
 				{
-					
-					
-                    CreatedAt: time.Now(),
+
+					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
-					Path:       "path/to/file",
-                    ID:         1,
-
-
-					
-
-					
+					Path:      "path/to/file",
+					ID:        1,
 				},
 				{
-					
-					
-                    CreatedAt: time.Now(),
+
+					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
-					Path:       "path/to/other/file",
-                    ID:         2,
-
-
-					
-
-					
+					Path:      "path/to/other/file",
+					ID:        2,
 				},
 			},
 		},
 		{
-            
+
 			name: "Two non-existing minimal entities, filter for path of first", err: &helper.IneffectiveOperationError{},
 			filter: &domain.DocumentFilter{
 				Path: optional.Make(model.FilterOperation[string]{
 					Operator: model.FilterEqual,
 					Operand:  model.ScalarOperand[string]{Operand: "path/to/file"},
 				}),
-            },
-            
-        },
+			},
+		},
 	}
 
 	for _, test := range tests {
@@ -2112,26 +1649,23 @@ func TestSQLDocumentRepositoryGetFirstWhereTest(t *testing.T) {
 			defer testCommon.HandlePanic(t, test.name)
 
 			db, err := testCommon.GetDB()
-            require.NoErrorf(t, err, test.name+", db open")
-            defer db.Close()
+			require.NoErrorf(t, err, test.name+", db open")
+			defer db.Close()
 
-			
-		    tagRepo := new(repository.MssqlTagRepository)
+			tagRepo := new(repository.Sqlite3TagRepository)
 
-			tagRepoAbstract, err := tagRepo.New(repository.MssqlTagRepositoryConstructorArgs{DB: db})
+			tagRepoAbstract, err := tagRepo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db})
 			assert.NoErrorf(t, err, test.name)
 
-			tagRepo = tagRepoAbstract.(*repository.MssqlTagRepository)
-		    
+			tagRepo = tagRepoAbstract.(*repository.Sqlite3TagRepository)
 
-			repo := new(repository.MssqlDocumentRepository)
+			repo := new(repository.Sqlite3DocumentRepository)
 
-			
-		    repoAbstract, err := repo.New(repository.MssqlDocumentRepositoryConstructorArgs{DB: db, TagRepository: tagRepo})
-		    
+			repoAbstract, err := repo.New(repository.Sqlite3DocumentRepositoryConstructorArgs{DB: db, TagRepository: tagRepo})
+
 			assert.NoErrorf(t, err, test.name)
 
-			repo = repoAbstract.(*repository.MssqlDocumentRepository)
+			repo = repoAbstract.(*repository.Sqlite3DocumentRepository)
 
 			if test.insertBeforeCheck {
 				err = repo.Add(context.Background(), test.models)
@@ -2160,32 +1694,20 @@ func TestSQLDocumentRepositoryGetAllTest(t *testing.T) {
 			name: "Two existing minimal entities", numRecords: 2, insertBeforeCheck: true,
 			models: []*domain.Document{
 				{
-					
-					
-                    CreatedAt: time.Now(),
+
+					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
-					Path:       "path/to/file",
-                    ID:         1,
-
-
-					
-
-					
+					Path:      "path/to/file",
+					ID:        1,
 				},
 				{
-					
-					
-                    CreatedAt: time.Now(),
+
+					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
-					Path:       "path/to/other/file",
-                    ID:         2,
-
-
-					
-
-					
+					Path:      "path/to/other/file",
+					ID:        2,
 				},
 			},
 		},
@@ -2201,26 +1723,23 @@ func TestSQLDocumentRepositoryGetAllTest(t *testing.T) {
 			defer testCommon.HandlePanic(t, test.name)
 
 			db, err := testCommon.GetDB()
-            require.NoErrorf(t, err, test.name+", db open")
-            defer db.Close()
+			require.NoErrorf(t, err, test.name+", db open")
+			defer db.Close()
 
-			
-		    tagRepo := new(repository.MssqlTagRepository)
+			tagRepo := new(repository.Sqlite3TagRepository)
 
-			tagRepoAbstract, err := tagRepo.New(repository.MssqlTagRepositoryConstructorArgs{DB: db})
+			tagRepoAbstract, err := tagRepo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db})
 			assert.NoErrorf(t, err, test.name)
 
-			tagRepo = tagRepoAbstract.(*repository.MssqlTagRepository)
-		    
+			tagRepo = tagRepoAbstract.(*repository.Sqlite3TagRepository)
 
-			repo := new(repository.MssqlDocumentRepository)
+			repo := new(repository.Sqlite3DocumentRepository)
 
-			
-		    repoAbstract, err := repo.New(repository.MssqlDocumentRepositoryConstructorArgs{DB: db, TagRepository: tagRepo})
-		    
+			repoAbstract, err := repo.New(repository.Sqlite3DocumentRepositoryConstructorArgs{DB: db, TagRepository: tagRepo})
+
 			assert.NoErrorf(t, err, test.name)
 
-			repo = repoAbstract.(*repository.MssqlDocumentRepository)
+			repo = repoAbstract.(*repository.Sqlite3DocumentRepository)
 
 			if test.insertBeforeCheck {
 				err = repo.Add(context.Background(), test.models)
@@ -2237,7 +1756,6 @@ func TestSQLDocumentRepositoryGetAllTest(t *testing.T) {
 		})
 	}
 }
-
 
 func TestSQLDocumentRepositoryAddTypeTest(t *testing.T) {
 	tests := []struct {
@@ -2267,26 +1785,23 @@ func TestSQLDocumentRepositoryAddTypeTest(t *testing.T) {
 			defer testCommon.HandlePanic(t, test.name)
 
 			db, err := testCommon.GetDB()
-            require.NoErrorf(t, err, test.name+", db open")
-            defer db.Close()
+			require.NoErrorf(t, err, test.name+", db open")
+			defer db.Close()
 
-			
-		    tagRepo := new(repository.MssqlTagRepository)
+			tagRepo := new(repository.Sqlite3TagRepository)
 
-			tagRepoAbstract, err := tagRepo.New(repository.MssqlTagRepositoryConstructorArgs{DB: db})
+			tagRepoAbstract, err := tagRepo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db})
 			assert.NoErrorf(t, err, test.name)
 
-			tagRepo = tagRepoAbstract.(*repository.MssqlTagRepository)
-		    
+			tagRepo = tagRepoAbstract.(*repository.Sqlite3TagRepository)
 
-			repo := new(repository.MssqlDocumentRepository)
+			repo := new(repository.Sqlite3DocumentRepository)
 
-			
-		    repoAbstract, err := repo.New(repository.MssqlDocumentRepositoryConstructorArgs{DB: db, TagRepository: tagRepo})
-		    
+			repoAbstract, err := repo.New(repository.Sqlite3DocumentRepositoryConstructorArgs{DB: db, TagRepository: tagRepo})
+
 			assert.NoErrorf(t, err, test.name)
 
-			repo = repoAbstract.(*repository.MssqlDocumentRepository)
+			repo = repoAbstract.(*repository.Sqlite3DocumentRepository)
 
 			if test.preAddedType != nil {
 				err = repo.AddType(context.Background(), test.preAddedType)
@@ -2329,26 +1844,23 @@ func TestSQLDocumentRepositoryUpdateTypeTest(t *testing.T) {
 			defer testCommon.HandlePanic(t, test.name)
 
 			db, err := testCommon.GetDB()
-            require.NoErrorf(t, err, test.name+", db open")
-            defer db.Close()
+			require.NoErrorf(t, err, test.name+", db open")
+			defer db.Close()
 
-			
-		    tagRepo := new(repository.MssqlTagRepository)
+			tagRepo := new(repository.Sqlite3TagRepository)
 
-			tagRepoAbstract, err := tagRepo.New(repository.MssqlTagRepositoryConstructorArgs{DB: db})
+			tagRepoAbstract, err := tagRepo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db})
 			assert.NoErrorf(t, err, test.name)
 
-			tagRepo = tagRepoAbstract.(*repository.MssqlTagRepository)
-		    
+			tagRepo = tagRepoAbstract.(*repository.Sqlite3TagRepository)
 
-			repo := new(repository.MssqlDocumentRepository)
+			repo := new(repository.Sqlite3DocumentRepository)
 
-			
-		    repoAbstract, err := repo.New(repository.MssqlDocumentRepositoryConstructorArgs{DB: db, TagRepository: tagRepo})
-		    
+			repoAbstract, err := repo.New(repository.Sqlite3DocumentRepositoryConstructorArgs{DB: db, TagRepository: tagRepo})
+
 			assert.NoErrorf(t, err, test.name)
 
-			repo = repoAbstract.(*repository.MssqlDocumentRepository)
+			repo = repoAbstract.(*repository.Sqlite3DocumentRepository)
 
 			if test.insertBeforeUpdate {
 				err = repo.AddType(context.Background(), test.oldTypes)
@@ -2390,26 +1902,23 @@ func TestSQLDocumentRepositoryDeleteTypeTest(t *testing.T) {
 			defer testCommon.HandlePanic(t, test.name)
 
 			db, err := testCommon.GetDB()
-            require.NoErrorf(t, err, test.name+", db open")
-            defer db.Close()
+			require.NoErrorf(t, err, test.name+", db open")
+			defer db.Close()
 
-			
-		    tagRepo := new(repository.MssqlTagRepository)
+			tagRepo := new(repository.Sqlite3TagRepository)
 
-			tagRepoAbstract, err := tagRepo.New(repository.MssqlTagRepositoryConstructorArgs{DB: db})
+			tagRepoAbstract, err := tagRepo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db})
 			assert.NoErrorf(t, err, test.name)
 
-			tagRepo = tagRepoAbstract.(*repository.MssqlTagRepository)
-		    
+			tagRepo = tagRepoAbstract.(*repository.Sqlite3TagRepository)
 
-			repo := new(repository.MssqlDocumentRepository)
+			repo := new(repository.Sqlite3DocumentRepository)
 
-			
-		    repoAbstract, err := repo.New(repository.MssqlDocumentRepositoryConstructorArgs{DB: db, TagRepository: tagRepo})
-		    
+			repoAbstract, err := repo.New(repository.Sqlite3DocumentRepositoryConstructorArgs{DB: db, TagRepository: tagRepo})
+
 			assert.NoErrorf(t, err, test.name)
 
-			repo = repoAbstract.(*repository.MssqlDocumentRepository)
+			repo = repoAbstract.(*repository.Sqlite3DocumentRepository)
 
 			if test.preAddedTypes != nil {
 				err = repo.AddType(context.Background(), test.preAddedTypes)
@@ -2426,87 +1935,76 @@ func TestSQLDocumentRepositoryDeleteTypeTest(t *testing.T) {
 	}
 }
 
-
-
 func TestSQLDocumentRepositoryTagModelConverter(t *testing.T) {
-			t.Parallel()
-			defer testCommon.HandlePanic(t, t.Name())
+	t.Parallel()
+	defer testCommon.HandlePanic(t, t.Name())
 
-			db, err := testCommon.GetDB()
-            require.NoError(t, err, ", db open")
-            defer db.Close()
+	db, err := testCommon.GetDB()
+	require.NoError(t, err, ", db open")
+	defer db.Close()
 
-			
-		    tagRepo := new(repository.MssqlTagRepository)
+	tagRepo := new(repository.Sqlite3TagRepository)
 
-			tagRepoAbstract, err := tagRepo.New(repository.MssqlTagRepositoryConstructorArgs{DB: db})
-			assert.NoError(t, err)
+	tagRepoAbstract, err := tagRepo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db})
+	assert.NoError(t, err)
 
-			tagRepo = tagRepoAbstract.(*repository.MssqlTagRepository)
-		    
+	tagRepo = tagRepoAbstract.(*repository.Sqlite3TagRepository)
 
-			repo := new(repository.MssqlDocumentRepository)
+	repo := new(repository.Sqlite3DocumentRepository)
 
-			
-		    repoAbstract, err := repo.New(repository.MssqlDocumentRepositoryConstructorArgs{DB: db, TagRepository: tagRepo})
-		    
-			assert.NoError(t, err)
+	repoAbstract, err := repo.New(repository.Sqlite3DocumentRepositoryConstructorArgs{DB: db, TagRepository: tagRepo})
 
-			repo = repoAbstract.(*repository.MssqlDocumentRepository)
+	assert.NoError(t, err)
 
-            parent1 :=&domain.Tag{
-                Tag:        "Software development",
-                ParentPath: []*domain.Tag{},
-                Subtags:    []*domain.Tag{},
-                ID:         1,
-            }
+	repo = repoAbstract.(*repository.Sqlite3DocumentRepository)
 
-            parent2 :=&domain.Tag{
-                Tag:        "Computer science",
-                ParentPath: []*domain.Tag{},
-                Subtags:    []*domain.Tag{},
-                ID:         2,
-            }
+	parent1 := &domain.Tag{
+		Tag: "Software development",
 
-            child1 := &domain.Tag{
-                Tag:        "Golang",
-                ParentPath: []*domain.Tag{},
-                Subtags:    []*domain.Tag{},
-                ID:         3,
-            }
+		ID:        1,
+		SubtagIDs: []int64{2},
+	}
 
-            child2 := &domain.Tag{
-                Tag:        "CPP",
-                ParentPath: []*domain.Tag{},
-                Subtags:    []*domain.Tag{},
-                ID:         4,
-            }
+	parent2 := &domain.Tag{
+		Tag: "Computer science",
 
-            original := &domain.Tag{
-                Tag:        "Programming languages",
-                ParentPath: []*domain.Tag{},
-                Subtags:    []*domain.Tag{},
-                ID:         5,
-            }
+		ID:            2,
+		SubtagIDs:     []int64{5},
+		ParentPathIDs: []int64{1},
+	}
 
-            original.AddChildren([]*domain.Tag{child1, child2})
-            original.AddDirectParent(parent2)
-            parent2.AddDirectParent(parent1)
+	child1 := &domain.Tag{
+		Tag: "Golang",
 
-            
-            
-            err = repo.GetTagRepository().Add(context.Background(),  []*domain.Tag{parent1, parent2, child1, child2, original} )
-            
-            assert.NoError(t, err)
+		ID:            3,
+		ParentPathIDs: []int64{5, 2, 1},
+	}
 
-            
-            repositoryModel, err := repo.GetTagRepository().TagDomainToRepositoryModel(context.Background(), original)
-            
-            assert.NoError(t, err)
+	child2 := &domain.Tag{
+		Tag: "CPP",
 
-            
-            convertedBack, err := repo.GetTagRepository().TagRepositoryToDomainModel(context.Background(), repositoryModel.(*repository.Tag))
-            
-            assert.NoError(t, err)
-            assert.EqualValues(t, original, convertedBack)
+		ID:            4,
+		ParentPathIDs: []int64{5, 2, 1},
+	}
+
+	original := &domain.Tag{
+		Tag: "Programming languages",
+
+		ID:            5,
+		SubtagIDs:     []int64{3, 4},
+		ParentPathIDs: []int64{2, 1},
+	}
+
+	err = repo.GetTagRepository().Add(context.Background(), []*domain.Tag{parent1, parent2, child1, child2, original})
+
+	assert.NoError(t, err)
+
+	repositoryModel, err := repo.GetTagRepository().TagDomainToRepositoryModel(context.Background(), original)
+
+	assert.NoError(t, err)
+
+	convertedBack, err := repo.GetTagRepository().TagRepositoryToDomainModel(context.Background(), repositoryModel.(*repository.Tag))
+
+	assert.NoError(t, err)
+	assert.EqualValues(t, original, convertedBack)
 }

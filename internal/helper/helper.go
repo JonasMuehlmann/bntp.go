@@ -26,6 +26,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
+	"reflect"
 	"runtime"
 	"time"
 
@@ -69,6 +70,22 @@ func (err IneffectiveOperationError) Unwrap() error {
 	return err.Inner
 }
 
+func (err IneffectiveOperationError) Is(other error) bool {
+	var thisZero IneffectiveOperationError
+	return other.(IneffectiveOperationError) != thisZero
+}
+
+func (err IneffectiveOperationError) As(target any) bool {
+	var thisZero IneffectiveOperationError
+	isTarget := target.(IneffectiveOperationError) != thisZero
+
+	if isTarget {
+		reflect.Indirect(reflect.ValueOf(target)).Set(reflect.ValueOf(err))
+	}
+
+	return isTarget
+}
+
 type DuplicateInsertionError struct {
 	Inner error
 }
@@ -79,6 +96,22 @@ func (err DuplicateInsertionError) Error() string {
 
 func (err DuplicateInsertionError) Unwrap() error {
 	return err.Inner
+}
+
+func (err DuplicateInsertionError) Is(other error) bool {
+	var thisZero DuplicateInsertionError
+	return other.(DuplicateInsertionError) != thisZero
+}
+
+func (err DuplicateInsertionError) As(target any) bool {
+	var thisZero DuplicateInsertionError
+	isTarget := target.(DuplicateInsertionError) != thisZero
+
+	if isTarget {
+		reflect.Indirect(reflect.ValueOf(target)).Set(reflect.ValueOf(err))
+	}
+
+	return isTarget
 }
 
 func NewDefaultLogger(logFile string, consoleLogLevel log.Level, fileLogLevel log.Level) *log.Logger {

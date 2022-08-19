@@ -23,6 +23,7 @@ package repository
 import (
 	"context"
 	"fmt"
+	"reflect"
 	"time"
 
 	"github.com/JonasMuehlmann/bntp.go/internal/helper"
@@ -133,4 +134,20 @@ func (err ReferenceToNonExistentDependencyError) Error() string {
 
 func (err ReferenceToNonExistentDependencyError) Unwrap() error {
 	return err.Inner
+}
+
+func (err ReferenceToNonExistentDependencyError) Is(other error) bool {
+	var thisZero ReferenceToNonExistentDependencyError
+	return other.(ReferenceToNonExistentDependencyError) != thisZero
+}
+
+func (err ReferenceToNonExistentDependencyError) As(target any) bool {
+	var thisZero ReferenceToNonExistentDependencyError
+	isTarget := target.(ReferenceToNonExistentDependencyError) != thisZero
+
+	if isTarget {
+		reflect.Indirect(reflect.ValueOf(target)).Set(reflect.ValueOf(err))
+	}
+
+	return isTarget
 }

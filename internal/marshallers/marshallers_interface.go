@@ -29,8 +29,9 @@ import (
 )
 
 // ******************************************************************//
-//                            Interfaces                            //
-// ******************************************************************//.
+//                             Interfaces                            //
+// ******************************************************************//
+
 type Marshaller interface {
 	Marshall(from any) (to string, err error)
 }
@@ -40,8 +41,9 @@ type Unmarshaller interface {
 }
 
 // ******************************************************************//
-//                               Json                               //
-// ******************************************************************//.
+//                                Json                               //
+// ******************************************************************//
+
 type JsonMarshaller struct{}
 
 func (marshaller *JsonMarshaller) Marshall(from any) (to string, err error) {
@@ -57,8 +59,9 @@ func (unmarshaller *JsonUnmarshaller) Unmarshall(out any, in string) error {
 }
 
 // ******************************************************************//
-//                               Yaml                               //
-// ******************************************************************//.
+//                                Yaml                               //
+// ******************************************************************//
+
 type YamlMarshaller struct{}
 
 func (marshaller *YamlMarshaller) Marshall(from any) (to string, err error) {
@@ -74,8 +77,9 @@ func (unmarshaller *YamlUnmarshaller) Unmarshall(out any, in string) error {
 }
 
 // ******************************************************************//
-//                               Csv                                //
-// ******************************************************************//.
+//                                Csv                                //
+// ******************************************************************//
+
 type CsvMarshaller struct{}
 
 func (marshaller *CsvMarshaller) Marshall(from any) (to string, err error) {

@@ -275,7 +275,7 @@ func NewDBFromConfig() *sql.DB {
 	return db
 }
 
-//********************    Repository builders    ********************//
+// ********************    Repository builders    ********************//
 // TODO: Allow using non-sql repositories.
 func NewBookmarkRepositoryFromConfig(repoDB *sql.DB, tagRepository repository.TagRepository) repository.BookmarkRepository {
 	bookmarkRepository := new(sqlite3Repository.Sqlite3BookmarkRepository)
@@ -330,7 +330,7 @@ func NewDocumentContentRepositoryFromConfig(fs afero.Fs) repository.DocumentCont
 }
 
 // TODO: Implement proper  hook parsing
-//********************    Manager builders    ********************//
+// ********************    Manager builders    ********************//
 func NewBookmarkManagerFromConfig(repo repository.BookmarkRepository) libbookmarks.BookmarkManager {
 	hooks := bntp.NewHooks[domain.Bookmark]()
 
