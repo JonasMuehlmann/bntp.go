@@ -1369,7 +1369,7 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryModel(ctx context.
             return
         }
 
-        repositoryModelConcrete.R.Source{{$EntityName}}s = append(repositoryModelConcrete.R.Source{{$EntityName}}s, repository{{$EntityName}}Raw.(*{{$EntityName}}))
+        repositoryModelConcrete.R.Destination{{$EntityName}}s = append(repositoryModelConcrete.R.Destination{{$EntityName}}s, repository{{$EntityName}}Raw.(*{{$EntityName}}))
     }
 
     for _ , backlink := range domainModel.Backlinked{{$EntityName}}sIDs {
@@ -1380,7 +1380,7 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryModel(ctx context.
             return
         }
 
-        repositoryModelConcrete.R.Destination{{$EntityName}}s = append(repositoryModelConcrete.R.Destination{{$EntityName}}s, repository{{$EntityName}}Raw.(*{{$EntityName}}))
+        repositoryModelConcrete.R.Source{{$EntityName}}s = append(repositoryModelConcrete.R.Source{{$EntityName}}s, repository{{$EntityName}}Raw.(*{{$EntityName}}))
     }
 
     repositoryModel = repositoryModelConcrete

@@ -146,7 +146,7 @@ var (
 	documentColumnsWithoutDefault = []string{"id", "path", "created_at", "updated_at"}
 	documentColumnsWithDefault    = []string{"document_type_id", "deleted_at"}
 	documentPrimaryKeyColumns     = []string{"id"}
-	documentGeneratedColumns      = []string{}
+	documentGeneratedColumns      =[]string{}
 )
 
 type (

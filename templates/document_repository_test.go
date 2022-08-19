@@ -1958,53 +1958,46 @@ func TestSQLDocumentRepositoryTagModelConverter(t *testing.T) {
 
 	repo = repoAbstract.(*repository.Sqlite3DocumentRepository)
 
-	parent1 := &domain.Tag{
-		Tag: "Software development",
-
-		ID:        1,
-		SubtagIDs: []int64{2},
+	refOut := &domain.Document{
+		Path:                   "path/to//other/file",
+		DocumentType:           optional.Make("Note"),
+		BacklinkedDocumentsIDs: []int64{1},
+		ID:                     2,
+	}
+	refIn := &domain.Document{
+		Path:              "path/to//some/file",
+		DocumentType:      optional.Make("Note"),
+		LinkedDocumentIDs: []int64{1},
+		ID:                3,
 	}
 
-	parent2 := &domain.Tag{
-		Tag: "Computer science",
-
-		ID:            2,
-		SubtagIDs:     []int64{5},
-		ParentPathIDs: []int64{1},
+	original := &domain.Document{
+		Path:                   "path/to/file",
+		DocumentType:           optional.Make("Note"),
+		LinkedDocumentIDs:      []int64{2},
+		BacklinkedDocumentsIDs: []int64{3},
+		TagIDs:                 []int64{1},
+		ID:                     1,
 	}
 
-	child1 := &domain.Tag{
-		Tag: "Golang",
-
-		ID:            3,
-		ParentPathIDs: []int64{5, 2, 1},
-	}
-
-	child2 := &domain.Tag{
-		Tag: "CPP",
-
-		ID:            4,
-		ParentPathIDs: []int64{5, 2, 1},
-	}
-
-	original := &domain.Tag{
+	tag := &domain.Tag{
 		Tag: "Programming languages",
-
-		ID:            5,
-		SubtagIDs:     []int64{3, 4},
-		ParentPathIDs: []int64{2, 1},
+		ID:  1,
 	}
 
-	err = repo.GetTagRepository().Add(context.Background(), []*domain.Tag{parent1, parent2, child1, child2, original})
-
+	err = repo.GetTagRepository().Add(context.Background(), []*domain.Tag{tag})
 	assert.NoError(t, err)
 
-	repositoryModel, err := repo.GetTagRepository().TagDomainToRepositoryModel(context.Background(), original)
-
+	err = repo.AddType(context.Background(), []string{original.DocumentType.Wrappee})
 	assert.NoError(t, err)
 
-	convertedBack, err := repo.GetTagRepository().TagRepositoryToDomainModel(context.Background(), repositoryModel.(*repository.Tag))
+	err = repo.Add(context.Background(), []*domain.Document{refOut, refIn, original})
+	assert.NoError(t, err)
 
+	repositoryModel, err := repo.DocumentDomainToRepositoryModel(context.Background(), original)
+	assert.NoError(t, err)
+
+	convertedBack, err := repo.DocumentRepositoryToDomainModel(context.Background(), repositoryModel.(*repository.Document))
 	assert.NoError(t, err)
 	assert.EqualValues(t, original, convertedBack)
 }

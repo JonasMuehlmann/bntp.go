@@ -2176,7 +2176,7 @@ func TestSQLBookmarkRepositoryDeleteTypeTest(t *testing.T) {
 	}
 }
 
-func TestSQLBookmarkRepositoryTagModelConverter(t *testing.T) {
+func TestSQLBookmarkRepositoryBookmarkModelConverter(t *testing.T) {
 	t.Parallel()
 	defer testCommon.HandlePanic(t, t.Name())
 
@@ -2199,53 +2199,30 @@ func TestSQLBookmarkRepositoryTagModelConverter(t *testing.T) {
 
 	repo = repoAbstract.(*repository.Sqlite3BookmarkRepository)
 
-	parent1 := &domain.Tag{
-		Tag: "Software development",
-
-		ID:        1,
-		SubtagIDs: []int64{2},
-	}
-
-	parent2 := &domain.Tag{
-		Tag: "Computer science",
-
-		ID:            2,
-		SubtagIDs:     []int64{5},
-		ParentPathIDs: []int64{1},
-	}
-
-	child1 := &domain.Tag{
-		Tag: "Golang",
-
-		ID:            3,
-		ParentPathIDs: []int64{5, 2, 1},
-	}
-
-	child2 := &domain.Tag{
-		Tag: "CPP",
-
-		ID:            4,
-		ParentPathIDs: []int64{5, 2, 1},
-	}
-
-	original := &domain.Tag{
+	tag := &domain.Tag{
 		Tag: "Programming languages",
-
-		ID:            5,
-		SubtagIDs:     []int64{3, 4},
-		ParentPathIDs: []int64{2, 1},
+		ID:  5,
+	}
+	original := &domain.Bookmark{
+		URL:          "https://www.google.com",
+		Title:        optional.Make("Google home page"),
+		BookmarkType: optional.Make("Text"),
+		IsCollection: true,
+		IsRead:       true,
+		ID:           1,
+		TagIDs:       []int64{tag.ID},
 	}
 
-	err = repo.GetTagRepository().Add(context.Background(), []*domain.Tag{parent1, parent2, child1, child2, original})
-
+	err = repo.GetTagRepository().Add(context.Background(), []*domain.Tag{tag})
 	assert.NoError(t, err)
 
-	repositoryModel, err := repo.GetTagRepository().TagDomainToRepositoryModel(context.Background(), original)
-
+	err = repo.AddType(context.Background(), []string{original.BookmarkType.Wrappee})
 	assert.NoError(t, err)
 
-	convertedBack, err := repo.GetTagRepository().TagRepositoryToDomainModel(context.Background(), repositoryModel.(*repository.Tag))
+	repositoryModel, err := repo.BookmarkDomainToRepositoryModel(context.Background(), original)
+	assert.NoError(t, err)
 
+	convertedBack, err := repo.BookmarkRepositoryToDomainModel(context.Background(), repositoryModel.(*repository.Bookmark))
 	assert.NoError(t, err)
 	assert.EqualValues(t, original, convertedBack)
 }
