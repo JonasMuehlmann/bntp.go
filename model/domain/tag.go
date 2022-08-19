@@ -31,9 +31,9 @@ import (
 type Tag struct {
     
     ID int64 `json:"id" toml:"id" yaml:"id"`
-    ParentPath []*Tag `json:"parentPath" toml:"parentPath" yaml:"parentPath"`
+    ParentPathIDs []int64 `json:"parentPathIDs" toml:"parentPathIDs" yaml:"parentPathIDs"`
     Tag string `json:"tag" toml:"tag" yaml:"tag"`
-    Subtags []*Tag `json:"subtags" toml:"subtags" yaml:"subtags"`
+    SubtagIDs []int64 `json:"subtagsIDs" toml:"subtagsIDs" yaml:"subtagsIDs"`
 }
 
 
@@ -45,7 +45,7 @@ func (t *Tag) IsDefault() bool {
         return false
     }
     
-    if t.ParentPath != nil {
+    if t.ParentPathIDs != nil {
     
         return false
     }
@@ -56,7 +56,7 @@ func (t *Tag) IsDefault() bool {
         return false
     }
     
-    if t.Subtags != nil {
+    if t.SubtagIDs != nil {
     
         return false
     }
@@ -65,48 +65,54 @@ func (t *Tag) IsDefault() bool {
     return true
 }
 
-func (t *Tag) AddChildren(newChildren []*Tag) {
-    t.Subtags = append(t.Subtags, newChildren...)
-
-    for _, child := range newChildren {
-        if len(child.ParentPath) == 0 {
-            child.ParentPath = make([]*Tag, 1)
-        }
-
-        child.ParentPath[0] = t
-    }
-}
-
-func (t *Tag) AddDirectParent(newParent *Tag) {
-    t.ParentPath = append(t.ParentPath, newParent)
-    newParent.Subtags = append(newParent.Subtags, t)
-
-    for _, child := range t.Subtags {
-        child.ParentPath = append(child.ParentPath, newParent)
-    }
-}
-
 type TagField string
 
 var TagFields = struct {
     ID  TagField
-    ParentPath  TagField
+    ParentPathIDs  TagField
     Tag  TagField
-    Subtags  TagField
+    SubtagIDs  TagField
     
 }{
     ID: "id",
-    ParentPath: "parentPath",
+    ParentPathIDs: "parentPathIDs",
     Tag: "tag",
-    Subtags: "subtags",
+    SubtagIDs: "subtagsIDs",
     
 }
 
+func (tag *Tag) GetID() int64 {
+        return tag.ID
+}
+func (tag *Tag) GetParentPathIDs() []int64 {
+        return tag.ParentPathIDs
+}
+func (tag *Tag) GetTag() string {
+        return tag.Tag
+}
+func (tag *Tag) GetSubtagIDs() []int64 {
+        return tag.SubtagIDs
+}
+
+func (tag *Tag) GetIDRef() *int64 {
+        return &tag.ID
+}
+func (tag *Tag) GetParentPathIDsRef() *[]int64 {
+        return &tag.ParentPathIDs
+}
+func (tag *Tag) GetTagRef() *string {
+        return &tag.Tag
+}
+func (tag *Tag) GetSubtagIDsRef() *[]int64 {
+        return &tag.SubtagIDs
+}
+
+
 type TagFilter struct {
     ID optional.Optional[model.FilterOperation[int64]]
-    ParentPath optional.Optional[model.FilterOperation[*Tag]]
+    ParentPathIDs optional.Optional[model.FilterOperation[int64]]
     Tag optional.Optional[model.FilterOperation[string]]
-    Subtags optional.Optional[model.FilterOperation[*Tag]]
+    SubtagIDs optional.Optional[model.FilterOperation[int64]]
     
 }
 
@@ -114,13 +120,13 @@ func (filter *TagFilter) IsDefault() bool {
     if filter.ID.HasValue {
         return false
     }
-    if filter.ParentPath.HasValue {
+    if filter.ParentPathIDs.HasValue {
         return false
     }
     if filter.Tag.HasValue {
         return false
     }
-    if filter.Subtags.HasValue {
+    if filter.SubtagIDs.HasValue {
         return false
     }
     
@@ -131,9 +137,9 @@ func (filter *TagFilter) IsDefault() bool {
 
 type TagUpdater struct {
     ID optional.Optional[model.UpdateOperation[int64]]
-    ParentPath optional.Optional[model.UpdateOperation[[]*Tag]]
+    ParentPathIDs optional.Optional[model.UpdateOperation[[]int64]]
     Tag optional.Optional[model.UpdateOperation[string]]
-    Subtags optional.Optional[model.UpdateOperation[[]*Tag]]
+    SubtagIDs optional.Optional[model.UpdateOperation[[]int64]]
     
 }
 
@@ -141,13 +147,13 @@ func (updater *TagUpdater) IsDefault() bool {
     if updater.ID.HasValue {
         return false
     }
-    if updater.ParentPath.HasValue {
+    if updater.ParentPathIDs.HasValue {
         return false
     }
     if updater.Tag.HasValue {
         return false
     }
-    if updater.Subtags.HasValue {
+    if updater.SubtagIDs.HasValue {
         return false
     }
     
@@ -161,15 +167,17 @@ const (
 )
 
 var PredefinedTagFilters = map[string]TagFilter {
-    TagFilterLeaf: {ParentPath: optional.Make(model.FilterOperation[*Tag]{
-        Operand: model.ScalarOperand[*Tag]{
-            Operand: nil,
+    // FIX: This operating on int64s instead of the slice is nonsense, right?
+    TagFilterLeaf: {ParentPathIDs: optional.Make(model.FilterOperation[int64]{
+        Operand: model.ScalarOperand[int64]{
+            Operand: -1,
         },
         Operator: model.FilterEqual,
     })},
-    TagFilterRoot: {Subtags: optional.Make(model.FilterOperation[*Tag]{
-        Operand: model.ScalarOperand[*Tag]{
-            Operand: nil,
+    // FIX: This operating on int64s instead of the slice is nonsense, right?
+    TagFilterRoot: {SubtagIDs: optional.Make(model.FilterOperation[int64]{
+        Operand: model.ScalarOperand[int64]{
+            Operand: -1,
         },
         Operator: model.FilterEqual,
     })},

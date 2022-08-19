@@ -38,9 +38,9 @@ type Document struct {
     DeletedAt optional.Optional[time.Time] `json:"deleted_at,omitempty" toml:"deleted_at" yaml:"deleted_at,omitempty"`
     Path string `json:"path" toml:"path" yaml:"path"`
     DocumentType optional.Optional[string] `json:"document_type" toml:"document_type" yaml:"document_type"`
-    Tags []*Tag `json:"Tags" toml:"Tags" yaml:"Tags"`
-    LinkedDocuments []*Document `json:"linked_documents" toml:"linked_documents" yaml:"linked_documents"`
-    BacklinkedDocuments []*Document `json:"backlinked_documents" toml:"backlinked_documents" yaml:"backlinked_documents"`
+    TagIDs []int64 `json:"tagIDs" toml:"tagIDs" yaml:"tagIDs"`
+    LinkedDocumentIDs []int64 `json:"linked_documentIDs" toml:"linked_documentIDs" yaml:"linked_documentIDs"`
+    BacklinkedDocumentsIDs []int64 `json:"backlinked_documentIDs" toml:"backlinked_documentIDs" yaml:"backlinked_documentIDs"`
     ID int64 `json:"id" toml:"id" yaml:"id"`
 }
 
@@ -77,17 +77,17 @@ func (t *Document) IsDefault() bool {
         return false
     }
     
-    if t.Tags != nil {
+    if t.TagIDs != nil {
     
         return false
     }
     
-    if t.LinkedDocuments != nil {
+    if t.LinkedDocumentIDs != nil {
     
         return false
     }
     
-    if t.BacklinkedDocuments != nil {
+    if t.BacklinkedDocumentsIDs != nil {
     
         return false
     }
@@ -110,9 +110,9 @@ var DocumentFields = struct {
     DeletedAt  DocumentField
     Path  DocumentField
     DocumentType  DocumentField
-    Tags  DocumentField
-    LinkedDocuments  DocumentField
-    BacklinkedDocuments  DocumentField
+    TagIDs  DocumentField
+    LinkedDocumentIDs  DocumentField
+    BacklinkedDocumentsIDs  DocumentField
     ID  DocumentField
     
 }{
@@ -121,12 +121,69 @@ var DocumentFields = struct {
     DeletedAt: "deleted_at",
     Path: "path",
     DocumentType: "document_type",
-    Tags: "Tags",
-    LinkedDocuments: "linked_documents",
-    BacklinkedDocuments: "backlinked_documents",
+    TagIDs: "tagIDs",
+    LinkedDocumentIDs: "linked_documentIDs",
+    BacklinkedDocumentsIDs: "backlinked_documentIDs",
     ID: "id",
     
 }
+
+func (document *Document) GetCreatedAt() time.Time {
+        return document.CreatedAt
+}
+func (document *Document) GetUpdatedAt() time.Time {
+        return document.UpdatedAt
+}
+func (document *Document) GetDeletedAt() optional.Optional[time.Time] {
+        return document.DeletedAt
+}
+func (document *Document) GetPath() string {
+        return document.Path
+}
+func (document *Document) GetDocumentType() optional.Optional[string] {
+        return document.DocumentType
+}
+func (document *Document) GetTagIDs() []int64 {
+        return document.TagIDs
+}
+func (document *Document) GetLinkedDocumentIDs() []int64 {
+        return document.LinkedDocumentIDs
+}
+func (document *Document) GetBacklinkedDocumentsIDs() []int64 {
+        return document.BacklinkedDocumentsIDs
+}
+func (document *Document) GetID() int64 {
+        return document.ID
+}
+
+func (document *Document) GetCreatedAtRef() *time.Time {
+        return &document.CreatedAt
+}
+func (document *Document) GetUpdatedAtRef() *time.Time {
+        return &document.UpdatedAt
+}
+func (document *Document) GetDeletedAtRef() *optional.Optional[time.Time] {
+        return &document.DeletedAt
+}
+func (document *Document) GetPathRef() *string {
+        return &document.Path
+}
+func (document *Document) GetDocumentTypeRef() *optional.Optional[string] {
+        return &document.DocumentType
+}
+func (document *Document) GetTagIDsRef() *[]int64 {
+        return &document.TagIDs
+}
+func (document *Document) GetLinkedDocumentIDsRef() *[]int64 {
+        return &document.LinkedDocumentIDs
+}
+func (document *Document) GetBacklinkedDocumentsIDsRef() *[]int64 {
+        return &document.BacklinkedDocumentsIDs
+}
+func (document *Document) GetIDRef() *int64 {
+        return &document.ID
+}
+
 
 type DocumentFilter struct {
     CreatedAt optional.Optional[model.FilterOperation[time.Time]]
@@ -134,9 +191,9 @@ type DocumentFilter struct {
     DeletedAt optional.Optional[model.FilterOperation[optional.Optional[time.Time]]]
     Path optional.Optional[model.FilterOperation[string]]
     DocumentType optional.Optional[model.FilterOperation[optional.Optional[string]]]
-    Tags optional.Optional[model.FilterOperation[*Tag]]
-    LinkedDocuments optional.Optional[model.FilterOperation[*Document]]
-    BacklinkedDocuments optional.Optional[model.FilterOperation[*Document]]
+    TagIDs optional.Optional[model.FilterOperation[int64]]
+    LinkedDocumentIDs optional.Optional[model.FilterOperation[int64]]
+    BacklinkedDocumentsIDs optional.Optional[model.FilterOperation[int64]]
     ID optional.Optional[model.FilterOperation[int64]]
     
 }
@@ -157,13 +214,13 @@ func (filter *DocumentFilter) IsDefault() bool {
     if filter.DocumentType.HasValue {
         return false
     }
-    if filter.Tags.HasValue {
+    if filter.TagIDs.HasValue {
         return false
     }
-    if filter.LinkedDocuments.HasValue {
+    if filter.LinkedDocumentIDs.HasValue {
         return false
     }
-    if filter.BacklinkedDocuments.HasValue {
+    if filter.BacklinkedDocumentsIDs.HasValue {
         return false
     }
     if filter.ID.HasValue {
@@ -181,9 +238,9 @@ type DocumentUpdater struct {
     DeletedAt optional.Optional[model.UpdateOperation[optional.Optional[time.Time]]]
     Path optional.Optional[model.UpdateOperation[string]]
     DocumentType optional.Optional[model.UpdateOperation[optional.Optional[string]]]
-    Tags optional.Optional[model.UpdateOperation[[]*Tag]]
-    LinkedDocuments optional.Optional[model.UpdateOperation[[]*Document]]
-    BacklinkedDocuments optional.Optional[model.UpdateOperation[[]*Document]]
+    TagIDs optional.Optional[model.UpdateOperation[[]int64]]
+    LinkedDocumentIDs optional.Optional[model.UpdateOperation[[]int64]]
+    BacklinkedDocumentsIDs optional.Optional[model.UpdateOperation[[]int64]]
     ID optional.Optional[model.UpdateOperation[int64]]
     
 }
@@ -204,13 +261,13 @@ func (updater *DocumentUpdater) IsDefault() bool {
     if updater.DocumentType.HasValue {
         return false
     }
-    if updater.Tags.HasValue {
+    if updater.TagIDs.HasValue {
         return false
     }
-    if updater.LinkedDocuments.HasValue {
+    if updater.LinkedDocumentIDs.HasValue {
         return false
     }
-    if updater.BacklinkedDocuments.HasValue {
+    if updater.BacklinkedDocumentsIDs.HasValue {
         return false
     }
     if updater.ID.HasValue {
@@ -226,10 +283,11 @@ const (
     DocumentFilterDeleted = "DocumentFilterDeleted"
 )
 
+// FIX: This operating on int64s instead of the slice is nonsense, right?
 var PredefinedDocumentFilters = map[string]DocumentFilter {
-    DocumentFilterUntagged: {Tags: optional.Make(model.FilterOperation[*Tag]{
-        Operand: model.ScalarOperand[*Tag]{
-            Operand: nil,
+    DocumentFilterUntagged: {TagIDs: optional.Make(model.FilterOperation[int64]{
+        Operand: model.ScalarOperand[int64]{
+            Operand: -1,
         },
         Operator: model.FilterEqual,
     })},

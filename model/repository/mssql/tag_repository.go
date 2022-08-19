@@ -97,10 +97,6 @@ type TagFilter struct {
     ParentTag optional.Optional[model.FilterOperation[null.Int64]]
     ID optional.Optional[model.FilterOperation[int64]]
     
-    ParentTagTag optional.Optional[model.FilterOperation[*Tag]]
-    Bookmarks optional.Optional[model.FilterOperation[*Bookmark]]
-    Documents optional.Optional[model.FilterOperation[*Document]]
-    ParentTagTags optional.Optional[model.FilterOperation[*Tag]]
     
 }
 
@@ -111,10 +107,6 @@ type TagUpdater struct {
     ParentTag optional.Optional[model.UpdateOperation[null.Int64]]
     ID optional.Optional[model.UpdateOperation[int64]]
     
-    ParentTagTag optional.Optional[model.UpdateOperation[*Tag]]
-    Bookmarks optional.Optional[model.UpdateOperation[BookmarkSlice]]
-    Documents optional.Optional[model.UpdateOperation[DocumentSlice]]
-    ParentTagTags optional.Optional[model.UpdateOperation[TagSlice]]
     
 }
 
@@ -458,6 +450,8 @@ func (repo *MssqlTagRepository) Replace(ctx context.Context, domainModels []*dom
 
             return
         }
+
+        
 
         var numAffectedRecords int64
 		numAffectedRecords, err = repoModel.Update(ctx, tx, boil.Infer())
@@ -1064,11 +1058,11 @@ func (repo *MssqlTagRepository) TagDomainToRepositoryModel(ctx context.Context, 
 
 
 //***********************    Set ParentTag    **********************//
-   	if len(domainModel.ParentPath) > 0 {
+   	if len(domainModel.ParentPathIDs) > 0 {
 		var repositoryParentTag *Tag
 
-		domainParentTag := domainModel.ParentPath[len(domainModel.ParentPath)-1]
-		repositoryParentTag, err = Tags(TagWhere.ID.EQ(domainParentTag.ID)).One(ctx, repo.db)
+		domainParentTagID := domainModel.ParentPathIDs[len(domainModel.ParentPathIDs)-1]
+		repositoryParentTag, err = Tags(TagWhere.ID.EQ(domainParentTagID)).One(ctx, repo.db)
 		if err != nil {
 			err = repoCommon.ReferenceToNonExistentDependencyError{Inner: err}
 
@@ -1078,10 +1072,10 @@ func (repo *MssqlTagRepository) TagDomainToRepositoryModel(ctx context.Context, 
 		repositoryModelConcrete.ParentTag = null.NewInt64(repositoryParentTag.ID, true)
 	}
 //*************************    Set Path    *************************//
-	if len(domainModel.ParentPath) > 1 {
+	if len(domainModel.ParentPathIDs) > 1 {
 		var repositoryParentTag *Tag
-		for _, tag := range domainModel.ParentPath[:len(domainModel.ParentPath)-1] {
-			repositoryParentTag, err = Tags(TagWhere.ID.EQ(tag.ID)).One(ctx, repo.db)
+		for _, tagID := range domainModel.ParentPathIDs[:len(domainModel.ParentPathIDs)] {
+			repositoryParentTag, err = Tags(TagWhere.ID.EQ(tagID)).One(ctx, repo.db)
 			if err != nil {
 				err = repoCommon.ReferenceToNonExistentDependencyError{Inner: err}
 
@@ -1093,10 +1087,10 @@ func (repo *MssqlTagRepository) TagDomainToRepositoryModel(ctx context.Context, 
 
 	repositoryModelConcrete.Path += strconv.FormatInt(domainModel.ID, 10)
 //************************    Set Children  ************************//
-	if len(domainModel.Subtags) > 0 {
+	if len(domainModel.SubtagIDs) > 0 {
 		var repositoryChildTag *Tag
-		for _, tag := range domainModel.Subtags[:len(domainModel.Subtags)-1] {
-			repositoryChildTag, err = Tags(TagWhere.ID.EQ(tag.ID)).One(ctx, repo.db)
+		for _, tagID := range domainModel.SubtagIDs[:len(domainModel.SubtagIDs)-1] {
+			repositoryChildTag, err = Tags(TagWhere.ID.EQ(tagID)).One(ctx, repo.db)
 			if err != nil {
 				err = repoCommon.ReferenceToNonExistentDependencyError{Inner: err}
 
@@ -1105,8 +1099,8 @@ func (repo *MssqlTagRepository) TagDomainToRepositoryModel(ctx context.Context, 
 
 			repositoryModelConcrete.Children += strconv.FormatInt(repositoryChildTag.ID, 10) + ";"
 		}
-		lastChild := domainModel.Subtags[len(domainModel.Subtags)-1]
-		repositoryChildTag, err = Tags(TagWhere.ID.EQ(lastChild.ID)).One(ctx, repo.db)
+		lastChildID := domainModel.SubtagIDs[len(domainModel.SubtagIDs)-1]
+		repositoryChildTag, err = Tags(TagWhere.ID.EQ(lastChildID)).One(ctx, repo.db)
 		if err != nil {
 			err = repoCommon.ReferenceToNonExistentDependencyError{Inner: err}
 
@@ -1141,8 +1135,6 @@ func (repo *MssqlTagRepository) TagDomainToRepositoryModelMinimal(ctx context.Co
 // TODO: These functions should be context aware
 func (repo *MssqlTagRepository) TagRepositoryToDomainModel(ctx context.Context, repositoryModel any) (domainModel *domain.Tag, err error) {
     domainModel = new(domain.Tag)
-    domainModel.Subtags = make([]*domain.Tag, 0)
-    domainModel.ParentPath = make([]*domain.Tag, 0)
 
     repositoryModelConcrete := repositoryModel.(*Tag)
 
@@ -1151,52 +1143,32 @@ func (repo *MssqlTagRepository) TagRepositoryToDomainModel(ctx context.Context, 
 
 //***********************    Set ParentPath    **********************//
 var parentTagID int64
-var parentTag *Tag
-var domainParentTag *domain.Tag
 
 if len(repositoryModelConcrete.Path) > 1 {
-    for _, parentTagIDRaw := range strings.Split(repositoryModelConcrete.Path, ";")[:len(repositoryModelConcrete.Path) - 2]{
+    pathIDs :=strings.Split(repositoryModelConcrete.Path, ";")
+    pathIDs = pathIDs[:len(pathIDs) -1]
+    for _, parentTagIDRaw := range pathIDs {
         parentTagID, err = strconv.ParseInt(parentTagIDRaw, 10, 64)
         if err != nil {
             return
         }
 
-        parentTag, err = Tags(TagWhere.ID.EQ(parentTagID)).One(ctx, repo.db)
-        if err != nil {
-            return
-        }
-
-        domainParentTag, err = repo.TagRepositoryToDomainModel(ctx, parentTag)
-        if err != nil {
-            return
-        }
-
-        domainModel.ParentPath = append(domainModel.ParentPath, domainParentTag)
+        domainModel.ParentPathIDs = append(domainModel.ParentPathIDs, parentTagID)
     }
 }
 
 //************************    Set Subtags ************************//
 var childTagID int64
-var childTag *Tag
-var domainChildTag *domain.Tag
 
-for _, childTagIDRaw := range strings.Split(repositoryModelConcrete.Children, ";")[:len(repositoryModelConcrete.Children)-1]{
-    childTagID, err = strconv.ParseInt(childTagIDRaw, 10, 64)
-    if err != nil {
-        return
+if len(repositoryModelConcrete.Children) > 0 {
+    for _, childTagIDRaw := range strings.Split(repositoryModelConcrete.Children, ";"){
+        childTagID, err = strconv.ParseInt(childTagIDRaw, 10, 64)
+        if err != nil {
+            return
+        }
+
+        domainModel.SubtagIDs = append(domainModel.SubtagIDs, childTagID)
     }
-
-    childTag, err = Tags(TagWhere.ID.EQ(childTagID)).One(ctx, repo.db)
-    if err != nil {
-        return
-    }
-
-    domainChildTag, err = repo.TagRepositoryToDomainModel(ctx, childTag)
-    if err != nil {
-        return
-    }
-
-    domainModel.Subtags = append(domainModel.Subtags, domainChildTag)
 }
 
     repositoryModel = repositoryModelConcrete
@@ -1216,42 +1188,23 @@ func (repo *MssqlTagRepository) TagDomainToRepositoryFilter(ctx context.Context,
 	repositoryFilterConcrete.ID = domainFilter.ID
 	repositoryFilterConcrete.Tag = domainFilter.Tag
 
-	if domainFilter.ParentPath.HasValue {
+	if domainFilter.ParentPathIDs.HasValue {
 
-		//*********************    Set ParentPath    *********************//
-		var convertedParentTagTagFilter model.FilterOperation[*Tag]
-
-		convertedParentTagTagFilter, err = model.ConvertFilter[*Tag, *domain.Tag](domainFilter.ParentPath.Wrappee, repoCommon.MakeDomainToRepositoryEntityConverterGeneric[domain.Tag, Tag](ctx, repo.TagDomainToRepositoryModel))
-		if err != nil {
-			return
-		}
-
-		repositoryFilterConcrete.ParentTagTag.Set(convertedParentTagTagFilter)
 		//*************************    Set Path    *************************//
 		var convertedPathFilter model.FilterOperation[string]
 
-		convertedPathFilter, err = model.ConvertFilter[string, *domain.Tag](domainFilter.ParentPath.Wrappee, func(tag *domain.Tag) (string, error) { return strconv.FormatInt(tag.ID, 10), nil })
+		convertedPathFilter, err = model.ConvertFilter[string, int64](domainFilter.ParentPathIDs.Wrappee, func(tagID int64) (string, error) { return strconv.FormatInt(tagID, 10), nil })
 		if err != nil {
 			return
 		}
 
 		repositoryFilterConcrete.Path.Set(convertedPathFilter)
-		//**********************    Set ParentTag    ***********************//
-		var convertedParentTagFilter model.FilterOperation[null.Int64]
-
-		convertedParentTagFilter, err = model.ConvertFilter[null.Int64, *domain.Tag](domainFilter.ParentPath.Wrappee, func(tag *domain.Tag) (null.Int64, error) { return null.NewInt64(tag.ID, true), nil })
-		if err != nil {
-			return
-		}
-
-		repositoryFilterConcrete.ParentTag.Set(convertedParentTagFilter)
-	}
-
+    }
 	//**********************    Set child tags *********************//
-	if domainFilter.Subtags.HasValue {
+	if domainFilter.SubtagIDs.HasValue {
 		var convertedFilter model.FilterOperation[string]
 
-		convertedFilter, err = model.ConvertFilter[string, *domain.Tag](domainFilter.Subtags.Wrappee, func(tag *domain.Tag) (string, error) { return strconv.FormatInt(tag.ID, 10), nil })
+		convertedFilter, err = model.ConvertFilter[string, int64](domainFilter.SubtagIDs.Wrappee, func(tagID int64) (string, error) { return strconv.FormatInt(tagID, 10), nil })
 		if err != nil {
 			return
 		}
@@ -1279,35 +1232,29 @@ func (repo *MssqlTagRepository) TagDomainToRepositoryUpdater(ctx context.Context
 	}
 
 	//***********    Set ParentPath    ***********//
-	if domainUpdater.ParentPath.HasValue {
-		var convertedTagRaw any
-		tag := domainUpdater.ParentPath.Wrappee.Operand[len(domainUpdater.ParentPath.Wrappee.Operand)-1]
-		convertedTagRaw, err =  repo.TagDomainToRepositoryModel(ctx, tag)
-		if err != nil {
-			return
+	if domainUpdater.ParentPathIDs.HasValue {
+		tagID := domainUpdater.ParentPathIDs.Wrappee.Operand[len(domainUpdater.ParentPathIDs.Wrappee.Operand)-1]
+
+		repositoryUpdaterConcrete.ParentTag.Set(model.UpdateOperation[null.Int64]{Operator: domainUpdater.ParentPathIDs.Wrappee.Operator, Operand: null.NewInt64(tagID, true)})
+
+		pathIDs := make([]string, 0, len(domainUpdater.ParentPathIDs.Wrappee.Operand)+1)
+		for _, tagID := range domainUpdater.ParentPathIDs.Wrappee.Operand {
+			pathIDs = append(pathIDs, strconv.FormatInt(tagID, 10))
 		}
 
-		repositoryUpdaterConcrete.ParentTagTag.Set(model.UpdateOperation[*Tag]{Operator: domainUpdater.ParentPath.Wrappee.Operator, Operand: convertedTagRaw.(*Tag)})
-		repositoryUpdaterConcrete.ParentTag.Set(model.UpdateOperation[null.Int64]{Operator: domainUpdater.ParentPath.Wrappee.Operator, Operand: null.NewInt64(convertedTagRaw.(*Tag).ID, true)})
+		pathIDs = append(pathIDs, strconv.FormatInt(tagID, 10))
 
-		pathIDs := make([]string, 0, len(domainUpdater.ParentPath.Wrappee.Operand)+1)
-		for _, tag := range domainUpdater.ParentPath.Wrappee.Operand {
-			pathIDs = append(pathIDs, strconv.FormatInt(tag.ID, 10))
-		}
-
-		pathIDs = append(pathIDs, strconv.FormatInt(tag.ID, 10))
-
-		repositoryUpdaterConcrete.Path.Set(model.UpdateOperation[string]{Operator: domainUpdater.ParentPath.Wrappee.Operator, Operand: strings.Join(pathIDs, ";")})
+		repositoryUpdaterConcrete.Path.Set(model.UpdateOperation[string]{Operator: domainUpdater.ParentPathIDs.Wrappee.Operator, Operand: strings.Join(pathIDs, ";")})
 	}
 
 	//***********************    Set Children    ***********************//
-	if domainUpdater.Subtags.HasValue {
-		pathIDs := make([]string, 0, len(domainUpdater.Subtags.Wrappee.Operand)+1)
-		for _, tag := range domainUpdater.Subtags.Wrappee.Operand {
-			pathIDs = append(pathIDs, strconv.FormatInt(tag.ID, 10))
+	if domainUpdater.SubtagIDs.HasValue {
+		pathIDs := make([]string, 0, len(domainUpdater.SubtagIDs.Wrappee.Operand)+1)
+		for _, tagID := range domainUpdater.SubtagIDs.Wrappee.Operand {
+			pathIDs = append(pathIDs, strconv.FormatInt(tagID, 10))
 		}
 
-		repositoryUpdaterConcrete.Children.Set(model.UpdateOperation[string]{Operator: domainUpdater.Subtags.Wrappee.Operator, Operand: strings.Join(pathIDs, ";")})
+		repositoryUpdaterConcrete.Children.Set(model.UpdateOperation[string]{Operator: domainUpdater.SubtagIDs.Wrappee.Operator, Operand: strings.Join(pathIDs, ";")})
 	}
 
 	//**************************    Set ID    **************************//

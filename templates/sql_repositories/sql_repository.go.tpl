@@ -92,7 +92,15 @@ type {{$EntityName}}Filter struct {
     {{.FieldName}} optional.Optional[model.FilterOperation[{{Unslice (UnaliasSQLBoilerSlice .FieldType)}}]]
     {{end}}
     {{range $relation := .RelationFields -}}
+    {{- if eq .FieldName "BookmarkType"}}
+    {{- else if eq .FieldName "DocumentType"}}
+    {{- else if eq .FieldName "ParentTagTags"}}
+    {{- else if eq .FieldName "ParentTagTag"}}
+    {{- else if eq .FieldName "Bookmarks"}}
+    {{- else if eq .FieldName "Documents"}}
+    {{- else }}
     {{.FieldName}} optional.Optional[model.FilterOperation[{{Unslice (UnaliasSQLBoilerSlice .FieldType)}}]]
+    {{- end -}}
     {{end}}
 }
 
@@ -101,7 +109,15 @@ type {{$EntityName}}Updater struct {
     {{.FieldName}} optional.Optional[model.UpdateOperation[{{.FieldType}}]]
     {{end}}
     {{range $relation := .RelationFields -}}
+    {{- if eq .FieldName "BookmarkType"}}
+    {{- else if eq .FieldName "DocumentType"}}
+    {{- else if eq .FieldName "ParentTagTags"}}
+    {{- else if eq .FieldName "ParentTagTag"}}
+    {{- else if eq .FieldName "Bookmarks"}}
+    {{- else if eq .FieldName "Documents"}}
+    {{- else }}
     {{.FieldName}} optional.Optional[model.UpdateOperation[{{.FieldType}}]]
+    {{- end -}}
     {{end}}
 }
 
@@ -412,6 +428,8 @@ func (repo *{{$StructName}}) Replace(ctx context.Context, domainModels []*domain
 
             return
         }
+
+        {{/*TODO: Create a temporary relationship between tags to associate tags when db creates their ID*/}}
 
         var numAffectedRecords int64
 		numAffectedRecords, err = repoModel.Update(ctx, tx, boil.Infer())
@@ -1115,10 +1133,9 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryModel(ctx context.
     //*************************    Set Tags    *************************//
     var repositoryTag *Tag
 
-    if domainModel.Tags != nil {
-        repositoryModelConcrete.R.Tags = make(TagSlice, 0, len(domainModel.Tags))
-        for _,  domainTag := range domainModel.Tags {
-            repositoryTag, err = Tags(TagWhere.Tag.EQ(domainTag.Tag)).One(ctx, repo.db)
+    if domainModel.TagIDs != nil {
+        for _,  domainTagID := range domainModel.TagIDs {
+            repositoryTag, err = Tags(TagWhere.ID.EQ(domainTagID)).One(ctx, repo.db)
             if err != nil {
                 err = repoCommon.ReferenceToNonExistentDependencyError{Inner: err}
 
@@ -1268,17 +1285,7 @@ func (repo *{{$StructName}}) {{$EntityName}}RepositoryToDomainModel(ctx context.
     domainModel.IsCollection = repositoryModelConcrete.IsCollection > 0
 
     //*************************    Set Tags    *************************//
-    var domainTag *domain.Tag
-
-	domainModel.Tags = make([]*domain.Tag, 0, len(repositoryModelConcrete.R.Tags))
-    for _, repositoryTag := range repositoryModelConcrete.R.Tags {
-        domainTag, err = repo.GetTagRepository().TagRepositoryToDomainModel(ctx, repositoryTag)
-        if err != nil {
-            return
-        }
-
-        domainModel.Tags = append(domainModel.Tags, domainTag)
-    }
+    domainModel.TagIDs, _ = goaoi.TransformCopySliceUnsafe(repositoryModelConcrete.R.Tags, func (t *Tag) int64 {return t.ID;})
 
     return
 }
@@ -1319,16 +1326,15 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryModel(ctx context.
     //*************************    Set Tags    *************************//
     var repositoryTag *Tag
 
-	repositoryModelConcrete.R.Tags = make(TagSlice, 0, len(domainModel.Tags))
-	for _, modelTag := range domainModel.Tags {
-		repositoryTag, err = Tags(TagWhere.Tag.EQ(modelTag.Tag)).One(ctx, repo.db)
+	for _, modelTagID := range domainModel.TagIDs {
+		repositoryTag, err = Tags(TagWhere.ID.EQ(modelTagID)).One(ctx, repo.db)
 		if err != nil {
             err = repoCommon.ReferenceToNonExistentDependencyError{Inner: err}
 
 			return
 		}
 
-		repositoryModelConcrete.R.Tags  = append(repositoryModelConcrete.R.Tags, &Tag{{"{"}}Tag: modelTag.Tag, ID: repositoryTag.ID})
+		repositoryModelConcrete.R.Tags  = append(repositoryModelConcrete.R.Tags,repositoryTag)
 	}
 
     //*************************    Set Type    *************************//
@@ -1355,11 +1361,8 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryModel(ctx context.
     //**************    Set linked/backlinked documents    *************//
     var repository{{$EntityName}}Raw any
 
-    repositoryModelConcrete.R.Source{{$EntityName}}s  = make({{$EntityName}}Slice, 0, len(domainModel.Linked{{$EntityName}}s))
-    repositoryModelConcrete.R.Destination{{$EntityName}}s  = make({{$EntityName}}Slice, 0, len(domainModel.Backlinked{{$EntityName}}s))
-
-    for _ , link := range domainModel.Linked{{$EntityName}}s {
-        repository{{$EntityName}}Raw, err = repo.{{$EntityName}}DomainToRepositoryModel(ctx, link)
+    for _ , link := range domainModel.Linked{{$EntityName}}IDs {
+        repository{{$EntityName}}Raw, err = Documents(DocumentWhere.ID.EQ(link)).One(ctx, repo.db)
         if err != nil {
             err = repoCommon.ReferenceToNonExistentDependencyError{Inner: err}
 
@@ -1369,8 +1372,8 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryModel(ctx context.
         repositoryModelConcrete.R.Source{{$EntityName}}s = append(repositoryModelConcrete.R.Source{{$EntityName}}s, repository{{$EntityName}}Raw.(*{{$EntityName}}))
     }
 
-    for _ , backlink := range domainModel.Backlinked{{$EntityName}}s {
-        repository{{$EntityName}}Raw, err = repo.{{$EntityName}}DomainToRepositoryModel(ctx, backlink)
+    for _ , backlink := range domainModel.Backlinked{{$EntityName}}sIDs {
+        repository{{$EntityName}}Raw, err = Documents(DocumentWhere.ID.EQ(backlink)).One(ctx, repo.db)
         if err != nil {
             err = repoCommon.ReferenceToNonExistentDependencyError{Inner: err}
 
@@ -1470,41 +1473,12 @@ func (repo *{{$StructName}}) {{$EntityName}}RepositoryToDomainModel(ctx context.
     {{end}}
 
     //*************************    Set Tags    *************************//
-    var domainTag *domain.Tag
-
-	domainModel.Tags = make([]*domain.Tag, 0, len(repositoryModelConcrete.R.Tags))
-    for _, repositoryTag := range repositoryModelConcrete.R.Tags {
-    domainTag, err = repo.GetTagRepository().TagRepositoryToDomainModel(ctx, repositoryTag)
-        if err != nil {
-            return
-        }
-
-        domainModel.Tags = append(domainModel.Tags, domainTag)
-    }
+    domainModel.TagIDs, _ = goaoi.TransformCopySliceUnsafe(repositoryModelConcrete.R.Tags, func (t *Tag) int64 {return t.ID;})
 
     //**************    Set linked/backlinked documents    *************//
-    var domain{{$EntityName}} *domain.{{$EntityName}}
 
-    domainModel.Linked{{$EntityName}}s = make([]*domain.{{$EntityName}}, 0, len(repositoryModelConcrete.R.Source{{$EntityName}}s))
-    domainModel.Backlinked{{$EntityName}}s = make([]*domain.{{$EntityName}}, 0, len(repositoryModelConcrete.R.Destination{{$EntityName}}s))
-
-    for _ , link := range repositoryModelConcrete.R.Source{{$EntityName}}s {
-        domain{{$EntityName}}, err = repo.{{$EntityName}}RepositoryToDomainModel(ctx, link)
-        if err != nil {
-            return
-        }
-
-        domainModel.Linked{{$EntityName}}s = append(domainModel.Linked{{$EntityName}}s, domain{{$EntityName}})
-    }
-
-    for _ , backlink := range repositoryModelConcrete.R.Destination{{$EntityName}}s {
-        domain{{$EntityName}}, err = repo.{{$EntityName}}RepositoryToDomainModel(ctx, backlink)
-        if err != nil {
-            return
-        }
-
-        domainModel.Backlinked{{$EntityName}}s = append(domainModel.Backlinked{{$EntityName}}s, domain{{$EntityName}})
-    }
+    domainModel.Linked{{$EntityName}}IDs, _ = goaoi.TransformCopySliceUnsafe(repositoryModelConcrete.R.DestinationDocuments, func (d *Document) int64 {return d.ID;})
+    domainModel.Backlinked{{$EntityName}}sIDs, _ = goaoi.TransformCopySliceUnsafe(repositoryModelConcrete.R.SourceDocuments, func (d *Document) int64 {return d.ID;})
 
     return
 }
@@ -1520,11 +1494,11 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryModel(ctx context.
 
 
 //***********************    Set Parent{{$EntityName}}    **********************//
-   	if len(domainModel.ParentPath) > 0 {
+   	if len(domainModel.ParentPathIDs) > 0 {
 		var repositoryParentTag *Tag
 
-		domainParentTag := domainModel.ParentPath[len(domainModel.ParentPath)-1]
-		repositoryParentTag, err = Tags(TagWhere.ID.EQ(domainParentTag.ID)).One(ctx, repo.db)
+		domainParentTagID := domainModel.ParentPathIDs[len(domainModel.ParentPathIDs)-1]
+		repositoryParentTag, err = Tags(TagWhere.ID.EQ(domainParentTagID)).One(ctx, repo.db)
 		if err != nil {
 			err = repoCommon.ReferenceToNonExistentDependencyError{Inner: err}
 
@@ -1534,10 +1508,10 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryModel(ctx context.
 		repositoryModelConcrete.ParentTag = null.NewInt64(repositoryParentTag.ID, true)
 	}
 //*************************    Set Path    *************************//
-	if len(domainModel.ParentPath) > 1 {
+	if len(domainModel.ParentPathIDs) > 1 {
 		var repositoryParentTag *Tag
-		for _, tag := range domainModel.ParentPath[:len(domainModel.ParentPath)-1] {
-			repositoryParentTag, err = Tags(TagWhere.ID.EQ(tag.ID)).One(ctx, repo.db)
+		for _, tagID := range domainModel.ParentPathIDs[:len(domainModel.ParentPathIDs)] {
+			repositoryParentTag, err = Tags(TagWhere.ID.EQ(tagID)).One(ctx, repo.db)
 			if err != nil {
 				err = repoCommon.ReferenceToNonExistentDependencyError{Inner: err}
 
@@ -1549,10 +1523,10 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryModel(ctx context.
 
 	repositoryModelConcrete.Path += strconv.FormatInt(domainModel.ID, 10)
 //************************    Set Children  ************************//
-	if len(domainModel.Subtags) > 0 {
+	if len(domainModel.SubtagIDs) > 0 {
 		var repositoryChildTag *Tag
-		for _, tag := range domainModel.Subtags[:len(domainModel.Subtags)-1] {
-			repositoryChildTag, err = Tags(TagWhere.ID.EQ(tag.ID)).One(ctx, repo.db)
+		for _, tagID := range domainModel.SubtagIDs[:len(domainModel.SubtagIDs)-1] {
+			repositoryChildTag, err = Tags(TagWhere.ID.EQ(tagID)).One(ctx, repo.db)
 			if err != nil {
 				err = repoCommon.ReferenceToNonExistentDependencyError{Inner: err}
 
@@ -1561,8 +1535,8 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryModel(ctx context.
 
 			repositoryModelConcrete.Children += strconv.FormatInt(repositoryChildTag.ID, 10) + ";"
 		}
-		lastChild := domainModel.Subtags[len(domainModel.Subtags)-1]
-		repositoryChildTag, err = Tags(TagWhere.ID.EQ(lastChild.ID)).One(ctx, repo.db)
+		lastChildID := domainModel.SubtagIDs[len(domainModel.SubtagIDs)-1]
+		repositoryChildTag, err = Tags(TagWhere.ID.EQ(lastChildID)).One(ctx, repo.db)
 		if err != nil {
 			err = repoCommon.ReferenceToNonExistentDependencyError{Inner: err}
 
@@ -1597,8 +1571,6 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryModelMinimal(ctx c
 // TODO: These functions should be context aware
 func (repo *{{$StructName}}) {{$EntityName}}RepositoryToDomainModel(ctx context.Context, repositoryModel any) (domainModel *domain.{{$EntityName}}, err error) {
     domainModel = new(domain.{{$EntityName}})
-    domainModel.Subtags = make([]*domain.Tag, 0)
-    domainModel.ParentPath = make([]*domain.Tag, 0)
 
     repositoryModelConcrete := repositoryModel.(*{{$EntityName}})
 
@@ -1607,52 +1579,32 @@ func (repo *{{$StructName}}) {{$EntityName}}RepositoryToDomainModel(ctx context.
 
 //***********************    Set ParentPath    **********************//
 var parent{{$EntityName}}ID int64
-var parent{{$EntityName}} *{{$EntityName}}
-var domainParent{{$EntityName}} *domain.{{$EntityName}}
 
 if len(repositoryModelConcrete.Path) > 1 {
-    for _, parent{{$EntityName}}IDRaw := range strings.Split(repositoryModelConcrete.Path, ";")[:len(repositoryModelConcrete.Path) - 2]{
+    pathIDs :=strings.Split(repositoryModelConcrete.Path, ";")
+    pathIDs = pathIDs[:len(pathIDs) -1]
+    for _, parent{{$EntityName}}IDRaw := range pathIDs {
         parent{{$EntityName}}ID, err = strconv.ParseInt(parent{{$EntityName}}IDRaw, 10, 64)
         if err != nil {
             return
         }
 
-        parent{{$EntityName}}, err = {{$EntityName}}s({{$EntityName}}Where.ID.EQ(parent{{$EntityName}}ID)).One(ctx, repo.db)
-        if err != nil {
-            return
-        }
-
-        domainParent{{$EntityName}}, err = repo.{{$EntityName}}RepositoryToDomainModel(ctx, parent{{$EntityName}})
-        if err != nil {
-            return
-        }
-
-        domainModel.ParentPath = append(domainModel.ParentPath, domainParent{{$EntityName}})
+        domainModel.ParentPathIDs = append(domainModel.ParentPathIDs, parent{{$EntityName}}ID)
     }
 }
 
 //************************    Set Subtags ************************//
 var child{{$EntityName}}ID int64
-var child{{$EntityName}} *{{$EntityName}}
-var domainChild{{$EntityName}} *domain.{{$EntityName}}
 
-for _, child{{$EntityName}}IDRaw := range strings.Split(repositoryModelConcrete.Children, ";")[:len(repositoryModelConcrete.Children)-1]{
-    child{{$EntityName}}ID, err = strconv.ParseInt(child{{$EntityName}}IDRaw, 10, 64)
-    if err != nil {
-        return
+if len(repositoryModelConcrete.Children) > 0 {
+    for _, child{{$EntityName}}IDRaw := range strings.Split(repositoryModelConcrete.Children, ";"){
+        child{{$EntityName}}ID, err = strconv.ParseInt(child{{$EntityName}}IDRaw, 10, 64)
+        if err != nil {
+            return
+        }
+
+        domainModel.SubtagIDs = append(domainModel.SubtagIDs, child{{$EntityName}}ID)
     }
-
-    child{{$EntityName}}, err = {{$EntityName}}s({{$EntityName}}Where.ID.EQ(child{{$EntityName}}ID)).One(ctx, repo.db)
-    if err != nil {
-        return
-    }
-
-    domainChild{{$EntityName}}, err = repo.{{$EntityName}}RepositoryToDomainModel(ctx, child{{$EntityName}})
-    if err != nil {
-        return
-    }
-
-    domainModel.Subtags = append(domainModel.Subtags, domainChild{{$EntityName}})
 }
 
     repositoryModel = repositoryModelConcrete
@@ -1759,10 +1711,11 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryFilter(ctx context
 
     //*************************    Set Tags    *************************//
 
-    if domainFilter.Tags.HasValue {
+    if domainFilter.TagIDs.HasValue {
         var convertedFilter model.FilterOperation[*Tag]
 
-        convertedFilter, err = model.ConvertFilter[*Tag,*domain.Tag](domainFilter.Tags.Wrappee, repoCommon.MakeDomainToRepositoryEntityConverterGeneric[domain.Tag, Tag](ctx, repo.GetTagRepository().TagDomainToRepositoryModel))
+        converter := func (tagID int64) (*Tag, error) {return Tags(TagWhere.ID.EQ(tagID)).One(ctx, repo.db)}
+        convertedFilter, err = model.ConvertFilter[*Tag, int64](domainFilter.TagIDs.Wrappee, converter)
         if err != nil {
             return
         }
@@ -1772,24 +1725,8 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryFilter(ctx context
 
     //*************************    Set Type    *************************//
 
+    var convertedTypeIDFilter model.FilterOperation[null.Int64]
     if domainFilter.{{$EntityName}}Type.HasValue {
-        var convertedTypeIDFilter model.FilterOperation[null.Int64]
-        var convertedTypeFilter model.FilterOperation[*{{$EntityName}}Type]
-
-        convertedTypeFilter, err = model.ConvertFilter[*{{$EntityName}}Type,optional.Optional[string]](domainFilter.{{$EntityName}}Type.Wrappee, func(type_ optional.Optional[string]) (*{{$EntityName}}Type, error) {
-            if !type_.HasValue {
-                return  nil, nil
-            }
-
-
-            bookmarkType, err := {{$EntityName}}Types({{$EntityName}}TypeWhere.{{$EntityName}}Type.EQ(type_.Wrappee)).One(ctx, repo.db)
-
-            return bookmarkType, err
-        })
-        if err != nil {
-            return
-        }
-
         convertedTypeIDFilter, err = model.ConvertFilter[null.Int64,optional.Optional[string]](domainFilter.{{$EntityName}}Type.Wrappee, func(type_ optional.Optional[string]) (null.Int64, error) {
             if !type_.HasValue {
                 return  null.NewInt64(-1, false), nil
@@ -1805,7 +1742,6 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryFilter(ctx context
         }
 
 
-        repositoryFilterConcrete.{{$EntityName}}Type.Set(convertedTypeFilter)
         repositoryFilterConcrete.{{$EntityName}}TypeID.Set(convertedTypeIDFilter)
     }
 
@@ -1872,10 +1808,11 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryFilter(ctx context
     {{end}}
 
     //*************************    Set Tags    *************************//
-    if domainFilter.Tags.HasValue {
+    if domainFilter.TagIDs.HasValue {
         var convertedFilter model.FilterOperation[*Tag]
 
-        convertedFilter, err = model.ConvertFilter[*Tag,*domain.Tag](domainFilter.Tags.Wrappee, repoCommon.MakeDomainToRepositoryEntityConverterGeneric[domain.Tag, Tag](ctx, repo.GetTagRepository().TagDomainToRepositoryModel))
+        converter := func (tagID int64) (*Tag, error) {return Tags(TagWhere.ID.EQ(tagID)).One(ctx, repo.db)}
+        convertedFilter, err = model.ConvertFilter[*Tag, int64](domainFilter.TagIDs.Wrappee, converter)
         if err != nil {
             return
         }
@@ -1886,21 +1823,6 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryFilter(ctx context
     //*************************    Set Type    *************************//
     if domainFilter.{{$EntityName}}Type.HasValue {
         var convertedTypeIDFilter model.FilterOperation[null.Int64]
-        var convertedTypeFilter model.FilterOperation[*{{$EntityName}}Type]
-
-        convertedTypeFilter, err = model.ConvertFilter[*{{$EntityName}}Type,optional.Optional[string]](domainFilter.{{$EntityName}}Type.Wrappee, func(type_ optional.Optional[string]) (*{{$EntityName}}Type, error) {
-            if !type_.HasValue {
-                return  nil, nil
-            }
-
-
-            bookmarkType, err := {{$EntityName}}Types({{$EntityName}}TypeWhere.{{$EntityName}}Type.EQ(type_.Wrappee)).One(ctx, repo.db)
-
-            return bookmarkType, err
-        })
-        if err != nil {
-            return
-        }
 
         convertedTypeIDFilter, err = model.ConvertFilter[null.Int64,optional.Optional[string]](domainFilter.{{$EntityName}}Type.Wrappee, func(type_ optional.Optional[string]) (null.Int64, error) {
             if !type_.HasValue {
@@ -1917,26 +1839,27 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryFilter(ctx context
         }
 
 
-        repositoryFilterConcrete.{{$EntityName}}Type.Set(convertedTypeFilter)
         repositoryFilterConcrete.{{$EntityName}}TypeID.Set(convertedTypeIDFilter)
     }
 
 
     //**************    Set linked/backlinked documents    *************//
-    if domainFilter.Linked{{$EntityName}}s.HasValue {
+    if domainFilter.Linked{{$EntityName}}IDs.HasValue {
         var convertedFilter model.FilterOperation[*{{$EntityName}}]
 
-        convertedFilter, err = model.ConvertFilter[*{{$EntityName}},*domain.{{$EntityName}}](domainFilter.Linked{{$EntityName}}s.Wrappee, repoCommon.MakeDomainToRepositoryEntityConverterGeneric[domain.{{$EntityName}},{{$EntityName}}](ctx, repo.{{$EntityName}}DomainToRepositoryModel))
+        converter := func (documentID int64) (*Document, error) {return Documents(DocumentWhere.ID.EQ(documentID)).One(ctx, repo.db)}
+        convertedFilter, err = model.ConvertFilter[*{{$EntityName}},int64](domainFilter.Linked{{$EntityName}}IDs.Wrappee, converter)
         if err != nil {
             return
         }
 
         repositoryFilterConcrete.Source{{$EntityName}}s.Set(convertedFilter)
     }
-    if domainFilter.Backlinked{{$EntityName}}s.HasValue {
+    if domainFilter.Backlinked{{$EntityName}}sIDs.HasValue {
         var convertedFilter model.FilterOperation[*{{$EntityName}}]
 
-        convertedFilter, err = model.ConvertFilter[*{{$EntityName}},*domain.{{$EntityName}}](domainFilter.Backlinked{{$EntityName}}s.Wrappee, repoCommon.MakeDomainToRepositoryEntityConverterGeneric[domain.{{$EntityName}},{{$EntityName}}](ctx, repo.{{$EntityName}}DomainToRepositoryModel))
+        converter := func (documentID int64) (*Document, error) {return Documents(DocumentWhere.ID.EQ(documentID)).One(ctx, repo.db)}
+        convertedFilter, err = model.ConvertFilter[*{{$EntityName}},int64](domainFilter.Backlinked{{$EntityName}}sIDs.Wrappee, converter)
         if err != nil {
             return
         }
@@ -1956,42 +1879,23 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryFilter(ctx context
 	repositoryFilterConcrete.ID = domainFilter.ID
 	repositoryFilterConcrete.{{$EntityName}} = domainFilter.{{$EntityName}}
 
-	if domainFilter.ParentPath.HasValue {
+	if domainFilter.ParentPathIDs.HasValue {
 
-		//*********************    Set ParentPath    *********************//
-		var convertedParent{{$EntityName}}{{$EntityName}}Filter model.FilterOperation[*{{$EntityName}}]
-
-		convertedParent{{$EntityName}}{{$EntityName}}Filter, err = model.ConvertFilter[*{{$EntityName}}, *domain.{{$EntityName}}](domainFilter.ParentPath.Wrappee, repoCommon.MakeDomainToRepositoryEntityConverterGeneric[domain.{{$EntityName}}, {{$EntityName}}](ctx, repo.{{$EntityName}}DomainToRepositoryModel))
-		if err != nil {
-			return
-		}
-
-		repositoryFilterConcrete.Parent{{$EntityName}}{{$EntityName}}.Set(convertedParent{{$EntityName}}{{$EntityName}}Filter)
 		//*************************    Set Path    *************************//
 		var convertedPathFilter model.FilterOperation[string]
 
-		convertedPathFilter, err = model.ConvertFilter[string, *domain.{{$EntityName}}](domainFilter.ParentPath.Wrappee, func(tag *domain.{{$EntityName}}) (string, error) { return strconv.FormatInt(tag.ID, 10), nil })
+		convertedPathFilter, err = model.ConvertFilter[string, int64](domainFilter.ParentPathIDs.Wrappee, func(tagID int64) (string, error) { return strconv.FormatInt(tagID, 10), nil })
 		if err != nil {
 			return
 		}
 
 		repositoryFilterConcrete.Path.Set(convertedPathFilter)
-		//**********************    Set Parent{{$EntityName}}    ***********************//
-		var convertedParent{{$EntityName}}Filter model.FilterOperation[null.Int64]
-
-		convertedParent{{$EntityName}}Filter, err = model.ConvertFilter[null.Int64, *domain.{{$EntityName}}](domainFilter.ParentPath.Wrappee, func(tag *domain.{{$EntityName}}) (null.Int64, error) { return null.NewInt64(tag.ID, true), nil })
-		if err != nil {
-			return
-		}
-
-		repositoryFilterConcrete.Parent{{$EntityName}}.Set(convertedParent{{$EntityName}}Filter)
-	}
-
+    }
 	//**********************    Set child tags *********************//
-	if domainFilter.Subtags.HasValue {
+	if domainFilter.SubtagIDs.HasValue {
 		var convertedFilter model.FilterOperation[string]
 
-		convertedFilter, err = model.ConvertFilter[string, *domain.{{$EntityName}}](domainFilter.Subtags.Wrappee, func(tag *domain.{{$EntityName}}) (string, error) { return strconv.FormatInt(tag.ID, 10), nil })
+		convertedFilter, err = model.ConvertFilter[string, int64](domainFilter.SubtagIDs.Wrappee, func(tagID int64) (string, error) { return strconv.FormatInt(tagID, 10), nil })
 		if err != nil {
 			return
 		}
@@ -2073,20 +1977,20 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryUpdater(ctx contex
         repositoryUpdaterConcrete.Title.Set(model.UpdateOperation[null.String]{Operator: domainUpdater.Title.Wrappee.Operator, Operand: convertedUpdater})
     }
 
-	if domainUpdater.Tags.HasValue {
-        var rawTag any
-        convertedUpdater := make(TagSlice, 0, len(domainUpdater.Tags.Wrappee.Operand))
+	if domainUpdater.TagIDs.HasValue {
+        var rawTag *Tag
+        convertedUpdater := make(TagSlice, 0, len(domainUpdater.TagIDs.Wrappee.Operand))
 
-        for _, tag := range domainUpdater.Tags.Wrappee.Operand {
-            rawTag, err = repo.GetTagRepository().TagDomainToRepositoryModel(ctx, tag)
+        for _, tag := range domainUpdater.TagIDs.Wrappee.Operand {
+            rawTag, err =  Tags(TagWhere.ID.EQ(tag)).One(ctx, repo.db)
             if err != nil {
                 return
             }
 
-            convertedUpdater = append(convertedUpdater, rawTag.(*Tag))
+            convertedUpdater = append(convertedUpdater, rawTag)
         }
 
-        repositoryUpdaterConcrete.Tags.Set(model.UpdateOperation[TagSlice]{Operator: domainUpdater.Tags.Wrappee.Operator, Operand: convertedUpdater})
+        repositoryUpdaterConcrete.Tags.Set(model.UpdateOperation[TagSlice]{Operator: domainUpdater.TagIDs.Wrappee.Operator, Operand: convertedUpdater})
     }
 
 	if domainUpdater.ID.HasValue {
@@ -2114,17 +2018,7 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryUpdater(ctx contex
     }
 
 	if domainUpdater.{{$EntityName}}Type.HasValue {
-        var converted{{$EntityName}}Type *{{$EntityName}}Type
-        if domainUpdater.{{$EntityName}}Type.Wrappee.Operand.HasValue {
-            converted{{$EntityName}}Type, err = {{$EntityName}}Types({{$EntityName}}TypeWhere.{{$EntityName}}Type.EQ(domainUpdater.{{$EntityName}}Type.Wrappee.Operand.Wrappee)).One(context.Background(), repo.db)
-            if err != nil {
-                return
-            }
-        } else {
-            converted{{$EntityName}}Type = nil
-        }
-
-        repositoryUpdaterConcrete.{{$EntityName}}Type.Set(model.UpdateOperation[*{{$EntityName}}Type]{Operator: domainUpdater.{{$EntityName}}Type.Wrappee.Operator, Operand: converted{{$EntityName}}Type})
+        repositoryUpdaterConcrete.ID.Set(model.UpdateOperation[int64]{Operator: domainUpdater.ID.Wrappee.Operator, Operand: repositoryUpdaterConcrete.ID.Wrappee.Operand})
     }
 
     repositoryUpdater = repositoryUpdaterConcrete
@@ -2138,17 +2032,12 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryUpdater(ctx contex
     repositoryUpdaterConcrete := new({{$EntityName}}Updater)
 
 	if domainUpdater.{{$EntityName}}Type.HasValue {
-        var convertedUpdater *{{$EntityName}}Type
+        var convertedUpdater null.Int64
         if domainUpdater.{{$EntityName}}Type.Wrappee.Operand.HasValue {
-            convertedUpdater, err = {{$EntityName}}Types({{$EntityName}}TypeWhere.{{$EntityName}}Type.EQ(domainUpdater.{{$EntityName}}Type.Wrappee.Operand.Wrappee)).One(context.Background(), repo.db)
-            if err != nil {
-                return
-		}
-        } else {
-            convertedUpdater = nil
+            convertedUpdater = null.NewInt64(domainUpdater.ID.Wrappee.Operand, true)
         }
 
-        repositoryUpdaterConcrete.{{$EntityName}}Type.Set(model.UpdateOperation[*{{$EntityName}}Type]{Operator: domainUpdater.{{$EntityName}}Type.Wrappee.Operator, Operand: convertedUpdater})
+        repositoryUpdaterConcrete.{{$EntityName}}TypeID.Set(model.UpdateOperation[null.Int64]{Operator: domainUpdater.{{$EntityName}}Type.Wrappee.Operator, Operand: convertedUpdater})
     }
 
 	if domainUpdater.Path.HasValue {
@@ -2203,28 +2092,44 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryUpdater(ctx contex
         {{ end }}
     }
 
-	if domainUpdater.Tags.HasValue {
-        var rawTag any
-        convertedUpdater := make(TagSlice, 0, len(domainUpdater.Tags.Wrappee.Operand))
+	if domainUpdater.TagIDs.HasValue {
+        var rawTag *Tag
+        convertedUpdater := make(TagSlice, 0, len(domainUpdater.TagIDs.Wrappee.Operand))
 
-        for _, tag := range domainUpdater.Tags.Wrappee.Operand {
-            rawTag, err =  repo.GetTagRepository().TagDomainToRepositoryModel(ctx, tag)
+        for _, tag := range domainUpdater.TagIDs.Wrappee.Operand {
+            rawTag, err =  Tags(TagWhere.ID.EQ(tag)).One(ctx, repo.db)
             if err != nil {
                 return
             }
 
-            convertedUpdater = append(convertedUpdater, rawTag.(*Tag))
+            convertedUpdater = append(convertedUpdater, rawTag)
         }
 
-        repositoryUpdaterConcrete.Tags.Set(model.UpdateOperation[TagSlice]{Operator: domainUpdater.Tags.Wrappee.Operator, Operand: convertedUpdater})
+        repositoryUpdaterConcrete.Tags.Set(model.UpdateOperation[TagSlice]{Operator: domainUpdater.TagIDs.Wrappee.Operator, Operand: convertedUpdater})
     }
 
-	if domainUpdater.Linked{{$EntityName}}s.HasValue {
-        var converted{{$EntityName}}Raw any
-        convertedUpdater := make({{$EntityName}}Slice, 0, len(domainUpdater.Linked{{$EntityName}}s.Wrappee.Operand))
+	if domainUpdater.Linked{{$EntityName}}IDs.HasValue {
+        var converted{{$EntityName}}Raw *Document
+        convertedUpdater := make({{$EntityName}}Slice, 0, len(domainUpdater.Linked{{$EntityName}}IDs.Wrappee.Operand))
 
-        for _, document := range domainUpdater.Linked{{$EntityName}}s.Wrappee.Operand {
-            converted{{$EntityName}}Raw, err = repo.{{$EntityName}}DomainToRepositoryModel(ctx, document)
+        for _, document := range domainUpdater.Linked{{$EntityName}}IDs.Wrappee.Operand {
+            converted{{$EntityName}}Raw, err =  Documents(DocumentWhere.ID.EQ(document)).One(ctx, repo.db)
+            if err != nil {
+                return
+            }
+
+            convertedUpdater = append(convertedUpdater, converted{{$EntityName}}Raw)
+        }
+
+        repositoryUpdaterConcrete.Destination{{$EntityName}}s.Set(model.UpdateOperation[{{$EntityName}}Slice]{Operator: domainUpdater.Linked{{$EntityName}}IDs.Wrappee.Operator, Operand: convertedUpdater})
+    }
+
+	if domainUpdater.Backlinked{{$EntityName}}sIDs.HasValue {
+        var converted{{$EntityName}}Raw any
+        convertedUpdater := make({{$EntityName}}Slice, 0, len(domainUpdater.Backlinked{{$EntityName}}sIDs.Wrappee.Operand))
+
+        for _, document := range domainUpdater.Backlinked{{$EntityName}}sIDs.Wrappee.Operand {
+            converted{{$EntityName}}Raw, err =  Documents(DocumentWhere.ID.EQ(document)).One(ctx, repo.db)
             if err != nil {
                 return
             }
@@ -2232,23 +2137,7 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryUpdater(ctx contex
             convertedUpdater = append(convertedUpdater, converted{{$EntityName}}Raw.(*{{$EntityName}}))
         }
 
-        repositoryUpdaterConcrete.Destination{{$EntityName}}s.Set(model.UpdateOperation[{{$EntityName}}Slice]{Operator: domainUpdater.Linked{{$EntityName}}s.Wrappee.Operator, Operand: convertedUpdater})
-    }
-
-	if domainUpdater.Backlinked{{$EntityName}}s.HasValue {
-        var converted{{$EntityName}}Raw any
-        convertedUpdater := make({{$EntityName}}Slice, 0, len(domainUpdater.Backlinked{{$EntityName}}s.Wrappee.Operand))
-
-        for _, document := range domainUpdater.Backlinked{{$EntityName}}s.Wrappee.Operand {
-            converted{{$EntityName}}Raw, err = repo.{{$EntityName}}DomainToRepositoryModel(ctx, document)
-            if err != nil {
-                return
-            }
-
-            convertedUpdater = append(convertedUpdater, converted{{$EntityName}}Raw.(*{{$EntityName}}))
-        }
-
-        repositoryUpdaterConcrete.Source{{$EntityName}}s.Set(model.UpdateOperation[{{$EntityName}}Slice]{Operator: domainUpdater.Backlinked{{$EntityName}}s.Wrappee.Operator, Operand: convertedUpdater})
+        repositoryUpdaterConcrete.Source{{$EntityName}}s.Set(model.UpdateOperation[{{$EntityName}}Slice]{Operator: domainUpdater.Backlinked{{$EntityName}}sIDs.Wrappee.Operator, Operand: convertedUpdater})
     }
 
 	if domainUpdater.ID.HasValue {
@@ -2270,35 +2159,29 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryUpdater(ctx contex
 	}
 
 	//***********    Set ParentPath    ***********//
-	if domainUpdater.ParentPath.HasValue {
-		var converted{{$EntityName}}Raw any
-		tag := domainUpdater.ParentPath.Wrappee.Operand[len(domainUpdater.ParentPath.Wrappee.Operand)-1]
-		converted{{$EntityName}}Raw, err =  repo.{{$EntityName}}DomainToRepositoryModel(ctx, tag)
-		if err != nil {
-			return
+	if domainUpdater.ParentPathIDs.HasValue {
+		tagID := domainUpdater.ParentPathIDs.Wrappee.Operand[len(domainUpdater.ParentPathIDs.Wrappee.Operand)-1]
+
+		repositoryUpdaterConcrete.Parent{{$EntityName}}.Set(model.UpdateOperation[null.Int64]{Operator: domainUpdater.ParentPathIDs.Wrappee.Operator, Operand: null.NewInt64(tagID, true)})
+
+		pathIDs := make([]string, 0, len(domainUpdater.ParentPathIDs.Wrappee.Operand)+1)
+		for _, tagID := range domainUpdater.ParentPathIDs.Wrappee.Operand {
+			pathIDs = append(pathIDs, strconv.FormatInt(tagID, 10))
 		}
 
-		repositoryUpdaterConcrete.Parent{{$EntityName}}{{$EntityName}}.Set(model.UpdateOperation[*{{$EntityName}}]{Operator: domainUpdater.ParentPath.Wrappee.Operator, Operand: converted{{$EntityName}}Raw.(*Tag)})
-		repositoryUpdaterConcrete.Parent{{$EntityName}}.Set(model.UpdateOperation[null.Int64]{Operator: domainUpdater.ParentPath.Wrappee.Operator, Operand: null.NewInt64(converted{{$EntityName}}Raw.(*Tag).ID, true)})
+		pathIDs = append(pathIDs, strconv.FormatInt(tagID, 10))
 
-		pathIDs := make([]string, 0, len(domainUpdater.ParentPath.Wrappee.Operand)+1)
-		for _, tag := range domainUpdater.ParentPath.Wrappee.Operand {
-			pathIDs = append(pathIDs, strconv.FormatInt(tag.ID, 10))
-		}
-
-		pathIDs = append(pathIDs, strconv.FormatInt(tag.ID, 10))
-
-		repositoryUpdaterConcrete.Path.Set(model.UpdateOperation[string]{Operator: domainUpdater.ParentPath.Wrappee.Operator, Operand: strings.Join(pathIDs, ";")})
+		repositoryUpdaterConcrete.Path.Set(model.UpdateOperation[string]{Operator: domainUpdater.ParentPathIDs.Wrappee.Operator, Operand: strings.Join(pathIDs, ";")})
 	}
 
 	//***********************    Set Children    ***********************//
-	if domainUpdater.Subtags.HasValue {
-		pathIDs := make([]string, 0, len(domainUpdater.Subtags.Wrappee.Operand)+1)
-		for _, tag := range domainUpdater.Subtags.Wrappee.Operand {
-			pathIDs = append(pathIDs, strconv.FormatInt(tag.ID, 10))
+	if domainUpdater.SubtagIDs.HasValue {
+		pathIDs := make([]string, 0, len(domainUpdater.SubtagIDs.Wrappee.Operand)+1)
+		for _, tagID := range domainUpdater.SubtagIDs.Wrappee.Operand {
+			pathIDs = append(pathIDs, strconv.FormatInt(tagID, 10))
 		}
 
-		repositoryUpdaterConcrete.Children.Set(model.UpdateOperation[string]{Operator: domainUpdater.Subtags.Wrappee.Operator, Operand: strings.Join(pathIDs, ";")})
+		repositoryUpdaterConcrete.Children.Set(model.UpdateOperation[string]{Operator: domainUpdater.SubtagIDs.Wrappee.Operator, Operand: strings.Join(pathIDs, ";")})
 	}
 
 	//**************************    Set ID    **************************//

@@ -52,27 +52,6 @@ func (t *{{.StructName}}) IsDefault() bool {
     return true
 }
 
-func (t *Tag) AddChildren(newChildren []*{{$StructName}}) {
-    t.Subtags = append(t.Subtags, newChildren...)
-
-    for _, child := range newChildren {
-        if len(child.ParentPath) == 0 {
-            child.ParentPath = make([]*{{$StructName}}, 1)
-        }
-
-        child.ParentPath[0] = t
-    }
-}
-
-func (t *Tag) AddDirectParent(newParent *{{$StructName}}) {
-    t.ParentPath = append(t.ParentPath, newParent)
-    newParent.Subtags = append(newParent.Subtags, t)
-
-    for _, child := range t.Subtags {
-        child.ParentPath = append(child.ParentPath, newParent)
-    }
-}
-
 type {{.StructName}}Field string
 
 var {{.StructName}}Fields = struct {
@@ -84,6 +63,17 @@ var {{.StructName}}Fields = struct {
     {{.FieldName}}: "{{.LogicalFieldName -}}",
     {{end}}
 }
+
+{{range $field := .StructFields -}}
+func (tag *{{$StructName}}) Get{{.FieldName}}() {{.FieldType}} {
+        return tag.{{.FieldName}}
+}
+{{end}}
+{{range $field := .StructFields -}}
+func (tag *{{$StructName}}) Get{{.FieldName}}Ref() *{{.FieldType}} {
+        return &tag.{{.FieldName}}
+}
+{{end}}
 
 type {{.StructName}}Filter struct {
     {{range $field := .StructFields -}}
@@ -124,15 +114,17 @@ const (
 )
 
 var Predefined{{.StructName}}Filters = map[string]{{.StructName}}Filter {
-    {{.StructName}}FilterLeaf: {ParentPath: optional.Make(model.FilterOperation[*Tag]{
-        Operand: model.ScalarOperand[*Tag]{
-            Operand: nil,
+    // FIX: This operating on int64s instead of the slice is nonsense, right?
+    {{.StructName}}FilterLeaf: {ParentPathIDs: optional.Make(model.FilterOperation[int64]{
+        Operand: model.ScalarOperand[int64]{
+            Operand: -1,
         },
         Operator: model.FilterEqual,
     })},
-    {{.StructName}}FilterRoot: {Subtags: optional.Make(model.FilterOperation[*Tag]{
-        Operand: model.ScalarOperand[*Tag]{
-            Operand: nil,
+    // FIX: This operating on int64s instead of the slice is nonsense, right?
+    {{.StructName}}FilterRoot: {SubtagIDs: optional.Make(model.FilterOperation[int64]{
+        Operand: model.ScalarOperand[int64]{
+            Operand: -1,
         },
         Operator: model.FilterEqual,
     })},

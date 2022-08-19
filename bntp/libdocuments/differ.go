@@ -25,140 +25,70 @@ import (
 	"github.com/JonasMuehlmann/goaoi"
 )
 
-func GetAddedLinks(old *domain.Document, new *domain.Document) (addedLinks []string, err error) {
-	var addedLinksRaw []*domain.Document
-
-	predicate := func(oldLink *domain.Document) bool {
-		_, err := goaoi.FindIfSlice(new.LinkedDocuments, goaoi.AreEqualPartial(oldLink))
+func GetAddedLinks(old *domain.Document, new *domain.Document) (addedLinkIDs []int64, err error) {
+	predicate := func(oldLink int64) bool {
+		_, err := goaoi.FindIfSlice(new.LinkedDocumentIDs, goaoi.AreEqualPartial(oldLink))
 
 		return err == nil
 	}
 
-	transformer := func(rawLink *domain.Document) string {
-		return rawLink.Path
-	}
-
-	addedLinksRaw, err = goaoi.TakeIfSlice(old.LinkedDocuments, predicate)
-	if err != nil {
-		return
-	}
-
-	addedLinks, err = goaoi.TransformCopySliceUnsafe(addedLinksRaw, transformer)
+	addedLinkIDs, err = goaoi.TakeIfSlice(old.LinkedDocumentIDs, predicate)
 
 	return
 }
 
-func GetRemovedLinks(old *domain.Document, new *domain.Document) (removedLinks []string, err error) {
-	var removedLinksRaw []*domain.Document
-
-	predicate := func(oldLink *domain.Document) bool {
-		_, err := goaoi.FindIfSlice(new.LinkedDocuments, goaoi.AreEqualPartial(oldLink))
+func GetRemovedLinks(old *domain.Document, new *domain.Document) (removedLinkIDs []int64, err error) {
+	predicate := func(oldLink int64) bool {
+		_, err := goaoi.FindIfSlice(new.LinkedDocumentIDs, goaoi.AreEqualPartial(oldLink))
 
 		return err == nil
 	}
 
-	transformer := func(rawLink *domain.Document) string {
-		return rawLink.Path
-	}
-
-	removedLinksRaw, err = goaoi.TakeIfSlice(old.LinkedDocuments, predicate)
-	if err != nil {
-		return
-	}
-
-	removedLinks, err = goaoi.TransformCopySliceUnsafe(removedLinksRaw, transformer)
+	removedLinkIDs, err = goaoi.TakeIfSlice(old.LinkedDocumentIDs, predicate)
 
 	return
 }
 
-func GetAddedBacklinks(old *domain.Document, new *domain.Document) (addedBacklinks []string, err error) {
-	var addedBacklinksRaw []*domain.Document
-
-	predicate := func(oldBacklink *domain.Document) bool {
-		_, err := goaoi.FindIfSlice(new.BacklinkedDocuments, goaoi.AreEqualPartial(oldBacklink))
+func GetAddedBacklinks(old *domain.Document, new *domain.Document) (addedBacklinkIDs []int64, err error) {
+	predicate := func(oldBacklink int64) bool {
+		_, err := goaoi.FindIfSlice(new.BacklinkedDocumentsIDs, goaoi.AreEqualPartial(oldBacklink))
 
 		return err == nil
 	}
 
-	transformer := func(rawBacklink *domain.Document) string {
-		return rawBacklink.Path
-	}
-
-	addedBacklinksRaw, err = goaoi.TakeIfSlice(old.BacklinkedDocuments, predicate)
-	if err != nil {
-		return
-	}
-
-	addedBacklinks, err = goaoi.TransformCopySliceUnsafe(addedBacklinksRaw, transformer)
-
+	addedBacklinkIDs, err = goaoi.TakeIfSlice(old.BacklinkedDocumentsIDs, predicate)
 	return
 }
 
-func GetRemovedBacklinks(old *domain.Document, new *domain.Document) (removedBacklinks []string, err error) {
-	var removedBacklinksRaw []*domain.Document
-
-	predicate := func(oldBacklink *domain.Document) bool {
-		_, err := goaoi.FindIfSlice(new.BacklinkedDocuments, goaoi.AreEqualPartial(oldBacklink))
+func GetRemovedBacklinks(old *domain.Document, new *domain.Document) (removedBacklinkIDs []int64, err error) {
+	predicate := func(oldBacklink int64) bool {
+		_, err := goaoi.FindIfSlice(new.BacklinkedDocumentsIDs, goaoi.AreEqualPartial(oldBacklink))
 
 		return err == nil
 	}
 
-	transformer := func(rawBacklink *domain.Document) string {
-		return rawBacklink.Path
-	}
-
-	removedBacklinksRaw, err = goaoi.TakeIfSlice(old.BacklinkedDocuments, predicate)
-	if err != nil {
-		return
-	}
-
-	removedBacklinks, err = goaoi.TransformCopySliceUnsafe(removedBacklinksRaw, transformer)
-
+	removedBacklinkIDs, err = goaoi.TakeIfSlice(old.BacklinkedDocumentsIDs, predicate)
 	return
 }
 
-func GetAddedTags(old *domain.Document, new *domain.Document) (addedTags []string, err error) {
-	var addedTagsRaw []*domain.Tag
-
-	predicate := func(oldTag *domain.Tag) bool {
-		_, err := goaoi.FindIfSlice(new.Tags, goaoi.AreEqualPartial(oldTag))
+func GetAddedTags(old *domain.Document, new *domain.Document) (addedTagIDs []int64, err error) {
+	predicate := func(oldTag int64) bool {
+		_, err := goaoi.FindIfSlice(new.TagIDs, goaoi.AreEqualPartial(oldTag))
 
 		return err == nil
 	}
 
-	transformer := func(rawTag *domain.Tag) string {
-		return rawTag.Tag
-	}
-
-	addedTagsRaw, err = goaoi.TakeIfSlice(old.Tags, predicate)
-	if err != nil {
-		return
-	}
-
-	addedTags, err = goaoi.TransformCopySliceUnsafe(addedTagsRaw, transformer)
-
+	addedTagIDs, err = goaoi.TakeIfSlice(old.TagIDs, predicate)
 	return
 }
 
-func GetRemovedTags(old *domain.Document, new *domain.Document) (removedTags []string, err error) {
-	var removedTagsRaw []*domain.Tag
-
-	predicate := func(oldTag *domain.Tag) bool {
-		_, err := goaoi.FindIfSlice(new.Tags, goaoi.AreEqualPartial(oldTag))
+func GetRemovedTags(old *domain.Document, new *domain.Document) (removedTagIDs []int64, err error) {
+	predicate := func(oldTag int64) bool {
+		_, err := goaoi.FindIfSlice(new.TagIDs, goaoi.AreEqualPartial(oldTag))
 
 		return err == nil
 	}
 
-	transformer := func(rawTag *domain.Tag) string {
-		return rawTag.Tag
-	}
-
-	removedTagsRaw, err = goaoi.TakeIfSlice(old.Tags, predicate)
-	if err != nil {
-		return
-	}
-
-	removedTags, err = goaoi.TransformCopySliceUnsafe(removedTagsRaw, transformer)
-
+	removedTagIDs, err = goaoi.TakeIfSlice(old.TagIDs, predicate)
 	return
 }

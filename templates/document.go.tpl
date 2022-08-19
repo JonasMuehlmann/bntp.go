@@ -67,6 +67,17 @@ var {{.StructName}}Fields = struct {
     {{end}}
 }
 
+{{range $field := .StructFields -}}
+func (document *{{$StructName}}) Get{{.FieldName}}() {{.FieldType}} {
+        return document.{{.FieldName}}
+}
+{{end}}
+{{range $field := .StructFields -}}
+func (document *{{$StructName}}) Get{{.FieldName}}Ref() *{{.FieldType}} {
+        return &document.{{.FieldName}}
+}
+{{end}}
+
 type {{.StructName}}Filter struct {
     {{range $field := .StructFields -}}
     {{.FieldName}} optional.Optional[model.FilterOperation[{{Unslice (UnaliasSQLBoilerSlice .FieldType)}}]]
@@ -105,10 +116,11 @@ const (
     {{.StructName}}FilterDeleted = "{{.StructName}}FilterDeleted"
 )
 
+// FIX: This operating on int64s instead of the slice is nonsense, right?
 var Predefined{{.StructName}}Filters = map[string]{{.StructName}}Filter {
-    {{.StructName}}FilterUntagged: {Tags: optional.Make(model.FilterOperation[*Tag]{
-        Operand: model.ScalarOperand[*Tag]{
-            Operand: nil,
+    {{.StructName}}FilterUntagged: {TagIDs: optional.Make(model.FilterOperation[int64]{
+        Operand: model.ScalarOperand[int64]{
+            Operand: -1,
         },
         Operator: model.FilterEqual,
     })},

@@ -113,9 +113,8 @@ type BookmarkFilter struct {
     ID optional.Optional[model.FilterOperation[int64]]
     IsRead optional.Optional[model.FilterOperation[int64]]
     
-    BookmarkType optional.Optional[model.FilterOperation[*BookmarkType]]
-    Tags optional.Optional[model.FilterOperation[*Tag]]
     
+    Tags optional.Optional[model.FilterOperation[*Tag]]
 }
 
 type BookmarkUpdater struct {
@@ -129,9 +128,8 @@ type BookmarkUpdater struct {
     ID optional.Optional[model.UpdateOperation[int64]]
     IsRead optional.Optional[model.UpdateOperation[int64]]
     
-    BookmarkType optional.Optional[model.UpdateOperation[*BookmarkType]]
-    Tags optional.Optional[model.UpdateOperation[TagSlice]]
     
+    Tags optional.Optional[model.UpdateOperation[TagSlice]]
 }
 
 type BookmarkUpdaterMapping[T any] struct {
@@ -518,6 +516,8 @@ func (repo *MssqlBookmarkRepository) Replace(ctx context.Context, domainModels [
 
             return
         }
+
+        
 
         var numAffectedRecords int64
 		numAffectedRecords, err = repoModel.Update(ctx, tx, boil.Infer())
@@ -1211,10 +1211,9 @@ func (repo *MssqlBookmarkRepository) BookmarkDomainToRepositoryModel(ctx context
     //*************************    Set Tags    *************************//
     var repositoryTag *Tag
 
-    if domainModel.Tags != nil {
-        repositoryModelConcrete.R.Tags = make(TagSlice, 0, len(domainModel.Tags))
-        for _,  domainTag := range domainModel.Tags {
-            repositoryTag, err = Tags(TagWhere.Tag.EQ(domainTag.Tag)).One(ctx, repo.db)
+    if domainModel.TagIDs != nil {
+        for _,  domainTagID := range domainModel.TagIDs {
+            repositoryTag, err = Tags(TagWhere.ID.EQ(domainTagID)).One(ctx, repo.db)
             if err != nil {
                 err = repoCommon.ReferenceToNonExistentDependencyError{Inner: err}
 
@@ -1335,17 +1334,7 @@ func (repo *MssqlBookmarkRepository) BookmarkRepositoryToDomainModel(ctx context
     domainModel.IsCollection = repositoryModelConcrete.IsCollection > 0
 
     //*************************    Set Tags    *************************//
-    var domainTag *domain.Tag
-
-	domainModel.Tags = make([]*domain.Tag, 0, len(repositoryModelConcrete.R.Tags))
-    for _, repositoryTag := range repositoryModelConcrete.R.Tags {
-        domainTag, err = repo.GetTagRepository().TagRepositoryToDomainModel(ctx, repositoryTag)
-        if err != nil {
-            return
-        }
-
-        domainModel.Tags = append(domainModel.Tags, domainTag)
-    }
+    domainModel.TagIDs, _ = goaoi.TransformCopySliceUnsafe(repositoryModelConcrete.R.Tags, func (t *Tag) int64 {return t.ID;})
 
     return
 }
@@ -1420,10 +1409,11 @@ func (repo *MssqlBookmarkRepository) BookmarkDomainToRepositoryFilter(ctx contex
 
     //*************************    Set Tags    *************************//
 
-    if domainFilter.Tags.HasValue {
+    if domainFilter.TagIDs.HasValue {
         var convertedFilter model.FilterOperation[*Tag]
 
-        convertedFilter, err = model.ConvertFilter[*Tag,*domain.Tag](domainFilter.Tags.Wrappee, repoCommon.MakeDomainToRepositoryEntityConverterGeneric[domain.Tag, Tag](ctx, repo.GetTagRepository().TagDomainToRepositoryModel))
+        converter := func (tagID int64) (*Tag, error) {return Tags(TagWhere.ID.EQ(tagID)).One(ctx, repo.db)}
+        convertedFilter, err = model.ConvertFilter[*Tag, int64](domainFilter.TagIDs.Wrappee, converter)
         if err != nil {
             return
         }
@@ -1433,24 +1423,8 @@ func (repo *MssqlBookmarkRepository) BookmarkDomainToRepositoryFilter(ctx contex
 
     //*************************    Set Type    *************************//
 
+    var convertedTypeIDFilter model.FilterOperation[null.Int64]
     if domainFilter.BookmarkType.HasValue {
-        var convertedTypeIDFilter model.FilterOperation[null.Int64]
-        var convertedTypeFilter model.FilterOperation[*BookmarkType]
-
-        convertedTypeFilter, err = model.ConvertFilter[*BookmarkType,optional.Optional[string]](domainFilter.BookmarkType.Wrappee, func(type_ optional.Optional[string]) (*BookmarkType, error) {
-            if !type_.HasValue {
-                return  nil, nil
-            }
-
-
-            bookmarkType, err := BookmarkTypes(BookmarkTypeWhere.BookmarkType.EQ(type_.Wrappee)).One(ctx, repo.db)
-
-            return bookmarkType, err
-        })
-        if err != nil {
-            return
-        }
-
         convertedTypeIDFilter, err = model.ConvertFilter[null.Int64,optional.Optional[string]](domainFilter.BookmarkType.Wrappee, func(type_ optional.Optional[string]) (null.Int64, error) {
             if !type_.HasValue {
                 return  null.NewInt64(-1, false), nil
@@ -1466,7 +1440,6 @@ func (repo *MssqlBookmarkRepository) BookmarkDomainToRepositoryFilter(ctx contex
         }
 
 
-        repositoryFilterConcrete.BookmarkType.Set(convertedTypeFilter)
         repositoryFilterConcrete.BookmarkTypeID.Set(convertedTypeIDFilter)
     }
 
@@ -1522,20 +1495,20 @@ func (repo *MssqlBookmarkRepository) BookmarkDomainToRepositoryUpdater(ctx conte
         repositoryUpdaterConcrete.Title.Set(model.UpdateOperation[null.String]{Operator: domainUpdater.Title.Wrappee.Operator, Operand: convertedUpdater})
     }
 
-	if domainUpdater.Tags.HasValue {
-        var rawTag any
-        convertedUpdater := make(TagSlice, 0, len(domainUpdater.Tags.Wrappee.Operand))
+	if domainUpdater.TagIDs.HasValue {
+        var rawTag *Tag
+        convertedUpdater := make(TagSlice, 0, len(domainUpdater.TagIDs.Wrappee.Operand))
 
-        for _, tag := range domainUpdater.Tags.Wrappee.Operand {
-            rawTag, err = repo.GetTagRepository().TagDomainToRepositoryModel(ctx, tag)
+        for _, tag := range domainUpdater.TagIDs.Wrappee.Operand {
+            rawTag, err =  Tags(TagWhere.ID.EQ(tag)).One(ctx, repo.db)
             if err != nil {
                 return
             }
 
-            convertedUpdater = append(convertedUpdater, rawTag.(*Tag))
+            convertedUpdater = append(convertedUpdater, rawTag)
         }
 
-        repositoryUpdaterConcrete.Tags.Set(model.UpdateOperation[TagSlice]{Operator: domainUpdater.Tags.Wrappee.Operator, Operand: convertedUpdater})
+        repositoryUpdaterConcrete.Tags.Set(model.UpdateOperation[TagSlice]{Operator: domainUpdater.TagIDs.Wrappee.Operator, Operand: convertedUpdater})
     }
 
 	if domainUpdater.ID.HasValue {
@@ -1563,17 +1536,7 @@ func (repo *MssqlBookmarkRepository) BookmarkDomainToRepositoryUpdater(ctx conte
     }
 
 	if domainUpdater.BookmarkType.HasValue {
-        var convertedBookmarkType *BookmarkType
-        if domainUpdater.BookmarkType.Wrappee.Operand.HasValue {
-            convertedBookmarkType, err = BookmarkTypes(BookmarkTypeWhere.BookmarkType.EQ(domainUpdater.BookmarkType.Wrappee.Operand.Wrappee)).One(context.Background(), repo.db)
-            if err != nil {
-                return
-            }
-        } else {
-            convertedBookmarkType = nil
-        }
-
-        repositoryUpdaterConcrete.BookmarkType.Set(model.UpdateOperation[*BookmarkType]{Operator: domainUpdater.BookmarkType.Wrappee.Operator, Operand: convertedBookmarkType})
+        repositoryUpdaterConcrete.ID.Set(model.UpdateOperation[int64]{Operator: domainUpdater.ID.Wrappee.Operator, Operand: repositoryUpdaterConcrete.ID.Wrappee.Operand})
     }
 
     repositoryUpdater = repositoryUpdaterConcrete

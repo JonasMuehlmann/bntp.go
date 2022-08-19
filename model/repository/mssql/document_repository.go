@@ -103,11 +103,10 @@ type DocumentFilter struct {
     DocumentTypeID optional.Optional[model.FilterOperation[null.Int64]]
     ID optional.Optional[model.FilterOperation[int64]]
     
-    DocumentType optional.Optional[model.FilterOperation[*DocumentType]]
+    
     Tags optional.Optional[model.FilterOperation[*Tag]]
     SourceDocuments optional.Optional[model.FilterOperation[*Document]]
     DestinationDocuments optional.Optional[model.FilterOperation[*Document]]
-    
 }
 
 type DocumentUpdater struct {
@@ -118,11 +117,10 @@ type DocumentUpdater struct {
     DocumentTypeID optional.Optional[model.UpdateOperation[null.Int64]]
     ID optional.Optional[model.UpdateOperation[int64]]
     
-    DocumentType optional.Optional[model.UpdateOperation[*DocumentType]]
+    
     Tags optional.Optional[model.UpdateOperation[TagSlice]]
     SourceDocuments optional.Optional[model.UpdateOperation[DocumentSlice]]
     DestinationDocuments optional.Optional[model.UpdateOperation[DocumentSlice]]
-    
 }
 
 type DocumentUpdaterMapping[T any] struct {
@@ -479,6 +477,8 @@ func (repo *MssqlDocumentRepository) Replace(ctx context.Context, domainModels [
 
             return
         }
+
+        
 
         var numAffectedRecords int64
 		numAffectedRecords, err = repoModel.Update(ctx, tx, boil.Infer())
@@ -1155,16 +1155,15 @@ func (repo *MssqlDocumentRepository) DocumentDomainToRepositoryModel(ctx context
     //*************************    Set Tags    *************************//
     var repositoryTag *Tag
 
-	repositoryModelConcrete.R.Tags = make(TagSlice, 0, len(domainModel.Tags))
-	for _, modelTag := range domainModel.Tags {
-		repositoryTag, err = Tags(TagWhere.Tag.EQ(modelTag.Tag)).One(ctx, repo.db)
+	for _, modelTagID := range domainModel.TagIDs {
+		repositoryTag, err = Tags(TagWhere.ID.EQ(modelTagID)).One(ctx, repo.db)
 		if err != nil {
             err = repoCommon.ReferenceToNonExistentDependencyError{Inner: err}
 
 			return
 		}
 
-		repositoryModelConcrete.R.Tags  = append(repositoryModelConcrete.R.Tags, &Tag{Tag: modelTag.Tag, ID: repositoryTag.ID})
+		repositoryModelConcrete.R.Tags  = append(repositoryModelConcrete.R.Tags,repositoryTag)
 	}
 
     //*************************    Set Type    *************************//
@@ -1191,11 +1190,8 @@ func (repo *MssqlDocumentRepository) DocumentDomainToRepositoryModel(ctx context
     //**************    Set linked/backlinked documents    *************//
     var repositoryDocumentRaw any
 
-    repositoryModelConcrete.R.SourceDocuments  = make(DocumentSlice, 0, len(domainModel.LinkedDocuments))
-    repositoryModelConcrete.R.DestinationDocuments  = make(DocumentSlice, 0, len(domainModel.BacklinkedDocuments))
-
-    for _ , link := range domainModel.LinkedDocuments {
-        repositoryDocumentRaw, err = repo.DocumentDomainToRepositoryModel(ctx, link)
+    for _ , link := range domainModel.LinkedDocumentIDs {
+        repositoryDocumentRaw, err = Documents(DocumentWhere.ID.EQ(link)).One(ctx, repo.db)
         if err != nil {
             err = repoCommon.ReferenceToNonExistentDependencyError{Inner: err}
 
@@ -1205,8 +1201,8 @@ func (repo *MssqlDocumentRepository) DocumentDomainToRepositoryModel(ctx context
         repositoryModelConcrete.R.SourceDocuments = append(repositoryModelConcrete.R.SourceDocuments, repositoryDocumentRaw.(*Document))
     }
 
-    for _ , backlink := range domainModel.BacklinkedDocuments {
-        repositoryDocumentRaw, err = repo.DocumentDomainToRepositoryModel(ctx, backlink)
+    for _ , backlink := range domainModel.BacklinkedDocumentsIDs {
+        repositoryDocumentRaw, err = Documents(DocumentWhere.ID.EQ(backlink)).One(ctx, repo.db)
         if err != nil {
             err = repoCommon.ReferenceToNonExistentDependencyError{Inner: err}
 
@@ -1277,41 +1273,12 @@ func (repo *MssqlDocumentRepository) DocumentRepositoryToDomainModel(ctx context
     
 
     //*************************    Set Tags    *************************//
-    var domainTag *domain.Tag
-
-	domainModel.Tags = make([]*domain.Tag, 0, len(repositoryModelConcrete.R.Tags))
-    for _, repositoryTag := range repositoryModelConcrete.R.Tags {
-    domainTag, err = repo.GetTagRepository().TagRepositoryToDomainModel(ctx, repositoryTag)
-        if err != nil {
-            return
-        }
-
-        domainModel.Tags = append(domainModel.Tags, domainTag)
-    }
+    domainModel.TagIDs, _ = goaoi.TransformCopySliceUnsafe(repositoryModelConcrete.R.Tags, func (t *Tag) int64 {return t.ID;})
 
     //**************    Set linked/backlinked documents    *************//
-    var domainDocument *domain.Document
 
-    domainModel.LinkedDocuments = make([]*domain.Document, 0, len(repositoryModelConcrete.R.SourceDocuments))
-    domainModel.BacklinkedDocuments = make([]*domain.Document, 0, len(repositoryModelConcrete.R.DestinationDocuments))
-
-    for _ , link := range repositoryModelConcrete.R.SourceDocuments {
-        domainDocument, err = repo.DocumentRepositoryToDomainModel(ctx, link)
-        if err != nil {
-            return
-        }
-
-        domainModel.LinkedDocuments = append(domainModel.LinkedDocuments, domainDocument)
-    }
-
-    for _ , backlink := range repositoryModelConcrete.R.DestinationDocuments {
-        domainDocument, err = repo.DocumentRepositoryToDomainModel(ctx, backlink)
-        if err != nil {
-            return
-        }
-
-        domainModel.BacklinkedDocuments = append(domainModel.BacklinkedDocuments, domainDocument)
-    }
+    domainModel.LinkedDocumentIDs, _ = goaoi.TransformCopySliceUnsafe(repositoryModelConcrete.R.DestinationDocuments, func (d *Document) int64 {return d.ID;})
+    domainModel.BacklinkedDocumentsIDs, _ = goaoi.TransformCopySliceUnsafe(repositoryModelConcrete.R.SourceDocuments, func (d *Document) int64 {return d.ID;})
 
     return
 }
@@ -1348,10 +1315,11 @@ func (repo *MssqlDocumentRepository) DocumentDomainToRepositoryFilter(ctx contex
     
 
     //*************************    Set Tags    *************************//
-    if domainFilter.Tags.HasValue {
+    if domainFilter.TagIDs.HasValue {
         var convertedFilter model.FilterOperation[*Tag]
 
-        convertedFilter, err = model.ConvertFilter[*Tag,*domain.Tag](domainFilter.Tags.Wrappee, repoCommon.MakeDomainToRepositoryEntityConverterGeneric[domain.Tag, Tag](ctx, repo.GetTagRepository().TagDomainToRepositoryModel))
+        converter := func (tagID int64) (*Tag, error) {return Tags(TagWhere.ID.EQ(tagID)).One(ctx, repo.db)}
+        convertedFilter, err = model.ConvertFilter[*Tag, int64](domainFilter.TagIDs.Wrappee, converter)
         if err != nil {
             return
         }
@@ -1362,21 +1330,6 @@ func (repo *MssqlDocumentRepository) DocumentDomainToRepositoryFilter(ctx contex
     //*************************    Set Type    *************************//
     if domainFilter.DocumentType.HasValue {
         var convertedTypeIDFilter model.FilterOperation[null.Int64]
-        var convertedTypeFilter model.FilterOperation[*DocumentType]
-
-        convertedTypeFilter, err = model.ConvertFilter[*DocumentType,optional.Optional[string]](domainFilter.DocumentType.Wrappee, func(type_ optional.Optional[string]) (*DocumentType, error) {
-            if !type_.HasValue {
-                return  nil, nil
-            }
-
-
-            bookmarkType, err := DocumentTypes(DocumentTypeWhere.DocumentType.EQ(type_.Wrappee)).One(ctx, repo.db)
-
-            return bookmarkType, err
-        })
-        if err != nil {
-            return
-        }
 
         convertedTypeIDFilter, err = model.ConvertFilter[null.Int64,optional.Optional[string]](domainFilter.DocumentType.Wrappee, func(type_ optional.Optional[string]) (null.Int64, error) {
             if !type_.HasValue {
@@ -1393,26 +1346,27 @@ func (repo *MssqlDocumentRepository) DocumentDomainToRepositoryFilter(ctx contex
         }
 
 
-        repositoryFilterConcrete.DocumentType.Set(convertedTypeFilter)
         repositoryFilterConcrete.DocumentTypeID.Set(convertedTypeIDFilter)
     }
 
 
     //**************    Set linked/backlinked documents    *************//
-    if domainFilter.LinkedDocuments.HasValue {
+    if domainFilter.LinkedDocumentIDs.HasValue {
         var convertedFilter model.FilterOperation[*Document]
 
-        convertedFilter, err = model.ConvertFilter[*Document,*domain.Document](domainFilter.LinkedDocuments.Wrappee, repoCommon.MakeDomainToRepositoryEntityConverterGeneric[domain.Document,Document](ctx, repo.DocumentDomainToRepositoryModel))
+        converter := func (documentID int64) (*Document, error) {return Documents(DocumentWhere.ID.EQ(documentID)).One(ctx, repo.db)}
+        convertedFilter, err = model.ConvertFilter[*Document,int64](domainFilter.LinkedDocumentIDs.Wrappee, converter)
         if err != nil {
             return
         }
 
         repositoryFilterConcrete.SourceDocuments.Set(convertedFilter)
     }
-    if domainFilter.BacklinkedDocuments.HasValue {
+    if domainFilter.BacklinkedDocumentsIDs.HasValue {
         var convertedFilter model.FilterOperation[*Document]
 
-        convertedFilter, err = model.ConvertFilter[*Document,*domain.Document](domainFilter.BacklinkedDocuments.Wrappee, repoCommon.MakeDomainToRepositoryEntityConverterGeneric[domain.Document,Document](ctx, repo.DocumentDomainToRepositoryModel))
+        converter := func (documentID int64) (*Document, error) {return Documents(DocumentWhere.ID.EQ(documentID)).One(ctx, repo.db)}
+        convertedFilter, err = model.ConvertFilter[*Document,int64](domainFilter.BacklinkedDocumentsIDs.Wrappee, converter)
         if err != nil {
             return
         }
@@ -1435,17 +1389,12 @@ func (repo *MssqlDocumentRepository) DocumentDomainToRepositoryUpdater(ctx conte
     repositoryUpdaterConcrete := new(DocumentUpdater)
 
 	if domainUpdater.DocumentType.HasValue {
-        var convertedUpdater *DocumentType
+        var convertedUpdater null.Int64
         if domainUpdater.DocumentType.Wrappee.Operand.HasValue {
-            convertedUpdater, err = DocumentTypes(DocumentTypeWhere.DocumentType.EQ(domainUpdater.DocumentType.Wrappee.Operand.Wrappee)).One(context.Background(), repo.db)
-            if err != nil {
-                return
-		}
-        } else {
-            convertedUpdater = nil
+            convertedUpdater = null.NewInt64(domainUpdater.ID.Wrappee.Operand, true)
         }
 
-        repositoryUpdaterConcrete.DocumentType.Set(model.UpdateOperation[*DocumentType]{Operator: domainUpdater.DocumentType.Wrappee.Operator, Operand: convertedUpdater})
+        repositoryUpdaterConcrete.DocumentTypeID.Set(model.UpdateOperation[null.Int64]{Operator: domainUpdater.DocumentType.Wrappee.Operator, Operand: convertedUpdater})
     }
 
 	if domainUpdater.Path.HasValue {
@@ -1476,28 +1425,44 @@ func (repo *MssqlDocumentRepository) DocumentDomainToRepositoryUpdater(ctx conte
         
     }
 
-	if domainUpdater.Tags.HasValue {
-        var rawTag any
-        convertedUpdater := make(TagSlice, 0, len(domainUpdater.Tags.Wrappee.Operand))
+	if domainUpdater.TagIDs.HasValue {
+        var rawTag *Tag
+        convertedUpdater := make(TagSlice, 0, len(domainUpdater.TagIDs.Wrappee.Operand))
 
-        for _, tag := range domainUpdater.Tags.Wrappee.Operand {
-            rawTag, err =  repo.GetTagRepository().TagDomainToRepositoryModel(ctx, tag)
+        for _, tag := range domainUpdater.TagIDs.Wrappee.Operand {
+            rawTag, err =  Tags(TagWhere.ID.EQ(tag)).One(ctx, repo.db)
             if err != nil {
                 return
             }
 
-            convertedUpdater = append(convertedUpdater, rawTag.(*Tag))
+            convertedUpdater = append(convertedUpdater, rawTag)
         }
 
-        repositoryUpdaterConcrete.Tags.Set(model.UpdateOperation[TagSlice]{Operator: domainUpdater.Tags.Wrappee.Operator, Operand: convertedUpdater})
+        repositoryUpdaterConcrete.Tags.Set(model.UpdateOperation[TagSlice]{Operator: domainUpdater.TagIDs.Wrappee.Operator, Operand: convertedUpdater})
     }
 
-	if domainUpdater.LinkedDocuments.HasValue {
-        var convertedDocumentRaw any
-        convertedUpdater := make(DocumentSlice, 0, len(domainUpdater.LinkedDocuments.Wrappee.Operand))
+	if domainUpdater.LinkedDocumentIDs.HasValue {
+        var convertedDocumentRaw *Document
+        convertedUpdater := make(DocumentSlice, 0, len(domainUpdater.LinkedDocumentIDs.Wrappee.Operand))
 
-        for _, document := range domainUpdater.LinkedDocuments.Wrappee.Operand {
-            convertedDocumentRaw, err = repo.DocumentDomainToRepositoryModel(ctx, document)
+        for _, document := range domainUpdater.LinkedDocumentIDs.Wrappee.Operand {
+            convertedDocumentRaw, err =  Documents(DocumentWhere.ID.EQ(document)).One(ctx, repo.db)
+            if err != nil {
+                return
+            }
+
+            convertedUpdater = append(convertedUpdater, convertedDocumentRaw)
+        }
+
+        repositoryUpdaterConcrete.DestinationDocuments.Set(model.UpdateOperation[DocumentSlice]{Operator: domainUpdater.LinkedDocumentIDs.Wrappee.Operator, Operand: convertedUpdater})
+    }
+
+	if domainUpdater.BacklinkedDocumentsIDs.HasValue {
+        var convertedDocumentRaw any
+        convertedUpdater := make(DocumentSlice, 0, len(domainUpdater.BacklinkedDocumentsIDs.Wrappee.Operand))
+
+        for _, document := range domainUpdater.BacklinkedDocumentsIDs.Wrappee.Operand {
+            convertedDocumentRaw, err =  Documents(DocumentWhere.ID.EQ(document)).One(ctx, repo.db)
             if err != nil {
                 return
             }
@@ -1505,23 +1470,7 @@ func (repo *MssqlDocumentRepository) DocumentDomainToRepositoryUpdater(ctx conte
             convertedUpdater = append(convertedUpdater, convertedDocumentRaw.(*Document))
         }
 
-        repositoryUpdaterConcrete.DestinationDocuments.Set(model.UpdateOperation[DocumentSlice]{Operator: domainUpdater.LinkedDocuments.Wrappee.Operator, Operand: convertedUpdater})
-    }
-
-	if domainUpdater.BacklinkedDocuments.HasValue {
-        var convertedDocumentRaw any
-        convertedUpdater := make(DocumentSlice, 0, len(domainUpdater.BacklinkedDocuments.Wrappee.Operand))
-
-        for _, document := range domainUpdater.BacklinkedDocuments.Wrappee.Operand {
-            convertedDocumentRaw, err = repo.DocumentDomainToRepositoryModel(ctx, document)
-            if err != nil {
-                return
-            }
-
-            convertedUpdater = append(convertedUpdater, convertedDocumentRaw.(*Document))
-        }
-
-        repositoryUpdaterConcrete.SourceDocuments.Set(model.UpdateOperation[DocumentSlice]{Operator: domainUpdater.BacklinkedDocuments.Wrappee.Operator, Operand: convertedUpdater})
+        repositoryUpdaterConcrete.SourceDocuments.Set(model.UpdateOperation[DocumentSlice]{Operator: domainUpdater.BacklinkedDocumentsIDs.Wrappee.Operator, Operand: convertedUpdater})
     }
 
 	if domainUpdater.ID.HasValue {

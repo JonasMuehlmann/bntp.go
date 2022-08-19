@@ -72,6 +72,19 @@ var {{.StructName}}Fields = struct {
     {{end}}
 }
 
+{{range $field := .StructFields -}}
+func (bookmark *{{$StructName}}) Get{{.FieldName}}() {{.FieldType}} {
+        return bookmark.{{.FieldName}}
+}
+{{end}}
+{{range $field := .StructFields -}}
+func (bookmark *{{$StructName}}) Get{{.FieldName}}Ref() *{{.FieldType}} {
+        return &bookmark.{{.FieldName}}
+}
+{{end}}
+
+
+
 type {{.StructName}}Filter struct {
     {{range $field := .StructFields -}}
     {{.FieldName}} optional.Optional[model.FilterOperation[{{Unslice (UnaliasSQLBoilerSlice .FieldType)}}]]
@@ -118,12 +131,14 @@ var Predefined{{.StructName}}Filters = map[string]{{.StructName}}Filter {
         },
         Operator: model.FilterEqual,
     })},
-    {{.StructName}}FilterUntagged: {Tags: optional.Make(model.FilterOperation[*Tag]{
-        Operand: model.ScalarOperand[*Tag]{
-            Operand: nil,
+    // FIX: This operating on int64s instead of the slice is nonsense, right?
+    {{.StructName}}FilterUntagged: {TagIDs: optional.Make(model.FilterOperation[int64]{
+        Operand: model.ScalarOperand[int64]{
+            Operand: -1,
         },
         Operator: model.FilterEqual,
     })},
+    // FIX: This operating on int64s instead of the slice is nonsense, right?
     {{.StructName}}FilterInboxed: {
         Title: optional.Make(model.FilterOperation[optional.Optional[string]]{
             Operand: model.ScalarOperand[optional.Optional[string]]{
@@ -131,9 +146,9 @@ var Predefined{{.StructName}}Filters = map[string]{{.StructName}}Filter {
             },
             Operator: model.FilterEqual,
         }),
-        Tags: optional.Make(model.FilterOperation[*Tag]{
-            Operand: model.ScalarOperand[*Tag]{
-                Operand: nil,
+        TagIDs: optional.Make(model.FilterOperation[int64]{
+            Operand: model.ScalarOperand[int64]{
+                Operand: -1,
             },
             Operator: model.FilterEqual,
     })},
