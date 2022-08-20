@@ -24,6 +24,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"io"
 	"os"
 	"path"
 	"reflect"
@@ -190,7 +191,7 @@ func setDefaultsFromStructOrMap(defaults any) error {
 	return bfsSetDefault("", defaults)
 }
 
-func InitConfig() {
+func InitConfig(stderr io.Writer) {
 
 	pendingLogMessage = make([]message, 0, 5)
 
@@ -240,7 +241,7 @@ func InitConfig() {
 	}
 	// ******************** Log pending messages ********************* //
 
-	*log.StandardLogger() = *helper.NewDefaultLogger(viper.GetString(LogFile), consoleLogLevel, fileLogLevel)
+	*log.StandardLogger() = *helper.NewDefaultLogger(viper.GetString(LogFile), consoleLogLevel, fileLogLevel, stderr)
 
 	for _, message := range pendingLogMessage {
 		log.StandardLogger().Log(message.Level, message.Msg)

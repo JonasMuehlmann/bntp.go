@@ -23,6 +23,7 @@ package helper
 import (
 	"errors"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
 	"path"
@@ -114,7 +115,7 @@ func (err DuplicateInsertionError) As(target any) bool {
 	return isTarget
 }
 
-func NewDefaultLogger(logFile string, consoleLogLevel log.Level, fileLogLevel log.Level) *log.Logger {
+func NewDefaultLogger(logFile string, consoleLogLevel log.Level, fileLogLevel log.Level, stderr io.Writer) *log.Logger {
 	callerPrettyfier := func(f *runtime.Frame) (string, string) {
 		filename := path.Base(f.File)
 
@@ -148,6 +149,7 @@ func NewDefaultLogger(logFile string, consoleLogLevel log.Level, fileLogLevel lo
 	mainLogger.AddHook(&ConsoleLoggerHook{
 		Formatter: consoleFormatter,
 		LogLevels: consoleLogLevels,
+		Writer:    stderr,
 	})
 	mainLogger.AddHook(&writer.Hook{
 		Writer:    logFileHandle,
@@ -160,6 +162,7 @@ func NewDefaultLogger(logFile string, consoleLogLevel log.Level, fileLogLevel lo
 type ConsoleLoggerHook struct {
 	Formatter log.Formatter
 	LogLevels []log.Level
+	Writer    io.Writer
 }
 
 func (hook *ConsoleLoggerHook) Fire(entry *log.Entry) error {
@@ -168,7 +171,7 @@ func (hook *ConsoleLoggerHook) Fire(entry *log.Entry) error {
 		return err
 	}
 
-	_, err = os.Stderr.Write(formatted)
+	_, err = hook.Writer.Write(formatted)
 
 	return err
 }
