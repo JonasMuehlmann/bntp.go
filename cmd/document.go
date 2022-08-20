@@ -58,7 +58,7 @@ var documentAddCmd = &cobra.Command{
 		for i, documentOut := range documents {
 			err := BNTPBackend.Unmarshallers[Format].Unmarshall(documentOut, args[i])
 			if err != nil {
-				return err
+				return EntityMarshallingError{Inner: err}
 			}
 		}
 
@@ -87,7 +87,7 @@ var documentReplaceCmd = &cobra.Command{
 		for i, documentOut := range documents {
 			err := BNTPBackend.Unmarshallers[Format].Unmarshall(documentOut, args[i])
 			if err != nil {
-				return err
+				return EntityMarshallingError{Inner: err}
 			}
 		}
 
@@ -120,7 +120,7 @@ var documentUpsertCmd = &cobra.Command{
 		for i, documentOut := range documents {
 			err := BNTPBackend.Unmarshallers[Format].Unmarshall(documentOut, args[i])
 			if err != nil {
-				return err
+				return EntityMarshallingError{Inner: err}
 			}
 		}
 
@@ -158,13 +158,13 @@ var documentEditCmd = &cobra.Command{
 		for i, documentOut := range documents {
 			err := BNTPBackend.Unmarshallers[Format].Unmarshall(documentOut, args[i])
 			if err != nil {
-				return err
+				return EntityMarshallingError{Inner: err}
 			}
 		}
 
 		err = BNTPBackend.Unmarshallers[Format].Unmarshall(updater, UpdaterRaw)
 		if err != nil {
-			return err
+			return EntityMarshallingError{Inner: err}
 		}
 		if FilterRaw == "" {
 			err := BNTPBackend.DocumentManager.Update(context.Background(), documents, updater)
@@ -181,7 +181,7 @@ var documentEditCmd = &cobra.Command{
 		} else {
 			err = BNTPBackend.Unmarshallers[Format].Unmarshall(filter, FilterRaw)
 			if err != nil {
-				return err
+				return EntityMarshallingError{Inner: err}
 			}
 
 			numAffectedRecords, err = BNTPBackend.DocumentManager.UpdateWhere(context.Background(), filter, updater)
@@ -223,7 +223,7 @@ var documentListCmd = &cobra.Command{
 		} else {
 			err = BNTPBackend.Unmarshallers[Format].Unmarshall(filter, FilterRaw)
 			if err != nil {
-				return err
+				return EntityMarshallingError{Inner: err}
 			}
 
 			documents, err = BNTPBackend.DocumentManager.GetWhere(context.Background(), filter)
@@ -234,7 +234,7 @@ var documentListCmd = &cobra.Command{
 
 		output, err = BNTPBackend.Marshallers[Format].Marshall(documents)
 		if err != nil {
-			return err
+			return EntityMarshallingError{Inner: err}
 		}
 
 		fmt.Fprintln(RootCmd.OutOrStdout(), output)
@@ -263,7 +263,7 @@ var documentRemoveCmd = &cobra.Command{
 			for i, documentOut := range documents {
 				err := BNTPBackend.Unmarshallers[Format].Unmarshall(documentOut, args[i])
 				if err != nil {
-					return err
+					return EntityMarshallingError{Inner: err}
 				}
 			}
 
@@ -276,7 +276,7 @@ var documentRemoveCmd = &cobra.Command{
 		} else {
 			err = BNTPBackend.Unmarshallers[Format].Unmarshall(filter, FilterRaw)
 			if err != nil {
-				return err
+				return EntityMarshallingError{Inner: err}
 			}
 
 			numAffectedRecords, err = BNTPBackend.DocumentManager.DeleteWhere(context.Background(), filter)
@@ -308,7 +308,7 @@ var documentFindCmd = &cobra.Command{
 
 		err = BNTPBackend.Unmarshallers[Format].Unmarshall(filter, FilterRaw)
 		if err != nil {
-			return err
+			return EntityMarshallingError{Inner: err}
 		}
 
 		result, err = BNTPBackend.DocumentManager.GetFirstWhere(context.Background(), filter)
@@ -318,7 +318,7 @@ var documentFindCmd = &cobra.Command{
 
 		output, err = BNTPBackend.Marshallers[Format].Marshall(result)
 		if err != nil {
-			return err
+			return EntityMarshallingError{Inner: err}
 		}
 
 		fmt.Fprintln(RootCmd.OutOrStdout(), output)
@@ -348,7 +348,7 @@ var documentCountCmd = &cobra.Command{
 		} else {
 			err = BNTPBackend.Unmarshallers[Format].Unmarshall(filter, FilterRaw)
 			if err != nil {
-				return err
+				return EntityMarshallingError{Inner: err}
 			}
 
 			count, err = BNTPBackend.DocumentManager.CountWhere(context.Background(), filter)
@@ -380,7 +380,7 @@ var documentDoesExistCmd = &cobra.Command{
 		if FilterRaw == "" {
 			err = BNTPBackend.Unmarshallers[Format].Unmarshall(document, args[0])
 			if err != nil {
-				return err
+				return EntityMarshallingError{Inner: err}
 			}
 
 			doesExist, err = BNTPBackend.DocumentManager.DoesExist(context.Background(), document)
@@ -390,7 +390,7 @@ var documentDoesExistCmd = &cobra.Command{
 		} else {
 			err = BNTPBackend.Unmarshallers[Format].Unmarshall(filter, FilterRaw)
 			if err != nil {
-				return err
+				return EntityMarshallingError{Inner: err}
 			}
 
 			doesExist, err = BNTPBackend.DocumentManager.DoesExistWhere(context.Background(), filter)

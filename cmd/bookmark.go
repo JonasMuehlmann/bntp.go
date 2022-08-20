@@ -62,7 +62,7 @@ var bookmarkAddCmd = &cobra.Command{
 
 			err := BNTPBackend.Unmarshallers[Format].Unmarshall(bookmarks[i], arg)
 			if err != nil {
-				return err
+				return EntityMarshallingError{Inner: err}
 			}
 		}
 
@@ -90,7 +90,7 @@ var bookmarkReplaceCmd = &cobra.Command{
 		for i, bookmarkOut := range bookmarks {
 			err := BNTPBackend.Unmarshallers[Format].Unmarshall(bookmarkOut, args[i])
 			if err != nil {
-				return err
+				return EntityMarshallingError{Inner: err}
 			}
 		}
 
@@ -118,7 +118,7 @@ var bookmarkUpsertCmd = &cobra.Command{
 		for i, bookmarkOut := range bookmarks {
 			err := BNTPBackend.Unmarshallers[Format].Unmarshall(bookmarkOut, args[i])
 			if err != nil {
-				return err
+				return EntityMarshallingError{Inner: err}
 			}
 		}
 
@@ -151,13 +151,13 @@ var bookmarkEditCmd = &cobra.Command{
 		for i, bookmarkOut := range bookmarks {
 			err := BNTPBackend.Unmarshallers[Format].Unmarshall(bookmarkOut, args[i])
 			if err != nil {
-				return err
+				return EntityMarshallingError{Inner: err}
 			}
 		}
 
 		err = BNTPBackend.Unmarshallers[Format].Unmarshall(updater, UpdaterRaw)
 		if err != nil {
-			return err
+			return EntityMarshallingError{Inner: err}
 		}
 		if FilterRaw == "" {
 			err := BNTPBackend.BookmarkManager.Update(context.Background(), bookmarks, updater)
@@ -169,7 +169,7 @@ var bookmarkEditCmd = &cobra.Command{
 		} else {
 			err = BNTPBackend.Unmarshallers[Format].Unmarshall(filter, FilterRaw)
 			if err != nil {
-				return err
+				return EntityMarshallingError{Inner: err}
 			}
 
 			numAffectedRecords, err = BNTPBackend.BookmarkManager.UpdateWhere(context.Background(), filter, updater)
@@ -207,7 +207,7 @@ var bookmarkListCmd = &cobra.Command{
 		} else {
 			err = BNTPBackend.Unmarshallers[Format].Unmarshall(filter, FilterRaw)
 			if err != nil {
-				return err
+				return EntityMarshallingError{Inner: err}
 			}
 
 			bookmarks, err = BNTPBackend.BookmarkManager.GetWhere(context.Background(), filter)
@@ -218,7 +218,7 @@ var bookmarkListCmd = &cobra.Command{
 
 		output, err = BNTPBackend.Marshallers[Format].Marshall(bookmarks)
 		if err != nil {
-			return err
+			return EntityMarshallingError{Inner: err}
 		}
 
 		fmt.Fprintln(RootCmd.OutOrStdout(), output)
@@ -247,7 +247,7 @@ var bookmarkRemoveCmd = &cobra.Command{
 			for i, bookmarkOut := range bookmarks {
 				err := BNTPBackend.Unmarshallers[Format].Unmarshall(bookmarkOut, args[i])
 				if err != nil {
-					return err
+					return EntityMarshallingError{Inner: err}
 				}
 			}
 
@@ -260,7 +260,7 @@ var bookmarkRemoveCmd = &cobra.Command{
 		} else {
 			err = BNTPBackend.Unmarshallers[Format].Unmarshall(filter, FilterRaw)
 			if err != nil {
-				return err
+				return EntityMarshallingError{Inner: err}
 			}
 
 			numAffectedRecords, err = BNTPBackend.BookmarkManager.DeleteWhere(context.Background(), filter)
@@ -292,7 +292,7 @@ var bookmarkFindCmd = &cobra.Command{
 
 		err = BNTPBackend.Unmarshallers[Format].Unmarshall(filter, FilterRaw)
 		if err != nil {
-			return err
+			return EntityMarshallingError{Inner: err}
 		}
 
 		result, err = BNTPBackend.BookmarkManager.GetFirstWhere(context.Background(), filter)
@@ -302,7 +302,7 @@ var bookmarkFindCmd = &cobra.Command{
 
 		output, err = BNTPBackend.Marshallers[Format].Marshall(result)
 		if err != nil {
-			return err
+			return EntityMarshallingError{Inner: err}
 		}
 
 		fmt.Fprintln(RootCmd.OutOrStdout(), output)
@@ -332,7 +332,7 @@ var bookmarkCountCmd = &cobra.Command{
 		} else {
 			err = BNTPBackend.Unmarshallers[Format].Unmarshall(filter, FilterRaw)
 			if err != nil {
-				return err
+				return EntityMarshallingError{Inner: err}
 			}
 
 			count, err = BNTPBackend.BookmarkManager.CountWhere(context.Background(), filter)
@@ -364,7 +364,7 @@ var bookmarkDoesExistCmd = &cobra.Command{
 		if FilterRaw == "" {
 			err = BNTPBackend.Unmarshallers[Format].Unmarshall(bookmark, args[0])
 			if err != nil {
-				return err
+				return EntityMarshallingError{Inner: err}
 			}
 
 			doesExist, err = BNTPBackend.BookmarkManager.DoesExist(context.Background(), bookmark)
@@ -374,7 +374,7 @@ var bookmarkDoesExistCmd = &cobra.Command{
 		} else {
 			err = BNTPBackend.Unmarshallers[Format].Unmarshall(filter, FilterRaw)
 			if err != nil {
-				return err
+				return EntityMarshallingError{Inner: err}
 			}
 
 			doesExist, err = BNTPBackend.BookmarkManager.DoesExistWhere(context.Background(), filter)

@@ -59,7 +59,7 @@ var tagAddCmd = &cobra.Command{
 
 			err := BNTPBackend.Unmarshallers[Format].Unmarshall(tags[i], arg)
 			if err != nil {
-				return err
+				return EntityMarshallingError{Inner: err}
 			}
 		}
 
@@ -102,7 +102,7 @@ var tagReplaceCmd = &cobra.Command{
 		for i, tagOut := range tags {
 			err := BNTPBackend.Unmarshallers[Format].Unmarshall(tagOut, args[i])
 			if err != nil {
-				return err
+				return EntityMarshallingError{Inner: err}
 			}
 		}
 
@@ -130,7 +130,7 @@ var tagUpsertCmd = &cobra.Command{
 		for i, tagOut := range tags {
 			err := BNTPBackend.Unmarshallers[Format].Unmarshall(tagOut, args[i])
 			if err != nil {
-				return err
+				return EntityMarshallingError{Inner: err}
 			}
 		}
 
@@ -163,13 +163,13 @@ var tagEditCmd = &cobra.Command{
 		for i, tagOut := range tags {
 			err := BNTPBackend.Unmarshallers[Format].Unmarshall(tagOut, args[i])
 			if err != nil {
-				return err
+				return EntityMarshallingError{Inner: err}
 			}
 		}
 
 		err = BNTPBackend.Unmarshallers[Format].Unmarshall(updater, UpdaterRaw)
 		if err != nil {
-			return err
+			return EntityMarshallingError{Inner: err}
 		}
 		if FilterRaw == "" {
 			err := BNTPBackend.TagManager.Update(context.Background(), tags, updater)
@@ -181,7 +181,7 @@ var tagEditCmd = &cobra.Command{
 		} else {
 			err = BNTPBackend.Unmarshallers[Format].Unmarshall(filter, FilterRaw)
 			if err != nil {
-				return err
+				return EntityMarshallingError{Inner: err}
 			}
 
 			numAffectedRecords, err = BNTPBackend.TagManager.UpdateWhere(context.Background(), filter, updater)
@@ -247,7 +247,7 @@ var tagListCmd = &cobra.Command{
 		} else {
 			err = BNTPBackend.Unmarshallers[Format].Unmarshall(filter, FilterRaw)
 			if err != nil {
-				return err
+				return EntityMarshallingError{Inner: err}
 			}
 
 			tags, err = BNTPBackend.TagManager.GetWhere(context.Background(), filter)
@@ -258,7 +258,7 @@ var tagListCmd = &cobra.Command{
 
 		output, err = BNTPBackend.Marshallers[Format].Marshall(tags)
 		if err != nil {
-			return err
+			return EntityMarshallingError{Inner: err}
 		}
 
 		fmt.Fprintln(RootCmd.OutOrStdout(), output)
@@ -287,7 +287,7 @@ var tagRemoveCmd = &cobra.Command{
 			for i, tagOut := range tags {
 				err := BNTPBackend.Unmarshallers[Format].Unmarshall(tagOut, args[i])
 				if err != nil {
-					return err
+					return EntityMarshallingError{Inner: err}
 				}
 			}
 
@@ -300,7 +300,7 @@ var tagRemoveCmd = &cobra.Command{
 		} else {
 			err = BNTPBackend.Unmarshallers[Format].Unmarshall(filter, FilterRaw)
 			if err != nil {
-				return err
+				return EntityMarshallingError{Inner: err}
 			}
 
 			numAffectedRecords, err = BNTPBackend.TagManager.DeleteWhere(context.Background(), filter)
@@ -332,7 +332,7 @@ var tagFindCmd = &cobra.Command{
 
 		err = BNTPBackend.Unmarshallers[Format].Unmarshall(filter, FilterRaw)
 		if err != nil {
-			return err
+			return EntityMarshallingError{Inner: err}
 		}
 
 		result, err = BNTPBackend.TagManager.GetFirstWhere(context.Background(), filter)
@@ -342,7 +342,7 @@ var tagFindCmd = &cobra.Command{
 
 		output, err = BNTPBackend.Marshallers[Format].Marshall(result)
 		if err != nil {
-			return err
+			return EntityMarshallingError{Inner: err}
 		}
 
 		fmt.Fprintln(RootCmd.OutOrStdout(), output)
@@ -373,7 +373,7 @@ var tagCountCmd = &cobra.Command{
 		} else {
 			err = BNTPBackend.Unmarshallers[Format].Unmarshall(filter, FilterRaw)
 			if err != nil {
-				return err
+				return EntityMarshallingError{Inner: err}
 			}
 
 			count, err = BNTPBackend.TagManager.CountWhere(context.Background(), filter)
@@ -406,7 +406,7 @@ var tagDoesExistCmd = &cobra.Command{
 		if FilterRaw == "" {
 			err = BNTPBackend.Unmarshallers[Format].Unmarshall(tag, args[0])
 			if err != nil {
-				return err
+				return EntityMarshallingError{Inner: err}
 			}
 
 			doesExist, err = BNTPBackend.TagManager.DoesExist(context.Background(), tag)
@@ -416,7 +416,7 @@ var tagDoesExistCmd = &cobra.Command{
 		} else {
 			err = BNTPBackend.Unmarshallers[Format].Unmarshall(filter, FilterRaw)
 			if err != nil {
-				return err
+				return EntityMarshallingError{Inner: err}
 			}
 
 			doesExist, err = BNTPBackend.TagManager.DoesExistWhere(context.Background(), filter)
