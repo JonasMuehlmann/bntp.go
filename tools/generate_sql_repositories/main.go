@@ -28,6 +28,7 @@ import (
 	mysqlRepository "github.com/JonasMuehlmann/bntp.go/model/repository/mysql"
 	psqlRepository "github.com/JonasMuehlmann/bntp.go/model/repository/psql"
 	sqlite3Repository "github.com/JonasMuehlmann/bntp.go/model/repository/sqlite3"
+	"github.com/JonasMuehlmann/goaoi/functional"
 
 	"github.com/JonasMuehlmann/bntp.go/tools"
 	"github.com/JonasMuehlmann/goaoi"
@@ -92,7 +93,7 @@ func main() {
 
 			entityStruct := tools.NewStructModel(entity.Struct)
 
-			entityStruct.StructFields, err = goaoi.TakeIfSlice(entityStruct.StructFields, goaoi.NegateUnaryPredicate(func(s tools.StructField) bool { return s.FieldName == "R" || s.FieldName == "L" }))
+			entityStruct.StructFields, err = goaoi.TakeIfSlice(entityStruct.StructFields, functional.NegateUnaryPredicate(func(s tools.StructField) bool { return s.FieldName == "R" || s.FieldName == "L" }))
 			if err != nil {
 				panic(err)
 			}

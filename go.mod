@@ -3,7 +3,7 @@ module github.com/JonasMuehlmann/bntp.go
 go 1.18
 
 require (
-	github.com/JonasMuehlmann/goaoi v0.7.0
+	github.com/JonasMuehlmann/goaoi v1.7.0
 	github.com/barweiss/go-tuple v1.0.2
 	github.com/friendsofgo/errors v0.9.2
 	github.com/ghodss/yaml v1.0.0

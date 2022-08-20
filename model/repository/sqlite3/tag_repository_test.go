@@ -95,7 +95,7 @@ func TestSQLTagRepositoryAddTest(t *testing.T) {
 			if test.err == nil {
 				assert.NoErrorf(t, err, test.name)
 			} else {
-				assert.ErrorAsf(t, err, &test.err, test.name)
+				assert.ErrorIs(t, err, test.err, test.name)
 			}
 		})
 	}

@@ -12,6 +12,7 @@ import (
 	_ "embed"
 
 	"github.com/JonasMuehlmann/goaoi"
+	"github.com/JonasMuehlmann/goaoi/functional"
 	"github.com/google/uuid"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/stretchr/testify/assert"
@@ -38,7 +39,7 @@ func GetDB() (*sql.DB, error) {
 
 	parentDirs := strings.Split(cwd, string(os.PathSeparator))
 
-	iProjectRoot, err := goaoi.FindIfSlice(parentDirs, goaoi.AreEqualPartial("bntp.go"))
+	iProjectRoot, err := goaoi.FindIfSlice(parentDirs, functional.AreEqualPartial("bntp.go"))
 	if err != nil {
 		return nil, err
 	}

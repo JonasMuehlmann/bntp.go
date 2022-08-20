@@ -23,11 +23,12 @@ package libdocuments
 import (
 	"github.com/JonasMuehlmann/bntp.go/model/domain"
 	"github.com/JonasMuehlmann/goaoi"
+	"github.com/JonasMuehlmann/goaoi/functional"
 )
 
 func GetAddedLinks(old *domain.Document, new *domain.Document) (addedLinkIDs []int64, err error) {
 	predicate := func(oldLink int64) bool {
-		_, err := goaoi.FindIfSlice(new.LinkedDocumentIDs, goaoi.AreEqualPartial(oldLink))
+		_, err := goaoi.FindIfSlice(new.LinkedDocumentIDs, functional.AreEqualPartial(oldLink))
 
 		return err == nil
 	}
@@ -39,7 +40,7 @@ func GetAddedLinks(old *domain.Document, new *domain.Document) (addedLinkIDs []i
 
 func GetRemovedLinks(old *domain.Document, new *domain.Document) (removedLinkIDs []int64, err error) {
 	predicate := func(oldLink int64) bool {
-		_, err := goaoi.FindIfSlice(new.LinkedDocumentIDs, goaoi.AreEqualPartial(oldLink))
+		_, err := goaoi.FindIfSlice(new.LinkedDocumentIDs, functional.AreEqualPartial(oldLink))
 
 		return err == nil
 	}
@@ -51,7 +52,7 @@ func GetRemovedLinks(old *domain.Document, new *domain.Document) (removedLinkIDs
 
 func GetAddedBacklinks(old *domain.Document, new *domain.Document) (addedBacklinkIDs []int64, err error) {
 	predicate := func(oldBacklink int64) bool {
-		_, err := goaoi.FindIfSlice(new.BacklinkedDocumentsIDs, goaoi.AreEqualPartial(oldBacklink))
+		_, err := goaoi.FindIfSlice(new.BacklinkedDocumentsIDs, functional.AreEqualPartial(oldBacklink))
 
 		return err == nil
 	}
@@ -62,7 +63,7 @@ func GetAddedBacklinks(old *domain.Document, new *domain.Document) (addedBacklin
 
 func GetRemovedBacklinks(old *domain.Document, new *domain.Document) (removedBacklinkIDs []int64, err error) {
 	predicate := func(oldBacklink int64) bool {
-		_, err := goaoi.FindIfSlice(new.BacklinkedDocumentsIDs, goaoi.AreEqualPartial(oldBacklink))
+		_, err := goaoi.FindIfSlice(new.BacklinkedDocumentsIDs, functional.AreEqualPartial(oldBacklink))
 
 		return err == nil
 	}
@@ -73,7 +74,7 @@ func GetRemovedBacklinks(old *domain.Document, new *domain.Document) (removedBac
 
 func GetAddedTags(old *domain.Document, new *domain.Document) (addedTagIDs []int64, err error) {
 	predicate := func(oldTag int64) bool {
-		_, err := goaoi.FindIfSlice(new.TagIDs, goaoi.AreEqualPartial(oldTag))
+		_, err := goaoi.FindIfSlice(new.TagIDs, functional.AreEqualPartial(oldTag))
 
 		return err == nil
 	}
@@ -84,7 +85,7 @@ func GetAddedTags(old *domain.Document, new *domain.Document) (addedTagIDs []int
 
 func GetRemovedTags(old *domain.Document, new *domain.Document) (removedTagIDs []int64, err error) {
 	predicate := func(oldTag int64) bool {
-		_, err := goaoi.FindIfSlice(new.TagIDs, goaoi.AreEqualPartial(oldTag))
+		_, err := goaoi.FindIfSlice(new.TagIDs, functional.AreEqualPartial(oldTag))
 
 		return err == nil
 	}

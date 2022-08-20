@@ -88,6 +88,10 @@ github.com/JonasMuehlmann/datastructures.go v0.23.0 h1:NlRwsA6zuNrvCiGe/88z+UTIs
 github.com/JonasMuehlmann/datastructures.go v0.23.0/go.mod h1:l+PPRcCt4npIvdf1Oo8z6n8f53EjdcE3TFK8NWEp/e8=
 github.com/JonasMuehlmann/goaoi v0.7.0 h1:QIchegrI+ejIXE50V1WiSWitR+aHg252snNX/6kTzLI=
 github.com/JonasMuehlmann/goaoi v0.7.0/go.mod h1:zWMeRpi4lf9Mthsln5ELfD+O8FI43J3/86GfAuRErPc=
+github.com/JonasMuehlmann/goaoi v1.6.0 h1:SX2Xo/N+6yOO1sxoE5QGr26KF08bt9HNfIFtDextEKo=
+github.com/JonasMuehlmann/goaoi v1.6.0/go.mod h1:7/yRvbw597eAG2BE5kjxRbcVVFM+/2g6HP5yf/Oux4w=
+github.com/JonasMuehlmann/goaoi v1.7.0 h1:WDpuA7wXnhZe3fxqfXamIVT+qxPsicXMLO0F3ip78UU=
+github.com/JonasMuehlmann/goaoi v1.7.0/go.mod h1:7/yRvbw597eAG2BE5kjxRbcVVFM+/2g6HP5yf/Oux4w=
 github.com/JonasMuehlmann/optional.go v1.5.0 h1:uDmWuZt4RMZTfI/Votov+fOJ8Ei2ThEl4xv+GoOabrA=
 github.com/JonasMuehlmann/optional.go v1.5.0/go.mod h1:qaGtJoekVek9S83iuNHuQganl6DkPw1oFwOWOzsYcFw=
 github.com/Masterminds/goutils v1.1.1/go.mod h1:8cTjp+g8YejhMuvIA5y2vz3BpJxksy863GQaJW2MFNU=
