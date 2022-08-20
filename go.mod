@@ -36,6 +36,7 @@ require (
 	github.com/Azure/go-autorest/tracing v0.6.0 // indirect
 	github.com/Azure/go-ntlmssp v0.0.0-20200615164410-66371956d46c // indirect
 	github.com/JonasMuehlmann/datastructures.go v0.23.0 // indirect
+	github.com/JonasMuehlmann/drop-return-values.go v1.0.0 // indirect
 	github.com/Max-Sum/base32768 v0.0.0-20191205131208-7937843c71d5 // indirect
 	github.com/Microsoft/go-winio v0.5.1 // indirect
 	github.com/StackExchange/wmi v1.2.1 // indirect

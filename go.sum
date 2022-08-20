@@ -86,6 +86,10 @@ github.com/DATA-DOG/go-sqlmock v1.4.1 h1:ThlnYciV1iM/V0OSF/dtkqWb6xo5qITT1TJBG1M
 github.com/DATA-DOG/go-sqlmock v1.4.1/go.mod h1:f/Ixk793poVmq4qj/V1dPUg2JEAKC73Q5eFN3EC/SaM=
 github.com/JonasMuehlmann/datastructures.go v0.23.0 h1:NlRwsA6zuNrvCiGe/88z+UTIsOEAU41h37gf1usl58k=
 github.com/JonasMuehlmann/datastructures.go v0.23.0/go.mod h1:l+PPRcCt4npIvdf1Oo8z6n8f53EjdcE3TFK8NWEp/e8=
+github.com/JonasMuehlmann/drop-return-values.go v0.0.0-20220820164557-cafc348cfba6 h1:fBEYBb/47X33U/IS2UXscuwbjITrnHNP1h978WzwJkk=
+github.com/JonasMuehlmann/drop-return-values.go v0.0.0-20220820164557-cafc348cfba6/go.mod h1:K6Hdj3GBU7v6IUP4k/X+e6AN0KzCo6iyESps1Llfq08=
+github.com/JonasMuehlmann/drop-return-values.go v1.0.0 h1:kNB/jnBofwOZTlLcv2A9p9LzozOE39UXMMIHkvvdhCg=
+github.com/JonasMuehlmann/drop-return-values.go v1.0.0/go.mod h1:ROENKvnPXms0S0089lPJBzsC0hTff92pxKDDEZusunk=
 github.com/JonasMuehlmann/goaoi v0.7.0 h1:QIchegrI+ejIXE50V1WiSWitR+aHg252snNX/6kTzLI=
 github.com/JonasMuehlmann/goaoi v0.7.0/go.mod h1:zWMeRpi4lf9Mthsln5ELfD+O8FI43J3/86GfAuRErPc=
 github.com/JonasMuehlmann/goaoi v1.6.0 h1:SX2Xo/N+6yOO1sxoE5QGr26KF08bt9HNfIFtDextEKo=
