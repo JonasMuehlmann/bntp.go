@@ -137,17 +137,21 @@ func (err ReferenceToNonExistentDependencyError) Unwrap() error {
 }
 
 func (err ReferenceToNonExistentDependencyError) Is(other error) bool {
-	var thisZero ReferenceToNonExistentDependencyError
-	return other.(ReferenceToNonExistentDependencyError) != thisZero
+	switch other.(type) {
+	case ReferenceToNonExistentDependencyError:
+		return true
+	default:
+		return false
+	}
 }
 
 func (err ReferenceToNonExistentDependencyError) As(target any) bool {
-	var thisZero ReferenceToNonExistentDependencyError
-	isTarget := target.(ReferenceToNonExistentDependencyError) != thisZero
-
-	if isTarget {
+	switch target.(type) {
+	case ReferenceToNonExistentDependencyError:
 		reflect.Indirect(reflect.ValueOf(target)).Set(reflect.ValueOf(err))
+		return true
+	default:
+		return false
 	}
 
-	return isTarget
 }

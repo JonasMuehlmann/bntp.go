@@ -32,6 +32,7 @@ import (
 	"time"
 
 	"github.com/JonasMuehlmann/goaoi"
+	"github.com/JonasMuehlmann/goaoi/functional"
 	log "github.com/sirupsen/logrus"
 	"github.com/sirupsen/logrus/hooks/writer"
 )
@@ -59,6 +60,25 @@ func (err NilInputError) Error() string {
 	return "Input contains a nil pointer in parameter or struct field " + err.BadFieldOrParameter
 }
 
+func (err NilInputError) Is(other error) bool {
+	switch other.(type) {
+	case NilInputError:
+		return true
+	default:
+		return false
+	}
+}
+
+func (err NilInputError) As(target any) bool {
+	switch target.(type) {
+	case NilInputError:
+		reflect.Indirect(reflect.ValueOf(target)).Set(reflect.ValueOf(err))
+		return true
+	default:
+		return false
+	}
+}
+
 type IneffectiveOperationError struct {
 	Inner error
 }
@@ -72,19 +92,22 @@ func (err IneffectiveOperationError) Unwrap() error {
 }
 
 func (err IneffectiveOperationError) Is(other error) bool {
-	var thisZero IneffectiveOperationError
-	return other.(IneffectiveOperationError) != thisZero
+	switch other.(type) {
+	case IneffectiveOperationError:
+		return true
+	default:
+		return false
+	}
 }
 
 func (err IneffectiveOperationError) As(target any) bool {
-	var thisZero IneffectiveOperationError
-	isTarget := target.(IneffectiveOperationError) != thisZero
-
-	if isTarget {
+	switch target.(type) {
+	case IneffectiveOperationError:
 		reflect.Indirect(reflect.ValueOf(target)).Set(reflect.ValueOf(err))
+		return true
+	default:
+		return false
 	}
-
-	return isTarget
 }
 
 type DuplicateInsertionError struct {
@@ -100,19 +123,22 @@ func (err DuplicateInsertionError) Unwrap() error {
 }
 
 func (err DuplicateInsertionError) Is(other error) bool {
-	var thisZero DuplicateInsertionError
-	return other.(DuplicateInsertionError) != thisZero
+	switch other.(type) {
+	case DuplicateInsertionError:
+		return true
+	default:
+		return false
+	}
 }
 
 func (err DuplicateInsertionError) As(target any) bool {
-	var thisZero DuplicateInsertionError
-	isTarget := target.(DuplicateInsertionError) != thisZero
-
-	if isTarget {
+	switch target.(type) {
+	case DuplicateInsertionError:
 		reflect.Indirect(reflect.ValueOf(target)).Set(reflect.ValueOf(err))
+		return true
+	default:
+		return false
 	}
-
-	return isTarget
 }
 
 func NewDefaultLogger(logFile string, consoleLogLevel log.Level, fileLogLevel log.Level, stderr io.Writer) *log.Logger {
@@ -143,8 +169,8 @@ func NewDefaultLogger(logFile string, consoleLogLevel log.Level, fileLogLevel lo
 	mainLogger.SetReportCaller(true)
 
 	// Log levels are ordered from most to least serve
-	consoleLogLevels, _ := goaoi.TakeWhileSlice(log.AllLevels, goaoi.IsLessThanEqualPartial(consoleLogLevel))
-	fileLoglevels, _ := goaoi.TakeWhileSlice(log.AllLevels, goaoi.IsLessThanEqualPartial(fileLogLevel))
+	consoleLogLevels, _ := goaoi.TakeWhileSlice(log.AllLevels, functional.IsLessThanEqualPartial(consoleLogLevel))
+	fileLoglevels, _ := goaoi.TakeWhileSlice(log.AllLevels, functional.IsLessThanEqualPartial(fileLogLevel))
 
 	mainLogger.AddHook(&ConsoleLoggerHook{
 		Formatter: consoleFormatter,
