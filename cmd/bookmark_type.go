@@ -22,8 +22,8 @@ package cmd
 
 import (
 	"context"
-	"os"
 
+	"github.com/JonasMuehlmann/bntp.go/internal/helper"
 	"github.com/spf13/cobra"
 )
 
@@ -31,11 +31,12 @@ var bookmarkTypeCmd = &cobra.Command{
 	Use:   "type",
 	Short: "Manage types of bntp bookmarks",
 	Long:  `A longer description`,
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) == 0 {
-			cmd.Help()
-			os.Exit(0)
+			return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
 		}
+
+		return nil
 	},
 }
 
@@ -44,16 +45,17 @@ var bookmarkTypeAddCmd = &cobra.Command{
 	Short: "Add bntp bookmark types",
 	Long:  `A longer description`,
 	Args:  cobra.ArbitraryArgs,
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) == 0 {
-			cmd.Help()
-			os.Exit(0)
+			return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
 		}
 
 		err := BNTPBackend.BookmarkManager.AddType(context.Background(), args)
 		if err != nil {
-			panic(err)
+			return err
 		}
+
+		return nil
 	},
 }
 
@@ -62,16 +64,17 @@ var bookmarkTypeEditCmd = &cobra.Command{
 	Short: "Change a bntp bookmark type",
 	Long:  `A longer description`,
 	Args:  cobra.ExactArgs(2),
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) == 0 {
-			cmd.Help()
-			os.Exit(0)
+			return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
 		}
 
 		err := BNTPBackend.BookmarkManager.UpdateType(context.Background(), args[0], args[1])
 		if err != nil {
-			panic(err)
+			return err
 		}
+
+		return nil
 	},
 }
 
@@ -80,15 +83,16 @@ var bookmarkTypeRemoveCmd = &cobra.Command{
 	Short: "Remove bntp bookmark types",
 	Long:  `A longer description`,
 	Args:  cobra.ArbitraryArgs,
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) == 0 {
-			cmd.Help()
-			os.Exit(0)
+			return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
 		}
 
 		err := BNTPBackend.BookmarkManager.DeleteType(context.Background(), args)
 		if err != nil {
-			panic(err)
+			return err
 		}
+
+		return nil
 	},
 }

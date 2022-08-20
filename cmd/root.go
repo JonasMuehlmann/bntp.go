@@ -22,10 +22,11 @@ package cmd
 
 import (
 	"fmt"
-	"os"
+	"io"
 
 	"github.com/JonasMuehlmann/bntp.go/bntp/backend"
 	"github.com/JonasMuehlmann/bntp.go/internal/config"
+	"github.com/JonasMuehlmann/bntp.go/internal/helper"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -33,25 +34,33 @@ import (
 )
 
 var BNTPBackend *backend.Backend
+var stderrToUse io.Writer
 
 var RootCmd = &cobra.Command{
 	Use:   "bntp.go",
 	Short: "bntp.go - the all in one productivity system.",
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) == 0 {
-			cmd.Help()
-			os.Exit(0)
+			return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
 		}
+
+		return nil
 	},
 }
 
-func Execute(backend *backend.Backend) {
+func Execute(backend *backend.Backend, stderr io.Writer) error {
 	BNTPBackend = backend
 
+	RootCmd.SilenceUsage = true
+	RootCmd.SilenceErrors = true
+
+	stderrToUse = stderr
+
 	err := RootCmd.Execute()
-	if err != nil {
-		os.Exit(1)
-	}
+
+	log.Error(err)
+
+	return err
 }
 
 func init() {
@@ -69,7 +78,7 @@ func init() {
 		fmt.Sprintf("The minimum log level to log to the log files (Allowed values: %v)", log.AllLevels),
 	)
 
-	cobra.OnInitialize(func() { config.InitConfig(); BNTPBackend = config.NewBackendFromConfig() }, bindFlagsToConfig)
+	cobra.OnInitialize(func() { config.InitConfig(stderrToUse); BNTPBackend = config.NewBackendFromConfig() }, bindFlagsToConfig)
 }
 
 func bindFlagsToConfig() {

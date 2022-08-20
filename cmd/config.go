@@ -23,9 +23,9 @@ package cmd
 import (
 	"fmt"
 	"log"
-	"os"
 
 	"github.com/JonasMuehlmann/bntp.go/internal/config"
+	"github.com/JonasMuehlmann/bntp.go/internal/helper"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -34,21 +34,24 @@ var configCmd = &cobra.Command{
 	Use:   "config",
 	Short: "Manage bntp configuration",
 	Long:  `A longer description`,
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) == 0 {
-			cmd.Help()
-			os.Exit(0)
+			return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
 		}
+
+		return nil
 	},
 }
 var configPathsCmd = &cobra.Command{
 	Use:   "paths",
 	Short: "List the search paths for config files",
 	Long:  `A longer description`,
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		for _, extension := range config.ConfigSearchPaths {
-			fmt.Println(extension)
+			fmt.Fprintln(RootCmd.OutOrStdout(), extension)
 		}
+
+		return nil
 	},
 }
 
@@ -56,10 +59,12 @@ var configExtensionsCmd = &cobra.Command{
 	Use:   "extensions",
 	Short: "List the allowed extensions for config files",
 	Long:  `A longer description`,
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		for _, extension := range viper.SupportedExts {
-			fmt.Println(extension)
+			fmt.Fprintln(RootCmd.OutOrStdout(), extension)
 		}
+
+		return nil
 	},
 }
 
@@ -67,8 +72,10 @@ var configBaseNameCmd = &cobra.Command{
 	Use:   "base-name",
 	Short: "Show the base name expected for config files",
 	Long:  `A longer description`,
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println(config.ConfigFileBaseName)
+	RunE: func(cmd *cobra.Command, args []string) error {
+		fmt.Fprintln(RootCmd.OutOrStdout(), config.ConfigFileBaseName)
+
+		return nil
 	},
 }
 
@@ -77,11 +84,13 @@ var exportConfigCmd = &cobra.Command{
 	Short: "Export the current config state",
 	Long:  `A longer description`,
 	Args:  cobra.ExactArgs(1),
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		err := viper.WriteConfigAs(args[0])
 		if err != nil {
 			log.Fatal(err)
 		}
+
+		return nil
 	},
 }
 

@@ -21,20 +21,25 @@
 package cmd
 
 import (
-	"os"
+	"context"
+	"fmt"
 
+	"github.com/JonasMuehlmann/bntp.go/internal/helper"
+	"github.com/JonasMuehlmann/bntp.go/model/domain"
 	"github.com/spf13/cobra"
+	"golang.org/x/exp/slices"
 )
 
 var tagCmd = &cobra.Command{
 	Use:   "tag",
 	Short: "Manage tags available for bntp entities",
 	Long:  `A longer description`,
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) == 0 {
-			cmd.Help()
-			os.Exit(0)
+			return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
 		}
+
+		return nil
 	},
 }
 
@@ -43,11 +48,27 @@ var tagAddCmd = &cobra.Command{
 	Short: "Add new bntp tags",
 	Long:  `A longer description`,
 	Args:  cobra.ArbitraryArgs,
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) == 0 {
-			cmd.Help()
-			os.Exit(0)
+			return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
 		}
+		tags := make([]*domain.Tag, len(args))
+
+		for i, arg := range args {
+			tags[i] = new(domain.Tag)
+
+			err := BNTPBackend.Unmarshallers[Format].Unmarshall(tags[i], arg)
+			if err != nil {
+				return err
+			}
+		}
+
+		err := BNTPBackend.TagManager.Add(context.Background(), tags)
+		if err != nil {
+			return err
+		}
+
+		return nil
 	},
 }
 
@@ -57,24 +78,121 @@ var tagAmbiguousCmd = &cobra.Command{
 	Short: "Check if bntp tag's leafs are ambiguous",
 	Long:  `A longer description`,
 	Args:  cobra.ArbitraryArgs,
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) == 0 {
-			cmd.Help()
-			os.Exit(0)
+			return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
 		}
+
+		return nil
+	},
+}
+
+var tagReplaceCmd = &cobra.Command{
+	Use:   "replace MODEL...",
+	Short: "Replace a bntp tag with an updated version",
+	Long:  `A longer description`,
+	Args:  cobra.ArbitraryArgs,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		if len(args) == 0 {
+			return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
+		}
+
+		tags := make([]*domain.Tag, 0, len(args))
+
+		for i, tagOut := range tags {
+			err := BNTPBackend.Unmarshallers[Format].Unmarshall(tagOut, args[i])
+			if err != nil {
+				return err
+			}
+		}
+
+		err := BNTPBackend.TagManager.Replace(context.Background(), tags)
+		if err != nil {
+			return err
+		}
+
+		return nil
+	},
+}
+
+var tagUpsertCmd = &cobra.Command{
+	Use:   "upsert MODEL...",
+	Short: "Add or replace a bntp tag",
+	Long:  `A longer description`,
+	Args:  cobra.ArbitraryArgs,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		if len(args) == 0 {
+			return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
+		}
+
+		tags := make([]*domain.Tag, 0, len(args))
+
+		for i, tagOut := range tags {
+			err := BNTPBackend.Unmarshallers[Format].Unmarshall(tagOut, args[i])
+			if err != nil {
+				return err
+			}
+		}
+
+		err := BNTPBackend.TagManager.Upsert(context.Background(), tags)
+		if err != nil {
+			return err
+		}
+
+		return nil
 	},
 }
 
 var tagEditCmd = &cobra.Command{
-	Use:   "edit OLD_NAME NEW_NAME",
-	Short: "Change a bntp tag",
+	Use:   "edit MODEL...",
+	Short: "Edit a bntp tag",
 	Long:  `A longer description`,
-	Args:  cobra.ExactArgs(2),
-	Run: func(cmd *cobra.Command, args []string) {
+	Args:  cobra.ArbitraryArgs,
+	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) == 0 {
-			cmd.Help()
-			os.Exit(0)
+			return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
 		}
+
+		var err error
+		var filter *domain.TagFilter
+		var updater *domain.TagUpdater
+		var numAffectedRecords int64
+
+		tags := make([]*domain.Tag, 0, len(args))
+
+		for i, tagOut := range tags {
+			err := BNTPBackend.Unmarshallers[Format].Unmarshall(tagOut, args[i])
+			if err != nil {
+				return err
+			}
+		}
+
+		err = BNTPBackend.Unmarshallers[Format].Unmarshall(updater, UpdaterRaw)
+		if err != nil {
+			return err
+		}
+		if FilterRaw == "" {
+			err := BNTPBackend.TagManager.Update(context.Background(), tags, updater)
+			if err != nil {
+				return err
+			}
+
+			numAffectedRecords = int64(len(args))
+		} else {
+			err = BNTPBackend.Unmarshallers[Format].Unmarshall(filter, FilterRaw)
+			if err != nil {
+				return err
+			}
+
+			numAffectedRecords, err = BNTPBackend.TagManager.UpdateWhere(context.Background(), filter, updater)
+			if err != nil {
+				return err
+			}
+		}
+
+		fmt.Fprintln(RootCmd.OutOrStdout(), numAffectedRecords)
+
+		return nil
 	},
 }
 
@@ -83,11 +201,12 @@ var tagExportCmd = &cobra.Command{
 	Short: "Export bntp tags",
 	Long:  `A longer description`,
 	Args:  cobra.ExactArgs(1),
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) == 0 {
-			cmd.Help()
-			os.Exit(0)
+			return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
 		}
+
+		return nil
 	},
 }
 
@@ -96,11 +215,12 @@ var tagImportCmd = &cobra.Command{
 	Short: "Import bntp tags",
 	Long:  `A longer description`,
 	Args:  cobra.ExactArgs(1),
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) == 0 {
-			cmd.Help()
-			os.Exit(0)
+			return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
 		}
+
+		return nil
 	},
 }
 
@@ -109,11 +229,41 @@ var tagListCmd = &cobra.Command{
 	Short: "List bntp tags",
 	Long:  `A longer description`,
 	Args:  cobra.NoArgs,
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) == 0 {
-			cmd.Help()
-			os.Exit(0)
+			return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
 		}
+
+		var tags []*domain.Tag
+		var filter *domain.TagFilter
+		var output string
+		var err error
+
+		if FilterRaw == "" {
+			tags, err = BNTPBackend.TagManager.GetAll(context.Background())
+			if err != nil {
+				return err
+			}
+		} else {
+			err = BNTPBackend.Unmarshallers[Format].Unmarshall(filter, FilterRaw)
+			if err != nil {
+				return err
+			}
+
+			tags, err = BNTPBackend.TagManager.GetWhere(context.Background(), filter)
+			if err != nil {
+				return err
+			}
+		}
+
+		output, err = BNTPBackend.Marshallers[Format].Marshall(tags)
+		if err != nil {
+			return err
+		}
+
+		fmt.Fprintln(RootCmd.OutOrStdout(), output)
+
+		return nil
 	},
 }
 
@@ -122,11 +272,162 @@ var tagRemoveCmd = &cobra.Command{
 	Short: "Remove bntp tags",
 	Long:  `A longer description`,
 	Args:  cobra.ArbitraryArgs,
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) == 0 {
-			cmd.Help()
-			os.Exit(0)
+			return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
 		}
+
+		var filter *domain.TagFilter
+		var err error
+		var numAffectedRecords int64
+
+		if FilterRaw == "" {
+			tags := make([]*domain.Tag, 0, len(args))
+
+			for i, tagOut := range tags {
+				err := BNTPBackend.Unmarshallers[Format].Unmarshall(tagOut, args[i])
+				if err != nil {
+					return err
+				}
+			}
+
+			err = BNTPBackend.TagManager.Delete(context.Background(), tags)
+			if err != nil {
+				return err
+			}
+
+			numAffectedRecords = int64(len(args))
+		} else {
+			err = BNTPBackend.Unmarshallers[Format].Unmarshall(filter, FilterRaw)
+			if err != nil {
+				return err
+			}
+
+			numAffectedRecords, err = BNTPBackend.TagManager.DeleteWhere(context.Background(), filter)
+			if err != nil {
+				return err
+			}
+		}
+
+		fmt.Fprintln(RootCmd.OutOrStdout(), numAffectedRecords)
+
+		return nil
+	},
+}
+
+var tagFindCmd = &cobra.Command{
+	Use:   "find-first",
+	Short: "Find the first tag matching a filter",
+	Long:  `A longer description`,
+	Args:  cobra.NoArgs,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		if len(args) == 0 {
+			return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
+		}
+
+		var filter *domain.TagFilter
+		var err error
+		var result *domain.Tag
+		var output string
+
+		err = BNTPBackend.Unmarshallers[Format].Unmarshall(filter, FilterRaw)
+		if err != nil {
+			return err
+		}
+
+		result, err = BNTPBackend.TagManager.GetFirstWhere(context.Background(), filter)
+		if err != nil {
+			return err
+		}
+
+		output, err = BNTPBackend.Marshallers[Format].Marshall(result)
+		if err != nil {
+			return err
+		}
+
+		fmt.Fprintln(RootCmd.OutOrStdout(), output)
+
+		return nil
+	},
+}
+
+var tagCountCmd = &cobra.Command{
+	Use:   "count",
+	Short: "Manage bntp tags",
+	Long:  `A longer description`,
+	Args:  cobra.NoArgs,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		if len(args) == 0 {
+			return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
+		}
+
+		var filter *domain.TagFilter
+		var count int64
+		var err error
+
+		if FilterRaw == "" {
+			count, err = BNTPBackend.TagManager.CountAll(context.Background())
+			if err != nil {
+				return err
+			}
+		} else {
+			err = BNTPBackend.Unmarshallers[Format].Unmarshall(filter, FilterRaw)
+			if err != nil {
+				return err
+			}
+
+			count, err = BNTPBackend.TagManager.CountWhere(context.Background(), filter)
+			if err != nil {
+				return err
+			}
+		}
+
+		fmt.Fprintln(RootCmd.OutOrStdout(), count)
+
+		return nil
+	},
+}
+
+var tagDoesExistCmd = &cobra.Command{
+	Use:   "does-exist [MODEL]",
+	Short: "Manage bntp tags",
+	Long:  `A longer description`,
+	Args:  cobra.RangeArgs(0, 1),
+	RunE: func(cmd *cobra.Command, args []string) error {
+		if len(args) == 0 {
+			return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
+		}
+
+		var filter *domain.TagFilter
+		var err error
+		var tag *domain.Tag
+		var doesExist bool
+
+		if FilterRaw == "" {
+			err = BNTPBackend.Unmarshallers[Format].Unmarshall(tag, args[0])
+			if err != nil {
+				return err
+			}
+
+			doesExist, err = BNTPBackend.TagManager.DoesExist(context.Background(), tag)
+			if err != nil {
+				return err
+			}
+		} else {
+			err = BNTPBackend.Unmarshallers[Format].Unmarshall(filter, FilterRaw)
+			if err != nil {
+				return err
+			}
+
+			doesExist, err = BNTPBackend.TagManager.DoesExistWhere(context.Background(), filter)
+			if err != nil {
+				return err
+			}
+		}
+
+		fmt.Fprintln(RootCmd.OutOrStdout(), doesExist)
+
+		return nil
 	},
 }
 
@@ -135,11 +436,12 @@ var tagShortCmd = &cobra.Command{
 	Short: "Return shortened bntp tags",
 	Long:  `A longer description`,
 	Args:  cobra.ArbitraryArgs,
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) == 0 {
-			cmd.Help()
-			os.Exit(0)
+			return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
 		}
+
+		return nil
 	},
 }
 
@@ -152,8 +454,34 @@ func init() {
 	tagCmd.AddCommand(tagImportCmd)
 	tagCmd.AddCommand(tagExportCmd)
 	tagCmd.AddCommand(tagEditCmd)
+	tagCmd.AddCommand(tagUpsertCmd)
+	tagCmd.AddCommand(tagReplaceCmd)
 	tagCmd.AddCommand(tagAmbiguousCmd)
+	tagCmd.AddCommand(tagCountCmd)
+	tagCmd.AddCommand(tagFindCmd)
+	tagCmd.AddCommand(tagDoesExistCmd)
 	tagCmd.AddCommand(tagAddCmd)
+
+	tagFindCmd.MarkFlagRequired("filter")
+	tagEditCmd.MarkFlagRequired("updater")
+
+	for _, subcommand := range tagCmd.Commands() {
+		if slices.Contains([]*cobra.Command{tagAddCmd, tagListCmd, tagRemoveCmd}, subcommand) {
+			subcommand.PersistentFlags().StringVar(&Format, "format", "json", "The serialization format to use for i/o")
+		}
+	}
+
+	for _, subcommand := range tagCmd.Commands() {
+		if slices.Contains([]*cobra.Command{tagEditCmd, tagListCmd, tagRemoveCmd}, subcommand) {
+			subcommand.PersistentFlags().StringVar(&FilterRaw, "filter", "", "The filter to use for processing entities")
+		}
+	}
+
+	for _, subcommand := range tagCmd.Commands() {
+		if slices.Contains([]*cobra.Command{tagEditCmd}, subcommand) {
+			subcommand.PersistentFlags().StringVar(&FilterRaw, "updater", "", "The updater to use for processing entities")
+		}
+	}
 
 	tagListCmd.Flags().BoolP("short", "s", false, "Whetever to list shortened tags instead of fully qualified ones")
 }

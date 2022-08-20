@@ -23,8 +23,8 @@ package cmd
 import (
 	"context"
 	"fmt"
-	"os"
 
+	"github.com/JonasMuehlmann/bntp.go/internal/helper"
 	"github.com/JonasMuehlmann/bntp.go/model/domain"
 	"github.com/spf13/cobra"
 	"golang.org/x/exp/slices"
@@ -34,11 +34,12 @@ var documentCmd = &cobra.Command{
 	Use:   "document",
 	Short: "Manage bntp documents",
 	Long:  `A longer description`,
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) == 0 {
-			cmd.Help()
-			os.Exit(0)
+			return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
 		}
+
+		return nil
 	},
 }
 
@@ -47,10 +48,9 @@ var documentAddCmd = &cobra.Command{
 	Short: "Add bntp documents",
 	Long:  `A longer description`,
 	Args:  cobra.ArbitraryArgs,
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) == 0 {
-			cmd.Help()
-			os.Exit(0)
+			return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
 		}
 
 		documents := make([]*domain.Document, 0, len(args))
@@ -58,15 +58,17 @@ var documentAddCmd = &cobra.Command{
 		for i, documentOut := range documents {
 			err := BNTPBackend.Unmarshallers[Format].Unmarshall(documentOut, args[i])
 			if err != nil {
-				panic(err)
+				return err
 			}
 		}
 
 		// NOTE: Should we also try to add an empty document?
 		err := BNTPBackend.DocumentManager.Add(context.Background(), documents)
 		if err != nil {
-			panic(err)
+			return err
 		}
+
+		return nil
 	},
 }
 
@@ -75,10 +77,9 @@ var documentReplaceCmd = &cobra.Command{
 	Short: "Replace a bntp document with an updated version",
 	Long:  `A longer description`,
 	Args:  cobra.ArbitraryArgs,
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) == 0 {
-			cmd.Help()
-			os.Exit(0)
+			return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
 		}
 
 		documents := make([]*domain.Document, 0, len(args))
@@ -86,19 +87,21 @@ var documentReplaceCmd = &cobra.Command{
 		for i, documentOut := range documents {
 			err := BNTPBackend.Unmarshallers[Format].Unmarshall(documentOut, args[i])
 			if err != nil {
-				panic(err)
+				return err
 			}
 		}
 
 		err := BNTPBackend.DocumentManager.Replace(context.Background(), documents)
 		if err != nil {
-			panic(err)
+			return err
 		}
 
 		err = BNTPBackend.DocumentContentManager.UpdateDocumentContentsFromNewModels(context.Background(), documents, &BNTPBackend.DocumentManager)
 		if err != nil {
-			panic(err)
+			return err
 		}
+
+		return nil
 	},
 }
 
@@ -107,10 +110,9 @@ var documentUpsertCmd = &cobra.Command{
 	Short: "Add or replace a bntp document",
 	Long:  `A longer description`,
 	Args:  cobra.ArbitraryArgs,
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) == 0 {
-			cmd.Help()
-			os.Exit(0)
+			return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
 		}
 
 		documents := make([]*domain.Document, 0, len(args))
@@ -118,19 +120,21 @@ var documentUpsertCmd = &cobra.Command{
 		for i, documentOut := range documents {
 			err := BNTPBackend.Unmarshallers[Format].Unmarshall(documentOut, args[i])
 			if err != nil {
-				panic(err)
+				return err
 			}
 		}
 
 		err := BNTPBackend.DocumentManager.Upsert(context.Background(), documents)
 		if err != nil {
-			panic(err)
+			return err
 		}
 
 		err = BNTPBackend.DocumentContentManager.UpdateDocumentContentsFromNewModels(context.Background(), documents, &BNTPBackend.DocumentManager)
 		if err != nil {
-			panic(err)
+			return err
 		}
+
+		return nil
 	},
 }
 
@@ -139,10 +143,9 @@ var documentEditCmd = &cobra.Command{
 	Short: "Edit a bntp document",
 	Long:  `A longer description`,
 	Args:  cobra.ArbitraryArgs,
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) == 0 {
-			cmd.Help()
-			os.Exit(0)
+			return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
 		}
 
 		var err error
@@ -155,44 +158,46 @@ var documentEditCmd = &cobra.Command{
 		for i, documentOut := range documents {
 			err := BNTPBackend.Unmarshallers[Format].Unmarshall(documentOut, args[i])
 			if err != nil {
-				panic(err)
+				return err
 			}
 		}
 
 		err = BNTPBackend.Unmarshallers[Format].Unmarshall(updater, UpdaterRaw)
 		if err != nil {
-			panic(err)
+			return err
 		}
 		if FilterRaw == "" {
 			err := BNTPBackend.DocumentManager.Update(context.Background(), documents, updater)
 			if err != nil {
-				panic(err)
+				return err
 			}
 
 			numAffectedRecords = int64(len(args))
 
 			err = BNTPBackend.DocumentContentManager.UpdateDocumentContentsFromFilterAndUpdater(context.Background(), filter, updater, &BNTPBackend.DocumentManager)
 			if err != nil {
-				panic(err)
+				return err
 			}
 		} else {
 			err = BNTPBackend.Unmarshallers[Format].Unmarshall(filter, FilterRaw)
 			if err != nil {
-				panic(err)
+				return err
 			}
 
 			numAffectedRecords, err = BNTPBackend.DocumentManager.UpdateWhere(context.Background(), filter, updater)
 			if err != nil {
-				panic(err)
+				return err
 			}
 
 			err = BNTPBackend.DocumentContentManager.UpdateDocumentContentsFromNewModels(context.Background(), documents, &BNTPBackend.DocumentManager)
 			if err != nil {
-				panic(err)
+				return err
 			}
 		}
 
-		fmt.Println(numAffectedRecords)
+		fmt.Fprintln(RootCmd.OutOrStdout(), numAffectedRecords)
+
+		return nil
 	},
 }
 var documentListCmd = &cobra.Command{
@@ -200,10 +205,9 @@ var documentListCmd = &cobra.Command{
 	Short: "List bntp documents",
 	Long:  `A longer description`,
 	Args:  cobra.NoArgs,
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) == 0 {
-			cmd.Help()
-			os.Exit(0)
+			return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
 		}
 
 		var documents []*domain.Document
@@ -214,26 +218,28 @@ var documentListCmd = &cobra.Command{
 		if FilterRaw == "" {
 			documents, err = BNTPBackend.DocumentManager.GetAll(context.Background())
 			if err != nil {
-				panic(err)
+				return err
 			}
 		} else {
 			err = BNTPBackend.Unmarshallers[Format].Unmarshall(filter, FilterRaw)
 			if err != nil {
-				panic(err)
+				return err
 			}
 
 			documents, err = BNTPBackend.DocumentManager.GetWhere(context.Background(), filter)
 			if err != nil {
-				panic(err)
+				return err
 			}
 		}
 
 		output, err = BNTPBackend.Marshallers[Format].Marshall(documents)
 		if err != nil {
-			panic(err)
+			return err
 		}
 
-		fmt.Println(output)
+		fmt.Fprintln(RootCmd.OutOrStdout(), output)
+
+		return nil
 	},
 }
 
@@ -242,10 +248,9 @@ var documentRemoveCmd = &cobra.Command{
 	Short: "Remove a bntp document",
 	Long:  `A longer description`,
 	Args:  cobra.ArbitraryArgs,
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) == 0 {
-			cmd.Help()
-			os.Exit(0)
+			return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
 		}
 
 		var filter *domain.DocumentFilter
@@ -258,29 +263,31 @@ var documentRemoveCmd = &cobra.Command{
 			for i, documentOut := range documents {
 				err := BNTPBackend.Unmarshallers[Format].Unmarshall(documentOut, args[i])
 				if err != nil {
-					panic(err)
+					return err
 				}
 			}
 
 			err = BNTPBackend.DocumentManager.Delete(context.Background(), documents)
 			if err != nil {
-				panic(err)
+				return err
 			}
 
 			numAffectedRecords = int64(len(args))
 		} else {
 			err = BNTPBackend.Unmarshallers[Format].Unmarshall(filter, FilterRaw)
 			if err != nil {
-				panic(err)
+				return err
 			}
 
 			numAffectedRecords, err = BNTPBackend.DocumentManager.DeleteWhere(context.Background(), filter)
 			if err != nil {
-				panic(err)
+				return err
 			}
 		}
 
-		fmt.Println(numAffectedRecords)
+		fmt.Fprintln(RootCmd.OutOrStdout(), numAffectedRecords)
+
+		return nil
 	},
 }
 
@@ -289,10 +296,9 @@ var documentFindCmd = &cobra.Command{
 	Short: "Find the first document matching a filter",
 	Long:  `A longer description`,
 	Args:  cobra.NoArgs,
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) == 0 {
-			cmd.Help()
-			os.Exit(0)
+			return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
 		}
 
 		var filter *domain.DocumentFilter
@@ -302,20 +308,22 @@ var documentFindCmd = &cobra.Command{
 
 		err = BNTPBackend.Unmarshallers[Format].Unmarshall(filter, FilterRaw)
 		if err != nil {
-			panic(err)
+			return err
 		}
 
 		result, err = BNTPBackend.DocumentManager.GetFirstWhere(context.Background(), filter)
 		if err != nil {
-			panic(err)
+			return err
 		}
 
 		output, err = BNTPBackend.Marshallers[Format].Marshall(result)
 		if err != nil {
-			panic(err)
+			return err
 		}
 
-		fmt.Println(output)
+		fmt.Fprintln(RootCmd.OutOrStdout(), output)
+
+		return nil
 	},
 }
 var documentCountCmd = &cobra.Command{
@@ -323,10 +331,9 @@ var documentCountCmd = &cobra.Command{
 	Short: "Manage bntp documents",
 	Long:  `A longer description`,
 	Args:  cobra.NoArgs,
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) == 0 {
-			cmd.Help()
-			os.Exit(0)
+			return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
 		}
 
 		var filter *domain.DocumentFilter
@@ -336,21 +343,23 @@ var documentCountCmd = &cobra.Command{
 		if FilterRaw == "" {
 			count, err = BNTPBackend.DocumentManager.CountAll(context.Background())
 			if err != nil {
-				panic(err)
+				return err
 			}
 		} else {
 			err = BNTPBackend.Unmarshallers[Format].Unmarshall(filter, FilterRaw)
 			if err != nil {
-				panic(err)
+				return err
 			}
 
 			count, err = BNTPBackend.DocumentManager.CountWhere(context.Background(), filter)
 			if err != nil {
-				panic(err)
+				return err
 			}
 		}
 
-		fmt.Println(count)
+		fmt.Fprintln(RootCmd.OutOrStdout(), count)
+
+		return nil
 	},
 }
 var documentDoesExistCmd = &cobra.Command{
@@ -358,10 +367,9 @@ var documentDoesExistCmd = &cobra.Command{
 	Short: "Manage bntp documents",
 	Long:  `A longer description`,
 	Args:  cobra.RangeArgs(0, 1),
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) == 0 {
-			cmd.Help()
-			os.Exit(0)
+			return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
 		}
 
 		var filter *domain.DocumentFilter
@@ -372,26 +380,28 @@ var documentDoesExistCmd = &cobra.Command{
 		if FilterRaw == "" {
 			err = BNTPBackend.Unmarshallers[Format].Unmarshall(document, args[0])
 			if err != nil {
-				panic(err)
+				return err
 			}
 
 			doesExist, err = BNTPBackend.DocumentManager.DoesExist(context.Background(), document)
 			if err != nil {
-				panic(err)
+				return err
 			}
 		} else {
 			err = BNTPBackend.Unmarshallers[Format].Unmarshall(filter, FilterRaw)
 			if err != nil {
-				panic(err)
+				return err
 			}
 
 			doesExist, err = BNTPBackend.DocumentManager.DoesExistWhere(context.Background(), filter)
 			if err != nil {
-				panic(err)
+				return err
 			}
 		}
 
-		fmt.Println(doesExist)
+		fmt.Fprintln(RootCmd.OutOrStdout(), doesExist)
+
+		return nil
 	},
 }
 

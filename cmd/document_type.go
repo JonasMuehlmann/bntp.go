@@ -22,8 +22,8 @@ package cmd
 
 import (
 	"context"
-	"os"
 
+	"github.com/JonasMuehlmann/bntp.go/internal/helper"
 	"github.com/spf13/cobra"
 )
 
@@ -31,11 +31,12 @@ var documentTypeCmd = &cobra.Command{
 	Use:   "type",
 	Short: "Manage types of bntp documents",
 	Long:  `A longer description`,
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) == 0 {
-			cmd.Help()
-			os.Exit(0)
+			return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
 		}
+
+		return nil
 	},
 }
 
@@ -44,16 +45,17 @@ var documentTypeAddCmd = &cobra.Command{
 	Short: "Add new bntp document types",
 	Long:  `A longer description`,
 	Args:  cobra.ArbitraryArgs,
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) == 0 {
-			cmd.Help()
-			os.Exit(0)
+			return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
 		}
 
 		err := BNTPBackend.DocumentManager.AddType(context.Background(), args)
 		if err != nil {
-			panic(err)
+			return err
 		}
+
+		return nil
 	},
 }
 
@@ -62,16 +64,17 @@ var documentTypeEditCmd = &cobra.Command{
 	Short: "Change a bntp document type",
 	Long:  `A longer description`,
 	Args:  cobra.ExactArgs(2),
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) == 0 {
-			cmd.Help()
-			os.Exit(0)
+			return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
 		}
 
 		err := BNTPBackend.DocumentManager.UpdateType(context.Background(), args[0], args[1])
 		if err != nil {
-			panic(err)
+			return err
 		}
+
+		return nil
 	},
 }
 
@@ -80,15 +83,16 @@ var documentTypeRemoveCmd = &cobra.Command{
 	Short: "Remove bntp document types",
 	Long:  `A longer description`,
 	Args:  cobra.ArbitraryArgs,
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) == 0 {
-			cmd.Help()
-			os.Exit(0)
+			return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
 		}
 
 		err := BNTPBackend.DocumentManager.DeleteType(context.Background(), args)
 		if err != nil {
-			panic(err)
+			return err
 		}
+
+		return nil
 	},
 }
