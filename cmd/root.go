@@ -21,6 +21,7 @@
 package cmd
 
 import (
+	"database/sql"
 	"fmt"
 	"io"
 
@@ -35,6 +36,7 @@ import (
 
 var BNTPBackend *backend.Backend
 var stderrToUse io.Writer
+var dbToUse *sql.DB
 
 var RootCmd = &cobra.Command{
 	Use:   "bntp.go",
@@ -48,17 +50,22 @@ var RootCmd = &cobra.Command{
 	},
 }
 
-func Execute(backend *backend.Backend, stderr io.Writer) error {
+func Execute(backend *backend.Backend, stderr io.Writer, testDB ...*sql.DB) error {
 	BNTPBackend = backend
 
 	RootCmd.SilenceUsage = true
 	RootCmd.SilenceErrors = true
 
 	stderrToUse = stderr
+	if len(testDB) > 0 {
+		dbToUse = testDB[0]
+	}
 
 	err := RootCmd.Execute()
 
-	log.Error(err)
+	if err != nil {
+		log.Error(err)
+	}
 
 	return err
 }
@@ -78,7 +85,7 @@ func init() {
 		fmt.Sprintf("The minimum log level to log to the log files (Allowed values: %v)", log.AllLevels),
 	)
 
-	cobra.OnInitialize(func() { config.InitConfig(stderrToUse); BNTPBackend = config.NewBackendFromConfig() }, bindFlagsToConfig)
+	cobra.OnInitialize(func() { config.InitConfig(stderrToUse, dbToUse); BNTPBackend = config.NewBackendFromConfig() }, bindFlagsToConfig)
 }
 
 func bindFlagsToConfig() {

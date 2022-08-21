@@ -63,6 +63,8 @@ var (
 	ConfigSearchPaths  []string
 )
 
+var testDB *sql.DB
+
 type message struct {
 	Level log.Level
 	Msg   string
@@ -191,7 +193,10 @@ func setDefaultsFromStructOrMap(defaults any) error {
 	return bfsSetDefault("", defaults)
 }
 
-func InitConfig(stderr io.Writer) {
+func InitConfig(stderr io.Writer, dbOverride ...*sql.DB) {
+	if len(dbOverride) > 0 {
+		testDB = dbOverride[0]
+	}
 
 	pendingLogMessage = make([]message, 0, 5)
 
@@ -258,6 +263,10 @@ func InitConfig(stderr io.Writer) {
 }
 
 func NewDBFromConfig() *sql.DB {
+	if testDB != nil {
+		return testDB
+	}
+
 	dataSource := viper.GetString(DB_DataSource)
 	args := viper.GetStringSlice(DB_Args)
 
