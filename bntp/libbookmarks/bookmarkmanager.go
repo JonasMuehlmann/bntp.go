@@ -47,108 +47,88 @@ func NewBookmarkManager(hooks *bntp.Hooks[domain.Bookmark], repository repositor
 
 // TODO: Allow skipping certain hooks.
 func (m *BookmarkManager) Add(ctx context.Context, bookmarks []*domain.Bookmark) error {
-	err := goaoi.ForeachSlice(bookmarks, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.BeforeAnyHook|bntp.BeforeAddHook))
-	if err != nil && !errors.As(err, &goaoi.EmptyIterableError{}) {
-		err = bntp.HookExecutionError{Inner: err}
-		log.Error(err)
-
-		return err
+	hookErr := goaoi.ForeachSlice(bookmarks, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.BeforeAnyHook|bntp.BeforeAddHook))
+	if hookErr != nil && !errors.As(hookErr, &goaoi.EmptyIterableError{}) {
+		hookErr = bntp.HookExecutionError{Inner: hookErr}
+		log.Error(hookErr)
 	}
 
-	err = m.Repository.Add(ctx, bookmarks)
+	err := m.Repository.Add(ctx, bookmarks)
 	if err != nil {
 		log.Error(err)
 
-		return err
 	}
 
-	err = goaoi.ForeachSlice(bookmarks, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.AfterAnyHook|bntp.AfterAddHook))
-	if err != nil && !errors.As(err, &goaoi.EmptyIterableError{}) {
-		err = bntp.HookExecutionError{Inner: err}
-		log.Error(err)
-
-		return err
+	hookErr = goaoi.ForeachSlice(bookmarks, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.AfterAnyHook|bntp.AfterAddHook))
+	if hookErr != nil && !errors.As(hookErr, &goaoi.EmptyIterableError{}) {
+		hookErr = bntp.HookExecutionError{Inner: hookErr}
+		log.Error(hookErr)
 	}
 
 	return err
 }
 
 func (m *BookmarkManager) Replace(ctx context.Context, bookmarks []*domain.Bookmark) error {
-	err := goaoi.ForeachSlice(bookmarks, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.BeforeAnyHook|bntp.BeforeUpdateHook))
-	if err != nil && !errors.As(err, &goaoi.EmptyIterableError{}) {
-		err = bntp.HookExecutionError{Inner: err}
-		log.Error(err)
-
-		return err
+	hookErr := goaoi.ForeachSlice(bookmarks, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.BeforeAnyHook|bntp.BeforeUpdateHook))
+	if hookErr != nil && !errors.As(hookErr, &goaoi.EmptyIterableError{}) {
+		hookErr = bntp.HookExecutionError{Inner: hookErr}
+		log.Error(hookErr)
 	}
 
-	err = m.Repository.Replace(ctx, bookmarks)
+	err := m.Repository.Replace(ctx, bookmarks)
 	if err != nil {
 		log.Error(err)
 
-		return err
 	}
 
-	err = goaoi.ForeachSlice(bookmarks, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.AfterAnyHook|bntp.AfterUpdateHook))
-	if err != nil && !errors.As(err, &goaoi.EmptyIterableError{}) {
-		err = bntp.HookExecutionError{Inner: err}
-		log.Error(err)
-
-		return err
+	hookErr = goaoi.ForeachSlice(bookmarks, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.AfterAnyHook|bntp.AfterUpdateHook))
+	if hookErr != nil && !errors.As(hookErr, &goaoi.EmptyIterableError{}) {
+		hookErr = bntp.HookExecutionError{Inner: hookErr}
+		log.Error(hookErr)
 	}
 
 	return err
 }
 
 func (m *BookmarkManager) Upsert(ctx context.Context, bookmarks []*domain.Bookmark) error {
-	err := goaoi.ForeachSlice(bookmarks, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.BeforeAnyHook|bntp.BeforeUpdateHook))
-	if err != nil && !errors.As(err, &goaoi.EmptyIterableError{}) {
-		err = bntp.HookExecutionError{Inner: err}
-		log.Error(err)
-
-		return err
+	hookErr := goaoi.ForeachSlice(bookmarks, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.BeforeAnyHook|bntp.BeforeUpdateHook))
+	if hookErr != nil && !errors.As(hookErr, &goaoi.EmptyIterableError{}) {
+		hookErr = bntp.HookExecutionError{Inner: hookErr}
+		log.Error(hookErr)
 	}
 
-	err = m.Repository.Upsert(ctx, bookmarks)
+	err := m.Repository.Upsert(ctx, bookmarks)
 	if err != nil {
 		log.Error(err)
 
-		return err
 	}
 
-	err = goaoi.ForeachSlice(bookmarks, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.AfterAnyHook|bntp.AfterUpdateHook))
-	if err != nil && !errors.As(err, &goaoi.EmptyIterableError{}) {
-		err = bntp.HookExecutionError{Inner: err}
-		log.Error(err)
-
-		return err
+	hookErr = goaoi.ForeachSlice(bookmarks, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.AfterAnyHook|bntp.AfterUpdateHook))
+	if hookErr != nil && !errors.As(hookErr, &goaoi.EmptyIterableError{}) {
+		hookErr = bntp.HookExecutionError{Inner: hookErr}
+		log.Error(hookErr)
 	}
 
 	return err
 }
 
 func (m *BookmarkManager) Update(ctx context.Context, documents []*domain.Bookmark, documentUpdater *domain.BookmarkUpdater) error {
-	err := goaoi.ForeachSlice(documents, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.BeforeAnyHook|bntp.BeforeUpdateHook))
-	if err != nil && !errors.As(err, &goaoi.EmptyIterableError{}) {
-		err = bntp.HookExecutionError{Inner: err}
-		log.Error(err)
-
-		return err
+	hookErr := goaoi.ForeachSlice(documents, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.BeforeAnyHook|bntp.BeforeUpdateHook))
+	if hookErr != nil && !errors.As(hookErr, &goaoi.EmptyIterableError{}) {
+		hookErr = bntp.HookExecutionError{Inner: hookErr}
+		log.Error(hookErr)
 	}
 
-	err = m.Repository.Update(ctx, documents, documentUpdater)
+	err := m.Repository.Update(ctx, documents, documentUpdater)
 	if err != nil {
 		log.Error(err)
 
-		return err
 	}
 
-	err = goaoi.ForeachSlice(documents, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.AfterAnyHook|bntp.AfterUpdateHook))
-	if err != nil && !errors.As(err, &goaoi.EmptyIterableError{}) {
-		err = bntp.HookExecutionError{Inner: err}
-		log.Error(err)
-
-		return err
+	hookErr = goaoi.ForeachSlice(documents, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.AfterAnyHook|bntp.AfterUpdateHook))
+	if hookErr != nil && !errors.As(hookErr, &goaoi.EmptyIterableError{}) {
+		hookErr = bntp.HookExecutionError{Inner: hookErr}
+		log.Error(hookErr)
 	}
 
 	return err
@@ -157,54 +137,44 @@ func (m *BookmarkManager) Update(ctx context.Context, documents []*domain.Bookma
 func (m *BookmarkManager) UpdateWhere(ctx context.Context, bookmarkFilter *domain.BookmarkFilter, bookmarkUpdater *domain.BookmarkUpdater) (numAffectedRecords int64, err error) {
 	bookmarks := []*domain.Bookmark{}
 
-	err = goaoi.ForeachSlice(bookmarks, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.BeforeAnyHook|bntp.BeforeUpdateHook))
-	if err != nil && !errors.As(err, &goaoi.EmptyIterableError{}) {
-		err = bntp.HookExecutionError{Inner: err}
-		log.Error(err)
-
-		return
+	hookErr := goaoi.ForeachSlice(bookmarks, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.BeforeAnyHook|bntp.BeforeUpdateHook))
+	if hookErr != nil && !errors.As(hookErr, &goaoi.EmptyIterableError{}) {
+		hookErr = bntp.HookExecutionError{Inner: hookErr}
+		log.Error(hookErr)
 	}
 
 	numAffectedRecords, err = m.Repository.UpdateWhere(ctx, bookmarkFilter, bookmarkUpdater)
 	if err != nil {
 		log.Error(err)
 
-		return
 	}
 
-	err = goaoi.ForeachSlice(bookmarks, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.AfterAnyHook|bntp.AfterUpdateHook))
-	if err != nil && !errors.As(err, &goaoi.EmptyIterableError{}) {
-		err = bntp.HookExecutionError{Inner: err}
-		log.Error(err)
-
-		return
+	hookErr = goaoi.ForeachSlice(bookmarks, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.AfterAnyHook|bntp.AfterUpdateHook))
+	if hookErr != nil && !errors.As(hookErr, &goaoi.EmptyIterableError{}) {
+		hookErr = bntp.HookExecutionError{Inner: hookErr}
+		log.Error(hookErr)
 	}
 
 	return
 }
 
 func (m *BookmarkManager) Delete(ctx context.Context, bookmarks []*domain.Bookmark) error {
-	err := goaoi.ForeachSlice(bookmarks, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.BeforeAnyHook|bntp.BeforeDeleteHook))
-	if err != nil && !errors.As(err, &goaoi.EmptyIterableError{}) {
-		err = bntp.HookExecutionError{Inner: err}
-		log.Error(err)
-
-		return err
+	hookErr := goaoi.ForeachSlice(bookmarks, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.BeforeAnyHook|bntp.BeforeDeleteHook))
+	if hookErr != nil && !errors.As(hookErr, &goaoi.EmptyIterableError{}) {
+		hookErr = bntp.HookExecutionError{Inner: hookErr}
+		log.Error(hookErr)
 	}
 
-	err = m.Repository.Delete(ctx, bookmarks)
+	err := m.Repository.Delete(ctx, bookmarks)
 	if err != nil {
 		log.Error(err)
 
-		return err
 	}
 
-	err = goaoi.ForeachSlice(bookmarks, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.AfterAnyHook|bntp.AfterDeleteHook))
-	if err != nil && !errors.As(err, &goaoi.EmptyIterableError{}) {
-		err = bntp.HookExecutionError{Inner: err}
-		log.Error(err)
-
-		return err
+	hookErr = goaoi.ForeachSlice(bookmarks, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.AfterAnyHook|bntp.AfterDeleteHook))
+	if hookErr != nil && !errors.As(hookErr, &goaoi.EmptyIterableError{}) {
+		hookErr = bntp.HookExecutionError{Inner: hookErr}
+		log.Error(hookErr)
 	}
 
 	return err
@@ -213,27 +183,22 @@ func (m *BookmarkManager) Delete(ctx context.Context, bookmarks []*domain.Bookma
 func (m *BookmarkManager) DeleteWhere(ctx context.Context, bookmarkFilter *domain.BookmarkFilter) (numAffectedRecords int64, err error) {
 	bookmarks := []*domain.Bookmark{}
 
-	err = goaoi.ForeachSlice(bookmarks, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.BeforeAnyHook|bntp.BeforeDeleteHook))
-	if err != nil && !errors.As(err, &goaoi.EmptyIterableError{}) {
-		err = bntp.HookExecutionError{Inner: err}
-		log.Error(err)
-
-		return
+	hookErr := goaoi.ForeachSlice(bookmarks, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.BeforeAnyHook|bntp.BeforeDeleteHook))
+	if hookErr != nil && !errors.As(hookErr, &goaoi.EmptyIterableError{}) {
+		hookErr = bntp.HookExecutionError{Inner: hookErr}
+		log.Error(hookErr)
 	}
 
 	numAffectedRecords, err = m.Repository.DeleteWhere(ctx, bookmarkFilter)
 	if err != nil {
 		log.Error(err)
 
-		return
 	}
 
-	err = goaoi.ForeachSlice(bookmarks, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.AfterAnyHook|bntp.AfterDeleteHook))
-	if err != nil && !errors.As(err, &goaoi.EmptyIterableError{}) {
-		err = bntp.HookExecutionError{Inner: err}
-		log.Error(err)
-
-		return
+	hookErr = goaoi.ForeachSlice(bookmarks, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.AfterAnyHook|bntp.AfterDeleteHook))
+	if hookErr != nil && !errors.As(hookErr, &goaoi.EmptyIterableError{}) {
+		hookErr = bntp.HookExecutionError{Inner: hookErr}
+		log.Error(hookErr)
 	}
 
 	return
@@ -242,27 +207,22 @@ func (m *BookmarkManager) DeleteWhere(ctx context.Context, bookmarkFilter *domai
 func (m *BookmarkManager) CountWhere(ctx context.Context, bookmarkFilter *domain.BookmarkFilter) (numRecords int64, err error) {
 	bookmarks := []*domain.Bookmark{}
 
-	err = goaoi.ForeachSlice(bookmarks, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.BeforeAnyHook|bntp.BeforeSelectHook))
-	if err != nil && !errors.As(err, &goaoi.EmptyIterableError{}) {
-		err = bntp.HookExecutionError{Inner: err}
-		log.Error(err)
-
-		return
+	hookErr := goaoi.ForeachSlice(bookmarks, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.BeforeAnyHook|bntp.BeforeSelectHook))
+	if hookErr != nil && !errors.As(hookErr, &goaoi.EmptyIterableError{}) {
+		hookErr = bntp.HookExecutionError{Inner: hookErr}
+		log.Error(hookErr)
 	}
 
 	numRecords, err = m.Repository.CountWhere(ctx, bookmarkFilter)
 	if err != nil {
 		log.Error(err)
 
-		return
 	}
 
-	err = goaoi.ForeachSlice(bookmarks, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.AfterAnyHook|bntp.AfterSelectHook))
-	if err != nil && !errors.As(err, &goaoi.EmptyIterableError{}) {
-		err = bntp.HookExecutionError{Inner: err}
-		log.Error(err)
-
-		return
+	hookErr = goaoi.ForeachSlice(bookmarks, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.AfterAnyHook|bntp.AfterSelectHook))
+	if hookErr != nil && !errors.As(hookErr, &goaoi.EmptyIterableError{}) {
+		hookErr = bntp.HookExecutionError{Inner: hookErr}
+		log.Error(hookErr)
 	}
 
 	return
@@ -271,27 +231,22 @@ func (m *BookmarkManager) CountWhere(ctx context.Context, bookmarkFilter *domain
 func (m *BookmarkManager) CountAll(ctx context.Context) (numRecords int64, err error) {
 	bookmarks := []*domain.Bookmark{}
 
-	err = goaoi.ForeachSlice(bookmarks, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.BeforeAnyHook|bntp.BeforeSelectHook))
-	if err != nil && !errors.As(err, &goaoi.EmptyIterableError{}) {
-		err = bntp.HookExecutionError{Inner: err}
-		log.Error(err)
-
-		return
+	hookErr := goaoi.ForeachSlice(bookmarks, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.BeforeAnyHook|bntp.BeforeSelectHook))
+	if hookErr != nil && !errors.As(hookErr, &goaoi.EmptyIterableError{}) {
+		hookErr = bntp.HookExecutionError{Inner: hookErr}
+		log.Error(hookErr)
 	}
 
 	numRecords, err = m.Repository.CountAll(ctx)
 	if err != nil {
 		log.Error(err)
 
-		return
 	}
 
-	err = goaoi.ForeachSlice(bookmarks, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.AfterAnyHook|bntp.AfterSelectHook))
-	if err != nil && !errors.As(err, &goaoi.EmptyIterableError{}) {
-		err = bntp.HookExecutionError{Inner: err}
-		log.Error(err)
-
-		return
+	hookErr = goaoi.ForeachSlice(bookmarks, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.AfterAnyHook|bntp.AfterSelectHook))
+	if hookErr != nil && !errors.As(hookErr, &goaoi.EmptyIterableError{}) {
+		hookErr = bntp.HookExecutionError{Inner: hookErr}
+		log.Error(hookErr)
 	}
 
 	return
@@ -300,27 +255,22 @@ func (m *BookmarkManager) CountAll(ctx context.Context) (numRecords int64, err e
 func (m *BookmarkManager) DoesExist(ctx context.Context, bookmark *domain.Bookmark) (doesExist bool, err error) {
 	bookmarks := []*domain.Bookmark{}
 
-	err = goaoi.ForeachSlice(bookmarks, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.BeforeAnyHook|bntp.BeforeSelectHook))
-	if err != nil && !errors.As(err, &goaoi.EmptyIterableError{}) {
-		err = bntp.HookExecutionError{Inner: err}
-		log.Error(err)
-
-		return
+	hookErr := goaoi.ForeachSlice(bookmarks, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.BeforeAnyHook|bntp.BeforeSelectHook))
+	if hookErr != nil && !errors.As(hookErr, &goaoi.EmptyIterableError{}) {
+		hookErr = bntp.HookExecutionError{Inner: hookErr}
+		log.Error(hookErr)
 	}
 
 	doesExist, err = m.Repository.DoesExist(ctx, bookmark)
 	if err != nil {
 		log.Error(err)
 
-		return
 	}
 
-	err = goaoi.ForeachSlice(bookmarks, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.AfterAnyHook|bntp.AfterSelectHook))
-	if err != nil && !errors.As(err, &goaoi.EmptyIterableError{}) {
-		err = bntp.HookExecutionError{Inner: err}
-		log.Error(err)
-
-		return
+	hookErr = goaoi.ForeachSlice(bookmarks, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.AfterAnyHook|bntp.AfterSelectHook))
+	if hookErr != nil && !errors.As(hookErr, &goaoi.EmptyIterableError{}) {
+		hookErr = bntp.HookExecutionError{Inner: hookErr}
+		log.Error(hookErr)
 	}
 
 	return
@@ -329,27 +279,22 @@ func (m *BookmarkManager) DoesExist(ctx context.Context, bookmark *domain.Bookma
 func (m *BookmarkManager) DoesExistWhere(ctx context.Context, bookmarkFilter *domain.BookmarkFilter) (doesExist bool, err error) {
 	bookmarks := []*domain.Bookmark{}
 
-	err = goaoi.ForeachSlice(bookmarks, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.BeforeAnyHook|bntp.BeforeSelectHook))
-	if err != nil && !errors.As(err, &goaoi.EmptyIterableError{}) {
-		err = bntp.HookExecutionError{Inner: err}
-		log.Error(err)
-
-		return
+	hookErr := goaoi.ForeachSlice(bookmarks, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.BeforeAnyHook|bntp.BeforeSelectHook))
+	if hookErr != nil && !errors.As(hookErr, &goaoi.EmptyIterableError{}) {
+		hookErr = bntp.HookExecutionError{Inner: hookErr}
+		log.Error(hookErr)
 	}
 
 	doesExist, err = m.Repository.DoesExistWhere(ctx, bookmarkFilter)
 	if err != nil {
 		log.Error(err)
 
-		return
 	}
 
-	err = goaoi.ForeachSlice(bookmarks, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.AfterAnyHook|bntp.AfterSelectHook))
-	if err != nil && !errors.As(err, &goaoi.EmptyIterableError{}) {
-		err = bntp.HookExecutionError{Inner: err}
-		log.Error(err)
-
-		return
+	hookErr = goaoi.ForeachSlice(bookmarks, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.AfterAnyHook|bntp.AfterSelectHook))
+	if hookErr != nil && !errors.As(hookErr, &goaoi.EmptyIterableError{}) {
+		hookErr = bntp.HookExecutionError{Inner: hookErr}
+		log.Error(hookErr)
 	}
 
 	return
@@ -358,27 +303,22 @@ func (m *BookmarkManager) DoesExistWhere(ctx context.Context, bookmarkFilter *do
 func (m *BookmarkManager) GetWhere(ctx context.Context, bookmarkFilter *domain.BookmarkFilter) (records []*domain.Bookmark, err error) {
 	bookmarks := []*domain.Bookmark{}
 
-	err = goaoi.ForeachSlice(bookmarks, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.BeforeAnyHook|bntp.BeforeSelectHook))
-	if err != nil && !errors.As(err, &goaoi.EmptyIterableError{}) {
-		err = bntp.HookExecutionError{Inner: err}
-		log.Error(err)
-
-		return
+	hookErr := goaoi.ForeachSlice(bookmarks, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.BeforeAnyHook|bntp.BeforeSelectHook))
+	if hookErr != nil && !errors.As(hookErr, &goaoi.EmptyIterableError{}) {
+		hookErr = bntp.HookExecutionError{Inner: hookErr}
+		log.Error(hookErr)
 	}
 
 	records, err = m.Repository.GetWhere(ctx, bookmarkFilter)
 	if err != nil {
 		log.Error(err)
 
-		return
 	}
 
-	err = goaoi.ForeachSlice(bookmarks, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.AfterAnyHook|bntp.AfterSelectHook))
-	if err != nil && !errors.As(err, &goaoi.EmptyIterableError{}) {
-		err = bntp.HookExecutionError{Inner: err}
-		log.Error(err)
-
-		return
+	hookErr = goaoi.ForeachSlice(bookmarks, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.AfterAnyHook|bntp.AfterSelectHook))
+	if hookErr != nil && !errors.As(hookErr, &goaoi.EmptyIterableError{}) {
+		hookErr = bntp.HookExecutionError{Inner: hookErr}
+		log.Error(hookErr)
 	}
 
 	return
@@ -387,27 +327,22 @@ func (m *BookmarkManager) GetWhere(ctx context.Context, bookmarkFilter *domain.B
 func (m *BookmarkManager) GetFirstWhere(ctx context.Context, bookmarkFilter *domain.BookmarkFilter) (record *domain.Bookmark, err error) {
 	bookmarks := []*domain.Bookmark{}
 
-	err = goaoi.ForeachSlice(bookmarks, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.BeforeAnyHook|bntp.BeforeSelectHook))
-	if err != nil && !errors.As(err, &goaoi.EmptyIterableError{}) {
-		err = bntp.HookExecutionError{Inner: err}
-		log.Error(err)
-
-		return
+	hookErr := goaoi.ForeachSlice(bookmarks, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.BeforeAnyHook|bntp.BeforeSelectHook))
+	if hookErr != nil && !errors.As(hookErr, &goaoi.EmptyIterableError{}) {
+		hookErr = bntp.HookExecutionError{Inner: hookErr}
+		log.Error(hookErr)
 	}
 
 	record, err = m.Repository.GetFirstWhere(ctx, bookmarkFilter)
 	if err != nil {
 		log.Error(err)
 
-		return
 	}
 
-	err = goaoi.ForeachSlice(bookmarks, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.AfterAnyHook|bntp.AfterSelectHook))
-	if err != nil && !errors.As(err, &goaoi.EmptyIterableError{}) {
-		err = bntp.HookExecutionError{Inner: err}
-		log.Error(err)
-
-		return
+	hookErr = goaoi.ForeachSlice(bookmarks, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.AfterAnyHook|bntp.AfterSelectHook))
+	if hookErr != nil && !errors.As(hookErr, &goaoi.EmptyIterableError{}) {
+		hookErr = bntp.HookExecutionError{Inner: hookErr}
+		log.Error(hookErr)
 	}
 
 	return
@@ -416,27 +351,22 @@ func (m *BookmarkManager) GetFirstWhere(ctx context.Context, bookmarkFilter *dom
 func (m *BookmarkManager) GetAll(ctx context.Context) (records []*domain.Bookmark, err error) {
 	bookmarks := []*domain.Bookmark{}
 
-	err = goaoi.ForeachSlice(bookmarks, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.BeforeAnyHook|bntp.BeforeSelectHook))
-	if err != nil && !errors.As(err, &goaoi.EmptyIterableError{}) {
-		err = bntp.HookExecutionError{Inner: err}
-		log.Error(err)
-
-		return
+	hookErr := goaoi.ForeachSlice(bookmarks, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.BeforeAnyHook|bntp.BeforeSelectHook))
+	if hookErr != nil && !errors.As(hookErr, &goaoi.EmptyIterableError{}) {
+		hookErr = bntp.HookExecutionError{Inner: hookErr}
+		log.Error(hookErr)
 	}
 
 	records, err = m.Repository.GetAll(ctx)
 	if err != nil {
 		log.Error(err)
 
-		return
 	}
 
-	err = goaoi.ForeachSlice(bookmarks, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.AfterAnyHook|bntp.AfterSelectHook))
-	if err != nil && !errors.As(err, &goaoi.EmptyIterableError{}) {
-		err = bntp.HookExecutionError{Inner: err}
-		log.Error(err)
-
-		return
+	hookErr = goaoi.ForeachSlice(bookmarks, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.AfterAnyHook|bntp.AfterSelectHook))
+	if hookErr != nil && !errors.As(hookErr, &goaoi.EmptyIterableError{}) {
+		hookErr = bntp.HookExecutionError{Inner: hookErr}
+		log.Error(hookErr)
 	}
 
 	return
@@ -445,86 +375,71 @@ func (m *BookmarkManager) GetAll(ctx context.Context) (records []*domain.Bookmar
 func (m *BookmarkManager) AddType(ctx context.Context, types []string) error {
 	bookmarks := []*domain.Bookmark{}
 
-	err := goaoi.ForeachSlice(bookmarks, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.BeforeAnyHook|bntp.BeforeAddHook))
-	if err != nil && !errors.As(err, &goaoi.EmptyIterableError{}) {
-		err = bntp.HookExecutionError{Inner: err}
-		log.Error(err)
-
-		return err
+	hookErr := goaoi.ForeachSlice(bookmarks, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.BeforeAnyHook|bntp.BeforeAddHook))
+	if hookErr != nil && !errors.As(hookErr, &goaoi.EmptyIterableError{}) {
+		hookErr = bntp.HookExecutionError{Inner: hookErr}
+		log.Error(hookErr)
 	}
 
-	err = m.Repository.AddType(ctx, types)
+	err := m.Repository.AddType(ctx, types)
 	if err != nil {
 		log.Error(err)
 
-		return err
 	}
 
-	err = goaoi.ForeachSlice(bookmarks, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.AfterAnyHook|bntp.AfterAddHook))
-	if err != nil && !errors.As(err, &goaoi.EmptyIterableError{}) {
-		err = bntp.HookExecutionError{Inner: err}
-		log.Error(err)
-
-		return err
+	hookErr = goaoi.ForeachSlice(bookmarks, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.AfterAnyHook|bntp.AfterAddHook))
+	if hookErr != nil && !errors.As(hookErr, &goaoi.EmptyIterableError{}) {
+		hookErr = bntp.HookExecutionError{Inner: hookErr}
+		log.Error(hookErr)
 	}
 
-	return nil
+	return err
 }
 
 func (m *BookmarkManager) DeleteType(ctx context.Context, types []string) error {
 	bookmarks := []*domain.Bookmark{}
 
-	err := goaoi.ForeachSlice(bookmarks, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.BeforeAnyHook|bntp.BeforeDeleteHook))
-	if err != nil && !errors.As(err, &goaoi.EmptyIterableError{}) {
-		err = bntp.HookExecutionError{Inner: err}
-		log.Error(err)
-
-		return err
+	hookErr := goaoi.ForeachSlice(bookmarks, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.BeforeAnyHook|bntp.BeforeDeleteHook))
+	if hookErr != nil && !errors.As(hookErr, &goaoi.EmptyIterableError{}) {
+		hookErr = bntp.HookExecutionError{Inner: hookErr}
+		log.Error(hookErr)
 	}
 
-	err = m.Repository.DeleteType(ctx, types)
+	err := m.Repository.DeleteType(ctx, types)
 	if err != nil {
 		log.Error(err)
 
-		return err
 	}
 
-	err = goaoi.ForeachSlice(bookmarks, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.AfterAnyHook|bntp.AfterDeleteHook))
-	if err != nil && !errors.As(err, &goaoi.EmptyIterableError{}) {
-		err = bntp.HookExecutionError{Inner: err}
-		log.Error(err)
-
-		return err
+	hookErr = goaoi.ForeachSlice(bookmarks, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.AfterAnyHook|bntp.AfterDeleteHook))
+	if hookErr != nil && !errors.As(hookErr, &goaoi.EmptyIterableError{}) {
+		hookErr = bntp.HookExecutionError{Inner: hookErr}
+		log.Error(hookErr)
 	}
 
-	return nil
+	return err
 }
 
 func (m *BookmarkManager) UpdateType(ctx context.Context, oldType string, newType string) error {
 	bookmarks := []*domain.Bookmark{}
 
-	err := goaoi.ForeachSlice(bookmarks, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.BeforeAnyHook|bntp.BeforeUpdateHook))
-	if err != nil && !errors.As(err, &goaoi.EmptyIterableError{}) {
-		err = bntp.HookExecutionError{Inner: err}
-		log.Error(err)
-
-		return err
+	hookErr := goaoi.ForeachSlice(bookmarks, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.BeforeAnyHook|bntp.BeforeUpdateHook))
+	if hookErr != nil && !errors.As(hookErr, &goaoi.EmptyIterableError{}) {
+		hookErr = bntp.HookExecutionError{Inner: hookErr}
+		log.Error(hookErr)
 	}
 
-	err = m.Repository.UpdateType(ctx, oldType, newType)
+	err := m.Repository.UpdateType(ctx, oldType, newType)
 	if err != nil {
 		log.Error(err)
 
-		return err
 	}
 
-	err = goaoi.ForeachSlice(bookmarks, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.AfterAnyHook|bntp.AfterUpdateHook))
-	if err != nil && !errors.As(err, &goaoi.EmptyIterableError{}) {
-		err = bntp.HookExecutionError{Inner: err}
-		log.Error(err)
-
-		return err
+	hookErr = goaoi.ForeachSlice(bookmarks, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.AfterAnyHook|bntp.AfterUpdateHook))
+	if hookErr != nil && !errors.As(hookErr, &goaoi.EmptyIterableError{}) {
+		hookErr = bntp.HookExecutionError{Inner: hookErr}
+		log.Error(hookErr)
 	}
 
-	return nil
+	return err
 }
