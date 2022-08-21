@@ -344,7 +344,7 @@ func (repo *MssqlDocumentRepository) Add(ctx context.Context, domainModels []*do
 	if len(domainModels) == 0 {
 		log.Debug(helper.LogMessageEmptyInput)
 
-		err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
+		err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 
 		return
 	}
@@ -374,7 +374,7 @@ func (repo *MssqlDocumentRepository) AddMinimal(ctx context.Context, domainModel
 	if len(domainModels) == 0 {
 		log.Debug(helper.LogMessageEmptyInput)
 
-		err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
+		err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 
 		return
 	}
@@ -428,7 +428,7 @@ func (repo *MssqlDocumentRepository) Replace(ctx context.Context, domainModels [
 	if len(domainModels) == 0 {
 		log.Debug(helper.LogMessageEmptyInput)
 
-		err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
+		err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 
 		return
 	}
@@ -481,7 +481,7 @@ func (repo *MssqlDocumentRepository) Replace(ctx context.Context, domainModels [
 				}
 
 				if !doesExist {
-					err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError}
+					err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
 
 					return
 				}
@@ -497,7 +497,7 @@ func (repo *MssqlDocumentRepository) Upsert(ctx context.Context, domainModels []
 	if len(domainModels) == 0 {
 		log.Debug(helper.LogMessageEmptyInput)
 
-		err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
+		err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 
 		return
 	}
@@ -551,7 +551,7 @@ func (repo *MssqlDocumentRepository) Update(ctx context.Context, domainModels []
 	if len(domainModels) == 0 {
 		log.Debug(helper.LogMessageEmptyInput)
 
-		err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
+		err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 
 		return
 	}
@@ -572,7 +572,7 @@ func (repo *MssqlDocumentRepository) Update(ctx context.Context, domainModels []
 	}
 
 	if domainColumnUpdater.IsDefault() {
-		err = helper.IneffectiveOperationError{Inner: helper.NopUpdaterError}
+		err = helper.IneffectiveOperationError{Inner: helper.NopUpdaterError{}}
 		log.Error(err)
 
 		return
@@ -624,7 +624,7 @@ func (repo *MssqlDocumentRepository) Update(ctx context.Context, domainModels []
 		}
 
 		if numAffectedRecords == 0 {
-			err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError}
+			err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
 
 			return
 		}
@@ -653,7 +653,7 @@ func (repo *MssqlDocumentRepository) UpdateWhere(ctx context.Context, domainColu
 	}
 
 	if domainColumnUpdater.IsDefault() {
-		err = helper.IneffectiveOperationError{Inner: helper.NopUpdaterError}
+		err = helper.IneffectiveOperationError{Inner: helper.NopUpdaterError{}}
 		log.Error(err)
 
 		return
@@ -693,7 +693,7 @@ func (repo *MssqlDocumentRepository) UpdateWhere(ctx context.Context, domainColu
 	}
 
 	if len(modelsToUpdate) == 0 {
-		err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError}
+		err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
 
 		return
 	}
@@ -729,7 +729,7 @@ func (repo *MssqlDocumentRepository) Delete(ctx context.Context, domainModels []
 	if len(domainModels) == 0 {
 		log.Debug(helper.LogMessageEmptyInput)
 
-		err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
+		err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 
 		return
 	}
@@ -1049,7 +1049,7 @@ func (repo *MssqlDocumentRepository) UpdateType(ctx context.Context, oldType str
 			err = helper.DuplicateInsertionError{Inner: err}
 		}
 		if numAffectedRecords == 0 {
-			err = helper.NonExistentPrimaryDataError
+			err = helper.NonExistentPrimaryDataError{}
 
 			return
 		}

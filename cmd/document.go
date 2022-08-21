@@ -37,7 +37,7 @@ func WithDocument(cli *Cli) {
 		Long:  `A longer description`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {
-				return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
+				return helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 			}
 
 			return nil
@@ -51,7 +51,7 @@ func WithDocument(cli *Cli) {
 		Args:  cobra.ArbitraryArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {
-				return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
+				return helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 			}
 
 			documents, err := UnmarshalEntities[domain.Document](args, cli.Format)
@@ -76,7 +76,7 @@ func WithDocument(cli *Cli) {
 		Args:  cobra.ArbitraryArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {
-				return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
+				return helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 			}
 
 			documents, err := UnmarshalEntities[domain.Document](args, cli.Format)
@@ -105,7 +105,7 @@ func WithDocument(cli *Cli) {
 		Args:  cobra.ArbitraryArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {
-				return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
+				return helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 			}
 
 			documents, err := UnmarshalEntities[domain.Document](args, cli.Format)
@@ -134,7 +134,7 @@ func WithDocument(cli *Cli) {
 		Args:  cobra.ArbitraryArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {
-				return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
+				return helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 			}
 
 			var err error
@@ -192,7 +192,7 @@ func WithDocument(cli *Cli) {
 		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {
-				return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
+				return helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 			}
 
 			var documents []*domain.Document
@@ -235,7 +235,7 @@ func WithDocument(cli *Cli) {
 		Args:  cobra.ArbitraryArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {
-				return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
+				return helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 			}
 
 			var filter *domain.DocumentFilter
@@ -279,7 +279,7 @@ func WithDocument(cli *Cli) {
 		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {
-				return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
+				return helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 			}
 
 			var filter *domain.DocumentFilter
@@ -314,7 +314,7 @@ func WithDocument(cli *Cli) {
 		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {
-				return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
+				return helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 			}
 
 			var filter *domain.DocumentFilter
@@ -350,7 +350,7 @@ func WithDocument(cli *Cli) {
 		Args:  cobra.RangeArgs(0, 1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {
-				return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
+				return helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 			}
 
 			var filter *domain.DocumentFilter

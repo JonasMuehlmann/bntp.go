@@ -37,7 +37,7 @@ func WithBookmark(cli *Cli) {
 		Long:  `A longer description`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {
-				return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
+				return helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 			}
 
 			return nil
@@ -51,7 +51,7 @@ func WithBookmark(cli *Cli) {
 		Args:  cobra.ArbitraryArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {
-				return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
+				return helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 			}
 
 			bookmarks, err := UnmarshalEntities[domain.Bookmark](args, cli.Format)
@@ -75,7 +75,7 @@ func WithBookmark(cli *Cli) {
 		Args:  cobra.ArbitraryArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {
-				return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
+				return helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 			}
 
 			bookmarks, err := UnmarshalEntities[domain.Bookmark](args, cli.Format)
@@ -99,7 +99,7 @@ func WithBookmark(cli *Cli) {
 		Args:  cobra.ArbitraryArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {
-				return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
+				return helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 			}
 
 			bookmarks, err := UnmarshalEntities[domain.Bookmark](args, cli.Format)
@@ -123,7 +123,7 @@ func WithBookmark(cli *Cli) {
 		Args:  cobra.ArbitraryArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {
-				return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
+				return helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 			}
 
 			var err error
@@ -172,7 +172,7 @@ func WithBookmark(cli *Cli) {
 		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {
-				return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
+				return helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 			}
 
 			var bookmarks []*domain.Bookmark
@@ -215,7 +215,7 @@ func WithBookmark(cli *Cli) {
 		Args:  cobra.ArbitraryArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {
-				return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
+				return helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 			}
 
 			var filter *domain.BookmarkFilter
@@ -259,7 +259,7 @@ func WithBookmark(cli *Cli) {
 		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {
-				return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
+				return helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 			}
 
 			var filter *domain.BookmarkFilter
@@ -294,7 +294,7 @@ func WithBookmark(cli *Cli) {
 		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {
-				return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
+				return helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 			}
 
 			var filter *domain.BookmarkFilter
@@ -330,7 +330,7 @@ func WithBookmark(cli *Cli) {
 		Args:  cobra.RangeArgs(0, 1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {
-				return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
+				return helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 			}
 
 			var filter *domain.BookmarkFilter

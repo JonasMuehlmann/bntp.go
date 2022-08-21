@@ -38,7 +38,7 @@ func WithConfig(cli *Cli) {
 		Long:  `A longer description`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {
-				return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
+				return helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 			}
 
 			return nil

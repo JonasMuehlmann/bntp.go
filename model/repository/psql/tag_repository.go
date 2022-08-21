@@ -316,7 +316,7 @@ func (repo *PsqlTagRepository) Add(ctx context.Context, domainModels []*domain.T
 	if len(domainModels) == 0 {
 		log.Debug(helper.LogMessageEmptyInput)
 
-		err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
+		err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 
 		return
 	}
@@ -346,7 +346,7 @@ func (repo *PsqlTagRepository) AddMinimal(ctx context.Context, domainModels []*d
 	if len(domainModels) == 0 {
 		log.Debug(helper.LogMessageEmptyInput)
 
-		err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
+		err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 
 		return
 	}
@@ -400,7 +400,7 @@ func (repo *PsqlTagRepository) Replace(ctx context.Context, domainModels []*doma
 	if len(domainModels) == 0 {
 		log.Debug(helper.LogMessageEmptyInput)
 
-		err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
+		err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 
 		return
 	}
@@ -453,7 +453,7 @@ func (repo *PsqlTagRepository) Replace(ctx context.Context, domainModels []*doma
 				}
 
 				if !doesExist {
-					err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError}
+					err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
 
 					return
 				}
@@ -469,7 +469,7 @@ func (repo *PsqlTagRepository) Upsert(ctx context.Context, domainModels []*domai
 	if len(domainModels) == 0 {
 		log.Debug(helper.LogMessageEmptyInput)
 
-		err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
+		err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 
 		return
 	}
@@ -523,7 +523,7 @@ func (repo *PsqlTagRepository) Update(ctx context.Context, domainModels []*domai
 	if len(domainModels) == 0 {
 		log.Debug(helper.LogMessageEmptyInput)
 
-		err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
+		err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 
 		return
 	}
@@ -544,7 +544,7 @@ func (repo *PsqlTagRepository) Update(ctx context.Context, domainModels []*domai
 	}
 
 	if domainColumnUpdater.IsDefault() {
-		err = helper.IneffectiveOperationError{Inner: helper.NopUpdaterError}
+		err = helper.IneffectiveOperationError{Inner: helper.NopUpdaterError{}}
 		log.Error(err)
 
 		return
@@ -596,7 +596,7 @@ func (repo *PsqlTagRepository) Update(ctx context.Context, domainModels []*domai
 		}
 
 		if numAffectedRecords == 0 {
-			err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError}
+			err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
 
 			return
 		}
@@ -625,7 +625,7 @@ func (repo *PsqlTagRepository) UpdateWhere(ctx context.Context, domainColumnFilt
 	}
 
 	if domainColumnUpdater.IsDefault() {
-		err = helper.IneffectiveOperationError{Inner: helper.NopUpdaterError}
+		err = helper.IneffectiveOperationError{Inner: helper.NopUpdaterError{}}
 		log.Error(err)
 
 		return
@@ -665,7 +665,7 @@ func (repo *PsqlTagRepository) UpdateWhere(ctx context.Context, domainColumnFilt
 	}
 
 	if len(modelsToUpdate) == 0 {
-		err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError}
+		err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
 
 		return
 	}
@@ -701,7 +701,7 @@ func (repo *PsqlTagRepository) Delete(ctx context.Context, domainModels []*domai
 	if len(domainModels) == 0 {
 		log.Debug(helper.LogMessageEmptyInput)
 
-		err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
+		err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 
 		return
 	}

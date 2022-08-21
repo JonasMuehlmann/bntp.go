@@ -311,7 +311,7 @@ func (repo *{{$StructName}}) Add(ctx context.Context, domainModels []*domain.{{$
     if len(domainModels) == 0 {
         log.Debug(helper.LogMessageEmptyInput)
 
-        err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
+        err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 
         return
     }
@@ -341,7 +341,7 @@ func (repo *{{$StructName}}) AddMinimal(ctx context.Context, domainModels []*dom
     if len(domainModels) == 0 {
         log.Debug(helper.LogMessageEmptyInput)
 
-        err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
+        err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 
         return
     }
@@ -395,7 +395,7 @@ func (repo *{{$StructName}}) Replace(ctx context.Context, domainModels []*domain
     if len(domainModels) == 0 {
         log.Debug(helper.LogMessageEmptyInput)
 
-        err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
+        err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 
         return
     }
@@ -450,7 +450,7 @@ func (repo *{{$StructName}}) Replace(ctx context.Context, domainModels []*domain
                 }
 
                 if !doesExist {
-                    err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError}
+                    err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
 
                     return
                 }
@@ -466,7 +466,7 @@ func (repo *{{$StructName}}) Upsert(ctx context.Context, domainModels []*domain.
     if len(domainModels) == 0 {
         log.Debug(helper.LogMessageEmptyInput)
 
-        err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
+        err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 
         return
     }
@@ -523,7 +523,7 @@ func (repo *{{$StructName}}) Update(ctx context.Context, domainModels []*domain.
     if len(domainModels) == 0 {
         log.Debug(helper.LogMessageEmptyInput)
 
-        err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
+        err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 
         return
     }
@@ -544,7 +544,7 @@ func (repo *{{$StructName}}) Update(ctx context.Context, domainModels []*domain.
     }
 
 	if  domainColumnUpdater.IsDefault() {
-        err = helper.IneffectiveOperationError{Inner: helper.NopUpdaterError}
+        err = helper.IneffectiveOperationError{Inner: helper.NopUpdaterError{}}
 		log.Error(err)
 
 		return
@@ -596,7 +596,7 @@ func (repo *{{$StructName}}) Update(ctx context.Context, domainModels []*domain.
         }
 
         if numAffectedRecords == 0 {
-            err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError}
+            err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
 
             return
         }
@@ -625,7 +625,7 @@ func (repo *{{$StructName}}) UpdateWhere(ctx context.Context, domainColumnFilter
     }
 
 	if  domainColumnUpdater.IsDefault() {
-        err = helper.IneffectiveOperationError{Inner: helper.NopUpdaterError}
+        err = helper.IneffectiveOperationError{Inner: helper.NopUpdaterError{}}
 		log.Error(err)
 
 		return
@@ -668,7 +668,7 @@ func (repo *{{$StructName}}) UpdateWhere(ctx context.Context, domainColumnFilter
 	}
 
     if len(modelsToUpdate) == 0 {
-        err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError}
+        err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
 
         return
     }
@@ -704,7 +704,7 @@ func (repo *{{$StructName}}) Delete(ctx context.Context, domainModels []*domain.
     if len(domainModels) == 0 {
         log.Debug(helper.LogMessageEmptyInput)
 
-        err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
+        err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 
         return
     }
@@ -1039,7 +1039,7 @@ func (repo *{{$StructName}}) UpdateType(ctx context.Context, oldType string, new
             err = helper.DuplicateInsertionError{Inner: err}
         }
         if numAffectedRecords == 0 {
-            err = helper.NonExistentPrimaryDataError
+            err = helper.NonExistentPrimaryDataError{}
 
             return
         }

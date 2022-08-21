@@ -34,7 +34,7 @@ func WithDocumentType(cli *Cli) {
 		Long:  `A longer description`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {
-				return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
+				return helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 			}
 
 			return nil
@@ -48,7 +48,7 @@ func WithDocumentType(cli *Cli) {
 		Args:  cobra.ArbitraryArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {
-				return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
+				return helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 			}
 
 			err := BNTPBackend.DocumentManager.AddType(context.Background(), args)
@@ -67,7 +67,7 @@ func WithDocumentType(cli *Cli) {
 		Args:  cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {
-				return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
+				return helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 			}
 
 			err := BNTPBackend.DocumentManager.UpdateType(context.Background(), args[0], args[1])
@@ -86,7 +86,7 @@ func WithDocumentType(cli *Cli) {
 		Args:  cobra.ArbitraryArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {
-				return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
+				return helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 			}
 
 			err := BNTPBackend.DocumentManager.DeleteType(context.Background(), args)

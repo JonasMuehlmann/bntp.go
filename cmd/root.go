@@ -54,7 +54,7 @@ func NewCli(options ...func(*Cli)) *Cli {
 		Short: "bntp.go - the all in one productivity system.",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {
-				return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
+				return helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 			}
 
 			return nil

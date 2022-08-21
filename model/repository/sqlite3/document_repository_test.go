@@ -1833,7 +1833,7 @@ func TestSQLDocumentRepositoryUpdateTypeTest(t *testing.T) {
 			name: "Rename to duplicate type", oldTypes: []string{"Text", "Image"}, newType: "Image", insertBeforeUpdate: true, err: helper.DuplicateInsertionError{},
 		},
 		{
-			name: "Non-existent old type", oldTypes: []string{"Text"}, newType: "Text", err: helper.NonExistentPrimaryDataError,
+			name: "Non-existent old type", oldTypes: []string{"Text"}, newType: "Text", err: helper.NonExistentPrimaryDataError{},
 		},
 	}
 

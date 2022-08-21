@@ -103,3 +103,27 @@ func HandlePanic(t *testing.T, name string) {
 		assert.Fail(t, name, err)
 	}
 }
+
+type OutputValidator func(t *testing.T, output string, message string) bool
+
+func ValidatorEqual(t *testing.T, expected string, message string) OutputValidator {
+	return func(t *testing.T, output string, message string) bool {
+		return assert.Equal(t, expected, output, message)
+	}
+}
+
+func ValidatorEmpty(t *testing.T, actual string, message string) bool {
+	return assert.Empty(t, actual, message)
+}
+
+func ValidatorContains(mustHaves ...string) OutputValidator {
+	return func(t *testing.T, actual string, message string) bool {
+		for _, mustHave := range mustHaves {
+			if !assert.Contains(t, actual, mustHave, message) {
+				return false
+			}
+		}
+
+		return true
+	}
+}

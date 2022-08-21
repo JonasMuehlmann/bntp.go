@@ -383,7 +383,7 @@ func (repo *MssqlBookmarkRepository) Add(ctx context.Context, domainModels []*do
 	if len(domainModels) == 0 {
 		log.Debug(helper.LogMessageEmptyInput)
 
-		err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
+		err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 
 		return
 	}
@@ -413,7 +413,7 @@ func (repo *MssqlBookmarkRepository) AddMinimal(ctx context.Context, domainModel
 	if len(domainModels) == 0 {
 		log.Debug(helper.LogMessageEmptyInput)
 
-		err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
+		err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 
 		return
 	}
@@ -467,7 +467,7 @@ func (repo *MssqlBookmarkRepository) Replace(ctx context.Context, domainModels [
 	if len(domainModels) == 0 {
 		log.Debug(helper.LogMessageEmptyInput)
 
-		err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
+		err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 
 		return
 	}
@@ -520,7 +520,7 @@ func (repo *MssqlBookmarkRepository) Replace(ctx context.Context, domainModels [
 				}
 
 				if !doesExist {
-					err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError}
+					err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
 
 					return
 				}
@@ -536,7 +536,7 @@ func (repo *MssqlBookmarkRepository) Upsert(ctx context.Context, domainModels []
 	if len(domainModels) == 0 {
 		log.Debug(helper.LogMessageEmptyInput)
 
-		err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
+		err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 
 		return
 	}
@@ -590,7 +590,7 @@ func (repo *MssqlBookmarkRepository) Update(ctx context.Context, domainModels []
 	if len(domainModels) == 0 {
 		log.Debug(helper.LogMessageEmptyInput)
 
-		err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
+		err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 
 		return
 	}
@@ -611,7 +611,7 @@ func (repo *MssqlBookmarkRepository) Update(ctx context.Context, domainModels []
 	}
 
 	if domainColumnUpdater.IsDefault() {
-		err = helper.IneffectiveOperationError{Inner: helper.NopUpdaterError}
+		err = helper.IneffectiveOperationError{Inner: helper.NopUpdaterError{}}
 		log.Error(err)
 
 		return
@@ -663,7 +663,7 @@ func (repo *MssqlBookmarkRepository) Update(ctx context.Context, domainModels []
 		}
 
 		if numAffectedRecords == 0 {
-			err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError}
+			err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
 
 			return
 		}
@@ -692,7 +692,7 @@ func (repo *MssqlBookmarkRepository) UpdateWhere(ctx context.Context, domainColu
 	}
 
 	if domainColumnUpdater.IsDefault() {
-		err = helper.IneffectiveOperationError{Inner: helper.NopUpdaterError}
+		err = helper.IneffectiveOperationError{Inner: helper.NopUpdaterError{}}
 		log.Error(err)
 
 		return
@@ -732,7 +732,7 @@ func (repo *MssqlBookmarkRepository) UpdateWhere(ctx context.Context, domainColu
 	}
 
 	if len(modelsToUpdate) == 0 {
-		err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError}
+		err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
 
 		return
 	}
@@ -768,7 +768,7 @@ func (repo *MssqlBookmarkRepository) Delete(ctx context.Context, domainModels []
 	if len(domainModels) == 0 {
 		log.Debug(helper.LogMessageEmptyInput)
 
-		err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
+		err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 
 		return
 	}
@@ -1088,7 +1088,7 @@ func (repo *MssqlBookmarkRepository) UpdateType(ctx context.Context, oldType str
 			err = helper.DuplicateInsertionError{Inner: err}
 		}
 		if numAffectedRecords == 0 {
-			err = helper.NonExistentPrimaryDataError
+			err = helper.NonExistentPrimaryDataError{}
 
 			return
 		}

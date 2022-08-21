@@ -34,7 +34,7 @@ func WithBookmarkType(cli *Cli) {
 		Long:  `A longer description`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {
-				return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
+				return helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 			}
 
 			return nil
@@ -48,7 +48,7 @@ func WithBookmarkType(cli *Cli) {
 		Args:  cobra.ArbitraryArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {
-				return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
+				return helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 			}
 
 			err := BNTPBackend.BookmarkManager.AddType(context.Background(), args)
@@ -67,7 +67,7 @@ func WithBookmarkType(cli *Cli) {
 		Args:  cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {
-				return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
+				return helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 			}
 
 			err := BNTPBackend.BookmarkManager.UpdateType(context.Background(), args[0], args[1])
@@ -86,7 +86,7 @@ func WithBookmarkType(cli *Cli) {
 		Args:  cobra.ArbitraryArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {
-				return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
+				return helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 			}
 
 			err := BNTPBackend.BookmarkManager.DeleteType(context.Background(), args)

@@ -21,7 +21,6 @@
 package helper
 
 import (
-	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -43,11 +42,96 @@ const (
 	LogMessageEmptyInput        = "Returning early after receiving empty input"
 )
 
-var (
-	EmptyInputError             = errors.New("empty input")
-	NonExistentPrimaryDataError = errors.New("the primary data to work with does not exist")
-	NopUpdaterError             = errors.New("The updater will leave the data unchanged")
-)
+//******************************************************************//
+//                        EmptyIterableError                        //
+//******************************************************************//
+
+type EmptyInputError struct{}
+
+func (err EmptyInputError) Error() string {
+	return "empty input"
+}
+
+func (err EmptyInputError) Is(other error) bool {
+	switch other.(type) {
+	case EmptyInputError:
+		return true
+	default:
+		return false
+	}
+}
+
+func (err EmptyInputError) As(target any) bool {
+	switch target.(type) {
+	case EmptyInputError:
+		reflect.Indirect(reflect.ValueOf(target)).Set(reflect.ValueOf(err))
+		return true
+	default:
+		return false
+	}
+}
+
+//******************************************************************//
+//                    NonExistentPrimaryDataError                   //
+//******************************************************************//
+
+type NonExistentPrimaryDataError struct{}
+
+func (err NonExistentPrimaryDataError) Error() string {
+	return "the primary data to work with does not exist"
+}
+
+func (err NonExistentPrimaryDataError) Is(other error) bool {
+	switch other.(type) {
+	case NonExistentPrimaryDataError:
+		return true
+	default:
+		return false
+	}
+}
+
+func (err NonExistentPrimaryDataError) As(target any) bool {
+	switch target.(type) {
+	case NonExistentPrimaryDataError:
+		reflect.Indirect(reflect.ValueOf(target)).Set(reflect.ValueOf(err))
+		return true
+	default:
+		return false
+	}
+}
+
+//******************************************************************//
+//                          NopUpdaterError                         //
+//******************************************************************//
+
+type NopUpdaterError struct{}
+
+func (err NopUpdaterError) Error() string {
+	return "The updater will leave the data unchanged"
+}
+
+func (err NopUpdaterError) Is(other error) bool {
+	switch other.(type) {
+	case NopUpdaterError:
+		return true
+	default:
+		return false
+	}
+}
+
+func (err NopUpdaterError) As(target any) bool {
+	switch target.(type) {
+	case NopUpdaterError:
+		reflect.Indirect(reflect.ValueOf(target)).Set(reflect.ValueOf(err))
+		return true
+	default:
+		return false
+	}
+}
+
+//******************************************************************//
+//                           NilInputError                          //
+//******************************************************************//
 
 type NilInputError struct {
 	BadFieldOrParameter string
@@ -79,6 +163,10 @@ func (err NilInputError) As(target any) bool {
 	}
 }
 
+//******************************************************************//
+//                     IneffectiveOperationError                    //
+//******************************************************************//
+
 type IneffectiveOperationError struct {
 	Inner error
 }
@@ -109,6 +197,10 @@ func (err IneffectiveOperationError) As(target any) bool {
 		return false
 	}
 }
+
+//******************************************************************//
+//                      DuplicateInsertionError                     //
+//******************************************************************//
 
 type DuplicateInsertionError struct {
 	Inner error

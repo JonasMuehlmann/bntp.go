@@ -344,7 +344,7 @@ func (repo *Sqlite3DocumentRepository) Add(ctx context.Context, domainModels []*
 	if len(domainModels) == 0 {
 		log.Debug(helper.LogMessageEmptyInput)
 
-		err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
+		err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 
 		return
 	}
@@ -374,7 +374,7 @@ func (repo *Sqlite3DocumentRepository) AddMinimal(ctx context.Context, domainMod
 	if len(domainModels) == 0 {
 		log.Debug(helper.LogMessageEmptyInput)
 
-		err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
+		err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 
 		return
 	}
@@ -428,7 +428,7 @@ func (repo *Sqlite3DocumentRepository) Replace(ctx context.Context, domainModels
 	if len(domainModels) == 0 {
 		log.Debug(helper.LogMessageEmptyInput)
 
-		err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
+		err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 
 		return
 	}
@@ -481,7 +481,7 @@ func (repo *Sqlite3DocumentRepository) Replace(ctx context.Context, domainModels
 				}
 
 				if !doesExist {
-					err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError}
+					err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
 
 					return
 				}
@@ -497,7 +497,7 @@ func (repo *Sqlite3DocumentRepository) Upsert(ctx context.Context, domainModels 
 	if len(domainModels) == 0 {
 		log.Debug(helper.LogMessageEmptyInput)
 
-		err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
+		err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 
 		return
 	}
@@ -551,7 +551,7 @@ func (repo *Sqlite3DocumentRepository) Update(ctx context.Context, domainModels 
 	if len(domainModels) == 0 {
 		log.Debug(helper.LogMessageEmptyInput)
 
-		err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
+		err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 
 		return
 	}
@@ -572,7 +572,7 @@ func (repo *Sqlite3DocumentRepository) Update(ctx context.Context, domainModels 
 	}
 
 	if domainColumnUpdater.IsDefault() {
-		err = helper.IneffectiveOperationError{Inner: helper.NopUpdaterError}
+		err = helper.IneffectiveOperationError{Inner: helper.NopUpdaterError{}}
 		log.Error(err)
 
 		return
@@ -624,7 +624,7 @@ func (repo *Sqlite3DocumentRepository) Update(ctx context.Context, domainModels 
 		}
 
 		if numAffectedRecords == 0 {
-			err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError}
+			err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
 
 			return
 		}
@@ -653,7 +653,7 @@ func (repo *Sqlite3DocumentRepository) UpdateWhere(ctx context.Context, domainCo
 	}
 
 	if domainColumnUpdater.IsDefault() {
-		err = helper.IneffectiveOperationError{Inner: helper.NopUpdaterError}
+		err = helper.IneffectiveOperationError{Inner: helper.NopUpdaterError{}}
 		log.Error(err)
 
 		return
@@ -693,7 +693,7 @@ func (repo *Sqlite3DocumentRepository) UpdateWhere(ctx context.Context, domainCo
 	}
 
 	if len(modelsToUpdate) == 0 {
-		err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError}
+		err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
 
 		return
 	}
@@ -729,7 +729,7 @@ func (repo *Sqlite3DocumentRepository) Delete(ctx context.Context, domainModels 
 	if len(domainModels) == 0 {
 		log.Debug(helper.LogMessageEmptyInput)
 
-		err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
+		err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 
 		return
 	}
@@ -1049,7 +1049,7 @@ func (repo *Sqlite3DocumentRepository) UpdateType(ctx context.Context, oldType s
 			err = helper.DuplicateInsertionError{Inner: err}
 		}
 		if numAffectedRecords == 0 {
-			err = helper.NonExistentPrimaryDataError
+			err = helper.NonExistentPrimaryDataError{}
 
 			return
 		}
