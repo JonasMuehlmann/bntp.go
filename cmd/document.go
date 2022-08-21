@@ -397,9 +397,6 @@ func WithDocument(cli *Cli) {
 	cli.DocumentCmd.AddCommand(cli.DocumentFindCmd)
 	cli.DocumentCmd.AddCommand(cli.DocumentUpsertCmd)
 
-	cli.DocumentFindCmd.MarkFlagRequired("filter")
-	cli.DocumentEditCmd.MarkFlagRequired("updater")
-
 	for _, subcommand := range cli.DocumentCmd.Commands() {
 		if slices.Contains([]*cobra.Command{cli.DocumentAddCmd, cli.DocumentListCmd, cli.DocumentRemoveCmd}, subcommand) {
 			subcommand.PersistentFlags().StringVar(&cli.Format, "format", "json", "The serialization format to use for i/o")
@@ -414,9 +411,12 @@ func WithDocument(cli *Cli) {
 
 	for _, subcommand := range cli.DocumentCmd.Commands() {
 		if slices.Contains([]*cobra.Command{cli.DocumentEditCmd}, subcommand) {
-			subcommand.PersistentFlags().StringVar(&cli.FilterRaw, "updater", "", "The updater to use for processing entities")
+			subcommand.PersistentFlags().StringVar(&cli.UpdaterRaw, "updater", "", "The updater to use for processing entities")
 		}
 	}
+
+	cli.DocumentFindCmd.MarkPersistentFlagRequired("filter")
+	cli.DocumentEditCmd.MarkPersistentFlagRequired("updater")
 
 	// TODO: Add flag to not update document content, because they already were added through an editor
 }

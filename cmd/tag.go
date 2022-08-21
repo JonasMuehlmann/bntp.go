@@ -128,7 +128,7 @@ func WithTag(cli *Cli) {
 		Long:  `A longer description`,
 		Args:  cobra.ArbitraryArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if len(args) == 0 {
+			if len(args) == 0 && cli.FilterRaw == "" {
 				return helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 			}
 
@@ -146,6 +146,8 @@ func WithTag(cli *Cli) {
 			if err != nil {
 				return EntityMarshallingError{Inner: err}
 			}
+
+			//*********************    Use provided tags    ********************//
 			if cli.FilterRaw == "" {
 				err := BNTPBackend.TagManager.Update(context.Background(), tags, updater)
 				if err != nil {
@@ -153,6 +155,8 @@ func WithTag(cli *Cli) {
 				}
 
 				numAffectedRecords = int64(len(args))
+
+				//************************    Use filter    ************************//
 			} else {
 				err = BNTPBackend.Unmarshallers[cli.Format].Unmarshall(filter, cli.FilterRaw)
 				if err != nil {
@@ -432,9 +436,6 @@ func WithTag(cli *Cli) {
 	cli.TagCmd.AddCommand(cli.TagDoesExistCmd)
 	cli.TagCmd.AddCommand(cli.TagAddCmd)
 
-	cli.TagFindCmd.MarkFlagRequired("filter")
-	cli.TagEditCmd.MarkFlagRequired("updater")
-
 	for _, subcommand := range cli.TagCmd.Commands() {
 		if slices.Contains([]*cobra.Command{cli.TagAddCmd, cli.TagListCmd, cli.TagRemoveCmd}, subcommand) {
 			subcommand.PersistentFlags().StringVar(&cli.Format, "format", "json", "The serialization format to use for i/o")
@@ -449,9 +450,12 @@ func WithTag(cli *Cli) {
 
 	for _, subcommand := range cli.TagCmd.Commands() {
 		if slices.Contains([]*cobra.Command{cli.TagEditCmd}, subcommand) {
-			subcommand.PersistentFlags().StringVar(&cli.FilterRaw, "updater", "", "The updater to use for processing entities")
+			subcommand.PersistentFlags().StringVar(&cli.UpdaterRaw, "updater", "", "The updater to use for processing entities")
 		}
 	}
+
+	cli.TagFindCmd.MarkPersistentFlagRequired("filter")
+	cli.TagEditCmd.MarkPersistentFlagRequired("updater")
 
 	cli.TagListCmd.Flags().BoolP("short", "s", false, "Whetever to list shortened tags instead of fully qualified ones")
 }

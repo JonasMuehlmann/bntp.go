@@ -377,9 +377,6 @@ func WithBookmark(cli *Cli) {
 	cli.BookmarkCmd.AddCommand(cli.BookmarkFindCmd)
 	cli.BookmarkCmd.AddCommand(cli.BookmarkUpsertCmd)
 
-	cli.BookmarkFindCmd.MarkFlagRequired("filter")
-	cli.BookmarkEditCmd.MarkFlagRequired("updater")
-
 	for _, subcommand := range cli.BookmarkCmd.Commands() {
 		if slices.Contains([]*cobra.Command{cli.BookmarkAddCmd, cli.BookmarkListCmd, cli.BookmarkRemoveCmd}, subcommand) {
 			subcommand.PersistentFlags().StringVar(&cli.Format, "format", "json", "The serialization format to use for i/o")
@@ -394,7 +391,11 @@ func WithBookmark(cli *Cli) {
 
 	for _, subcommand := range cli.BookmarkCmd.Commands() {
 		if slices.Contains([]*cobra.Command{cli.BookmarkEditCmd}, subcommand) {
-			subcommand.PersistentFlags().StringVar(&cli.FilterRaw, "updater", "", "The updater to use for processing entities")
+			subcommand.PersistentFlags().StringVar(&cli.UpdaterRaw, "updater", "", "The updater to use for processing entities")
 		}
 	}
+
+	cli.BookmarkFindCmd.MarkPersistentFlagRequired("filter")
+	cli.BookmarkEditCmd.MarkPersistentFlagRequired("updater")
+
 }
