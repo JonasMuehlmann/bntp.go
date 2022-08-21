@@ -10,5 +10,6 @@ import (
 func main() {
 	backend := new(backend.Backend)
 
-	cmd.Execute(backend, os.Stderr)
+	cli := cmd.NewCli(cmd.WithAll)
+	cli.Execute(backend, os.Stderr)
 }

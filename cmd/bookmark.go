@@ -30,378 +30,371 @@ import (
 	"golang.org/x/exp/slices"
 )
 
-var Format, FilterRaw, UpdaterRaw string
+func WithBookmark(cli *Cli) {
+	cli.BookmarkCmd = &cobra.Command{
+		Use:   "bookmark",
+		Short: "Manage bntp bookmarks",
+		Long:  `A longer description`,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			if len(args) == 0 {
+				return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
+			}
 
-var bookmarkCmd = &cobra.Command{
-	Use:   "bookmark",
-	Short: "Manage bntp bookmarks",
-	Long:  `A longer description`,
-	RunE: func(cmd *cobra.Command, args []string) error {
-		if len(args) == 0 {
-			return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
-		}
+			return nil
+		},
+	}
 
-		return nil
-	},
-}
+	cli.BookmarkAddCmd = &cobra.Command{
+		Use:   "add MODEL...",
+		Short: "Add a bntp bookmark",
+		Long:  `A longer description`,
+		Args:  cobra.ArbitraryArgs,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			if len(args) == 0 {
+				return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
+			}
 
-var bookmarkAddCmd = &cobra.Command{
-	Use:   "add MODEL...",
-	Short: "Add a bntp bookmark",
-	Long:  `A longer description`,
-	Args:  cobra.ArbitraryArgs,
-	RunE: func(cmd *cobra.Command, args []string) error {
-		if len(args) == 0 {
-			return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
-		}
-
-		bookmarks, err := UnmarshalEntities[domain.Bookmark](args)
-		if err != nil {
-			return err
-		}
-
-		err = BNTPBackend.BookmarkManager.Add(context.Background(), bookmarks)
-		if err != nil {
-			return err
-		}
-
-		return nil
-	},
-}
-
-var bookmarkReplaceCmd = &cobra.Command{
-	Use:   "replace MODEL...",
-	Short: "Replace a bntp bookmark with an updated version",
-	Long:  `A longer description`,
-	Args:  cobra.ArbitraryArgs,
-	RunE: func(cmd *cobra.Command, args []string) error {
-		if len(args) == 0 {
-			return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
-		}
-
-		bookmarks, err := UnmarshalEntities[domain.Bookmark](args)
-		if err != nil {
-			return err
-		}
-
-		err = BNTPBackend.BookmarkManager.Replace(context.Background(), bookmarks)
-		if err != nil {
-			return err
-		}
-
-		return nil
-	},
-}
-
-var bookmarkUpsertCmd = &cobra.Command{
-	Use:   "upsert MODEL...",
-	Short: "Add or replace a bntp bookmark",
-	Long:  `A longer description`,
-	Args:  cobra.ArbitraryArgs,
-	RunE: func(cmd *cobra.Command, args []string) error {
-		if len(args) == 0 {
-			return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
-		}
-
-		bookmarks, err := UnmarshalEntities[domain.Bookmark](args)
-		if err != nil {
-			return err
-		}
-
-		err = BNTPBackend.BookmarkManager.Upsert(context.Background(), bookmarks)
-		if err != nil {
-			return err
-		}
-
-		return nil
-	},
-}
-
-var bookmarkEditCmd = &cobra.Command{
-	Use:   "edit MODEL...",
-	Short: "Edit a bntp bookmark",
-	Long:  `A longer description`,
-	Args:  cobra.ArbitraryArgs,
-	RunE: func(cmd *cobra.Command, args []string) error {
-		if len(args) == 0 {
-			return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
-		}
-
-		var err error
-		var filter *domain.BookmarkFilter
-		var updater *domain.BookmarkUpdater
-		var numAffectedRecords int64
-
-		bookmarks, err := UnmarshalEntities[domain.Bookmark](args)
-		if err != nil {
-			return err
-		}
-
-		err = BNTPBackend.Unmarshallers[Format].Unmarshall(updater, UpdaterRaw)
-		if err != nil {
-			return EntityMarshallingError{Inner: err}
-		}
-		if FilterRaw == "" {
-			err := BNTPBackend.BookmarkManager.Update(context.Background(), bookmarks, updater)
+			bookmarks, err := UnmarshalEntities[domain.Bookmark](args, cli.Format)
 			if err != nil {
 				return err
 			}
 
-			numAffectedRecords = int64(len(args))
-		} else {
-			err = BNTPBackend.Unmarshallers[Format].Unmarshall(filter, FilterRaw)
+			err = BNTPBackend.BookmarkManager.Add(context.Background(), bookmarks)
+			if err != nil {
+				return err
+			}
+
+			return nil
+		},
+	}
+
+	cli.BookmarkReplaceCmd = &cobra.Command{
+		Use:   "replace MODEL...",
+		Short: "Replace a bntp bookmark with an updated version",
+		Long:  `A longer description`,
+		Args:  cobra.ArbitraryArgs,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			if len(args) == 0 {
+				return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
+			}
+
+			bookmarks, err := UnmarshalEntities[domain.Bookmark](args, cli.Format)
+			if err != nil {
+				return err
+			}
+
+			err = BNTPBackend.BookmarkManager.Replace(context.Background(), bookmarks)
+			if err != nil {
+				return err
+			}
+
+			return nil
+		},
+	}
+
+	cli.BookmarkUpsertCmd = &cobra.Command{
+		Use:   "upsert MODEL...",
+		Short: "Add or replace a bntp bookmark",
+		Long:  `A longer description`,
+		Args:  cobra.ArbitraryArgs,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			if len(args) == 0 {
+				return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
+			}
+
+			bookmarks, err := UnmarshalEntities[domain.Bookmark](args, cli.Format)
+			if err != nil {
+				return err
+			}
+
+			err = BNTPBackend.BookmarkManager.Upsert(context.Background(), bookmarks)
+			if err != nil {
+				return err
+			}
+
+			return nil
+		},
+	}
+
+	cli.BookmarkEditCmd = &cobra.Command{
+		Use:   "edit MODEL...",
+		Short: "Edit a bntp bookmark",
+		Long:  `A longer description`,
+		Args:  cobra.ArbitraryArgs,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			if len(args) == 0 {
+				return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
+			}
+
+			var err error
+			var filter *domain.BookmarkFilter
+			var updater *domain.BookmarkUpdater
+			var numAffectedRecords int64
+
+			bookmarks, err := UnmarshalEntities[domain.Bookmark](args, cli.Format)
+			if err != nil {
+				return err
+			}
+
+			err = BNTPBackend.Unmarshallers[cli.Format].Unmarshall(updater, cli.UpdaterRaw)
+			if err != nil {
+				return EntityMarshallingError{Inner: err}
+			}
+			if cli.FilterRaw == "" {
+				err := BNTPBackend.BookmarkManager.Update(context.Background(), bookmarks, updater)
+				if err != nil {
+					return err
+				}
+
+				numAffectedRecords = int64(len(args))
+			} else {
+				err = BNTPBackend.Unmarshallers[cli.Format].Unmarshall(filter, cli.FilterRaw)
+				if err != nil {
+					return EntityMarshallingError{Inner: err}
+				}
+
+				numAffectedRecords, err = BNTPBackend.BookmarkManager.UpdateWhere(context.Background(), filter, updater)
+				if err != nil {
+					return err
+				}
+			}
+
+			fmt.Fprintln(cli.RootCmd.OutOrStdout(), numAffectedRecords)
+
+			return nil
+		},
+	}
+
+	cli.BookmarkListCmd = &cobra.Command{
+		Use:   "list",
+		Short: "List bntp bookmarks",
+		Long:  `A longer description`,
+		Args:  cobra.NoArgs,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			if len(args) == 0 {
+				return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
+			}
+
+			var bookmarks []*domain.Bookmark
+			var filter *domain.BookmarkFilter
+			var output string
+			var err error
+
+			if cli.FilterRaw == "" {
+				bookmarks, err = BNTPBackend.BookmarkManager.GetAll(context.Background())
+				if err != nil {
+					return err
+				}
+			} else {
+				err = BNTPBackend.Unmarshallers[cli.Format].Unmarshall(filter, cli.FilterRaw)
+				if err != nil {
+					return EntityMarshallingError{Inner: err}
+				}
+
+				bookmarks, err = BNTPBackend.BookmarkManager.GetWhere(context.Background(), filter)
+				if err != nil {
+					return err
+				}
+			}
+
+			output, err = BNTPBackend.Marshallers[cli.Format].Marshall(bookmarks)
 			if err != nil {
 				return EntityMarshallingError{Inner: err}
 			}
 
-			numAffectedRecords, err = BNTPBackend.BookmarkManager.UpdateWhere(context.Background(), filter, updater)
-			if err != nil {
-				return err
-			}
-		}
+			fmt.Fprintln(cli.RootCmd.OutOrStdout(), output)
 
-		fmt.Fprintln(RootCmd.OutOrStdout(), numAffectedRecords)
+			return nil
+		},
+	}
 
-		return nil
-	},
-}
-
-var bookmarkListCmd = &cobra.Command{
-	Use:   "list",
-	Short: "List bntp bookmarks",
-	Long:  `A longer description`,
-	Args:  cobra.NoArgs,
-	RunE: func(cmd *cobra.Command, args []string) error {
-		if len(args) == 0 {
-			return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
-		}
-
-		var bookmarks []*domain.Bookmark
-		var filter *domain.BookmarkFilter
-		var output string
-		var err error
-
-		if FilterRaw == "" {
-			bookmarks, err = BNTPBackend.BookmarkManager.GetAll(context.Background())
-			if err != nil {
-				return err
-			}
-		} else {
-			err = BNTPBackend.Unmarshallers[Format].Unmarshall(filter, FilterRaw)
-			if err != nil {
-				return EntityMarshallingError{Inner: err}
+	cli.BookmarkRemoveCmd = &cobra.Command{
+		Use:   "remove [MODEL...]",
+		Short: "Remove a bntp bookmark",
+		Long:  `A longer description`,
+		Args:  cobra.ArbitraryArgs,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			if len(args) == 0 {
+				return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
 			}
 
-			bookmarks, err = BNTPBackend.BookmarkManager.GetWhere(context.Background(), filter)
-			if err != nil {
-				return err
-			}
-		}
+			var filter *domain.BookmarkFilter
+			var err error
+			var numAffectedRecords int64
 
-		output, err = BNTPBackend.Marshallers[Format].Marshall(bookmarks)
-		if err != nil {
-			return EntityMarshallingError{Inner: err}
-		}
+			if cli.FilterRaw == "" {
+				bookmarks, err := UnmarshalEntities[domain.Bookmark](args, cli.Format)
+				if err != nil {
+					return err
+				}
 
-		fmt.Fprintln(RootCmd.OutOrStdout(), output)
+				err = BNTPBackend.BookmarkManager.Delete(context.Background(), bookmarks)
+				if err != nil {
+					return err
+				}
 
-		return nil
-	},
-}
+				numAffectedRecords = int64(len(args))
+			} else {
+				err = BNTPBackend.Unmarshallers[cli.Format].Unmarshall(filter, cli.FilterRaw)
+				if err != nil {
+					return EntityMarshallingError{Inner: err}
+				}
 
-var bookmarkRemoveCmd = &cobra.Command{
-	Use:   "remove [MODEL...]",
-	Short: "Remove a bntp bookmark",
-	Long:  `A longer description`,
-	Args:  cobra.ArbitraryArgs,
-	RunE: func(cmd *cobra.Command, args []string) error {
-		if len(args) == 0 {
-			return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
-		}
-
-		var filter *domain.BookmarkFilter
-		var err error
-		var numAffectedRecords int64
-
-		if FilterRaw == "" {
-			bookmarks, err := UnmarshalEntities[domain.Bookmark](args)
-			if err != nil {
-				return err
+				numAffectedRecords, err = BNTPBackend.BookmarkManager.DeleteWhere(context.Background(), filter)
+				if err != nil {
+					return err
+				}
 			}
 
-			err = BNTPBackend.BookmarkManager.Delete(context.Background(), bookmarks)
-			if err != nil {
-				return err
+			fmt.Fprintln(cli.RootCmd.OutOrStdout(), numAffectedRecords)
+
+			return nil
+		},
+	}
+
+	cli.BookmarkFindCmd = &cobra.Command{
+		Use:   "find-first",
+		Short: "Find the first bookmark matching a filter",
+		Long:  `A longer description`,
+		Args:  cobra.NoArgs,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			if len(args) == 0 {
+				return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
 			}
 
-			numAffectedRecords = int64(len(args))
-		} else {
-			err = BNTPBackend.Unmarshallers[Format].Unmarshall(filter, FilterRaw)
+			var filter *domain.BookmarkFilter
+			var err error
+			var result *domain.Bookmark
+			var output string
+
+			err = BNTPBackend.Unmarshallers[cli.Format].Unmarshall(filter, cli.FilterRaw)
 			if err != nil {
 				return EntityMarshallingError{Inner: err}
 			}
 
-			numAffectedRecords, err = BNTPBackend.BookmarkManager.DeleteWhere(context.Background(), filter)
+			result, err = BNTPBackend.BookmarkManager.GetFirstWhere(context.Background(), filter)
 			if err != nil {
 				return err
 			}
-		}
 
-		fmt.Fprintln(RootCmd.OutOrStdout(), numAffectedRecords)
-
-		return nil
-	},
-}
-
-var bookmarkFindCmd = &cobra.Command{
-	Use:   "find-first",
-	Short: "Find the first bookmark matching a filter",
-	Long:  `A longer description`,
-	Args:  cobra.NoArgs,
-	RunE: func(cmd *cobra.Command, args []string) error {
-		if len(args) == 0 {
-			return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
-		}
-
-		var filter *domain.BookmarkFilter
-		var err error
-		var result *domain.Bookmark
-		var output string
-
-		err = BNTPBackend.Unmarshallers[Format].Unmarshall(filter, FilterRaw)
-		if err != nil {
-			return EntityMarshallingError{Inner: err}
-		}
-
-		result, err = BNTPBackend.BookmarkManager.GetFirstWhere(context.Background(), filter)
-		if err != nil {
-			return err
-		}
-
-		output, err = BNTPBackend.Marshallers[Format].Marshall(result)
-		if err != nil {
-			return EntityMarshallingError{Inner: err}
-		}
-
-		fmt.Fprintln(RootCmd.OutOrStdout(), output)
-
-		return nil
-	},
-}
-var bookmarkCountCmd = &cobra.Command{
-	Use:   "count",
-	Short: "Manage bntp bookmarks",
-	Long:  `A longer description`,
-	Args:  cobra.NoArgs,
-	RunE: func(cmd *cobra.Command, args []string) error {
-		if len(args) == 0 {
-			return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
-		}
-
-		var filter *domain.BookmarkFilter
-		var count int64
-		var err error
-
-		if FilterRaw == "" {
-			count, err = BNTPBackend.BookmarkManager.CountAll(context.Background())
-			if err != nil {
-				return err
-			}
-		} else {
-			err = BNTPBackend.Unmarshallers[Format].Unmarshall(filter, FilterRaw)
+			output, err = BNTPBackend.Marshallers[cli.Format].Marshall(result)
 			if err != nil {
 				return EntityMarshallingError{Inner: err}
 			}
 
-			count, err = BNTPBackend.BookmarkManager.CountWhere(context.Background(), filter)
-			if err != nil {
-				return err
-			}
-		}
+			fmt.Fprintln(cli.RootCmd.OutOrStdout(), output)
 
-		fmt.Fprintln(RootCmd.OutOrStdout(), count)
-
-		return nil
-	},
-}
-var bookmarkDoesExistCmd = &cobra.Command{
-	Use:   "does-exist [MODEL]",
-	Short: "Manage bntp bookmarks",
-	Long:  `A longer description`,
-	Args:  cobra.RangeArgs(0, 1),
-	RunE: func(cmd *cobra.Command, args []string) error {
-		if len(args) == 0 {
-			return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
-		}
-
-		var filter *domain.BookmarkFilter
-		var err error
-		var bookmark *domain.Bookmark
-		var doesExist bool
-
-		if FilterRaw == "" {
-			err = BNTPBackend.Unmarshallers[Format].Unmarshall(bookmark, args[0])
-			if err != nil {
-				return EntityMarshallingError{Inner: err}
+			return nil
+		},
+	}
+	cli.BookmarkCountCmd = &cobra.Command{
+		Use:   "count",
+		Short: "Manage bntp bookmarks",
+		Long:  `A longer description`,
+		Args:  cobra.NoArgs,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			if len(args) == 0 {
+				return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
 			}
 
-			doesExist, err = BNTPBackend.BookmarkManager.DoesExist(context.Background(), bookmark)
-			if err != nil {
-				return err
+			var filter *domain.BookmarkFilter
+			var count int64
+			var err error
+
+			if cli.FilterRaw == "" {
+				count, err = BNTPBackend.BookmarkManager.CountAll(context.Background())
+				if err != nil {
+					return err
+				}
+			} else {
+				err = BNTPBackend.Unmarshallers[cli.Format].Unmarshall(filter, cli.FilterRaw)
+				if err != nil {
+					return EntityMarshallingError{Inner: err}
+				}
+
+				count, err = BNTPBackend.BookmarkManager.CountWhere(context.Background(), filter)
+				if err != nil {
+					return err
+				}
 			}
-		} else {
-			err = BNTPBackend.Unmarshallers[Format].Unmarshall(filter, FilterRaw)
-			if err != nil {
-				return EntityMarshallingError{Inner: err}
+
+			fmt.Fprintln(cli.RootCmd.OutOrStdout(), count)
+
+			return nil
+		},
+	}
+	cli.BookmarkDoesExistCmd = &cobra.Command{
+		Use:   "does-exist [MODEL]",
+		Short: "Manage bntp bookmarks",
+		Long:  `A longer description`,
+		Args:  cobra.RangeArgs(0, 1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			if len(args) == 0 {
+				return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
 			}
 
-			doesExist, err = BNTPBackend.BookmarkManager.DoesExistWhere(context.Background(), filter)
-			if err != nil {
-				return err
+			var filter *domain.BookmarkFilter
+			var err error
+			var bookmark *domain.Bookmark
+			var doesExist bool
+
+			if cli.FilterRaw == "" {
+				err = BNTPBackend.Unmarshallers[cli.Format].Unmarshall(bookmark, args[0])
+				if err != nil {
+					return EntityMarshallingError{Inner: err}
+				}
+
+				doesExist, err = BNTPBackend.BookmarkManager.DoesExist(context.Background(), bookmark)
+				if err != nil {
+					return err
+				}
+			} else {
+				err = BNTPBackend.Unmarshallers[cli.Format].Unmarshall(filter, cli.FilterRaw)
+				if err != nil {
+					return EntityMarshallingError{Inner: err}
+				}
+
+				doesExist, err = BNTPBackend.BookmarkManager.DoesExistWhere(context.Background(), filter)
+				if err != nil {
+					return err
+				}
 			}
-		}
 
-		fmt.Fprintln(RootCmd.OutOrStdout(), doesExist)
+			fmt.Fprintln(cli.RootCmd.OutOrStdout(), doesExist)
 
-		return nil
-	},
-}
+			return nil
+		},
+	}
 
-func init() {
-	RootCmd.AddCommand(bookmarkCmd)
-	bookmarkCmd.AddCommand(bookmarkListCmd)
-	bookmarkCmd.AddCommand(bookmarkReplaceCmd)
-	bookmarkCmd.AddCommand(bookmarkEditCmd)
-	bookmarkCmd.AddCommand(bookmarkAddCmd)
-	bookmarkCmd.AddCommand(bookmarkRemoveCmd)
-	bookmarkCmd.AddCommand(bookmarkCountCmd)
-	bookmarkCmd.AddCommand(bookmarkDoesExistCmd)
-	bookmarkCmd.AddCommand(bookmarkFindCmd)
-	bookmarkCmd.AddCommand(bookmarkUpsertCmd)
+	cli.RootCmd.AddCommand(cli.BookmarkCmd)
+	cli.BookmarkCmd.AddCommand(cli.BookmarkListCmd)
+	cli.BookmarkCmd.AddCommand(cli.BookmarkReplaceCmd)
+	cli.BookmarkCmd.AddCommand(cli.BookmarkEditCmd)
+	cli.BookmarkCmd.AddCommand(cli.BookmarkAddCmd)
+	cli.BookmarkCmd.AddCommand(cli.BookmarkRemoveCmd)
+	cli.BookmarkCmd.AddCommand(cli.BookmarkCountCmd)
+	cli.BookmarkCmd.AddCommand(cli.BookmarkDoesExistCmd)
+	cli.BookmarkCmd.AddCommand(cli.BookmarkFindCmd)
+	cli.BookmarkCmd.AddCommand(cli.BookmarkUpsertCmd)
 
-	bookmarkFindCmd.MarkFlagRequired("filter")
-	bookmarkEditCmd.MarkFlagRequired("updater")
+	cli.BookmarkFindCmd.MarkFlagRequired("filter")
+	cli.BookmarkEditCmd.MarkFlagRequired("updater")
 
-	bookmarkCmd.AddCommand(bookmarkTypeCmd)
-	bookmarkTypeCmd.AddCommand(bookmarkTypeAddCmd)
-	bookmarkTypeCmd.AddCommand(bookmarkTypeEditCmd)
-	bookmarkTypeCmd.AddCommand(bookmarkTypeRemoveCmd)
-
-	for _, subcommand := range bookmarkCmd.Commands() {
-		if slices.Contains([]*cobra.Command{bookmarkAddCmd, bookmarkListCmd, bookmarkRemoveCmd}, subcommand) {
-			subcommand.PersistentFlags().StringVar(&Format, "format", "json", "The serialization format to use for i/o")
+	for _, subcommand := range cli.BookmarkCmd.Commands() {
+		if slices.Contains([]*cobra.Command{cli.BookmarkAddCmd, cli.BookmarkListCmd, cli.BookmarkRemoveCmd}, subcommand) {
+			subcommand.PersistentFlags().StringVar(&cli.Format, "format", "json", "The serialization format to use for i/o")
 		}
 	}
 
-	for _, subcommand := range bookmarkCmd.Commands() {
-		if slices.Contains([]*cobra.Command{bookmarkEditCmd, bookmarkListCmd, bookmarkRemoveCmd}, subcommand) {
-			subcommand.PersistentFlags().StringVar(&FilterRaw, "filter", "", "The filter to use for processing entities")
+	for _, subcommand := range cli.BookmarkCmd.Commands() {
+		if slices.Contains([]*cobra.Command{cli.BookmarkEditCmd, cli.BookmarkListCmd, cli.BookmarkRemoveCmd}, subcommand) {
+			subcommand.PersistentFlags().StringVar(&cli.FilterRaw, "filter", "", "The filter to use for processing entities")
 		}
 	}
 
-	for _, subcommand := range bookmarkCmd.Commands() {
-		if slices.Contains([]*cobra.Command{bookmarkEditCmd}, subcommand) {
-			subcommand.PersistentFlags().StringVar(&FilterRaw, "updater", "", "The updater to use for processing entities")
+	for _, subcommand := range cli.BookmarkCmd.Commands() {
+		if slices.Contains([]*cobra.Command{cli.BookmarkEditCmd}, subcommand) {
+			subcommand.PersistentFlags().StringVar(&cli.FilterRaw, "updater", "", "The updater to use for processing entities")
 		}
 	}
 }

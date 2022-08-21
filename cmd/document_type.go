@@ -27,72 +27,79 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var documentTypeCmd = &cobra.Command{
-	Use:   "type",
-	Short: "Manage types of bntp documents",
-	Long:  `A longer description`,
-	RunE: func(cmd *cobra.Command, args []string) error {
-		if len(args) == 0 {
-			return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
-		}
+func WithDocumentType(cli *Cli) {
+	cli.DocumentTypeCmd = &cobra.Command{
+		Use:   "type",
+		Short: "Manage types of bntp documents",
+		Long:  `A longer description`,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			if len(args) == 0 {
+				return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
+			}
 
-		return nil
-	},
-}
+			return nil
+		},
+	}
 
-var documentTypeAddCmd = &cobra.Command{
-	Use:   "add TYPE...",
-	Short: "Add new bntp document types",
-	Long:  `A longer description`,
-	Args:  cobra.ArbitraryArgs,
-	RunE: func(cmd *cobra.Command, args []string) error {
-		if len(args) == 0 {
-			return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
-		}
+	cli.DocumentTypeAddCmd = &cobra.Command{
+		Use:   "add TYPE...",
+		Short: "Add new bntp document types",
+		Long:  `A longer description`,
+		Args:  cobra.ArbitraryArgs,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			if len(args) == 0 {
+				return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
+			}
 
-		err := BNTPBackend.DocumentManager.AddType(context.Background(), args)
-		if err != nil {
-			return err
-		}
+			err := BNTPBackend.DocumentManager.AddType(context.Background(), args)
+			if err != nil {
+				return err
+			}
 
-		return nil
-	},
-}
+			return nil
+		},
+	}
 
-var documentTypeEditCmd = &cobra.Command{
-	Use:   "edit OLD_NAME NEW_NAME",
-	Short: "Change a bntp document type",
-	Long:  `A longer description`,
-	Args:  cobra.ExactArgs(2),
-	RunE: func(cmd *cobra.Command, args []string) error {
-		if len(args) == 0 {
-			return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
-		}
+	cli.DocumentTypeEditCmd = &cobra.Command{
+		Use:   "edit OLD_NAME NEW_NAME",
+		Short: "Change a bntp document type",
+		Long:  `A longer description`,
+		Args:  cobra.ExactArgs(2),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			if len(args) == 0 {
+				return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
+			}
 
-		err := BNTPBackend.DocumentManager.UpdateType(context.Background(), args[0], args[1])
-		if err != nil {
-			return err
-		}
+			err := BNTPBackend.DocumentManager.UpdateType(context.Background(), args[0], args[1])
+			if err != nil {
+				return err
+			}
 
-		return nil
-	},
-}
+			return nil
+		},
+	}
 
-var documentTypeRemoveCmd = &cobra.Command{
-	Use:   "remove TYPE...",
-	Short: "Remove bntp document types",
-	Long:  `A longer description`,
-	Args:  cobra.ArbitraryArgs,
-	RunE: func(cmd *cobra.Command, args []string) error {
-		if len(args) == 0 {
-			return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
-		}
+	cli.DocumentTypeRemoveCmd = &cobra.Command{
+		Use:   "remove TYPE...",
+		Short: "Remove bntp document types",
+		Long:  `A longer description`,
+		Args:  cobra.ArbitraryArgs,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			if len(args) == 0 {
+				return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
+			}
 
-		err := BNTPBackend.DocumentManager.DeleteType(context.Background(), args)
-		if err != nil {
-			return err
-		}
+			err := BNTPBackend.DocumentManager.DeleteType(context.Background(), args)
+			if err != nil {
+				return err
+			}
 
-		return nil
-	},
+			return nil
+		},
+	}
+
+	cli.DocumentCmd.AddCommand(cli.DocumentTypeCmd)
+	cli.DocumentTypeCmd.AddCommand(cli.DocumentTypeAddCmd)
+	cli.DocumentTypeCmd.AddCommand(cli.DocumentTypeEditCmd)
+	cli.DocumentTypeCmd.AddCommand(cli.DocumentTypeRemoveCmd)
 }

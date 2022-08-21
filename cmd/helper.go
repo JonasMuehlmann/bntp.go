@@ -57,12 +57,12 @@ func (err EntityMarshallingError) As(target any) bool {
 	}
 }
 
-func UnmarshalEntities[TEntity any](args []string) (entities []*TEntity, err error) {
+func UnmarshalEntities[TEntity any](args []string, format string) (entities []*TEntity, err error) {
 	tags := make([]*TEntity, len(args))
 	for i, arg := range args {
 		tags[i] = new(TEntity)
 
-		err := BNTPBackend.Unmarshallers[Format].Unmarshall(tags[i], arg)
+		err := BNTPBackend.Unmarshallers[format].Unmarshall(tags[i], arg)
 		if err != nil {
 			return tags, EntityMarshallingError{Inner: err}
 		}
