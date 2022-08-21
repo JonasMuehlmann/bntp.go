@@ -56,3 +56,17 @@ func (err EntityMarshallingError) As(target any) bool {
 		return false
 	}
 }
+
+func UnmarshalEntities[TEntity any](args []string) (entities []*TEntity, err error) {
+	tags := make([]*TEntity, len(args))
+	for i, arg := range args {
+		tags[i] = new(TEntity)
+
+		err := BNTPBackend.Unmarshallers[Format].Unmarshall(tags[i], arg)
+		if err != nil {
+			return tags, EntityMarshallingError{Inner: err}
+		}
+	}
+
+	return tags, nil
+}

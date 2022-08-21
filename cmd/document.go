@@ -53,17 +53,13 @@ var documentAddCmd = &cobra.Command{
 			return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
 		}
 
-		documents := make([]*domain.Document, 0, len(args))
-
-		for i, documentOut := range documents {
-			err := BNTPBackend.Unmarshallers[Format].Unmarshall(documentOut, args[i])
-			if err != nil {
-				return EntityMarshallingError{Inner: err}
-			}
+		documents, err := UnmarshalEntities[domain.Document](args)
+		if err != nil {
+			return err
 		}
 
 		// NOTE: Should we also try to add an empty document?
-		err := BNTPBackend.DocumentManager.Add(context.Background(), documents)
+		err = BNTPBackend.DocumentManager.Add(context.Background(), documents)
 		if err != nil {
 			return err
 		}
@@ -82,16 +78,12 @@ var documentReplaceCmd = &cobra.Command{
 			return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
 		}
 
-		documents := make([]*domain.Document, 0, len(args))
-
-		for i, documentOut := range documents {
-			err := BNTPBackend.Unmarshallers[Format].Unmarshall(documentOut, args[i])
-			if err != nil {
-				return EntityMarshallingError{Inner: err}
-			}
+		documents, err := UnmarshalEntities[domain.Document](args)
+		if err != nil {
+			return err
 		}
 
-		err := BNTPBackend.DocumentManager.Replace(context.Background(), documents)
+		err = BNTPBackend.DocumentManager.Replace(context.Background(), documents)
 		if err != nil {
 			return err
 		}
@@ -115,16 +107,12 @@ var documentUpsertCmd = &cobra.Command{
 			return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
 		}
 
-		documents := make([]*domain.Document, 0, len(args))
-
-		for i, documentOut := range documents {
-			err := BNTPBackend.Unmarshallers[Format].Unmarshall(documentOut, args[i])
-			if err != nil {
-				return EntityMarshallingError{Inner: err}
-			}
+		documents, err := UnmarshalEntities[domain.Document](args)
+		if err != nil {
+			return err
 		}
 
-		err := BNTPBackend.DocumentManager.Upsert(context.Background(), documents)
+		err = BNTPBackend.DocumentManager.Upsert(context.Background(), documents)
 		if err != nil {
 			return err
 		}
@@ -153,13 +141,9 @@ var documentEditCmd = &cobra.Command{
 		var updater *domain.DocumentUpdater
 		var numAffectedRecords int64
 
-		documents := make([]*domain.Document, 0, len(args))
-
-		for i, documentOut := range documents {
-			err := BNTPBackend.Unmarshallers[Format].Unmarshall(documentOut, args[i])
-			if err != nil {
-				return EntityMarshallingError{Inner: err}
-			}
+		documents, err := UnmarshalEntities[domain.Document](args)
+		if err != nil {
+			return err
 		}
 
 		err = BNTPBackend.Unmarshallers[Format].Unmarshall(updater, UpdaterRaw)
@@ -258,13 +242,9 @@ var documentRemoveCmd = &cobra.Command{
 		var numAffectedRecords int64
 
 		if FilterRaw == "" {
-			documents := make([]*domain.Document, 0, len(args))
-
-			for i, documentOut := range documents {
-				err := BNTPBackend.Unmarshallers[Format].Unmarshall(documentOut, args[i])
-				if err != nil {
-					return EntityMarshallingError{Inner: err}
-				}
+			documents, err := UnmarshalEntities[domain.Document](args)
+			if err != nil {
+				return err
 			}
 
 			err = BNTPBackend.DocumentManager.Delete(context.Background(), documents)

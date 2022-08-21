@@ -52,23 +52,13 @@ var tagAddCmd = &cobra.Command{
 		if len(args) == 0 {
 			return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
 		}
-		tags := make([]*domain.Tag, len(args))
-
-		for i, arg := range args {
-			tags[i] = new(domain.Tag)
-
-			err := BNTPBackend.Unmarshallers[Format].Unmarshall(tags[i], arg)
-			if err != nil {
-				return EntityMarshallingError{Inner: err}
-			}
-		}
-
-		err := BNTPBackend.TagManager.Add(context.Background(), tags)
+		tags, err := UnmarshalEntities[domain.Tag](args)
 		if err != nil {
 			return err
 		}
+		err = BNTPBackend.TagManager.Add(context.Background(), tags)
 
-		return nil
+		return err
 	},
 }
 
@@ -82,6 +72,8 @@ var tagAmbiguousCmd = &cobra.Command{
 		if len(args) == 0 {
 			return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
 		}
+
+		panic("not implemented")
 
 		return nil
 	},
@@ -97,21 +89,14 @@ var tagReplaceCmd = &cobra.Command{
 			return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
 		}
 
-		tags := make([]*domain.Tag, 0, len(args))
-
-		for i, tagOut := range tags {
-			err := BNTPBackend.Unmarshallers[Format].Unmarshall(tagOut, args[i])
-			if err != nil {
-				return EntityMarshallingError{Inner: err}
-			}
-		}
-
-		err := BNTPBackend.TagManager.Replace(context.Background(), tags)
+		tags, err := UnmarshalEntities[domain.Tag](args)
 		if err != nil {
 			return err
 		}
 
-		return nil
+		err = BNTPBackend.TagManager.Replace(context.Background(), tags)
+
+		return err
 	},
 }
 
@@ -125,21 +110,14 @@ var tagUpsertCmd = &cobra.Command{
 			return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
 		}
 
-		tags := make([]*domain.Tag, 0, len(args))
-
-		for i, tagOut := range tags {
-			err := BNTPBackend.Unmarshallers[Format].Unmarshall(tagOut, args[i])
-			if err != nil {
-				return EntityMarshallingError{Inner: err}
-			}
-		}
-
-		err := BNTPBackend.TagManager.Upsert(context.Background(), tags)
+		tags, err := UnmarshalEntities[domain.Tag](args)
 		if err != nil {
 			return err
 		}
 
-		return nil
+		err = BNTPBackend.TagManager.Upsert(context.Background(), tags)
+
+		return err
 	},
 }
 
@@ -158,13 +136,9 @@ var tagEditCmd = &cobra.Command{
 		var updater *domain.TagUpdater
 		var numAffectedRecords int64
 
-		tags := make([]*domain.Tag, 0, len(args))
-
-		for i, tagOut := range tags {
-			err := BNTPBackend.Unmarshallers[Format].Unmarshall(tagOut, args[i])
-			if err != nil {
-				return EntityMarshallingError{Inner: err}
-			}
+		tags, err := UnmarshalEntities[domain.Tag](args)
+		if err != nil {
+			return err
 		}
 
 		err = BNTPBackend.Unmarshallers[Format].Unmarshall(updater, UpdaterRaw)
@@ -282,13 +256,9 @@ var tagRemoveCmd = &cobra.Command{
 		var numAffectedRecords int64
 
 		if FilterRaw == "" {
-			tags := make([]*domain.Tag, 0, len(args))
-
-			for i, tagOut := range tags {
-				err := BNTPBackend.Unmarshallers[Format].Unmarshall(tagOut, args[i])
-				if err != nil {
-					return EntityMarshallingError{Inner: err}
-				}
+			tags, err := UnmarshalEntities[domain.Tag](args)
+			if err != nil {
+				return err
 			}
 
 			err = BNTPBackend.TagManager.Delete(context.Background(), tags)

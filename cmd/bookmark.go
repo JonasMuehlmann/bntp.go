@@ -55,18 +55,12 @@ var bookmarkAddCmd = &cobra.Command{
 			return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
 		}
 
-		bookmarks := make([]*domain.Bookmark, len(args))
-
-		for i, arg := range args {
-			bookmarks[i] = new(domain.Bookmark)
-
-			err := BNTPBackend.Unmarshallers[Format].Unmarshall(bookmarks[i], arg)
-			if err != nil {
-				return EntityMarshallingError{Inner: err}
-			}
+		bookmarks, err := UnmarshalEntities[domain.Bookmark](args)
+		if err != nil {
+			return err
 		}
 
-		err := BNTPBackend.BookmarkManager.Add(context.Background(), bookmarks)
+		err = BNTPBackend.BookmarkManager.Add(context.Background(), bookmarks)
 		if err != nil {
 			return err
 		}
@@ -85,16 +79,12 @@ var bookmarkReplaceCmd = &cobra.Command{
 			return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
 		}
 
-		bookmarks := make([]*domain.Bookmark, 0, len(args))
-
-		for i, bookmarkOut := range bookmarks {
-			err := BNTPBackend.Unmarshallers[Format].Unmarshall(bookmarkOut, args[i])
-			if err != nil {
-				return EntityMarshallingError{Inner: err}
-			}
+		bookmarks, err := UnmarshalEntities[domain.Bookmark](args)
+		if err != nil {
+			return err
 		}
 
-		err := BNTPBackend.BookmarkManager.Replace(context.Background(), bookmarks)
+		err = BNTPBackend.BookmarkManager.Replace(context.Background(), bookmarks)
 		if err != nil {
 			return err
 		}
@@ -113,16 +103,12 @@ var bookmarkUpsertCmd = &cobra.Command{
 			return helper.IneffectiveOperationError{Inner: helper.EmptyInputError}
 		}
 
-		bookmarks := make([]*domain.Bookmark, 0, len(args))
-
-		for i, bookmarkOut := range bookmarks {
-			err := BNTPBackend.Unmarshallers[Format].Unmarshall(bookmarkOut, args[i])
-			if err != nil {
-				return EntityMarshallingError{Inner: err}
-			}
+		bookmarks, err := UnmarshalEntities[domain.Bookmark](args)
+		if err != nil {
+			return err
 		}
 
-		err := BNTPBackend.BookmarkManager.Upsert(context.Background(), bookmarks)
+		err = BNTPBackend.BookmarkManager.Upsert(context.Background(), bookmarks)
 		if err != nil {
 			return err
 		}
@@ -146,13 +132,9 @@ var bookmarkEditCmd = &cobra.Command{
 		var updater *domain.BookmarkUpdater
 		var numAffectedRecords int64
 
-		bookmarks := make([]*domain.Bookmark, 0, len(args))
-
-		for i, bookmarkOut := range bookmarks {
-			err := BNTPBackend.Unmarshallers[Format].Unmarshall(bookmarkOut, args[i])
-			if err != nil {
-				return EntityMarshallingError{Inner: err}
-			}
+		bookmarks, err := UnmarshalEntities[domain.Bookmark](args)
+		if err != nil {
+			return err
 		}
 
 		err = BNTPBackend.Unmarshallers[Format].Unmarshall(updater, UpdaterRaw)
@@ -242,13 +224,9 @@ var bookmarkRemoveCmd = &cobra.Command{
 		var numAffectedRecords int64
 
 		if FilterRaw == "" {
-			bookmarks := make([]*domain.Bookmark, 0, len(args))
-
-			for i, bookmarkOut := range bookmarks {
-				err := BNTPBackend.Unmarshallers[Format].Unmarshall(bookmarkOut, args[i])
-				if err != nil {
-					return EntityMarshallingError{Inner: err}
-				}
+			bookmarks, err := UnmarshalEntities[domain.Bookmark](args)
+			if err != nil {
+				return err
 			}
 
 			err = BNTPBackend.BookmarkManager.Delete(context.Background(), bookmarks)

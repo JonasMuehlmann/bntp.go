@@ -72,7 +72,7 @@ func (m *TagManager) Add(ctx context.Context, tags []*domain.Tag) error {
 
 func (m *TagManager) Replace(ctx context.Context, tags []*domain.Tag) error {
 	hookErr := goaoi.ForeachSlice(tags, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.BeforeAnyHook|bntp.BeforeUpdateHook))
-	if !errors.As(hookErr, &goaoi.EmptyIterableError{}) {
+	if hookErr != nil && !errors.As(hookErr, &goaoi.EmptyIterableError{}) {
 		hookErr = bntp.HookExecutionError{Inner: hookErr}
 		log.Error(hookErr)
 
