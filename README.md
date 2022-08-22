@@ -42,6 +42,7 @@ Tools and systems, which have or, after research and considerations, might influ
 - **Extensive association** through links/backlinks between documents and declaration of sources and *related pages*
 - **High performance** by working completely offline, having no bloat and using a high performance backend written in `go`
 - **Quick and smooth usage** because of all of the above(especially the neovim frontend)
+- **Function > aesthetics** because aesthetic customization wastes development time and distracts users
 
 # Features
 - Bidirectional linking between documents (creating a link to `B` inside `A` creates a backlink to `A` in `B`)
