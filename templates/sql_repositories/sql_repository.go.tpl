@@ -58,6 +58,7 @@ import (
 //******************************************************************//
 type {{UppercaseBeginning .DatabaseName}}{{UppercaseBeginning $EntityName}}Repository struct {
     db *sql.DB
+    Logger *log.Logger
     {{ if ne $EntityName "Tag" }}
     tagRepository repoCommon.TagRepository
     {{ end }}
@@ -280,6 +281,7 @@ func buildQueryModListFromFilter{{$EntityName}}(filter *{{$EntityName}}Filter) q
 
 type {{$StructName}}ConstructorArgs struct {
     DB *sql.DB
+    Logger *log.Logger
     {{ if ne $EntityName "Tag" }}
     TagRepository repoCommon.TagRepository
     {{ end }}
@@ -294,6 +296,7 @@ func (repo *{{$StructName}}) New(args any) (newRepo repoCommon.{{$EntityName}}Re
     }
 
     repo.db = constructorArgs.DB
+    repo.Logger = constructorArgs.Logger
     {{ if ne $EntityName "Tag" }}
     repo.tagRepository = constructorArgs.TagRepository
     {{ end }}
@@ -309,7 +312,7 @@ func (repo *{{$StructName}}) New(args any) (newRepo repoCommon.{{$EntityName}}Re
 //******************************************************************//
 func (repo *{{$StructName}}) Add(ctx context.Context, domainModels []*domain.{{$EntityName}})  (err error){
     if len(domainModels) == 0 {
-        log.Debug(helper.LogMessageEmptyInput)
+        repo.Logger.Debug(helper.LogMessageEmptyInput)
 
         err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 
@@ -319,7 +322,7 @@ func (repo *{{$StructName}}) Add(ctx context.Context, domainModels []*domain.{{$
 	err = goaoi.AnyOfSlice(domainModels, func (e *domain.{{$EntityName}}) bool {return e == nil || e.IsDefault()})
 	if err == nil{
 		err = helper.NilInputError{}
-		log.Error(err)
+		repo.Logger.Error(err)
 
 		return
 	}
@@ -339,7 +342,7 @@ func (repo *{{$StructName}}) Add(ctx context.Context, domainModels []*domain.{{$
 
 func (repo *{{$StructName}}) AddMinimal(ctx context.Context, domainModels []*domain.{{$EntityName}})  (err error){
     if len(domainModels) == 0 {
-        log.Debug(helper.LogMessageEmptyInput)
+        repo.Logger.Debug(helper.LogMessageEmptyInput)
 
         err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 
@@ -349,7 +352,7 @@ func (repo *{{$StructName}}) AddMinimal(ctx context.Context, domainModels []*dom
 	err = goaoi.AnyOfSlice(domainModels, func (e *domain.{{$EntityName}}) bool {return e == nil || e.IsDefault()})
 	if err == nil{
 		err = helper.NilInputError{}
-		log.Error(err)
+		repo.Logger.Error(err)
 
 		return
 	}
@@ -393,7 +396,7 @@ func (repo *{{$StructName}}) AddMinimal(ctx context.Context, domainModels []*dom
 func (repo *{{$StructName}}) Replace(ctx context.Context, domainModels []*domain.{{$EntityName}})  (err error){
     {{/* TODO: Handle empty inputs and input containing/being nil values */}}
     if len(domainModels) == 0 {
-        log.Debug(helper.LogMessageEmptyInput)
+        repo.Logger.Debug(helper.LogMessageEmptyInput)
 
         err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 
@@ -403,7 +406,7 @@ func (repo *{{$StructName}}) Replace(ctx context.Context, domainModels []*domain
 	err = goaoi.AnyOfSlice(domainModels, func (e *domain.{{$EntityName}}) bool {return e == nil || e.IsDefault()})
 	if err == nil{
 		err = helper.NilInputError{}
-		log.Error(err)
+		repo.Logger.Error(err)
 
 		return
 	}
@@ -464,7 +467,7 @@ func (repo *{{$StructName}}) Replace(ctx context.Context, domainModels []*domain
 }
 func (repo *{{$StructName}}) Upsert(ctx context.Context, domainModels []*domain.{{$EntityName}})  (err error){
     if len(domainModels) == 0 {
-        log.Debug(helper.LogMessageEmptyInput)
+        repo.Logger.Debug(helper.LogMessageEmptyInput)
 
         err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 
@@ -474,7 +477,7 @@ func (repo *{{$StructName}}) Upsert(ctx context.Context, domainModels []*domain.
 	err = goaoi.AnyOfSlice(domainModels, func (e *domain.{{$EntityName}}) bool {return e == nil || e.IsDefault()})
 	if err == nil{
 		err = helper.NilInputError{}
-		log.Error(err)
+		repo.Logger.Error(err)
 
 		return
 	}
@@ -521,7 +524,7 @@ func (repo *{{$StructName}}) Upsert(ctx context.Context, domainModels []*domain.
 
 func (repo *{{$StructName}}) Update(ctx context.Context, domainModels []*domain.{{$EntityName}}, domainColumnUpdater *domain.{{$EntityName}}Updater)  (err error){
     if len(domainModels) == 0 {
-        log.Debug(helper.LogMessageEmptyInput)
+        repo.Logger.Debug(helper.LogMessageEmptyInput)
 
         err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 
@@ -531,21 +534,21 @@ func (repo *{{$StructName}}) Update(ctx context.Context, domainModels []*domain.
 	err = goaoi.AnyOfSlice(domainModels, func (e *domain.{{$EntityName}}) bool {return e == nil || e.IsDefault()})
 	if err == nil{
 		err = helper.NilInputError{}
-		log.Error(err)
+		repo.Logger.Error(err)
 
 		return
 	}
 
 	if  domainColumnUpdater == nil {
 		err = helper.NilInputError{}
-		log.Error(err)
+		repo.Logger.Error(err)
 
 		return
     }
 
 	if  domainColumnUpdater.IsDefault() {
         err = helper.IneffectiveOperationError{Inner: helper.NopUpdaterError{}}
-		log.Error(err)
+		repo.Logger.Error(err)
 
 		return
     }
@@ -612,21 +615,21 @@ func (repo *{{$StructName}}) UpdateWhere(ctx context.Context, domainColumnFilter
 
 	if  domainColumnFilter == nil {
 		err = helper.NilInputError{}
-		log.Error(err)
+		repo.Logger.Error(err)
 
 		return
     }
 
 	if  domainColumnUpdater == nil {
 		err = helper.NilInputError{}
-		log.Error(err)
+		repo.Logger.Error(err)
 
 		return
     }
 
 	if  domainColumnUpdater.IsDefault() {
         err = helper.IneffectiveOperationError{Inner: helper.NopUpdaterError{}}
-		log.Error(err)
+		repo.Logger.Error(err)
 
 		return
     }
@@ -702,7 +705,7 @@ func (repo *{{$StructName}}) UpdateWhere(ctx context.Context, domainColumnFilter
 
 func (repo *{{$StructName}}) Delete(ctx context.Context, domainModels []*domain.{{$EntityName}})  (err error){
     if len(domainModels) == 0 {
-        log.Debug(helper.LogMessageEmptyInput)
+        repo.Logger.Debug(helper.LogMessageEmptyInput)
 
         err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 
@@ -712,7 +715,7 @@ func (repo *{{$StructName}}) Delete(ctx context.Context, domainModels []*domain.
 	err = goaoi.AnyOfSlice(domainModels, func (e *domain.{{$EntityName}}) bool {return e == nil || e.IsDefault()})
 	if err == nil{
 		err = helper.NilInputError{}
-		log.Error(err)
+		repo.Logger.Error(err)
 
 		return
 	}
@@ -752,7 +755,7 @@ func (repo *{{$StructName}}) Delete(ctx context.Context, domainModels []*domain.
 func (repo *{{$StructName}}) DeleteWhere(ctx context.Context, domainColumnFilter *domain.{{$EntityName}}Filter) (numAffectedRecords int64, err error) {
 	if  domainColumnFilter == nil {
 		err = helper.NilInputError{}
-		log.Error(err)
+		repo.Logger.Error(err)
 
 		return
     }
@@ -791,7 +794,7 @@ func (repo *{{$StructName}}) DeleteWhere(ctx context.Context, domainColumnFilter
 func (repo *{{$StructName}}) CountWhere(ctx context.Context, domainColumnFilter *domain.{{$EntityName}}Filter) (numRecords int64, err error) {
 	if  domainColumnFilter == nil {
 		err = helper.NilInputError{}
-		log.Error(err)
+		repo.Logger.Error(err)
 
 		return
     }
@@ -823,7 +826,7 @@ func (repo *{{$StructName}}) CountAll(ctx context.Context) (numRecords int64, er
 func (repo *{{$StructName}}) DoesExist(ctx context.Context, domainModel *domain.{{$EntityName}}) (doesExist bool, err error) {
 	if domainModel == nil {
         err = helper.NilInputError{}
-		log.Error(err)
+		repo.Logger.Error(err)
 
 		return
 	}
@@ -848,7 +851,7 @@ func (repo *{{$StructName}}) DoesExist(ctx context.Context, domainModel *domain.
 func (repo *{{$StructName}}) DoesExistWhere(ctx context.Context, domainColumnFilter *domain.{{$EntityName}}Filter) (doesExist bool, err error) {
 	if  domainColumnFilter == nil {
 		err = helper.NilInputError{}
-		log.Error(err)
+		repo.Logger.Error(err)
 
 		return
     }
@@ -876,7 +879,7 @@ func (repo *{{$StructName}}) DoesExistWhere(ctx context.Context, domainColumnFil
 func (repo *{{$StructName}}) GetWhere(ctx context.Context, domainColumnFilter *domain.{{$EntityName}}Filter) (records []*domain.{{$EntityName}}, err error) {
 	if  domainColumnFilter == nil {
 		err = helper.NilInputError{}
-		log.Error(err)
+		repo.Logger.Error(err)
 
 		return
     }
@@ -930,7 +933,7 @@ func (repo *{{$StructName}}) GetWhere(ctx context.Context, domainColumnFilter *d
 func (repo *{{$StructName}}) GetFirstWhere(ctx context.Context, domainColumnFilter *domain.{{$EntityName}}Filter) (record *domain.{{$EntityName}}, err error) {
 	if  domainColumnFilter == nil {
 		err = helper.NilInputError{}
-		log.Error(err)
+		repo.Logger.Error(err)
 
 		return
     }

@@ -24,31 +24,63 @@ import (
 	"database/sql"
 	"fmt"
 	"io"
+	"os"
+	"reflect"
+	"runtime"
+	"strings"
 
 	"github.com/JonasMuehlmann/bntp.go/bntp/backend"
 	"github.com/JonasMuehlmann/bntp.go/internal/config"
 	"github.com/JonasMuehlmann/bntp.go/internal/helper"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 	"github.com/stoewer/go-strcase"
 )
 
-var BNTPBackend *backend.Backend
-var stderrToUse io.Writer
-var dbToUse *sql.DB
+type CliOption func(*Cli)
 
-func WithAll(cli *Cli) {
-	WithBookmark(cli)
-	WithBookmarkType(cli)
-	WithDocument(cli)
-	WithDocumentType(cli)
-	WithTag(cli)
-	WithConfig(cli)
+func WithAll() CliOption {
+	return func(cli *Cli) {
+		WithBookmarkCommand()(cli)
+		WithBookmarkTypeCommand()(cli)
+		WithDocumentCommand()(cli)
+		WithDocumentTypeCommand()(cli)
+		WithTagCommand()(cli)
+		WithConfigCommand()(cli)
+		WithConfigManager()(cli)
+		WithBNTPBackend()(cli)
+	}
 }
 
-func NewCli(options ...func(*Cli)) *Cli {
-	cli := &Cli{}
+func WithBNTPBackend() CliOption {
+	return func(cli *Cli) {
+		cli.BNTPBackend = cli.ConfigManager.NewBackendFromConfig()
+	}
+}
+
+func WithConfigManager() CliOption {
+	return func(cli *Cli) {
+		cli.ConfigManager = config.NewConfigManager(cli.StdErr, cli.TestDB)
+	}
+}
+
+func WithStdErrOverride(stderrToUse io.Writer) CliOption {
+	return func(cli *Cli) {
+		cli.StdErr = stderrToUse
+	}
+}
+
+func WithDbOverride(dbToUse *sql.DB) CliOption {
+	return func(cli *Cli) {
+		cli.TestDB = dbToUse
+	}
+}
+
+func NewCli(options ...CliOption) *Cli {
+	cli := &Cli{
+		StdErr: os.Stderr,
+	}
+
 	cli.RootCmd = &cobra.Command{
 		Use:   "bntp.go",
 		Short: "bntp.go - the all in one productivity system.",
@@ -61,61 +93,79 @@ func NewCli(options ...func(*Cli)) *Cli {
 		},
 	}
 
-	cli.RootCmd.PersistentFlags().StringVarP(&config.PassedConfigPath, "config", "c", "", "The config file to use instead of ones found in search paths")
+	// Make sure e.g. db is set before being used
+	for _, option := range options {
+		optionName := runtime.FuncForPC(reflect.ValueOf(option).Pointer()).Name()
+		if !strings.Contains(optionName, "Command") {
+			option(cli)
+		}
+	}
+
+	for _, option := range options {
+		optionName := runtime.FuncForPC(reflect.ValueOf(option).Pointer()).Name()
+		if strings.Contains(optionName, "Command") {
+			option(cli)
+		}
+	}
+
+	cli.RootCmd.PersistentFlags().StringVarP(
+		&cli.ConfigManager.PassedConfigPath,
+		"config",
+		"c",
+		"",
+		"The config file to use instead of ones found in search paths",
+	)
 
 	cli.RootCmd.PersistentFlags().String(
 		strcase.KebabCase(config.ConsoleLogLevel),
-		config.GetDefaultSettings()[config.ConsoleLogLevel].(string),
+		cli.ConfigManager.GetDefaultSettings()[config.ConsoleLogLevel].(string),
 		fmt.Sprintf("The minimum log level to display on the console (Allowed values: %v)", log.AllLevels),
 	)
 
 	cli.RootCmd.PersistentFlags().String(
 		strcase.KebabCase(config.FileLogLevel),
-		config.GetDefaultSettings()[config.FileLogLevel].(string),
+		cli.ConfigManager.GetDefaultSettings()[config.FileLogLevel].(string),
 		fmt.Sprintf("The minimum log level to log to the log files (Allowed values: %v)", log.AllLevels),
 	)
 
-	for _, option := range options {
-		option(cli)
+	for _, setting := range []string{config.ConsoleLogLevel, config.FileLogLevel} {
+		err := cli.ConfigManager.Viper.BindPFlag(setting, cli.RootCmd.PersistentFlags().Lookup(strcase.KebabCase(setting)))
+		if err != nil {
+			panic(err)
+		}
 	}
 
-	cobra.OnInitialize(func() { config.InitConfig(stderrToUse, dbToUse); BNTPBackend = config.NewBackendFromConfig() }, cli.bindFlagsToConfig)
+	cli.Logger = cli.ConfigManager.Logger
 
 	return cli
 }
 
-func (cli *Cli) Execute(backend *backend.Backend, stderr io.Writer, testDB ...*sql.DB) error {
-	BNTPBackend = backend
-
+func (cli *Cli) Execute() error {
 	cli.RootCmd.SilenceUsage = true
 	cli.RootCmd.SilenceErrors = true
-
-	stderrToUse = stderr
-	if len(testDB) > 0 {
-		dbToUse = testDB[0]
-	}
 
 	err := cli.RootCmd.Execute()
 
 	if err != nil {
-		log.Error(err)
+		if errStr := err.Error(); strings.Contains(errStr, "required flag") {
+			err = GetStructuredCobraMissingRequiredFlagError(err)
+		}
+
+		cli.Logger.Error(err)
 	}
 
 	return err
 }
-func (cli *Cli) bindFlagsToConfig() {
-	for _, setting := range []string{config.ConsoleLogLevel, config.FileLogLevel} {
-		err := viper.BindPFlag(setting, cli.RootCmd.Flags().Lookup(strcase.KebabCase(setting)))
-		if err != nil {
-			log.Fatal(err)
-		}
-	}
-}
 
 type Cli struct {
-	Format     string
-	FilterRaw  string
-	UpdaterRaw string
+	ConfigManager *config.ConfigManager
+	BNTPBackend   *backend.Backend
+	Format        string
+	FilterRaw     string
+	UpdaterRaw    string
+	StdErr        io.Writer
+	TestDB        *sql.DB
+	Logger        *log.Logger
 
 	BookmarkAddCmd        *cobra.Command
 	BookmarkCmd           *cobra.Command
@@ -132,9 +182,9 @@ type Cli struct {
 	BookmarkTypeRemoveCmd *cobra.Command
 	BookmarkUpsertCmd     *cobra.Command
 	configBaseNameCmd     *cobra.Command
-	configCmd             *cobra.Command
-	configExtensionsCmd   *cobra.Command
-	configPathsCmd        *cobra.Command
+	ConfigCmd             *cobra.Command
+	ConfigExtensionsCmd   *cobra.Command
+	ConfigPathsCmd        *cobra.Command
 	DocumentAddCmd        *cobra.Command
 	DocumentCmd           *cobra.Command
 	DocumentCountCmd      *cobra.Command

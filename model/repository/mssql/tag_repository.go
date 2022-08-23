@@ -52,6 +52,7 @@ import (
 //******************************************************************//
 type MssqlTagRepository struct {
     db *sql.DB
+    Logger *log.Logger
     
 }
 
@@ -306,6 +307,7 @@ func buildQueryModListFromFilterTag(filter *TagFilter) queryModSliceTag {
 
 type MssqlTagRepositoryConstructorArgs struct {
     DB *sql.DB
+    Logger *log.Logger
     
 }
 
@@ -318,6 +320,7 @@ func (repo *MssqlTagRepository) New(args any) (newRepo repoCommon.TagRepository,
     }
 
     repo.db = constructorArgs.DB
+    repo.Logger = constructorArgs.Logger
     
 
     newRepo = repo
@@ -331,7 +334,7 @@ func (repo *MssqlTagRepository) New(args any) (newRepo repoCommon.TagRepository,
 //******************************************************************//
 func (repo *MssqlTagRepository) Add(ctx context.Context, domainModels []*domain.Tag)  (err error){
     if len(domainModels) == 0 {
-        log.Debug(helper.LogMessageEmptyInput)
+        repo.Logger.Debug(helper.LogMessageEmptyInput)
 
         err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 
@@ -341,7 +344,7 @@ func (repo *MssqlTagRepository) Add(ctx context.Context, domainModels []*domain.
 	err = goaoi.AnyOfSlice(domainModels, func (e *domain.Tag) bool {return e == nil || e.IsDefault()})
 	if err == nil{
 		err = helper.NilInputError{}
-		log.Error(err)
+		repo.Logger.Error(err)
 
 		return
 	}
@@ -361,7 +364,7 @@ func (repo *MssqlTagRepository) Add(ctx context.Context, domainModels []*domain.
 
 func (repo *MssqlTagRepository) AddMinimal(ctx context.Context, domainModels []*domain.Tag)  (err error){
     if len(domainModels) == 0 {
-        log.Debug(helper.LogMessageEmptyInput)
+        repo.Logger.Debug(helper.LogMessageEmptyInput)
 
         err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 
@@ -371,7 +374,7 @@ func (repo *MssqlTagRepository) AddMinimal(ctx context.Context, domainModels []*
 	err = goaoi.AnyOfSlice(domainModels, func (e *domain.Tag) bool {return e == nil || e.IsDefault()})
 	if err == nil{
 		err = helper.NilInputError{}
-		log.Error(err)
+		repo.Logger.Error(err)
 
 		return
 	}
@@ -415,7 +418,7 @@ func (repo *MssqlTagRepository) AddMinimal(ctx context.Context, domainModels []*
 func (repo *MssqlTagRepository) Replace(ctx context.Context, domainModels []*domain.Tag)  (err error){
     
     if len(domainModels) == 0 {
-        log.Debug(helper.LogMessageEmptyInput)
+        repo.Logger.Debug(helper.LogMessageEmptyInput)
 
         err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 
@@ -425,7 +428,7 @@ func (repo *MssqlTagRepository) Replace(ctx context.Context, domainModels []*dom
 	err = goaoi.AnyOfSlice(domainModels, func (e *domain.Tag) bool {return e == nil || e.IsDefault()})
 	if err == nil{
 		err = helper.NilInputError{}
-		log.Error(err)
+		repo.Logger.Error(err)
 
 		return
 	}
@@ -486,7 +489,7 @@ func (repo *MssqlTagRepository) Replace(ctx context.Context, domainModels []*dom
 }
 func (repo *MssqlTagRepository) Upsert(ctx context.Context, domainModels []*domain.Tag)  (err error){
     if len(domainModels) == 0 {
-        log.Debug(helper.LogMessageEmptyInput)
+        repo.Logger.Debug(helper.LogMessageEmptyInput)
 
         err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 
@@ -496,7 +499,7 @@ func (repo *MssqlTagRepository) Upsert(ctx context.Context, domainModels []*doma
 	err = goaoi.AnyOfSlice(domainModels, func (e *domain.Tag) bool {return e == nil || e.IsDefault()})
 	if err == nil{
 		err = helper.NilInputError{}
-		log.Error(err)
+		repo.Logger.Error(err)
 
 		return
 	}
@@ -541,7 +544,7 @@ func (repo *MssqlTagRepository) Upsert(ctx context.Context, domainModels []*doma
 
 func (repo *MssqlTagRepository) Update(ctx context.Context, domainModels []*domain.Tag, domainColumnUpdater *domain.TagUpdater)  (err error){
     if len(domainModels) == 0 {
-        log.Debug(helper.LogMessageEmptyInput)
+        repo.Logger.Debug(helper.LogMessageEmptyInput)
 
         err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 
@@ -551,21 +554,21 @@ func (repo *MssqlTagRepository) Update(ctx context.Context, domainModels []*doma
 	err = goaoi.AnyOfSlice(domainModels, func (e *domain.Tag) bool {return e == nil || e.IsDefault()})
 	if err == nil{
 		err = helper.NilInputError{}
-		log.Error(err)
+		repo.Logger.Error(err)
 
 		return
 	}
 
 	if  domainColumnUpdater == nil {
 		err = helper.NilInputError{}
-		log.Error(err)
+		repo.Logger.Error(err)
 
 		return
     }
 
 	if  domainColumnUpdater.IsDefault() {
         err = helper.IneffectiveOperationError{Inner: helper.NopUpdaterError{}}
-		log.Error(err)
+		repo.Logger.Error(err)
 
 		return
     }
@@ -632,21 +635,21 @@ func (repo *MssqlTagRepository) UpdateWhere(ctx context.Context, domainColumnFil
 
 	if  domainColumnFilter == nil {
 		err = helper.NilInputError{}
-		log.Error(err)
+		repo.Logger.Error(err)
 
 		return
     }
 
 	if  domainColumnUpdater == nil {
 		err = helper.NilInputError{}
-		log.Error(err)
+		repo.Logger.Error(err)
 
 		return
     }
 
 	if  domainColumnUpdater.IsDefault() {
         err = helper.IneffectiveOperationError{Inner: helper.NopUpdaterError{}}
-		log.Error(err)
+		repo.Logger.Error(err)
 
 		return
     }
@@ -722,7 +725,7 @@ func (repo *MssqlTagRepository) UpdateWhere(ctx context.Context, domainColumnFil
 
 func (repo *MssqlTagRepository) Delete(ctx context.Context, domainModels []*domain.Tag)  (err error){
     if len(domainModels) == 0 {
-        log.Debug(helper.LogMessageEmptyInput)
+        repo.Logger.Debug(helper.LogMessageEmptyInput)
 
         err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 
@@ -732,7 +735,7 @@ func (repo *MssqlTagRepository) Delete(ctx context.Context, domainModels []*doma
 	err = goaoi.AnyOfSlice(domainModels, func (e *domain.Tag) bool {return e == nil || e.IsDefault()})
 	if err == nil{
 		err = helper.NilInputError{}
-		log.Error(err)
+		repo.Logger.Error(err)
 
 		return
 	}
@@ -772,7 +775,7 @@ func (repo *MssqlTagRepository) Delete(ctx context.Context, domainModels []*doma
 func (repo *MssqlTagRepository) DeleteWhere(ctx context.Context, domainColumnFilter *domain.TagFilter) (numAffectedRecords int64, err error) {
 	if  domainColumnFilter == nil {
 		err = helper.NilInputError{}
-		log.Error(err)
+		repo.Logger.Error(err)
 
 		return
     }
@@ -811,7 +814,7 @@ func (repo *MssqlTagRepository) DeleteWhere(ctx context.Context, domainColumnFil
 func (repo *MssqlTagRepository) CountWhere(ctx context.Context, domainColumnFilter *domain.TagFilter) (numRecords int64, err error) {
 	if  domainColumnFilter == nil {
 		err = helper.NilInputError{}
-		log.Error(err)
+		repo.Logger.Error(err)
 
 		return
     }
@@ -843,7 +846,7 @@ func (repo *MssqlTagRepository) CountAll(ctx context.Context) (numRecords int64,
 func (repo *MssqlTagRepository) DoesExist(ctx context.Context, domainModel *domain.Tag) (doesExist bool, err error) {
 	if domainModel == nil {
         err = helper.NilInputError{}
-		log.Error(err)
+		repo.Logger.Error(err)
 
 		return
 	}
@@ -868,7 +871,7 @@ func (repo *MssqlTagRepository) DoesExist(ctx context.Context, domainModel *doma
 func (repo *MssqlTagRepository) DoesExistWhere(ctx context.Context, domainColumnFilter *domain.TagFilter) (doesExist bool, err error) {
 	if  domainColumnFilter == nil {
 		err = helper.NilInputError{}
-		log.Error(err)
+		repo.Logger.Error(err)
 
 		return
     }
@@ -896,7 +899,7 @@ func (repo *MssqlTagRepository) DoesExistWhere(ctx context.Context, domainColumn
 func (repo *MssqlTagRepository) GetWhere(ctx context.Context, domainColumnFilter *domain.TagFilter) (records []*domain.Tag, err error) {
 	if  domainColumnFilter == nil {
 		err = helper.NilInputError{}
-		log.Error(err)
+		repo.Logger.Error(err)
 
 		return
     }
@@ -950,7 +953,7 @@ func (repo *MssqlTagRepository) GetWhere(ctx context.Context, domainColumnFilter
 func (repo *MssqlTagRepository) GetFirstWhere(ctx context.Context, domainColumnFilter *domain.TagFilter) (record *domain.Tag, err error) {
 	if  domainColumnFilter == nil {
 		err = helper.NilInputError{}
-		log.Error(err)
+		repo.Logger.Error(err)
 
 		return
     }

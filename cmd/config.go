@@ -22,83 +22,80 @@ package cmd
 
 import (
 	"fmt"
-	"log"
 
-	"github.com/JonasMuehlmann/bntp.go/internal/config"
 	"github.com/JonasMuehlmann/bntp.go/internal/helper"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
 
-func WithConfig(cli *Cli) {
+func WithConfigCommand() CliOption {
+	return func(cli *Cli) {
 
-	cli.configCmd = &cobra.Command{
-		Use:   "config",
-		Short: "Manage bntp configuration",
-		Long:  `A longer description`,
-		RunE: func(cmd *cobra.Command, args []string) error {
-			if len(args) == 0 {
-				return helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
-			}
+		cli.ConfigCmd = &cobra.Command{
+			Use:   "config",
+			Short: "Manage bntp configuration",
+			Long:  `A longer description`,
+			RunE: func(cmd *cobra.Command, args []string) error {
+				if len(args) == 0 {
+					return helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
+				}
 
-			return nil
-		},
+				return nil
+			},
+		}
+		cli.ConfigPathsCmd = &cobra.Command{
+			Use:   "paths",
+			Short: "List the search paths for config files",
+			Long:  `A longer description`,
+			RunE: func(cmd *cobra.Command, args []string) error {
+				for _, extension := range cli.ConfigManager.ConfigSearchPaths {
+					fmt.Fprintln(cli.RootCmd.OutOrStdout(), extension)
+				}
+
+				return nil
+			},
+		}
+
+		cli.ConfigExtensionsCmd = &cobra.Command{
+			Use:   "extensions",
+			Short: "List the allowed extensions for config files",
+			Long:  `A longer description`,
+			RunE: func(cmd *cobra.Command, args []string) error {
+				for _, extension := range viper.SupportedExts {
+					fmt.Fprintln(cli.RootCmd.OutOrStdout(), extension)
+				}
+
+				return nil
+			},
+		}
+
+		cli.configBaseNameCmd = &cobra.Command{
+			Use:   "base-name",
+			Short: "Show the base name expected for config files",
+			Long:  `A longer description`,
+			RunE: func(cmd *cobra.Command, args []string) error {
+				fmt.Fprintln(cli.RootCmd.OutOrStdout(), cli.ConfigManager.ConfigFileBaseName)
+
+				return nil
+			},
+		}
+
+		cli.exportConfigCmd = &cobra.Command{
+			Use:   "export FILE",
+			Short: "Export the current config state",
+			Long:  `A longer description`,
+			Args:  cobra.ExactArgs(1),
+			RunE: func(cmd *cobra.Command, args []string) error {
+				err := cli.ConfigManager.Viper.WriteConfigAs(args[0])
+
+				return err
+			},
+		}
+
+		cli.RootCmd.AddCommand(cli.ConfigCmd)
+		cli.ConfigCmd.AddCommand(cli.ConfigPathsCmd)
+		cli.ConfigCmd.AddCommand(cli.ConfigExtensionsCmd)
+		cli.ConfigCmd.AddCommand(cli.configBaseNameCmd)
+		cli.ConfigCmd.AddCommand(cli.exportConfigCmd)
 	}
-	cli.configPathsCmd = &cobra.Command{
-		Use:   "paths",
-		Short: "List the search paths for config files",
-		Long:  `A longer description`,
-		RunE: func(cmd *cobra.Command, args []string) error {
-			for _, extension := range config.ConfigSearchPaths {
-				fmt.Fprintln(cli.RootCmd.OutOrStdout(), extension)
-			}
-
-			return nil
-		},
-	}
-
-	cli.configExtensionsCmd = &cobra.Command{
-		Use:   "extensions",
-		Short: "List the allowed extensions for config files",
-		Long:  `A longer description`,
-		RunE: func(cmd *cobra.Command, args []string) error {
-			for _, extension := range viper.SupportedExts {
-				fmt.Fprintln(cli.RootCmd.OutOrStdout(), extension)
-			}
-
-			return nil
-		},
-	}
-
-	cli.configBaseNameCmd = &cobra.Command{
-		Use:   "base-name",
-		Short: "Show the base name expected for config files",
-		Long:  `A longer description`,
-		RunE: func(cmd *cobra.Command, args []string) error {
-			fmt.Fprintln(cli.RootCmd.OutOrStdout(), config.ConfigFileBaseName)
-
-			return nil
-		},
-	}
-
-	cli.exportConfigCmd = &cobra.Command{
-		Use:   "export FILE",
-		Short: "Export the current config state",
-		Long:  `A longer description`,
-		Args:  cobra.ExactArgs(1),
-		RunE: func(cmd *cobra.Command, args []string) error {
-			err := viper.WriteConfigAs(args[0])
-			if err != nil {
-				log.Fatal(err)
-			}
-
-			return nil
-		},
-	}
-
-	cli.RootCmd.AddCommand(cli.configCmd)
-	cli.configCmd.AddCommand(cli.configPathsCmd)
-	cli.configCmd.AddCommand(cli.configExtensionsCmd)
-	cli.configCmd.AddCommand(cli.configBaseNameCmd)
-	cli.configCmd.AddCommand(cli.exportConfigCmd)
 }

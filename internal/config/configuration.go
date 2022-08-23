@@ -56,50 +56,155 @@ import (
 	sqlite3Repository "github.com/JonasMuehlmann/bntp.go/model/repository/sqlite3"
 )
 
-var (
-	PassedConfigPath   string
-	ConfigDir          string
-	ConfigFileBaseName = "bntp"
-	ConfigSearchPaths  []string
-)
-
-var testDB *sql.DB
-
 type message struct {
 	Level log.Level
 	Msg   string
 }
 
-func newMessage(level log.Level, msg string) message {
-	message := message{}
+type ConfigManager struct {
+	Viper             *viper.Viper
+	testDB            *sql.DB
+	pendingLogMessage []message
+	Logger            *log.Logger
 
-	message.Level = level
-	message.Msg = msg
-
-	return message
+	PassedConfigPath   string
+	ConfigDir          string
+	ConfigFileBaseName string
+	ConfigSearchPaths  []string
 }
 
-func GetDefaultDBConfig() DBConfig {
+func NewConfigManager(stderr io.Writer, dbOverride ...*sql.DB) *ConfigManager {
+	m := &ConfigManager{Viper: viper.New(), ConfigFileBaseName: "bntp"}
+
+	userConfigDir, err := os.UserConfigDir()
+	if err != nil {
+		panic(err)
+	}
+
+	cwd, err := os.Getwd()
+	if err != nil {
+		panic(err)
+	}
+
+	m.ConfigDir = path.Join(userConfigDir, "bntp")
+
+	m.ConfigSearchPaths = append(m.ConfigSearchPaths, m.ConfigDir)
+	m.ConfigSearchPaths = append(m.ConfigSearchPaths, cwd)
+
+	if len(dbOverride) > 0 {
+		m.testDB = dbOverride[0]
+	}
+
+	m.pendingLogMessage = make([]message, 0, 5)
+
+	if m.PassedConfigPath != "" {
+		m.Viper.SetConfigFile(m.PassedConfigPath)
+	}
+
+	goaoi.ForeachSliceUnsafe(m.ConfigSearchPaths, m.Viper.AddConfigPath)
+
+	err = m.setDefaultsFromStructOrMap(m.GetDefaultSettings())
+	if err != nil {
+		m.addPendingLogMessage(log.FatalLevel, "Error setting default values: %v", err)
+	}
+
+	m.Viper.SetEnvPrefix("BNTP")
+	m.Viper.SetConfigName(m.ConfigFileBaseName)
+	m.Viper.AutomaticEnv() // read in environment variables that match
+
+	err = m.Viper.ReadInConfig()
+	if err != nil && errors.Is(err, &viper.ConfigFileNotFoundError{}) {
+		m.addPendingLogMessage(log.FatalLevel, "Error reading config: %v", err)
+	}
+
+	//*********************    Validate settings    ********************//
+	var config Config
+
+	err = m.Viper.Unmarshal(&config)
+	if err != nil {
+		panic(err)
+	}
+
+	var consoleLogLevel log.Level
+	var fileLogLevel log.Level
+
+	err = ConfigValidator.Struct(config)
+	if err != nil {
+		consoleLogLevel = log.ErrorLevel
+		fileLogLevel = log.InfoLevel
+
+		errs := err.(validator.ValidationErrors)
+		for _, e := range errs {
+			m.addPendingLogMessage(log.FatalLevel, "Error processing setting %v: %v", strcase.SnakeCase(e.Field()), formatValidationError(e))
+		}
+	} else {
+		consoleLogLevel, _ = log.ParseLevel(m.Viper.GetString(ConsoleLogLevel))
+		fileLogLevel, _ = log.ParseLevel(m.Viper.GetString(FileLogLevel))
+	}
+	// ******************** Log pending messages ********************* //
+
+	m.Logger = helper.NewDefaultLogger(m.Viper.GetString(LogFile), consoleLogLevel, fileLogLevel, stderr)
+
+	for _, message := range m.pendingLogMessage {
+		m.Logger.Log(message.Level, message.Msg)
+		if message.Level == log.FatalLevel {
+			log.Exit(1)
+		}
+	}
+
+	if m.PassedConfigPath != "" {
+		m.Logger.Infof("Using config file %v", m.Viper.ConfigFileUsed())
+	} else {
+		m.Logger.Info("Using internal configuration")
+	}
+
+	return m
+}
+
+func (m *ConfigManager) NewDBFromConfig() *sql.DB {
+	if m.testDB != nil {
+		return m.testDB
+	}
+
+	dataSource := m.Viper.GetString(DB_DataSource)
+	args := m.Viper.GetStringSlice(DB_Args)
+
+	openArgs := dataSource
+	if len(args) > 0 {
+		openArgs += "?"
+
+		openArgs += strings.Join(args, "&")
+	}
+
+	db, err := sql.Open(m.Viper.GetString(DB_Driver), openArgs)
+	if err != nil {
+		panic(err)
+	}
+
+	return db
+}
+
+func (m *ConfigManager) GetDefaultDBConfig() DBConfig {
 	return DBConfig{
 		Driver:     "sqlite3",
-		DataSource: path.Join(ConfigDir, "bntp_db.sql"),
+		DataSource: path.Join(m.ConfigDir, "bntp_db.sql"),
 	}
 }
 
-func GetDefaultSettings() map[string]any {
+func (m *ConfigManager) GetDefaultSettings() map[string]any {
 	defaultTagRepository := TagsRepositoryConfig{
-		DB: GetDefaultDBConfig(),
+		DB: m.GetDefaultDBConfig(),
 	}
 
 	return map[string]any{
-		LogFile:         path.Join(ConfigDir, "bntp.log"),
+		LogFile:         path.Join(m.ConfigDir, "bntp.log"),
 		ConsoleLogLevel: log.ErrorLevel.String(),
 		FileLogLevel:    log.InfoLevel.String(),
-		DB:              GetDefaultDBConfig(),
+		DB:              m.GetDefaultDBConfig(),
 		Backend: BackendConfig{
 			Bookmarkmanager: BookmarkManagerConfig{
 				BookmarkRepository: BookmarkRepositoryConfig{
-					DB:            GetDefaultDBConfig(),
+					DB:            m.GetDefaultDBConfig(),
 					TagRepository: defaultTagRepository,
 				},
 			},
@@ -108,44 +213,154 @@ func GetDefaultSettings() map[string]any {
 			},
 			DocumentManager: DocumentManagerConfig{
 				DocumentRepository: DocumentRepositoryConfig{
-					DB:            GetDefaultDBConfig(),
+					DB:            m.GetDefaultDBConfig(),
 					TagRepository: defaultTagRepository,
 				},
 			},
 			DocumentContentManager: DocumentContentManagerConfig{
 				DocumentContentRepository: DocumentContentRepositoryConfig{
-					DB: GetDefaultDBConfig(),
+					DB: m.GetDefaultDBConfig(),
 				},
 			},
 		},
 	}
 }
 
-var pendingLogMessage []message
+// ********************    Repository builders    ********************//
+// TODO: Allow using non-sql repositories.
+func (m *ConfigManager) NewBookmarkRepositoryFromConfig(logger *log.Logger, repoDB *sql.DB, tagRepository repository.TagRepository) repository.BookmarkRepository {
+	bookmarkRepository := new(sqlite3Repository.Sqlite3BookmarkRepository)
 
-func addPendingLogMessage(level log.Level, format string, values ...any) {
-	pendingLogMessage = append(pendingLogMessage, newMessage(level, fmt.Sprintf(format, values...)))
-}
-
-func formatValidationError(e validator.FieldError) string {
-	var message string
-
-	// TODO: Add test to validate if all used validator tags are handled here
-	switch e.Tag() {
-	case ValidatorLogrusLogLevel:
-		message = fmt.Sprintf("value %q is invalid, allowed values are %v", e.Value(), log.AllLevels)
-	case "required":
-		message = "setting is required"
-	case "file":
-		message = fmt.Sprintf("value %q is not a path", e.Value())
-	default:
-		message = e.Error()
+	bookmarkRepositoryAbstract, err := bookmarkRepository.New(sqlite3Repository.Sqlite3BookmarkRepositoryConstructorArgs{Logger: logger, DB: repoDB, TagRepository: tagRepository})
+	if err != nil {
+		panic(err)
 	}
 
-	return message
+	bookmarkRepository, _ = bookmarkRepositoryAbstract.(*sqlite3Repository.Sqlite3BookmarkRepository)
+
+	return bookmarkRepository
 }
 
-func bfsSetDefault(path string, val any) error {
+func (m *ConfigManager) NewTagsRepositoryFromConfig(logger *log.Logger, repoDB *sql.DB) repository.TagRepository {
+	tagsRepository := new(sqlite3Repository.Sqlite3TagRepository)
+
+	tagsRepositoryAbstract, err := tagsRepository.New(sqlite3Repository.Sqlite3TagRepositoryConstructorArgs{Logger: logger, DB: repoDB})
+	if err != nil {
+		panic(err)
+	}
+
+	tagsRepository, _ = tagsRepositoryAbstract.(*sqlite3Repository.Sqlite3TagRepository)
+
+	return tagsRepository
+}
+func (m *ConfigManager) NewDocumentRepositoryFromConfig(logger *log.Logger, repoDB *sql.DB, tagRepository repository.TagRepository) repository.DocumentRepository {
+	documentRepository := new(sqlite3Repository.Sqlite3DocumentRepository)
+
+	documentRepositoryAbstract, err := documentRepository.New(sqlite3Repository.Sqlite3DocumentRepositoryConstructorArgs{Logger: logger, DB: repoDB, TagRepository: tagRepository})
+	if err != nil {
+		panic(err)
+	}
+
+	documentRepository, _ = documentRepositoryAbstract.(*sqlite3Repository.Sqlite3DocumentRepository)
+
+	return documentRepository
+}
+
+// TODO: Allow non-fs content repositories
+func (m *ConfigManager) NewDocumentContentRepositoryFromConfig(logger *log.Logger, fs afero.Fs) repository.DocumentContentRepository {
+	documentContentRepository := new(fsRepository.FSDocumentContentRepository)
+
+	documentContentRepositoryAbstract, err := documentContentRepository.New(fsRepository.FSDocumentContentRepositoryConstructorArgs{Logger: logger, Fs: fs})
+	if err != nil {
+		panic(err)
+	}
+
+	documentContentRepository, _ = documentContentRepositoryAbstract.(*fsRepository.FSDocumentContentRepository)
+
+	return documentContentRepository
+}
+
+// TODO: Implement proper  hook parsing
+// ********************    Manager builders    ********************//
+func (m *ConfigManager) NewBookmarkManagerFromConfig(logger *log.Logger, repo repository.BookmarkRepository) libbookmarks.BookmarkManager {
+	hooks := bntp.NewHooks[domain.Bookmark]()
+
+	bookmarkManager, err := libbookmarks.NewBookmarkManager(logger, hooks, repo)
+	if err != nil {
+		panic(err)
+	}
+
+	return bookmarkManager
+}
+
+func (m *ConfigManager) NewTagsManagerFromConfig(logger *log.Logger, repo repository.TagRepository) libtags.TagManager {
+	hooks := new(bntp.Hooks[domain.Tag])
+	tagsManager, err := libtags.NewTagmanager(logger, hooks, repo)
+	if err != nil {
+		panic(err)
+	}
+
+	return tagsManager
+}
+func (m *ConfigManager) NewDocumentManagerFromConfig(logger *log.Logger, repo repository.DocumentRepository) libdocuments.DocumentManager {
+	hooks := new(bntp.Hooks[domain.Document])
+	documentManager, err := libdocuments.NewDocumentManager(logger, hooks, repo)
+	if err != nil {
+		panic(err)
+	}
+
+	return documentManager
+}
+
+func (m *ConfigManager) NewDocumentContentManagerFromConfig(logger *log.Logger, repo repository.DocumentContentRepository) libdocuments.DocumentContentManager {
+	hooks := new(bntp.Hooks[string])
+	documentContentManager, err := libdocuments.NewDocumentContentRepository(logger, hooks, repo)
+	if err != nil {
+		panic(err)
+	}
+
+	return documentContentManager
+}
+
+// **********************    Set up backend    **********************//
+func (m *ConfigManager) NewBackendFromConfig() *backend.Backend {
+	newBackend := new(backend.Backend)
+
+	db := m.NewDBFromConfig()
+
+	// TODO: Extend config to allow creating custom fs
+	fs := afero.NewOsFs()
+
+	tagRepository := m.NewTagsRepositoryFromConfig(m.Logger, db)
+	newBackend.BookmarkManager = m.NewBookmarkManagerFromConfig(m.Logger, m.NewBookmarkRepositoryFromConfig(m.Logger, db, tagRepository))
+	newBackend.TagManager = m.NewTagsManagerFromConfig(m.Logger, tagRepository)
+	newBackend.DocumentManager = m.NewDocumentManagerFromConfig(m.Logger, m.NewDocumentRepositoryFromConfig(m.Logger, db, tagRepository))
+	newBackend.DocumentContentManager = m.NewDocumentContentManagerFromConfig(m.Logger, m.NewDocumentContentRepositoryFromConfig(m.Logger, fs))
+
+	newBackend.Marshallers = make(map[string]marshallers.Marshaller)
+	newBackend.Unmarshallers = make(map[string]marshallers.Unmarshaller)
+
+	newBackend.Marshallers["json"] = new(marshallers.JsonMarshaller)
+	newBackend.Unmarshallers["json"] = new(marshallers.JsonUnmarshaller)
+
+	newBackend.Marshallers["yaml"] = new(marshallers.YamlMarshaller)
+	newBackend.Unmarshallers["yaml"] = new(marshallers.YamlUnmarshaller)
+
+	newBackend.Marshallers["csv"] = new(marshallers.CsvMarshaller)
+	newBackend.Unmarshallers["csv"] = new(marshallers.CsvUnmarshaller)
+
+	return newBackend
+}
+
+//******************************************************************//
+//                            Private API                           //
+//******************************************************************//
+
+func (m *ConfigManager) addPendingLogMessage(level log.Level, format string, values ...any) {
+	m.pendingLogMessage = append(m.pendingLogMessage, newMessage(level, fmt.Sprintf(format, values...)))
+}
+
+func (m *ConfigManager) bfsSetDefault(path string, val any) error {
 	switch v := val.(type) {
 	case map[string]any:
 		for k, v := range v {
@@ -156,7 +371,7 @@ func bfsSetDefault(path string, val any) error {
 				newPath += "." + k
 			}
 
-			bfsSetDefault(newPath, v)
+			m.bfsSetDefault(newPath, v)
 		}
 	default:
 		t := reflect.TypeOf(v)
@@ -175,255 +390,47 @@ func bfsSetDefault(path string, val any) error {
 					newPath += "." + k
 				}
 
-				err := bfsSetDefault(newPath, v)
+				err := m.bfsSetDefault(newPath, v)
 				if err != nil {
 					return err
 				}
 
 			}
 		} else {
-			viper.SetDefault(path, v)
+			m.Viper.SetDefault(path, v)
 		}
 	}
 
 	return nil
 }
 
-func setDefaultsFromStructOrMap(defaults any) error {
-	return bfsSetDefault("", defaults)
+func (m *ConfigManager) setDefaultsFromStructOrMap(defaults any) error {
+	return m.bfsSetDefault("", defaults)
 }
 
-func InitConfig(stderr io.Writer, dbOverride ...*sql.DB) {
-	if len(dbOverride) > 0 {
-		testDB = dbOverride[0]
-	}
+func newMessage(level log.Level, msg string) message {
+	message := message{}
 
-	pendingLogMessage = make([]message, 0, 5)
+	message.Level = level
+	message.Msg = msg
 
-	if PassedConfigPath != "" {
-		viper.SetConfigFile(PassedConfigPath)
-	}
-
-	goaoi.ForeachSliceUnsafe(ConfigSearchPaths, viper.AddConfigPath)
-
-	err := setDefaultsFromStructOrMap(GetDefaultSettings())
-	if err != nil {
-		addPendingLogMessage(log.FatalLevel, "Error setting default values: %v", err)
-	}
-
-	viper.SetEnvPrefix("BNTP")
-	viper.SetConfigName(ConfigFileBaseName)
-	viper.AutomaticEnv() // read in environment variables that match
-
-	err = viper.ReadInConfig()
-	if err != nil && errors.Is(err, &viper.ConfigFileNotFoundError{}) {
-		addPendingLogMessage(log.FatalLevel, "Error reading config: %v", err)
-	}
-
-	//*********************    Validate settings    ********************//
-	var config Config
-
-	err = viper.Unmarshal(&config)
-	if err != nil {
-		panic(err)
-	}
-
-	var consoleLogLevel log.Level
-	var fileLogLevel log.Level
-
-	err = ConfigValidator.Struct(config)
-	if err != nil {
-		consoleLogLevel = log.ErrorLevel
-		fileLogLevel = log.InfoLevel
-
-		errs := err.(validator.ValidationErrors)
-		for _, e := range errs {
-			addPendingLogMessage(log.FatalLevel, "Error processing setting %v: %v", strcase.SnakeCase(e.Field()), formatValidationError(e))
-		}
-	} else {
-		consoleLogLevel, _ = log.ParseLevel(viper.GetString(ConsoleLogLevel))
-		fileLogLevel, _ = log.ParseLevel(viper.GetString(FileLogLevel))
-	}
-	// ******************** Log pending messages ********************* //
-
-	*log.StandardLogger() = *helper.NewDefaultLogger(viper.GetString(LogFile), consoleLogLevel, fileLogLevel, stderr)
-
-	for _, message := range pendingLogMessage {
-		log.StandardLogger().Log(message.Level, message.Msg)
-		if message.Level == log.FatalLevel {
-			log.Exit(1)
-		}
-	}
-
-	if PassedConfigPath != "" {
-		log.Infof("Using config file %v", viper.ConfigFileUsed())
-	} else {
-		log.Info("Using internal configuration")
-	}
+	return message
 }
 
-func NewDBFromConfig() *sql.DB {
-	if testDB != nil {
-		return testDB
+func formatValidationError(e validator.FieldError) string {
+	var message string
+
+	// TODO: Add test to validate if all used validator tags are handled here
+	switch e.Tag() {
+	case ValidatorLogrusLogLevel:
+		message = fmt.Sprintf("value %q is invalid, allowed values are %v", e.Value(), log.AllLevels)
+	case "required":
+		message = "setting is required"
+	case "file":
+		message = fmt.Sprintf("value %q is not a path", e.Value())
+	default:
+		message = e.Error()
 	}
 
-	dataSource := viper.GetString(DB_DataSource)
-	args := viper.GetStringSlice(DB_Args)
-
-	openArgs := dataSource
-	if len(args) > 0 {
-		openArgs += "?"
-
-		openArgs += strings.Join(args, "&")
-	}
-
-	db, err := sql.Open(viper.GetString(DB_Driver), openArgs)
-	if err != nil {
-		panic(err)
-	}
-
-	return db
-}
-
-// ********************    Repository builders    ********************//
-// TODO: Allow using non-sql repositories.
-func NewBookmarkRepositoryFromConfig(repoDB *sql.DB, tagRepository repository.TagRepository) repository.BookmarkRepository {
-	bookmarkRepository := new(sqlite3Repository.Sqlite3BookmarkRepository)
-
-	bookmarkRepositoryAbstract, err := bookmarkRepository.New(sqlite3Repository.Sqlite3BookmarkRepositoryConstructorArgs{DB: repoDB, TagRepository: tagRepository})
-	if err != nil {
-		panic(err)
-	}
-
-	bookmarkRepository, _ = bookmarkRepositoryAbstract.(*sqlite3Repository.Sqlite3BookmarkRepository)
-
-	return bookmarkRepository
-}
-
-func NewTagsRepositoryFromConfig(repoDB *sql.DB) repository.TagRepository {
-	tagsRepository := new(sqlite3Repository.Sqlite3TagRepository)
-
-	tagsRepositoryAbstract, err := tagsRepository.New(sqlite3Repository.Sqlite3TagRepositoryConstructorArgs{DB: repoDB})
-	if err != nil {
-		panic(err)
-	}
-
-	tagsRepository, _ = tagsRepositoryAbstract.(*sqlite3Repository.Sqlite3TagRepository)
-
-	return tagsRepository
-}
-func NewDocumentRepositoryFromConfig(repoDB *sql.DB, tagRepository repository.TagRepository) repository.DocumentRepository {
-	documentRepository := new(sqlite3Repository.Sqlite3DocumentRepository)
-
-	documentRepositoryAbstract, err := documentRepository.New(sqlite3Repository.Sqlite3DocumentRepositoryConstructorArgs{DB: repoDB, TagRepository: tagRepository})
-	if err != nil {
-		panic(err)
-	}
-
-	documentRepository, _ = documentRepositoryAbstract.(*sqlite3Repository.Sqlite3DocumentRepository)
-
-	return documentRepository
-}
-
-// TODO: Allow non-fs content repositories
-func NewDocumentContentRepositoryFromConfig(fs afero.Fs) repository.DocumentContentRepository {
-	documentContentRepository := new(fsRepository.FSDocumentContentRepository)
-
-	documentContentRepositoryAbstract, err := documentContentRepository.New(fs)
-	if err != nil {
-		panic(err)
-	}
-
-	documentContentRepository, _ = documentContentRepositoryAbstract.(*fsRepository.FSDocumentContentRepository)
-
-	return documentContentRepository
-}
-
-// TODO: Implement proper  hook parsing
-// ********************    Manager builders    ********************//
-func NewBookmarkManagerFromConfig(repo repository.BookmarkRepository) libbookmarks.BookmarkManager {
-	hooks := bntp.NewHooks[domain.Bookmark]()
-
-	bookmarkManager, err := libbookmarks.NewBookmarkManager(hooks, repo)
-	if err != nil {
-		panic(err)
-	}
-
-	return bookmarkManager
-}
-
-func NewTagsManagerFromConfig(repo repository.TagRepository) libtags.TagManager {
-	hooks := new(bntp.Hooks[domain.Tag])
-	tagsManager, err := libtags.NewTagmanager(hooks, repo)
-	if err != nil {
-		panic(err)
-	}
-
-	return tagsManager
-}
-func NewDocumentManagerFromConfig(repo repository.DocumentRepository) libdocuments.DocumentManager {
-	hooks := new(bntp.Hooks[domain.Document])
-	documentManager, err := libdocuments.NewDocumentManager(hooks, repo)
-	if err != nil {
-		panic(err)
-	}
-
-	return documentManager
-}
-
-func NewDocumentContentManagerFromConfig(repo repository.DocumentContentRepository) libdocuments.DocumentContentManager {
-	hooks := new(bntp.Hooks[string])
-	documentContentManager, err := libdocuments.NewDocumentContentRepository(hooks, repo)
-	if err != nil {
-		panic(err)
-	}
-
-	return documentContentManager
-}
-
-// **********************    Set up backend    **********************//
-func NewBackendFromConfig() *backend.Backend {
-	newBackend := new(backend.Backend)
-
-	db := NewDBFromConfig()
-
-	// TODO: Extend config to allow creating custom fs
-	fs := afero.NewOsFs()
-
-	tagRepository := NewTagsRepositoryFromConfig(db)
-	newBackend.BookmarkManager = NewBookmarkManagerFromConfig(NewBookmarkRepositoryFromConfig(db, tagRepository))
-	newBackend.TagManager = NewTagsManagerFromConfig(tagRepository)
-	newBackend.DocumentManager = NewDocumentManagerFromConfig(NewDocumentRepositoryFromConfig(db, tagRepository))
-	newBackend.DocumentContentManager = NewDocumentContentManagerFromConfig(NewDocumentContentRepositoryFromConfig(fs))
-
-	newBackend.Marshallers = make(map[string]marshallers.Marshaller)
-	newBackend.Unmarshallers = make(map[string]marshallers.Unmarshaller)
-
-	newBackend.Marshallers["json"] = new(marshallers.JsonMarshaller)
-	newBackend.Unmarshallers["json"] = new(marshallers.JsonUnmarshaller)
-
-	newBackend.Marshallers["yaml"] = new(marshallers.YamlMarshaller)
-	newBackend.Unmarshallers["yaml"] = new(marshallers.YamlUnmarshaller)
-
-	newBackend.Marshallers["csv"] = new(marshallers.CsvMarshaller)
-	newBackend.Unmarshallers["csv"] = new(marshallers.CsvUnmarshaller)
-
-	return newBackend
-}
-
-func init() {
-	userConfigDir, err := os.UserConfigDir()
-	if err != nil {
-		panic(err)
-	}
-
-	cwd, err := os.Getwd()
-	if err != nil {
-		panic(err)
-	}
-
-	ConfigDir = path.Join(userConfigDir, "bntp")
-
-	ConfigSearchPaths = append(ConfigSearchPaths, ConfigDir)
-	ConfigSearchPaths = append(ConfigSearchPaths, cwd)
+	return message
 }

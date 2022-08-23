@@ -27,20 +27,28 @@ import (
 	commonRepo "github.com/JonasMuehlmann/bntp.go/model/repository"
 	"github.com/JonasMuehlmann/goaoi"
 	"github.com/barweiss/go-tuple"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/afero"
 )
 
+type FSDocumentContentRepositoryConstructorArgs struct {
+	Fs     afero.Fs
+	Logger *log.Logger
+}
+
 type FSDocumentContentRepository struct {
-	fs afero.Fs
+	Logger *log.Logger
+	fs     afero.Fs
 }
 
 func (repo *FSDocumentContentRepository) New(args any) (commonRepo.DocumentContentRepository, error) {
-	fs, ok := args.(afero.Fs)
+	constructorArgs, ok := args.(FSDocumentContentRepositoryConstructorArgs)
 	if !ok {
 		return repo, fmt.Errorf("expected type %T but got %T", repo.fs, args)
 	}
 
-	repo.fs = fs
+	repo.fs = constructorArgs.Fs
+	repo.Logger = constructorArgs.Logger
 
 	return repo, nil
 }

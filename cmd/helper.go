@@ -23,7 +23,50 @@ package cmd
 import (
 	"fmt"
 	"reflect"
+	"strings"
+
+	"github.com/JonasMuehlmann/goaoi"
+	"github.com/JonasMuehlmann/goaoi/functional"
 )
+
+func GetStructuredCobraMissingRequiredFlagError(err error) CobraMissingRequiredFlagError {
+	errStr := err.Error()
+
+	startFirstFlag, _ := goaoi.FindIfString(errStr, functional.AreEqualPartial('"'))
+	errStr = errStr[startFirstFlag:]
+
+	endLastFlag, _ := goaoi.FindIfString(errStr, functional.AreEqualPartial('"'))
+	errStr = errStr[:endLastFlag]
+
+	missingFlagsRaw := strings.Split(errStr, ", ")
+
+	transformer := func(s string) string {
+		return strings.Trim(s, "\"")
+	}
+
+	missingFlags, _ := goaoi.TransformCopySliceUnsafe(missingFlagsRaw, transformer)
+
+	return CobraMissingRequiredFlagError{MissingFlags: missingFlags}
+
+}
+
+func UnmarshalEntities[TEntity any](cli *Cli, args []string, format string) (entities []*TEntity, err error) {
+	tags := make([]*TEntity, len(args))
+	for i, arg := range args {
+		tags[i] = new(TEntity)
+
+		err := cli.BNTPBackend.Unmarshallers[format].Unmarshall(tags[i], arg)
+		if err != nil {
+			return tags, EntityMarshallingError{Inner: err}
+		}
+	}
+
+	return tags, nil
+}
+
+//******************************************************************//
+//                      EntitymarshallingError                      //
+//******************************************************************//
 
 type EntityMarshallingError struct {
 	Inner error
@@ -57,16 +100,64 @@ func (err EntityMarshallingError) As(target any) bool {
 	}
 }
 
-func UnmarshalEntities[TEntity any](args []string, format string) (entities []*TEntity, err error) {
-	tags := make([]*TEntity, len(args))
-	for i, arg := range args {
-		tags[i] = new(TEntity)
+//******************************************************************//
+//                        EmptyIterableError                        //
+//******************************************************************//
 
-		err := BNTPBackend.Unmarshallers[format].Unmarshall(tags[i], arg)
-		if err != nil {
-			return tags, EntityMarshallingError{Inner: err}
-		}
+type CobraMissingRequiredFlagError struct {
+	MissingFlags []string
+}
+
+func (err CobraMissingRequiredFlagError) Error() string {
+	return fmt.Sprintf(`required flag(s) "%s" not set`, strings.Join(err.MissingFlags, `", "`))
+}
+
+func (err CobraMissingRequiredFlagError) Is(other error) bool {
+	switch other.(type) {
+	case CobraMissingRequiredFlagError:
+		return true
+	default:
+		return false
 	}
+}
 
-	return tags, nil
+func (err CobraMissingRequiredFlagError) As(target any) bool {
+	switch target.(type) {
+	case CobraMissingRequiredFlagError:
+		reflect.Indirect(reflect.ValueOf(target)).Set(reflect.ValueOf(err))
+		return true
+	default:
+		return false
+	}
+}
+
+//******************************************************************//
+//                        EmptyIterableError                        //
+//******************************************************************//
+
+type ConflictingPositionalArgsAndFlagError struct {
+	Flag string
+}
+
+func (err ConflictingPositionalArgsAndFlagError) Error() string {
+	return "Can not use positional arguments together with the flag " + err.Flag
+}
+
+func (err ConflictingPositionalArgsAndFlagError) Is(other error) bool {
+	switch other.(type) {
+	case ConflictingPositionalArgsAndFlagError:
+		return true
+	default:
+		return false
+	}
+}
+
+func (err ConflictingPositionalArgsAndFlagError) As(target any) bool {
+	switch target.(type) {
+	case ConflictingPositionalArgsAndFlagError:
+		reflect.Indirect(reflect.ValueOf(target)).Set(reflect.ValueOf(err))
+		return true
+	default:
+		return false
+	}
 }

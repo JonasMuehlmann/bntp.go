@@ -52,6 +52,7 @@ import (
 //******************************************************************//
 type Sqlite3TagRepository struct {
     db *sql.DB
+    Logger *log.Logger
     
 }
 
@@ -306,6 +307,7 @@ func buildQueryModListFromFilterTag(filter *TagFilter) queryModSliceTag {
 
 type Sqlite3TagRepositoryConstructorArgs struct {
     DB *sql.DB
+    Logger *log.Logger
     
 }
 
@@ -318,6 +320,7 @@ func (repo *Sqlite3TagRepository) New(args any) (newRepo repoCommon.TagRepositor
     }
 
     repo.db = constructorArgs.DB
+    repo.Logger = constructorArgs.Logger
     
 
     newRepo = repo
@@ -331,7 +334,7 @@ func (repo *Sqlite3TagRepository) New(args any) (newRepo repoCommon.TagRepositor
 //******************************************************************//
 func (repo *Sqlite3TagRepository) Add(ctx context.Context, domainModels []*domain.Tag)  (err error){
     if len(domainModels) == 0 {
-        log.Debug(helper.LogMessageEmptyInput)
+        repo.Logger.Debug(helper.LogMessageEmptyInput)
 
         err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 
@@ -341,7 +344,7 @@ func (repo *Sqlite3TagRepository) Add(ctx context.Context, domainModels []*domai
 	err = goaoi.AnyOfSlice(domainModels, func (e *domain.Tag) bool {return e == nil || e.IsDefault()})
 	if err == nil{
 		err = helper.NilInputError{}
-		log.Error(err)
+		repo.Logger.Error(err)
 
 		return
 	}
@@ -361,7 +364,7 @@ func (repo *Sqlite3TagRepository) Add(ctx context.Context, domainModels []*domai
 
 func (repo *Sqlite3TagRepository) AddMinimal(ctx context.Context, domainModels []*domain.Tag)  (err error){
     if len(domainModels) == 0 {
-        log.Debug(helper.LogMessageEmptyInput)
+        repo.Logger.Debug(helper.LogMessageEmptyInput)
 
         err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 
@@ -371,7 +374,7 @@ func (repo *Sqlite3TagRepository) AddMinimal(ctx context.Context, domainModels [
 	err = goaoi.AnyOfSlice(domainModels, func (e *domain.Tag) bool {return e == nil || e.IsDefault()})
 	if err == nil{
 		err = helper.NilInputError{}
-		log.Error(err)
+		repo.Logger.Error(err)
 
 		return
 	}
@@ -415,7 +418,7 @@ func (repo *Sqlite3TagRepository) AddMinimal(ctx context.Context, domainModels [
 func (repo *Sqlite3TagRepository) Replace(ctx context.Context, domainModels []*domain.Tag)  (err error){
     
     if len(domainModels) == 0 {
-        log.Debug(helper.LogMessageEmptyInput)
+        repo.Logger.Debug(helper.LogMessageEmptyInput)
 
         err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 
@@ -425,7 +428,7 @@ func (repo *Sqlite3TagRepository) Replace(ctx context.Context, domainModels []*d
 	err = goaoi.AnyOfSlice(domainModels, func (e *domain.Tag) bool {return e == nil || e.IsDefault()})
 	if err == nil{
 		err = helper.NilInputError{}
-		log.Error(err)
+		repo.Logger.Error(err)
 
 		return
 	}
@@ -486,7 +489,7 @@ func (repo *Sqlite3TagRepository) Replace(ctx context.Context, domainModels []*d
 }
 func (repo *Sqlite3TagRepository) Upsert(ctx context.Context, domainModels []*domain.Tag)  (err error){
     if len(domainModels) == 0 {
-        log.Debug(helper.LogMessageEmptyInput)
+        repo.Logger.Debug(helper.LogMessageEmptyInput)
 
         err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 
@@ -496,7 +499,7 @@ func (repo *Sqlite3TagRepository) Upsert(ctx context.Context, domainModels []*do
 	err = goaoi.AnyOfSlice(domainModels, func (e *domain.Tag) bool {return e == nil || e.IsDefault()})
 	if err == nil{
 		err = helper.NilInputError{}
-		log.Error(err)
+		repo.Logger.Error(err)
 
 		return
 	}
@@ -541,7 +544,7 @@ func (repo *Sqlite3TagRepository) Upsert(ctx context.Context, domainModels []*do
 
 func (repo *Sqlite3TagRepository) Update(ctx context.Context, domainModels []*domain.Tag, domainColumnUpdater *domain.TagUpdater)  (err error){
     if len(domainModels) == 0 {
-        log.Debug(helper.LogMessageEmptyInput)
+        repo.Logger.Debug(helper.LogMessageEmptyInput)
 
         err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 
@@ -551,21 +554,21 @@ func (repo *Sqlite3TagRepository) Update(ctx context.Context, domainModels []*do
 	err = goaoi.AnyOfSlice(domainModels, func (e *domain.Tag) bool {return e == nil || e.IsDefault()})
 	if err == nil{
 		err = helper.NilInputError{}
-		log.Error(err)
+		repo.Logger.Error(err)
 
 		return
 	}
 
 	if  domainColumnUpdater == nil {
 		err = helper.NilInputError{}
-		log.Error(err)
+		repo.Logger.Error(err)
 
 		return
     }
 
 	if  domainColumnUpdater.IsDefault() {
         err = helper.IneffectiveOperationError{Inner: helper.NopUpdaterError{}}
-		log.Error(err)
+		repo.Logger.Error(err)
 
 		return
     }
@@ -632,21 +635,21 @@ func (repo *Sqlite3TagRepository) UpdateWhere(ctx context.Context, domainColumnF
 
 	if  domainColumnFilter == nil {
 		err = helper.NilInputError{}
-		log.Error(err)
+		repo.Logger.Error(err)
 
 		return
     }
 
 	if  domainColumnUpdater == nil {
 		err = helper.NilInputError{}
-		log.Error(err)
+		repo.Logger.Error(err)
 
 		return
     }
 
 	if  domainColumnUpdater.IsDefault() {
         err = helper.IneffectiveOperationError{Inner: helper.NopUpdaterError{}}
-		log.Error(err)
+		repo.Logger.Error(err)
 
 		return
     }
@@ -722,7 +725,7 @@ func (repo *Sqlite3TagRepository) UpdateWhere(ctx context.Context, domainColumnF
 
 func (repo *Sqlite3TagRepository) Delete(ctx context.Context, domainModels []*domain.Tag)  (err error){
     if len(domainModels) == 0 {
-        log.Debug(helper.LogMessageEmptyInput)
+        repo.Logger.Debug(helper.LogMessageEmptyInput)
 
         err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 
@@ -732,7 +735,7 @@ func (repo *Sqlite3TagRepository) Delete(ctx context.Context, domainModels []*do
 	err = goaoi.AnyOfSlice(domainModels, func (e *domain.Tag) bool {return e == nil || e.IsDefault()})
 	if err == nil{
 		err = helper.NilInputError{}
-		log.Error(err)
+		repo.Logger.Error(err)
 
 		return
 	}
@@ -772,7 +775,7 @@ func (repo *Sqlite3TagRepository) Delete(ctx context.Context, domainModels []*do
 func (repo *Sqlite3TagRepository) DeleteWhere(ctx context.Context, domainColumnFilter *domain.TagFilter) (numAffectedRecords int64, err error) {
 	if  domainColumnFilter == nil {
 		err = helper.NilInputError{}
-		log.Error(err)
+		repo.Logger.Error(err)
 
 		return
     }
@@ -811,7 +814,7 @@ func (repo *Sqlite3TagRepository) DeleteWhere(ctx context.Context, domainColumnF
 func (repo *Sqlite3TagRepository) CountWhere(ctx context.Context, domainColumnFilter *domain.TagFilter) (numRecords int64, err error) {
 	if  domainColumnFilter == nil {
 		err = helper.NilInputError{}
-		log.Error(err)
+		repo.Logger.Error(err)
 
 		return
     }
@@ -843,7 +846,7 @@ func (repo *Sqlite3TagRepository) CountAll(ctx context.Context) (numRecords int6
 func (repo *Sqlite3TagRepository) DoesExist(ctx context.Context, domainModel *domain.Tag) (doesExist bool, err error) {
 	if domainModel == nil {
         err = helper.NilInputError{}
-		log.Error(err)
+		repo.Logger.Error(err)
 
 		return
 	}
@@ -868,7 +871,7 @@ func (repo *Sqlite3TagRepository) DoesExist(ctx context.Context, domainModel *do
 func (repo *Sqlite3TagRepository) DoesExistWhere(ctx context.Context, domainColumnFilter *domain.TagFilter) (doesExist bool, err error) {
 	if  domainColumnFilter == nil {
 		err = helper.NilInputError{}
-		log.Error(err)
+		repo.Logger.Error(err)
 
 		return
     }
@@ -896,7 +899,7 @@ func (repo *Sqlite3TagRepository) DoesExistWhere(ctx context.Context, domainColu
 func (repo *Sqlite3TagRepository) GetWhere(ctx context.Context, domainColumnFilter *domain.TagFilter) (records []*domain.Tag, err error) {
 	if  domainColumnFilter == nil {
 		err = helper.NilInputError{}
-		log.Error(err)
+		repo.Logger.Error(err)
 
 		return
     }
@@ -950,7 +953,7 @@ func (repo *Sqlite3TagRepository) GetWhere(ctx context.Context, domainColumnFilt
 func (repo *Sqlite3TagRepository) GetFirstWhere(ctx context.Context, domainColumnFilter *domain.TagFilter) (record *domain.Tag, err error) {
 	if  domainColumnFilter == nil {
 		err = helper.NilInputError{}
-		log.Error(err)
+		repo.Logger.Error(err)
 
 		return
     }

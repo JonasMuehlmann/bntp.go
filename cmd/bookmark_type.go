@@ -27,79 +27,81 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func WithBookmarkType(cli *Cli) {
-	cli.BookmarkTypeCmd = &cobra.Command{
-		Use:   "type",
-		Short: "Manage types of bntp bookmarks",
-		Long:  `A longer description`,
-		RunE: func(cmd *cobra.Command, args []string) error {
-			if len(args) == 0 {
-				return helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
-			}
+func WithBookmarkTypeCommand() CliOption {
+	return func(cli *Cli) {
+		cli.BookmarkTypeCmd = &cobra.Command{
+			Use:   "type",
+			Short: "Manage types of bntp bookmarks",
+			Long:  `A longer description`,
+			RunE: func(cmd *cobra.Command, args []string) error {
+				if len(args) == 0 {
+					return helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
+				}
 
-			return nil
-		},
+				return nil
+			},
+		}
+
+		cli.BookmarkTypeAddCmd = &cobra.Command{
+			Use:   "add TYPE...",
+			Short: "Add bntp bookmark types",
+			Long:  `A longer description`,
+			Args:  cobra.ArbitraryArgs,
+			RunE: func(cmd *cobra.Command, args []string) error {
+				if len(args) == 0 {
+					return helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
+				}
+
+				err := cli.BNTPBackend.BookmarkManager.AddType(context.Background(), args)
+				if err != nil {
+					return err
+				}
+
+				return nil
+			},
+		}
+
+		cli.BookmarkTypeEditCmd = &cobra.Command{
+			Use:   "edit OLD_NAME NEW_NAME",
+			Short: "Change a bntp bookmark type",
+			Long:  `A longer description`,
+			Args:  cobra.ExactArgs(2),
+			RunE: func(cmd *cobra.Command, args []string) error {
+				if len(args) == 0 {
+					return helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
+				}
+
+				err := cli.BNTPBackend.BookmarkManager.UpdateType(context.Background(), args[0], args[1])
+				if err != nil {
+					return err
+				}
+
+				return nil
+			},
+		}
+
+		cli.BookmarkTypeRemoveCmd = &cobra.Command{
+			Use:   "remove TYPE...",
+			Short: "Remove bntp bookmark types",
+			Long:  `A longer description`,
+			Args:  cobra.ArbitraryArgs,
+			RunE: func(cmd *cobra.Command, args []string) error {
+				if len(args) == 0 {
+					return helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
+				}
+
+				err := cli.BNTPBackend.BookmarkManager.DeleteType(context.Background(), args)
+				if err != nil {
+					return err
+				}
+
+				return nil
+			},
+		}
+
+		cli.BookmarkCmd.AddCommand(cli.BookmarkTypeCmd)
+		cli.BookmarkTypeCmd.AddCommand(cli.BookmarkTypeAddCmd)
+		cli.BookmarkTypeCmd.AddCommand(cli.BookmarkTypeEditCmd)
+		cli.BookmarkTypeCmd.AddCommand(cli.BookmarkTypeRemoveCmd)
 	}
-
-	cli.BookmarkTypeAddCmd = &cobra.Command{
-		Use:   "add TYPE...",
-		Short: "Add bntp bookmark types",
-		Long:  `A longer description`,
-		Args:  cobra.ArbitraryArgs,
-		RunE: func(cmd *cobra.Command, args []string) error {
-			if len(args) == 0 {
-				return helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
-			}
-
-			err := BNTPBackend.BookmarkManager.AddType(context.Background(), args)
-			if err != nil {
-				return err
-			}
-
-			return nil
-		},
-	}
-
-	cli.BookmarkTypeEditCmd = &cobra.Command{
-		Use:   "edit OLD_NAME NEW_NAME",
-		Short: "Change a bntp bookmark type",
-		Long:  `A longer description`,
-		Args:  cobra.ExactArgs(2),
-		RunE: func(cmd *cobra.Command, args []string) error {
-			if len(args) == 0 {
-				return helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
-			}
-
-			err := BNTPBackend.BookmarkManager.UpdateType(context.Background(), args[0], args[1])
-			if err != nil {
-				return err
-			}
-
-			return nil
-		},
-	}
-
-	cli.BookmarkTypeRemoveCmd = &cobra.Command{
-		Use:   "remove TYPE...",
-		Short: "Remove bntp bookmark types",
-		Long:  `A longer description`,
-		Args:  cobra.ArbitraryArgs,
-		RunE: func(cmd *cobra.Command, args []string) error {
-			if len(args) == 0 {
-				return helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
-			}
-
-			err := BNTPBackend.BookmarkManager.DeleteType(context.Background(), args)
-			if err != nil {
-				return err
-			}
-
-			return nil
-		},
-	}
-
-	cli.BookmarkCmd.AddCommand(cli.BookmarkTypeCmd)
-	cli.BookmarkTypeCmd.AddCommand(cli.BookmarkTypeAddCmd)
-	cli.BookmarkTypeCmd.AddCommand(cli.BookmarkTypeEditCmd)
-	cli.BookmarkTypeCmd.AddCommand(cli.BookmarkTypeRemoveCmd)
 }

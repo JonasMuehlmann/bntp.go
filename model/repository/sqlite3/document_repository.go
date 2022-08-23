@@ -52,6 +52,7 @@ import (
 //******************************************************************//
 type Sqlite3DocumentRepository struct {
     db *sql.DB
+    Logger *log.Logger
     
     tagRepository repoCommon.TagRepository
     
@@ -329,6 +330,7 @@ func buildQueryModListFromFilterDocument(filter *DocumentFilter) queryModSliceDo
 
 type Sqlite3DocumentRepositoryConstructorArgs struct {
     DB *sql.DB
+    Logger *log.Logger
     
     TagRepository repoCommon.TagRepository
     
@@ -343,6 +345,7 @@ func (repo *Sqlite3DocumentRepository) New(args any) (newRepo repoCommon.Documen
     }
 
     repo.db = constructorArgs.DB
+    repo.Logger = constructorArgs.Logger
     
     repo.tagRepository = constructorArgs.TagRepository
     
@@ -358,7 +361,7 @@ func (repo *Sqlite3DocumentRepository) New(args any) (newRepo repoCommon.Documen
 //******************************************************************//
 func (repo *Sqlite3DocumentRepository) Add(ctx context.Context, domainModels []*domain.Document)  (err error){
     if len(domainModels) == 0 {
-        log.Debug(helper.LogMessageEmptyInput)
+        repo.Logger.Debug(helper.LogMessageEmptyInput)
 
         err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 
@@ -368,7 +371,7 @@ func (repo *Sqlite3DocumentRepository) Add(ctx context.Context, domainModels []*
 	err = goaoi.AnyOfSlice(domainModels, func (e *domain.Document) bool {return e == nil || e.IsDefault()})
 	if err == nil{
 		err = helper.NilInputError{}
-		log.Error(err)
+		repo.Logger.Error(err)
 
 		return
 	}
@@ -388,7 +391,7 @@ func (repo *Sqlite3DocumentRepository) Add(ctx context.Context, domainModels []*
 
 func (repo *Sqlite3DocumentRepository) AddMinimal(ctx context.Context, domainModels []*domain.Document)  (err error){
     if len(domainModels) == 0 {
-        log.Debug(helper.LogMessageEmptyInput)
+        repo.Logger.Debug(helper.LogMessageEmptyInput)
 
         err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 
@@ -398,7 +401,7 @@ func (repo *Sqlite3DocumentRepository) AddMinimal(ctx context.Context, domainMod
 	err = goaoi.AnyOfSlice(domainModels, func (e *domain.Document) bool {return e == nil || e.IsDefault()})
 	if err == nil{
 		err = helper.NilInputError{}
-		log.Error(err)
+		repo.Logger.Error(err)
 
 		return
 	}
@@ -442,7 +445,7 @@ func (repo *Sqlite3DocumentRepository) AddMinimal(ctx context.Context, domainMod
 func (repo *Sqlite3DocumentRepository) Replace(ctx context.Context, domainModels []*domain.Document)  (err error){
     
     if len(domainModels) == 0 {
-        log.Debug(helper.LogMessageEmptyInput)
+        repo.Logger.Debug(helper.LogMessageEmptyInput)
 
         err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 
@@ -452,7 +455,7 @@ func (repo *Sqlite3DocumentRepository) Replace(ctx context.Context, domainModels
 	err = goaoi.AnyOfSlice(domainModels, func (e *domain.Document) bool {return e == nil || e.IsDefault()})
 	if err == nil{
 		err = helper.NilInputError{}
-		log.Error(err)
+		repo.Logger.Error(err)
 
 		return
 	}
@@ -513,7 +516,7 @@ func (repo *Sqlite3DocumentRepository) Replace(ctx context.Context, domainModels
 }
 func (repo *Sqlite3DocumentRepository) Upsert(ctx context.Context, domainModels []*domain.Document)  (err error){
     if len(domainModels) == 0 {
-        log.Debug(helper.LogMessageEmptyInput)
+        repo.Logger.Debug(helper.LogMessageEmptyInput)
 
         err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 
@@ -523,7 +526,7 @@ func (repo *Sqlite3DocumentRepository) Upsert(ctx context.Context, domainModels 
 	err = goaoi.AnyOfSlice(domainModels, func (e *domain.Document) bool {return e == nil || e.IsDefault()})
 	if err == nil{
 		err = helper.NilInputError{}
-		log.Error(err)
+		repo.Logger.Error(err)
 
 		return
 	}
@@ -568,7 +571,7 @@ func (repo *Sqlite3DocumentRepository) Upsert(ctx context.Context, domainModels 
 
 func (repo *Sqlite3DocumentRepository) Update(ctx context.Context, domainModels []*domain.Document, domainColumnUpdater *domain.DocumentUpdater)  (err error){
     if len(domainModels) == 0 {
-        log.Debug(helper.LogMessageEmptyInput)
+        repo.Logger.Debug(helper.LogMessageEmptyInput)
 
         err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 
@@ -578,21 +581,21 @@ func (repo *Sqlite3DocumentRepository) Update(ctx context.Context, domainModels 
 	err = goaoi.AnyOfSlice(domainModels, func (e *domain.Document) bool {return e == nil || e.IsDefault()})
 	if err == nil{
 		err = helper.NilInputError{}
-		log.Error(err)
+		repo.Logger.Error(err)
 
 		return
 	}
 
 	if  domainColumnUpdater == nil {
 		err = helper.NilInputError{}
-		log.Error(err)
+		repo.Logger.Error(err)
 
 		return
     }
 
 	if  domainColumnUpdater.IsDefault() {
         err = helper.IneffectiveOperationError{Inner: helper.NopUpdaterError{}}
-		log.Error(err)
+		repo.Logger.Error(err)
 
 		return
     }
@@ -659,21 +662,21 @@ func (repo *Sqlite3DocumentRepository) UpdateWhere(ctx context.Context, domainCo
 
 	if  domainColumnFilter == nil {
 		err = helper.NilInputError{}
-		log.Error(err)
+		repo.Logger.Error(err)
 
 		return
     }
 
 	if  domainColumnUpdater == nil {
 		err = helper.NilInputError{}
-		log.Error(err)
+		repo.Logger.Error(err)
 
 		return
     }
 
 	if  domainColumnUpdater.IsDefault() {
         err = helper.IneffectiveOperationError{Inner: helper.NopUpdaterError{}}
-		log.Error(err)
+		repo.Logger.Error(err)
 
 		return
     }
@@ -749,7 +752,7 @@ func (repo *Sqlite3DocumentRepository) UpdateWhere(ctx context.Context, domainCo
 
 func (repo *Sqlite3DocumentRepository) Delete(ctx context.Context, domainModels []*domain.Document)  (err error){
     if len(domainModels) == 0 {
-        log.Debug(helper.LogMessageEmptyInput)
+        repo.Logger.Debug(helper.LogMessageEmptyInput)
 
         err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 
@@ -759,7 +762,7 @@ func (repo *Sqlite3DocumentRepository) Delete(ctx context.Context, domainModels 
 	err = goaoi.AnyOfSlice(domainModels, func (e *domain.Document) bool {return e == nil || e.IsDefault()})
 	if err == nil{
 		err = helper.NilInputError{}
-		log.Error(err)
+		repo.Logger.Error(err)
 
 		return
 	}
@@ -799,7 +802,7 @@ func (repo *Sqlite3DocumentRepository) Delete(ctx context.Context, domainModels 
 func (repo *Sqlite3DocumentRepository) DeleteWhere(ctx context.Context, domainColumnFilter *domain.DocumentFilter) (numAffectedRecords int64, err error) {
 	if  domainColumnFilter == nil {
 		err = helper.NilInputError{}
-		log.Error(err)
+		repo.Logger.Error(err)
 
 		return
     }
@@ -838,7 +841,7 @@ func (repo *Sqlite3DocumentRepository) DeleteWhere(ctx context.Context, domainCo
 func (repo *Sqlite3DocumentRepository) CountWhere(ctx context.Context, domainColumnFilter *domain.DocumentFilter) (numRecords int64, err error) {
 	if  domainColumnFilter == nil {
 		err = helper.NilInputError{}
-		log.Error(err)
+		repo.Logger.Error(err)
 
 		return
     }
@@ -870,7 +873,7 @@ func (repo *Sqlite3DocumentRepository) CountAll(ctx context.Context) (numRecords
 func (repo *Sqlite3DocumentRepository) DoesExist(ctx context.Context, domainModel *domain.Document) (doesExist bool, err error) {
 	if domainModel == nil {
         err = helper.NilInputError{}
-		log.Error(err)
+		repo.Logger.Error(err)
 
 		return
 	}
@@ -895,7 +898,7 @@ func (repo *Sqlite3DocumentRepository) DoesExist(ctx context.Context, domainMode
 func (repo *Sqlite3DocumentRepository) DoesExistWhere(ctx context.Context, domainColumnFilter *domain.DocumentFilter) (doesExist bool, err error) {
 	if  domainColumnFilter == nil {
 		err = helper.NilInputError{}
-		log.Error(err)
+		repo.Logger.Error(err)
 
 		return
     }
@@ -923,7 +926,7 @@ func (repo *Sqlite3DocumentRepository) DoesExistWhere(ctx context.Context, domai
 func (repo *Sqlite3DocumentRepository) GetWhere(ctx context.Context, domainColumnFilter *domain.DocumentFilter) (records []*domain.Document, err error) {
 	if  domainColumnFilter == nil {
 		err = helper.NilInputError{}
-		log.Error(err)
+		repo.Logger.Error(err)
 
 		return
     }
@@ -977,7 +980,7 @@ func (repo *Sqlite3DocumentRepository) GetWhere(ctx context.Context, domainColum
 func (repo *Sqlite3DocumentRepository) GetFirstWhere(ctx context.Context, domainColumnFilter *domain.DocumentFilter) (record *domain.Document, err error) {
 	if  domainColumnFilter == nil {
 		err = helper.NilInputError{}
-		log.Error(err)
+		repo.Logger.Error(err)
 
 		return
     }

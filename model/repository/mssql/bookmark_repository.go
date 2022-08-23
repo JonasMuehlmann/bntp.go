@@ -52,6 +52,7 @@ import (
 //******************************************************************//
 type MssqlBookmarkRepository struct {
     db *sql.DB
+    Logger *log.Logger
     
     tagRepository repoCommon.TagRepository
     
@@ -368,6 +369,7 @@ func buildQueryModListFromFilterBookmark(filter *BookmarkFilter) queryModSliceBo
 
 type MssqlBookmarkRepositoryConstructorArgs struct {
     DB *sql.DB
+    Logger *log.Logger
     
     TagRepository repoCommon.TagRepository
     
@@ -382,6 +384,7 @@ func (repo *MssqlBookmarkRepository) New(args any) (newRepo repoCommon.BookmarkR
     }
 
     repo.db = constructorArgs.DB
+    repo.Logger = constructorArgs.Logger
     
     repo.tagRepository = constructorArgs.TagRepository
     
@@ -397,7 +400,7 @@ func (repo *MssqlBookmarkRepository) New(args any) (newRepo repoCommon.BookmarkR
 //******************************************************************//
 func (repo *MssqlBookmarkRepository) Add(ctx context.Context, domainModels []*domain.Bookmark)  (err error){
     if len(domainModels) == 0 {
-        log.Debug(helper.LogMessageEmptyInput)
+        repo.Logger.Debug(helper.LogMessageEmptyInput)
 
         err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 
@@ -407,7 +410,7 @@ func (repo *MssqlBookmarkRepository) Add(ctx context.Context, domainModels []*do
 	err = goaoi.AnyOfSlice(domainModels, func (e *domain.Bookmark) bool {return e == nil || e.IsDefault()})
 	if err == nil{
 		err = helper.NilInputError{}
-		log.Error(err)
+		repo.Logger.Error(err)
 
 		return
 	}
@@ -427,7 +430,7 @@ func (repo *MssqlBookmarkRepository) Add(ctx context.Context, domainModels []*do
 
 func (repo *MssqlBookmarkRepository) AddMinimal(ctx context.Context, domainModels []*domain.Bookmark)  (err error){
     if len(domainModels) == 0 {
-        log.Debug(helper.LogMessageEmptyInput)
+        repo.Logger.Debug(helper.LogMessageEmptyInput)
 
         err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 
@@ -437,7 +440,7 @@ func (repo *MssqlBookmarkRepository) AddMinimal(ctx context.Context, domainModel
 	err = goaoi.AnyOfSlice(domainModels, func (e *domain.Bookmark) bool {return e == nil || e.IsDefault()})
 	if err == nil{
 		err = helper.NilInputError{}
-		log.Error(err)
+		repo.Logger.Error(err)
 
 		return
 	}
@@ -481,7 +484,7 @@ func (repo *MssqlBookmarkRepository) AddMinimal(ctx context.Context, domainModel
 func (repo *MssqlBookmarkRepository) Replace(ctx context.Context, domainModels []*domain.Bookmark)  (err error){
     
     if len(domainModels) == 0 {
-        log.Debug(helper.LogMessageEmptyInput)
+        repo.Logger.Debug(helper.LogMessageEmptyInput)
 
         err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 
@@ -491,7 +494,7 @@ func (repo *MssqlBookmarkRepository) Replace(ctx context.Context, domainModels [
 	err = goaoi.AnyOfSlice(domainModels, func (e *domain.Bookmark) bool {return e == nil || e.IsDefault()})
 	if err == nil{
 		err = helper.NilInputError{}
-		log.Error(err)
+		repo.Logger.Error(err)
 
 		return
 	}
@@ -552,7 +555,7 @@ func (repo *MssqlBookmarkRepository) Replace(ctx context.Context, domainModels [
 }
 func (repo *MssqlBookmarkRepository) Upsert(ctx context.Context, domainModels []*domain.Bookmark)  (err error){
     if len(domainModels) == 0 {
-        log.Debug(helper.LogMessageEmptyInput)
+        repo.Logger.Debug(helper.LogMessageEmptyInput)
 
         err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 
@@ -562,7 +565,7 @@ func (repo *MssqlBookmarkRepository) Upsert(ctx context.Context, domainModels []
 	err = goaoi.AnyOfSlice(domainModels, func (e *domain.Bookmark) bool {return e == nil || e.IsDefault()})
 	if err == nil{
 		err = helper.NilInputError{}
-		log.Error(err)
+		repo.Logger.Error(err)
 
 		return
 	}
@@ -607,7 +610,7 @@ func (repo *MssqlBookmarkRepository) Upsert(ctx context.Context, domainModels []
 
 func (repo *MssqlBookmarkRepository) Update(ctx context.Context, domainModels []*domain.Bookmark, domainColumnUpdater *domain.BookmarkUpdater)  (err error){
     if len(domainModels) == 0 {
-        log.Debug(helper.LogMessageEmptyInput)
+        repo.Logger.Debug(helper.LogMessageEmptyInput)
 
         err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 
@@ -617,21 +620,21 @@ func (repo *MssqlBookmarkRepository) Update(ctx context.Context, domainModels []
 	err = goaoi.AnyOfSlice(domainModels, func (e *domain.Bookmark) bool {return e == nil || e.IsDefault()})
 	if err == nil{
 		err = helper.NilInputError{}
-		log.Error(err)
+		repo.Logger.Error(err)
 
 		return
 	}
 
 	if  domainColumnUpdater == nil {
 		err = helper.NilInputError{}
-		log.Error(err)
+		repo.Logger.Error(err)
 
 		return
     }
 
 	if  domainColumnUpdater.IsDefault() {
         err = helper.IneffectiveOperationError{Inner: helper.NopUpdaterError{}}
-		log.Error(err)
+		repo.Logger.Error(err)
 
 		return
     }
@@ -698,21 +701,21 @@ func (repo *MssqlBookmarkRepository) UpdateWhere(ctx context.Context, domainColu
 
 	if  domainColumnFilter == nil {
 		err = helper.NilInputError{}
-		log.Error(err)
+		repo.Logger.Error(err)
 
 		return
     }
 
 	if  domainColumnUpdater == nil {
 		err = helper.NilInputError{}
-		log.Error(err)
+		repo.Logger.Error(err)
 
 		return
     }
 
 	if  domainColumnUpdater.IsDefault() {
         err = helper.IneffectiveOperationError{Inner: helper.NopUpdaterError{}}
-		log.Error(err)
+		repo.Logger.Error(err)
 
 		return
     }
@@ -788,7 +791,7 @@ func (repo *MssqlBookmarkRepository) UpdateWhere(ctx context.Context, domainColu
 
 func (repo *MssqlBookmarkRepository) Delete(ctx context.Context, domainModels []*domain.Bookmark)  (err error){
     if len(domainModels) == 0 {
-        log.Debug(helper.LogMessageEmptyInput)
+        repo.Logger.Debug(helper.LogMessageEmptyInput)
 
         err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 
@@ -798,7 +801,7 @@ func (repo *MssqlBookmarkRepository) Delete(ctx context.Context, domainModels []
 	err = goaoi.AnyOfSlice(domainModels, func (e *domain.Bookmark) bool {return e == nil || e.IsDefault()})
 	if err == nil{
 		err = helper.NilInputError{}
-		log.Error(err)
+		repo.Logger.Error(err)
 
 		return
 	}
@@ -838,7 +841,7 @@ func (repo *MssqlBookmarkRepository) Delete(ctx context.Context, domainModels []
 func (repo *MssqlBookmarkRepository) DeleteWhere(ctx context.Context, domainColumnFilter *domain.BookmarkFilter) (numAffectedRecords int64, err error) {
 	if  domainColumnFilter == nil {
 		err = helper.NilInputError{}
-		log.Error(err)
+		repo.Logger.Error(err)
 
 		return
     }
@@ -877,7 +880,7 @@ func (repo *MssqlBookmarkRepository) DeleteWhere(ctx context.Context, domainColu
 func (repo *MssqlBookmarkRepository) CountWhere(ctx context.Context, domainColumnFilter *domain.BookmarkFilter) (numRecords int64, err error) {
 	if  domainColumnFilter == nil {
 		err = helper.NilInputError{}
-		log.Error(err)
+		repo.Logger.Error(err)
 
 		return
     }
@@ -909,7 +912,7 @@ func (repo *MssqlBookmarkRepository) CountAll(ctx context.Context) (numRecords i
 func (repo *MssqlBookmarkRepository) DoesExist(ctx context.Context, domainModel *domain.Bookmark) (doesExist bool, err error) {
 	if domainModel == nil {
         err = helper.NilInputError{}
-		log.Error(err)
+		repo.Logger.Error(err)
 
 		return
 	}
@@ -934,7 +937,7 @@ func (repo *MssqlBookmarkRepository) DoesExist(ctx context.Context, domainModel 
 func (repo *MssqlBookmarkRepository) DoesExistWhere(ctx context.Context, domainColumnFilter *domain.BookmarkFilter) (doesExist bool, err error) {
 	if  domainColumnFilter == nil {
 		err = helper.NilInputError{}
-		log.Error(err)
+		repo.Logger.Error(err)
 
 		return
     }
@@ -962,7 +965,7 @@ func (repo *MssqlBookmarkRepository) DoesExistWhere(ctx context.Context, domainC
 func (repo *MssqlBookmarkRepository) GetWhere(ctx context.Context, domainColumnFilter *domain.BookmarkFilter) (records []*domain.Bookmark, err error) {
 	if  domainColumnFilter == nil {
 		err = helper.NilInputError{}
-		log.Error(err)
+		repo.Logger.Error(err)
 
 		return
     }
@@ -1016,7 +1019,7 @@ func (repo *MssqlBookmarkRepository) GetWhere(ctx context.Context, domainColumnF
 func (repo *MssqlBookmarkRepository) GetFirstWhere(ctx context.Context, domainColumnFilter *domain.BookmarkFilter) (record *domain.Bookmark, err error) {
 	if  domainColumnFilter == nil {
 		err = helper.NilInputError{}
-		log.Error(err)
+		repo.Logger.Error(err)
 
 		return
     }
