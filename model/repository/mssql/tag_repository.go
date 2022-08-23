@@ -929,7 +929,7 @@ func (repo *MssqlTagRepository) GetWhere(ctx context.Context, domainColumnFilter
     }
 
     if len(repositoryModels) == 0 {
-        err = helper.IneffectiveOperationError{Inner: err}
+    err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
 
         return
     }
@@ -982,7 +982,7 @@ func (repo *MssqlTagRepository) GetFirstWhere(ctx context.Context, domainColumnF
     }
 
     if repositoryModel == nil {
-        err = helper.IneffectiveOperationError{Inner: err}
+        err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
 
         return
     }
@@ -999,7 +999,7 @@ func (repo *MssqlTagRepository) GetAll(ctx context.Context) (records []*domain.T
         return
     }
     if len(repositoryModels) == 0 {
-        err = helper.IneffectiveOperationError{Inner: err}
+        err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
 
         return
     }

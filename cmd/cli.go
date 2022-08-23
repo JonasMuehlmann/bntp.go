@@ -33,6 +33,7 @@ import (
 	"github.com/JonasMuehlmann/bntp.go/internal/config"
 	"github.com/JonasMuehlmann/bntp.go/internal/helper"
 	log "github.com/sirupsen/logrus"
+	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 	"github.com/stoewer/go-strcase"
 )
@@ -76,9 +77,15 @@ func WithDbOverride(dbToUse *sql.DB) CliOption {
 	}
 }
 
+func WithFsOverride(fsToUse afero.Fs) CliOption {
+	return func(cli *Cli) {
+		cli.Fs = fsToUse
+	}
+}
 func NewCli(options ...CliOption) *Cli {
 	cli := &Cli{
 		StdErr: os.Stderr,
+		Fs:     afero.NewOsFs(),
 	}
 
 	cli.RootCmd = &cobra.Command{
@@ -147,10 +154,6 @@ func (cli *Cli) Execute() error {
 	err := cli.RootCmd.Execute()
 
 	if err != nil {
-		if errStr := err.Error(); strings.Contains(errStr, "required flag") {
-			err = GetStructuredCobraMissingRequiredFlagError(err)
-		}
-
 		cli.Logger.Error(err)
 	}
 
@@ -166,6 +169,7 @@ type Cli struct {
 	StdErr        io.Writer
 	TestDB        *sql.DB
 	Logger        *log.Logger
+	Fs            afero.Fs
 
 	BookmarkAddCmd        *cobra.Command
 	BookmarkCmd           *cobra.Command

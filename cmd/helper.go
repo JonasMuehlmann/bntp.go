@@ -23,32 +23,7 @@ package cmd
 import (
 	"fmt"
 	"reflect"
-	"strings"
-
-	"github.com/JonasMuehlmann/goaoi"
-	"github.com/JonasMuehlmann/goaoi/functional"
 )
-
-func GetStructuredCobraMissingRequiredFlagError(err error) CobraMissingRequiredFlagError {
-	errStr := err.Error()
-
-	startFirstFlag, _ := goaoi.FindIfString(errStr, functional.AreEqualPartial('"'))
-	errStr = errStr[startFirstFlag:]
-
-	endLastFlag, _ := goaoi.FindIfString(errStr, functional.AreEqualPartial('"'))
-	errStr = errStr[:endLastFlag]
-
-	missingFlagsRaw := strings.Split(errStr, ", ")
-
-	transformer := func(s string) string {
-		return strings.Trim(s, "\"")
-	}
-
-	missingFlags, _ := goaoi.TransformCopySliceUnsafe(missingFlagsRaw, transformer)
-
-	return CobraMissingRequiredFlagError{MissingFlags: missingFlags}
-
-}
 
 func UnmarshalEntities[TEntity any](cli *Cli, args []string, format string) (entities []*TEntity, err error) {
 	tags := make([]*TEntity, len(args))
@@ -93,37 +68,6 @@ func (err EntityMarshallingError) As(target any) bool {
 
 	switch target.(type) {
 	case EntityMarshallingError:
-		reflect.Indirect(reflect.ValueOf(target)).Set(reflect.ValueOf(err))
-		return true
-	default:
-		return false
-	}
-}
-
-//******************************************************************//
-//                        EmptyIterableError                        //
-//******************************************************************//
-
-type CobraMissingRequiredFlagError struct {
-	MissingFlags []string
-}
-
-func (err CobraMissingRequiredFlagError) Error() string {
-	return fmt.Sprintf(`required flag(s) "%s" not set`, strings.Join(err.MissingFlags, `", "`))
-}
-
-func (err CobraMissingRequiredFlagError) Is(other error) bool {
-	switch other.(type) {
-	case CobraMissingRequiredFlagError:
-		return true
-	default:
-		return false
-	}
-}
-
-func (err CobraMissingRequiredFlagError) As(target any) bool {
-	switch target.(type) {
-	case CobraMissingRequiredFlagError:
 		reflect.Indirect(reflect.ValueOf(target)).Set(reflect.ValueOf(err))
 		return true
 	default:

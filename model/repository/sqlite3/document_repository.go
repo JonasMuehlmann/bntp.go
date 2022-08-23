@@ -956,7 +956,7 @@ func (repo *Sqlite3DocumentRepository) GetWhere(ctx context.Context, domainColum
     }
 
     if len(repositoryModels) == 0 {
-        err = helper.IneffectiveOperationError{Inner: err}
+    err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
 
         return
     }
@@ -1009,7 +1009,7 @@ func (repo *Sqlite3DocumentRepository) GetFirstWhere(ctx context.Context, domain
     }
 
     if repositoryModel == nil {
-        err = helper.IneffectiveOperationError{Inner: err}
+        err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
 
         return
     }
@@ -1026,7 +1026,7 @@ func (repo *Sqlite3DocumentRepository) GetAll(ctx context.Context) (records []*d
         return
     }
     if len(repositoryModels) == 0 {
-        err = helper.IneffectiveOperationError{Inner: err}
+        err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
 
         return
     }

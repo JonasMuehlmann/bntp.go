@@ -956,7 +956,7 @@ func (repo *PsqlDocumentRepository) GetWhere(ctx context.Context, domainColumnFi
     }
 
     if len(repositoryModels) == 0 {
-        err = helper.IneffectiveOperationError{Inner: err}
+    err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
 
         return
     }
@@ -1009,7 +1009,7 @@ func (repo *PsqlDocumentRepository) GetFirstWhere(ctx context.Context, domainCol
     }
 
     if repositoryModel == nil {
-        err = helper.IneffectiveOperationError{Inner: err}
+        err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
 
         return
     }
@@ -1026,7 +1026,7 @@ func (repo *PsqlDocumentRepository) GetAll(ctx context.Context) (records []*doma
         return
     }
     if len(repositoryModels) == 0 {
-        err = helper.IneffectiveOperationError{Inner: err}
+        err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
 
         return
     }

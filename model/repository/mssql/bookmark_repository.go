@@ -995,7 +995,7 @@ func (repo *MssqlBookmarkRepository) GetWhere(ctx context.Context, domainColumnF
     }
 
     if len(repositoryModels) == 0 {
-        err = helper.IneffectiveOperationError{Inner: err}
+    err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
 
         return
     }
@@ -1048,7 +1048,7 @@ func (repo *MssqlBookmarkRepository) GetFirstWhere(ctx context.Context, domainCo
     }
 
     if repositoryModel == nil {
-        err = helper.IneffectiveOperationError{Inner: err}
+        err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
 
         return
     }
@@ -1065,7 +1065,7 @@ func (repo *MssqlBookmarkRepository) GetAll(ctx context.Context) (records []*dom
         return
     }
     if len(repositoryModels) == 0 {
-        err = helper.IneffectiveOperationError{Inner: err}
+        err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
 
         return
     }

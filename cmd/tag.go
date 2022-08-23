@@ -23,10 +23,10 @@ package cmd
 import (
 	"context"
 	"fmt"
-	"os"
 
 	"github.com/JonasMuehlmann/bntp.go/internal/helper"
 	"github.com/JonasMuehlmann/bntp.go/model/domain"
+	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 	"golang.org/x/exp/slices"
 )
@@ -200,7 +200,7 @@ func WithTagCommand() CliOption {
 					return err
 				}
 
-				os.WriteFile(args[0], []byte(serializedTags), 0644)
+				afero.WriteFile(cli.Fs, args[0], []byte(serializedTags), 0o644)
 
 				return nil
 			},
@@ -216,7 +216,7 @@ func WithTagCommand() CliOption {
 					return helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 				}
 
-				serializedTags, err := os.ReadFile(args[0])
+				serializedTags, err := afero.ReadFile(cli.Fs, args[0])
 				if err != nil {
 					return err
 				}
@@ -227,9 +227,9 @@ func WithTagCommand() CliOption {
 
 				var tags []*domain.Tag
 
-				err = cli.BNTPBackend.Unmarshallers[cli.Format].Unmarshall(tags, string(serializedTags))
+				err = cli.BNTPBackend.Unmarshallers[cli.Format].Unmarshall(&tags, string(serializedTags))
 				if err != nil {
-					return err
+					return EntityMarshallingError{Inner: err}
 				}
 
 				err = cli.BNTPBackend.TagManager.Add(context.Background(), tags)
