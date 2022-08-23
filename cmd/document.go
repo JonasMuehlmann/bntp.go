@@ -140,7 +140,7 @@ func WithDocumentCommand() CliOption {
 
 				var err error
 				var filter *domain.DocumentFilter
-				var updater *domain.DocumentUpdater
+				updater := &domain.DocumentUpdater{}
 				var numAffectedRecords int64
 
 				documents, err := UnmarshalEntities[domain.Document](cli, args, cli.Format)

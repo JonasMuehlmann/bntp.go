@@ -138,7 +138,7 @@ func WithTagCommand() CliOption {
 				}
 
 				var err error
-				var filter *domain.TagFilter
+				filter := &domain.TagFilter{}
 				updater := &domain.TagUpdater{}
 				var numAffectedRecords int64
 
@@ -244,20 +244,19 @@ func WithTagCommand() CliOption {
 			Long:  `A longer description`,
 			Args:  cobra.NoArgs,
 			RunE: func(cmd *cobra.Command, args []string) error {
-				if len(args) == 0 {
-					return helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
-				}
-
 				var tags []*domain.Tag
-				var filter *domain.TagFilter
+				filter := &domain.TagFilter{}
 				var output string
 				var err error
 
+				//**************************    Get all    *************************//
 				if cli.FilterRaw == "" {
 					tags, err = cli.BNTPBackend.TagManager.GetAll(context.Background())
 					if err != nil {
 						return err
 					}
+
+					//********************    Use provided filter    *******************//
 				} else {
 					err = cli.BNTPBackend.Unmarshallers[cli.Format].Unmarshall(filter, cli.FilterRaw)
 					if err != nil {
@@ -291,10 +290,11 @@ func WithTagCommand() CliOption {
 					return helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 				}
 
-				var filter *domain.TagFilter
+				filter := &domain.TagFilter{}
 				var err error
 				var numAffectedRecords int64
 
+				//********************    Use provided models    *******************//
 				if cli.FilterRaw == "" {
 					tags, err := UnmarshalEntities[domain.Tag](cli, args, cli.Format)
 					if err != nil {
@@ -307,6 +307,8 @@ func WithTagCommand() CliOption {
 					}
 
 					numAffectedRecords = int64(len(args))
+
+					//********************    Use provided filter    *******************//
 				} else {
 					err = cli.BNTPBackend.Unmarshallers[cli.Format].Unmarshall(filter, cli.FilterRaw)
 					if err != nil {
@@ -335,7 +337,7 @@ func WithTagCommand() CliOption {
 					return helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 				}
 
-				var filter *domain.TagFilter
+				filter := &domain.TagFilter{}
 				var err error
 				var result *domain.Tag
 				var output string
@@ -371,7 +373,7 @@ func WithTagCommand() CliOption {
 					return helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 				}
 
-				var filter *domain.TagFilter
+				filter := &domain.TagFilter{}
 				var count int64
 				var err error
 
@@ -408,7 +410,7 @@ func WithTagCommand() CliOption {
 					return helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 				}
 
-				var filter *domain.TagFilter
+				filter := &domain.TagFilter{}
 				var err error
 				var tag *domain.Tag
 				var doesExist bool

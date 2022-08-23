@@ -128,8 +128,8 @@ func WithBookmarkCommand() CliOption {
 				}
 
 				var err error
-				var filter *domain.BookmarkFilter
-				var updater *domain.BookmarkUpdater
+				filter := &domain.BookmarkFilter{}
+				updater := &domain.BookmarkUpdater{}
 				var numAffectedRecords int64
 
 				bookmarks, err := UnmarshalEntities[domain.Bookmark](cli, args, cli.Format)
@@ -177,7 +177,7 @@ func WithBookmarkCommand() CliOption {
 				}
 
 				var bookmarks []*domain.Bookmark
-				var filter *domain.BookmarkFilter
+				filter := &domain.BookmarkFilter{}
 				var output string
 				var err error
 
@@ -219,7 +219,7 @@ func WithBookmarkCommand() CliOption {
 					return helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 				}
 
-				var filter *domain.BookmarkFilter
+				filter := &domain.BookmarkFilter{}
 				var err error
 				var numAffectedRecords int64
 
@@ -263,7 +263,7 @@ func WithBookmarkCommand() CliOption {
 					return helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 				}
 
-				var filter *domain.BookmarkFilter
+				filter := &domain.BookmarkFilter{}
 				var err error
 				var result *domain.Bookmark
 				var output string
@@ -298,7 +298,7 @@ func WithBookmarkCommand() CliOption {
 					return helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 				}
 
-				var filter *domain.BookmarkFilter
+				filter := &domain.BookmarkFilter{}
 				var count int64
 				var err error
 
@@ -334,7 +334,7 @@ func WithBookmarkCommand() CliOption {
 					return helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 				}
 
-				var filter *domain.BookmarkFilter
+				filter := &domain.BookmarkFilter{}
 				var err error
 				var bookmark *domain.Bookmark
 				var doesExist bool
