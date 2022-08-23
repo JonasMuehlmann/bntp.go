@@ -20,10 +20,15 @@
 
 package model
 
+import (
+	"bytes"
+	"encoding/json"
+)
+
 type FilterOperator int
 
 const (
-	FilterEqual FilterOperator = iota
+	FilterEqual FilterOperator = iota + 1
 	FilterNEqual
 	FilterGreaterThan
 	FilterGreaterThanEqual
@@ -43,22 +48,113 @@ const (
 	FilterAnd
 )
 
+func (o FilterOperator) String() string {
+	switch o {
+	case FilterEqual:
+		return "FilterEqual"
+	case FilterNEqual:
+		return "FilterNEqual"
+	case FilterGreaterThan:
+		return "FilterGreaterThan"
+	case FilterGreaterThanEqual:
+		return "FilterGreaterThanEqual"
+	case FilterLessThan:
+		return "FilterLessThan"
+	case FilterLessThanEqual:
+		return "FilterLessThanEqual"
+	case FilterIn:
+		return "FilterIn"
+	case FilterNotIn:
+		return "FilterNotIn"
+	case FilterBetween:
+		return "FilterNotIn"
+	case FilterNotBetween:
+		return "FilterBetweenEqual"
+	case FilterLike:
+		return "FilterLike"
+	case FilterNotLike:
+		return "FilterNotLike"
+	case FilterOr:
+		return "FilterOr"
+	case FilterAnd:
+		return "FilterAnd"
+	default:
+		return ""
+	}
+}
+
+func FilterOperatorFromString(s string) FilterOperator {
+	switch s {
+	case "FilterEqual":
+		return FilterEqual
+	case "FilterNEqual":
+		return FilterNEqual
+	case "FilterGreaterThan":
+		return FilterGreaterThan
+	case "FilterGreaterThanEqual":
+		return FilterGreaterThanEqual
+	case "FilterLessThan":
+		return FilterLessThan
+	case "FilterLessThanEqual":
+		return FilterLessThanEqual
+	case "FilterIn":
+		return FilterIn
+	case "FilterNotIn":
+		return FilterNotIn
+	case "FilterBetween":
+		return FilterBetween
+	case "FilterNotBetween":
+		return FilterNotBetween
+	case "FilterLike":
+		return FilterLike
+	case "FilterNotLike":
+		return FilterNotLike
+	case "FilterOr":
+		return FilterOr
+	case "FilterAnd":
+		return FilterAnd
+	default:
+		return 0
+	}
+}
+
+func (s FilterOperator) MarshalJSON() ([]byte, error) {
+	buffer := bytes.NewBufferString(`"`)
+	buffer.WriteString(s.String())
+	buffer.WriteString(`"`)
+
+	return buffer.Bytes(), nil
+}
+
+func (s *FilterOperator) UnmarshalJSON(b []byte) error {
+	var j string
+
+	err := json.Unmarshal(b, &j)
+	if err != nil {
+		return err
+	}
+
+	*s = FilterOperatorFromString(j)
+
+	return nil
+}
+
 type ScalarOperand[T any] struct {
-	Operand T
+	Operand T `json:"operand" toml:"operand" yaml:"operand"`
 }
 
 type RangeOperand[T any] struct {
-	Start T
-	End   T
+	Start T `json:"start" toml:"start" yaml:"start"`
+	End   T `json:"end" toml:"end" yaml:"end"`
 }
 
 type ListOperand[T any] struct {
-	Operands []T
+	Operands []T `json:"operands" toml:"operands" yaml:"operands"`
 }
 
 type CompoundOperand[T any] struct {
-	LHS FilterOperation[T]
-	RHS FilterOperation[T]
+	LHS FilterOperation[T] `json:"lhs" toml:"lhs" yaml:"lhs"`
+	RHS FilterOperation[T] `json:"rhs" toml:"rhs" yaml:"rhs"`
 }
 
 type Operand[T any] interface {
@@ -71,8 +167,8 @@ func (o ListOperand[T]) OperandDummyMethod()     {}
 func (o CompoundOperand[T]) OperandDummyMethod() {}
 
 type FilterOperation[T any] struct {
-	Operand  Operand[T]
-	Operator FilterOperator
+	Operand  Operand[T]     `json:"operand" toml:"operand" yaml:"operand"`
+	Operator FilterOperator `json:"operator" toml:"operator" yaml:"operator"`
 }
 
 func ConvertFilter[TOut any, TIn any](from FilterOperation[TIn], operandConverter func(fromOperator TIn) (TOut, error)) (FilterOperation[TOut], error) {

@@ -80,7 +80,7 @@ func (document *{{$StructName}}) Get{{.FieldName}}Ref() *{{.FieldType}} {
 
 type {{.StructName}}Filter struct {
     {{range $field := .StructFields -}}
-    {{.FieldName}} optional.Optional[model.FilterOperation[{{Unslice (UnaliasSQLBoilerSlice .FieldType)}}]]
+    {{.FieldName}} optional.Optional[model.FilterOperation[{{Unslice (UnaliasSQLBoilerSlice .FieldType)}}]]`json:"{{LowercaseBeginning .FieldName}},omitempty" toml:"{{LowercaseBeginning .FieldName}},omitempty" yaml:"{{LowercaseBeginning .FieldName}},omitempty"`
     {{end}}
 }
 
@@ -97,7 +97,7 @@ func (filter *{{.StructName}}Filter) IsDefault() bool {
 
 type {{$.StructName}}Updater struct {
     {{range $field := .StructFields -}}
-    {{.FieldName}} optional.Optional[model.UpdateOperation[{{.FieldType}}]]
+    {{.FieldName}} optional.Optional[model.UpdateOperation[{{.FieldType}}]]`json:"{{LowercaseBeginning .FieldName}},omitempty" toml:"{{LowercaseBeginning .FieldName}},omitempty" yaml:"{{LowercaseBeginning .FieldName}},omitempty"`
     {{end}}
 }
 

@@ -1964,7 +1964,7 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryUpdater(ctx contex
     }
 
 	if domainUpdater.URL.HasValue {
-        repositoryUpdaterConcrete.URL.Set(model.UpdateOperation[string]{Operator: domainUpdater.URL.Wrappee.Operator, Operand: repositoryUpdaterConcrete.URL.Wrappee.Operand})
+        repositoryUpdaterConcrete.URL.Set(model.UpdateOperation[string]{Operator: domainUpdater.URL.Wrappee.Operator, Operand: domainUpdater.URL.Wrappee.Operand})
     }
 
 	if domainUpdater.Title.HasValue {
@@ -1994,7 +1994,7 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryUpdater(ctx contex
     }
 
 	if domainUpdater.ID.HasValue {
-        repositoryUpdaterConcrete.ID.Set(model.UpdateOperation[int64]{Operator: domainUpdater.ID.Wrappee.Operator, Operand: repositoryUpdaterConcrete.ID.Wrappee.Operand})
+        repositoryUpdaterConcrete.ID.Set(model.UpdateOperation[int64]{Operator: domainUpdater.ID.Wrappee.Operator, Operand: domainUpdater.ID.Wrappee.Operand})
     }
 
 	if domainUpdater.IsCollection.HasValue {
@@ -2018,7 +2018,7 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryUpdater(ctx contex
     }
 
 	if domainUpdater.{{$EntityName}}Type.HasValue {
-        repositoryUpdaterConcrete.ID.Set(model.UpdateOperation[int64]{Operator: domainUpdater.ID.Wrappee.Operator, Operand: repositoryUpdaterConcrete.ID.Wrappee.Operand})
+        repositoryUpdaterConcrete.ID.Set(model.UpdateOperation[int64]{Operator: domainUpdater.ID.Wrappee.Operator, Operand: domainUpdater.ID.Wrappee.Operand})
     }
 
     repositoryUpdater = repositoryUpdaterConcrete
@@ -2041,7 +2041,7 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryUpdater(ctx contex
     }
 
 	if domainUpdater.Path.HasValue {
-        repositoryUpdaterConcrete.Path.Set(model.UpdateOperation[string]{Operator: domainUpdater.Path.Wrappee.Operator, Operand: repositoryUpdaterConcrete.Path.Wrappee.Operand})
+        repositoryUpdaterConcrete.Path.Set(model.UpdateOperation[string]{Operator: domainUpdater.Path.Wrappee.Operator, Operand: domainUpdater.Path.Wrappee.Operand})
     }
 
 	if domainUpdater.CreatedAt.HasValue {
@@ -2141,7 +2141,7 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryUpdater(ctx contex
     }
 
 	if domainUpdater.ID.HasValue {
-        repositoryUpdaterConcrete.ID.Set(model.UpdateOperation[int64]{Operator: domainUpdater.ID.Wrappee.Operator, Operand: repositoryUpdaterConcrete.ID.Wrappee.Operand})
+        repositoryUpdaterConcrete.ID.Set(model.UpdateOperation[int64]{Operator: domainUpdater.ID.Wrappee.Operator, Operand: domainUpdater.ID.Wrappee.Operand})
     }
 
     repositoryUpdater = repositoryUpdaterConcrete
@@ -2155,7 +2155,7 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryUpdater(ctx contex
 
 	//**************************    Set tag    *************************//
 	if domainUpdater.{{$EntityName}}.HasValue {
-		repositoryUpdaterConcrete.{{$EntityName}}.Set(model.UpdateOperation[string]{Operator: domainUpdater.{{$EntityName}}.Wrappee.Operator, Operand: repositoryUpdaterConcrete.{{$EntityName}}.Wrappee.Operand})
+		repositoryUpdaterConcrete.{{$EntityName}}.Set(model.UpdateOperation[string]{Operator: domainUpdater.{{$EntityName}}.Wrappee.Operator, Operand: domainUpdater.{{$EntityName}}.Wrappee.Operand})
 	}
 
 	//***********    Set ParentPath    ***********//
@@ -2186,7 +2186,7 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryUpdater(ctx contex
 
 	//**************************    Set ID    **************************//
 	if domainUpdater.ID.HasValue {
-		repositoryUpdaterConcrete.ID.Set(model.UpdateOperation[int64]{Operator: domainUpdater.ID.Wrappee.Operator, Operand: repositoryUpdaterConcrete.ID.Wrappee.Operand})
+		repositoryUpdaterConcrete.ID.Set(model.UpdateOperation[int64]{Operator: domainUpdater.ID.Wrappee.Operator, Operand: domainUpdater.ID.Wrappee.Operand})
 	}
 
     repositoryUpdater = repositoryUpdaterConcrete

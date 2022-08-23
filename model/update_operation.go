@@ -20,10 +20,15 @@
 
 package model
 
+import (
+	"bytes"
+	"encoding/json"
+)
+
 type UpdateOperator int
 
 const (
-	UpdateSet UpdateOperator = iota
+	UpdateSet UpdateOperator = iota + 1
 	UpdateClear
 
 	UpdateAppend
@@ -33,9 +38,72 @@ const (
 	UpdateSubtract
 )
 
+func (o UpdateOperator) String() string {
+	switch o {
+	case UpdateSet:
+		return "UpdateSet"
+	case UpdateClear:
+		return "UpdateClear"
+	case UpdateAppend:
+		return "UpdateAppend"
+	case UpdatePrepend:
+		return "UpdatePrepend"
+	case UpdateAdd:
+		return "UpdateAdd"
+	case UpdateSubtract:
+		return "UpdateSubtract"
+	default:
+		return ""
+	}
+}
+
+func UpdateOperatorFromString(s string) UpdateOperator {
+	switch s {
+	case "UpdateSet":
+		return UpdateSet
+	case "UpdateClear":
+		return UpdateClear
+	case "UpdateAppend":
+		return UpdateAppend
+	case "UpdatePrepend":
+		return UpdatePrepend
+	case "UpdateAdd":
+		return UpdateAdd
+	case "UpdateSubtract":
+		return UpdateSubtract
+	default:
+		return 0
+	}
+}
+
+func (s UpdateOperator) MarshalJSON() ([]byte, error) {
+	buffer := bytes.NewBufferString("")
+	if s != 0 {
+		buffer.WriteString(`"`)
+		buffer.WriteString(s.String())
+		buffer.WriteString(`"`)
+	}
+
+	return buffer.Bytes(), nil
+}
+
+func (s *UpdateOperator) UnmarshalJSON(b []byte) error {
+	var j string
+
+	err := json.Unmarshal(b, &j)
+	if err != nil {
+		return err
+	}
+
+	*s = UpdateOperatorFromString(j)
+
+	return nil
+}
+
 type UpdateOperation[T any] struct {
-	Operand  T
-	Operator UpdateOperator
+	Operand T `json:"operand" toml:"operand" yaml:"operand"`
+
+	Operator UpdateOperator `json:"operator" toml:"operator" yaml:"operator"`
 }
 
 func ApplyUpdater[T any](target *T, updateOperation UpdateOperation[T]) {
