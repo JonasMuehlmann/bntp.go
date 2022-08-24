@@ -26,6 +26,7 @@ import (
 	 repoCommon "github.com/JonasMuehlmann/bntp.go/model/repository"
 	"container/list"
 	"fmt"
+    "errors"
 	"github.com/JonasMuehlmann/bntp.go/internal/helper"
 	"github.com/JonasMuehlmann/bntp.go/model"
 	"github.com/JonasMuehlmann/bntp.go/model/domain"
@@ -753,6 +754,8 @@ func (repo *PsqlTagRepository) Delete(ctx context.Context, domainModels []*domai
 		return
 	}
 
+    var numAffectedRecords int64
+
 	for _, repositoryModel := range repositoryModels {
         repoModel, ok := repositoryModel.(*Tag)
         if !ok {
@@ -761,10 +764,16 @@ func (repo *PsqlTagRepository) Delete(ctx context.Context, domainModels []*domai
             return
         }
 
-		_, err = repoModel.Delete(ctx, tx)
+		numAffectedRecords, err = repoModel.Delete(ctx, tx)
 		if err != nil {
 			return
 		}
+
+        if numAffectedRecords == 0 {
+            err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
+
+            return
+        }
 	}
 
 	tx.Commit()
@@ -978,14 +987,14 @@ func (repo *PsqlTagRepository) GetFirstWhere(ctx context.Context, domainColumnFi
     var repositoryModel *Tag
     repositoryModel, err = Tags(queryFilters...).One(ctx, repo.db)
     if err != nil {
-        return
-    }
-
-    if repositoryModel == nil {
-        err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
+        if  errors.Is(err, sql.ErrNoRows){
+            err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
+        }
 
         return
     }
+
+
 
     record , err =repo.TagRepositoryToDomainModel(ctx, repositoryModel)
 

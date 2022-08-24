@@ -26,6 +26,7 @@ import (
 	 repoCommon "github.com/JonasMuehlmann/bntp.go/model/repository"
 	"container/list"
 	"fmt"
+    "errors"
 	"github.com/JonasMuehlmann/bntp.go/internal/helper"
 	"github.com/JonasMuehlmann/bntp.go/model"
 	"github.com/JonasMuehlmann/bntp.go/model/domain"
@@ -819,6 +820,8 @@ func (repo *PsqlBookmarkRepository) Delete(ctx context.Context, domainModels []*
 		return
 	}
 
+    var numAffectedRecords int64
+
 	for _, repositoryModel := range repositoryModels {
         repoModel, ok := repositoryModel.(*Bookmark)
         if !ok {
@@ -827,10 +830,16 @@ func (repo *PsqlBookmarkRepository) Delete(ctx context.Context, domainModels []*
             return
         }
 
-		_, err = repoModel.Delete(ctx, tx)
+		numAffectedRecords, err = repoModel.Delete(ctx, tx)
 		if err != nil {
 			return
 		}
+
+        if numAffectedRecords == 0 {
+            err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
+
+            return
+        }
 	}
 
 	tx.Commit()
@@ -1044,14 +1053,14 @@ func (repo *PsqlBookmarkRepository) GetFirstWhere(ctx context.Context, domainCol
     var repositoryModel *Bookmark
     repositoryModel, err = Bookmarks(queryFilters...).One(ctx, repo.db)
     if err != nil {
-        return
-    }
-
-    if repositoryModel == nil {
-        err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
+        if  errors.Is(err, sql.ErrNoRows){
+            err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
+        }
 
         return
     }
+
+
 
     record , err =repo.BookmarkRepositoryToDomainModel(ctx, repositoryModel)
 
