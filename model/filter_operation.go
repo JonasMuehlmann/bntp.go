@@ -161,6 +161,65 @@ type Operand[T any] interface {
 	OperandDummyMethod()
 }
 
+// TODO: Find a way to have such marshallers but allow users to support their own through plugins
+
+func (s *FilterOperation[T]) UnmarshalJSON(b []byte) error {
+	tmpOperation := map[string]json.RawMessage{}
+	tmpOperand := map[string]json.RawMessage{}
+
+	err := json.Unmarshal(b, &tmpOperation)
+	if err != nil {
+		return err
+	}
+
+	err = json.Unmarshal(tmpOperation["operator"], &s.Operator)
+	if err != nil {
+		return err
+	}
+	err = json.Unmarshal(tmpOperation["operand"], &tmpOperand)
+	if err != nil {
+		return err
+	}
+
+	if _, ok := tmpOperand["operand"]; ok {
+		operand := ScalarOperand[T]{}
+
+		err = json.Unmarshal(tmpOperation["operand"], &operand)
+		if err != nil {
+			return err
+		}
+
+		s.Operand = operand
+
+	} else if _, ok := tmpOperand["start"]; ok {
+		operand := RangeOperand[T]{}
+		err = json.Unmarshal(tmpOperation["operand"], &operand)
+		if err != nil {
+			return err
+		}
+
+		s.Operand = operand
+	} else if _, ok := tmpOperand["operands"]; ok {
+		operand := ListOperand[T]{}
+		err = json.Unmarshal(tmpOperation["operand"], &operand)
+		if err != nil {
+			return err
+		}
+
+		s.Operand = operand
+	} else if _, ok := tmpOperand["lhs"]; ok {
+		operand := CompoundOperand[T]{}
+		err = json.Unmarshal(tmpOperation["operand"], &operand)
+		if err != nil {
+			return err
+		}
+
+		s.Operand = operand
+	}
+
+	return nil
+}
+
 func (o ScalarOperand[T]) OperandDummyMethod()   {}
 func (o RangeOperand[T]) OperandDummyMethod()    {}
 func (o ListOperand[T]) OperandDummyMethod()     {}

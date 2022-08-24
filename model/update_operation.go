@@ -101,8 +101,7 @@ func (s *UpdateOperator) UnmarshalJSON(b []byte) error {
 }
 
 type UpdateOperation[T any] struct {
-	Operand T `json:"operand" toml:"operand" yaml:"operand"`
-
+	Operand  T              `json:"operand" toml:"operand" yaml:"operand"`
 	Operator UpdateOperator `json:"operator" toml:"operator" yaml:"operator"`
 }
 
