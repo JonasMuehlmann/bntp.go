@@ -286,15 +286,18 @@ func WithTagCommand() CliOption {
 			Long:  `A longer description`,
 			Args:  cobra.ArbitraryArgs,
 			RunE: func(cmd *cobra.Command, args []string) error {
-				if len(args) == 0 {
+				if len(args) == 0 && cli.FilterRaw == "" {
 					return helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 				}
+				if len(args) > 0 && cli.FilterRaw != "" {
+					return ConflictingPositionalArgsAndFlagError{Flag: "filter"}
+				}
 
-				filter := &domain.TagFilter{}
 				var err error
+				filter := &domain.TagFilter{}
 				var numAffectedRecords int64
 
-				//********************    Use provided models    *******************//
+				//********************    Use provided tags      *******************//
 				if cli.FilterRaw == "" {
 					tags, err := UnmarshalEntities[domain.Tag](cli, args, cli.Format)
 					if err != nil {
@@ -308,7 +311,7 @@ func WithTagCommand() CliOption {
 
 					numAffectedRecords = int64(len(args))
 
-					//********************    Use provided filter    *******************//
+					//********************       Use filter      *******************//
 				} else {
 					err = cli.BNTPBackend.Unmarshallers[cli.Format].Unmarshall(filter, cli.FilterRaw)
 					if err != nil {
