@@ -142,11 +142,6 @@ func WithTagCommand() CliOption {
 				updater := &domain.TagUpdater{}
 				var numAffectedRecords int64
 
-				tags, err := UnmarshalEntities[domain.Tag](cli, args, cli.Format)
-				if err != nil {
-					return err
-				}
-
 				err = cli.BNTPBackend.Unmarshallers[cli.Format].Unmarshall(updater, cli.UpdaterRaw)
 				if err != nil {
 					return EntityMarshallingError{Inner: err}
@@ -154,7 +149,12 @@ func WithTagCommand() CliOption {
 
 				//*********************    Use provided tags    ********************//
 				if cli.FilterRaw == "" {
-					err := cli.BNTPBackend.TagManager.Update(context.Background(), tags, updater)
+					tags, err := UnmarshalEntities[domain.Tag](cli, args, cli.Format)
+					if err != nil {
+						return err
+					}
+
+					err = cli.BNTPBackend.TagManager.Update(context.Background(), tags, updater)
 					if err != nil {
 						return err
 					}
