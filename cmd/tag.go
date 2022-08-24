@@ -336,10 +336,6 @@ func WithTagCommand() CliOption {
 			Long:  `A longer description`,
 			Args:  cobra.NoArgs,
 			RunE: func(cmd *cobra.Command, args []string) error {
-				if len(args) == 0 {
-					return helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
-				}
-
 				filter := &domain.TagFilter{}
 				var err error
 				var result *domain.Tag
@@ -372,10 +368,6 @@ func WithTagCommand() CliOption {
 			Long:  `A longer description`,
 			Args:  cobra.NoArgs,
 			RunE: func(cmd *cobra.Command, args []string) error {
-				if len(args) == 0 {
-					return helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
-				}
-
 				filter := &domain.TagFilter{}
 				var count int64
 				var err error
@@ -409,13 +401,16 @@ func WithTagCommand() CliOption {
 			Long:  `A longer description`,
 			Args:  cobra.RangeArgs(0, 1),
 			RunE: func(cmd *cobra.Command, args []string) error {
-				if len(args) == 0 {
+				if len(args) == 0 && cli.FilterRaw == "" {
 					return helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
+				}
+				if len(args) > 0 && cli.FilterRaw != "" {
+					return ConflictingPositionalArgsAndFlagError{Flag: "filter"}
 				}
 
 				filter := &domain.TagFilter{}
 				var err error
-				var tag *domain.Tag
+				tag := &domain.Tag{}
 				var doesExist bool
 
 				if cli.FilterRaw == "" {
@@ -456,6 +451,8 @@ func WithTagCommand() CliOption {
 					return helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 				}
 
+				panic("not implemented")
+
 				return nil
 			},
 		}
@@ -477,13 +474,14 @@ func WithTagCommand() CliOption {
 		cli.TagCmd.AddCommand(cli.TagAddCmd)
 
 		for _, subcommand := range cli.TagCmd.Commands() {
-			if slices.Contains([]*cobra.Command{cli.TagAddCmd, cli.TagListCmd, cli.TagRemoveCmd}, subcommand) {
+			// TODO: Should this flag be used for every command?
+			if slices.Contains([]*cobra.Command{cli.TagAddCmd, cli.TagListCmd, cli.TagRemoveCmd, cli.TagFindCmd, cli.TagDoesExistCmd}, subcommand) {
 				subcommand.PersistentFlags().StringVar(&cli.Format, "format", "json", "The serialization format to use for i/o")
 			}
 		}
 
 		for _, subcommand := range cli.TagCmd.Commands() {
-			if slices.Contains([]*cobra.Command{cli.TagEditCmd, cli.TagListCmd, cli.TagRemoveCmd}, subcommand) {
+			if slices.Contains([]*cobra.Command{cli.TagEditCmd, cli.TagListCmd, cli.TagRemoveCmd, cli.TagFindCmd, cli.TagCountCmd, cli.TagDoesExistCmd}, subcommand) {
 				subcommand.PersistentFlags().StringVar(&cli.FilterRaw, "filter", "", "The filter to use for processing entities")
 			}
 		}
