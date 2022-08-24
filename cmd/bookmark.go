@@ -123,8 +123,11 @@ func WithBookmarkCommand() CliOption {
 			Long:  `A longer description`,
 			Args:  cobra.ArbitraryArgs,
 			RunE: func(cmd *cobra.Command, args []string) error {
-				if len(args) == 0 {
+				if len(args) == 0 && cli.FilterRaw == "" {
 					return helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
+				}
+				if len(args) > 0 && cli.FilterRaw != "" {
+					return ConflictingPositionalArgsAndFlagError{Flag: "filter"}
 				}
 
 				var err error
@@ -132,17 +135,16 @@ func WithBookmarkCommand() CliOption {
 				updater := &domain.BookmarkUpdater{}
 				var numAffectedRecords int64
 
-				bookmarks, err := UnmarshalEntities[domain.Bookmark](cli, args, cli.Format)
-				if err != nil {
-					return err
-				}
-
 				err = cli.BNTPBackend.Unmarshallers[cli.Format].Unmarshall(updater, cli.UpdaterRaw)
 				if err != nil {
 					return EntityMarshallingError{Inner: err}
 				}
 				if cli.FilterRaw == "" {
-					err := cli.BNTPBackend.BookmarkManager.Update(context.Background(), bookmarks, updater)
+					bookmarks, err := UnmarshalEntities[domain.Bookmark](cli, args, cli.Format)
+					if err != nil {
+						return err
+					}
+					err = cli.BNTPBackend.BookmarkManager.Update(context.Background(), bookmarks, updater)
 					if err != nil {
 						return err
 					}
@@ -172,10 +174,6 @@ func WithBookmarkCommand() CliOption {
 			Long:  `A longer description`,
 			Args:  cobra.NoArgs,
 			RunE: func(cmd *cobra.Command, args []string) error {
-				if len(args) == 0 {
-					return helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
-				}
-
 				var bookmarks []*domain.Bookmark
 				filter := &domain.BookmarkFilter{}
 				var output string
@@ -215,8 +213,11 @@ func WithBookmarkCommand() CliOption {
 			Long:  `A longer description`,
 			Args:  cobra.ArbitraryArgs,
 			RunE: func(cmd *cobra.Command, args []string) error {
-				if len(args) == 0 {
+				if len(args) == 0 && cli.FilterRaw == "" {
 					return helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
+				}
+				if len(args) > 0 && cli.FilterRaw != "" {
+					return ConflictingPositionalArgsAndFlagError{Flag: "filter"}
 				}
 
 				filter := &domain.BookmarkFilter{}
@@ -259,10 +260,6 @@ func WithBookmarkCommand() CliOption {
 			Long:  `A longer description`,
 			Args:  cobra.NoArgs,
 			RunE: func(cmd *cobra.Command, args []string) error {
-				if len(args) == 0 {
-					return helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
-				}
-
 				filter := &domain.BookmarkFilter{}
 				var err error
 				var result *domain.Bookmark
@@ -294,10 +291,6 @@ func WithBookmarkCommand() CliOption {
 			Long:  `A longer description`,
 			Args:  cobra.NoArgs,
 			RunE: func(cmd *cobra.Command, args []string) error {
-				if len(args) == 0 {
-					return helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
-				}
-
 				filter := &domain.BookmarkFilter{}
 				var count int64
 				var err error
@@ -330,13 +323,16 @@ func WithBookmarkCommand() CliOption {
 			Long:  `A longer description`,
 			Args:  cobra.RangeArgs(0, 1),
 			RunE: func(cmd *cobra.Command, args []string) error {
-				if len(args) == 0 {
+				if len(args) == 0 && cli.FilterRaw == "" {
 					return helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
+				}
+				if len(args) > 0 && cli.FilterRaw != "" {
+					return ConflictingPositionalArgsAndFlagError{Flag: "filter"}
 				}
 
 				filter := &domain.BookmarkFilter{}
 				var err error
-				var bookmark *domain.Bookmark
+				bookmark := &domain.Bookmark{}
 				var doesExist bool
 
 				if cli.FilterRaw == "" {
@@ -368,6 +364,7 @@ func WithBookmarkCommand() CliOption {
 		}
 
 		cli.RootCmd.AddCommand(cli.BookmarkCmd)
+
 		cli.BookmarkCmd.AddCommand(cli.BookmarkListCmd)
 		cli.BookmarkCmd.AddCommand(cli.BookmarkReplaceCmd)
 		cli.BookmarkCmd.AddCommand(cli.BookmarkEditCmd)
@@ -379,13 +376,13 @@ func WithBookmarkCommand() CliOption {
 		cli.BookmarkCmd.AddCommand(cli.BookmarkUpsertCmd)
 
 		for _, subcommand := range cli.BookmarkCmd.Commands() {
-			if slices.Contains([]*cobra.Command{cli.BookmarkAddCmd, cli.BookmarkListCmd, cli.BookmarkRemoveCmd}, subcommand) {
+			if slices.Contains([]*cobra.Command{cli.BookmarkAddCmd, cli.BookmarkListCmd, cli.BookmarkRemoveCmd, cli.BookmarkFindCmd, cli.BookmarkDoesExistCmd}, subcommand) {
 				subcommand.PersistentFlags().StringVar(&cli.Format, "format", "json", "The serialization format to use for i/o")
 			}
 		}
 
 		for _, subcommand := range cli.BookmarkCmd.Commands() {
-			if slices.Contains([]*cobra.Command{cli.BookmarkEditCmd, cli.BookmarkListCmd, cli.BookmarkRemoveCmd}, subcommand) {
+			if slices.Contains([]*cobra.Command{cli.BookmarkEditCmd, cli.BookmarkListCmd, cli.BookmarkRemoveCmd, cli.BookmarkFindCmd, cli.BookmarkCountCmd, cli.BookmarkDoesExistCmd}, subcommand) {
 				subcommand.PersistentFlags().StringVar(&cli.FilterRaw, "filter", "", "The filter to use for processing entities")
 			}
 		}
