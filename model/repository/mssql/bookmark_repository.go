@@ -265,14 +265,18 @@ func buildQueryModFilterBookmark[T any](filterField BookmarkField, filterOperati
             panic("expected a list operand for FilterIn operator")
         }
 
-        newQueryMod = append(newQueryMod, qm.WhereIn(strcase.SnakeCase(string(filterField))+" IN (?)", filterOperand.Operands))
+		whereArgs, _ := goaoi.TransformCopySliceUnsafe(filterOperand.Operands, func(a T) any { return any(a) })
+
+        newQueryMod = append(newQueryMod, qm.WhereIn(strcase.SnakeCase(string(filterField))+" IN ?", whereArgs...))
     case model.FilterNotIn:
         filterOperand, ok := filterOperation.Operand.(model.ListOperand[T])
         if !ok {
             panic("expected a list operand for FilterNotIn operator")
         }
 
-        newQueryMod = append(newQueryMod, qm.WhereNotIn(strcase.SnakeCase(string(filterField))+" IN (?)", filterOperand.Operands))
+		whereArgs, _ := goaoi.TransformCopySliceUnsafe(filterOperand.Operands, func(a T) any { return any(a) })
+
+        newQueryMod = append(newQueryMod, qm.WhereNotIn(strcase.SnakeCase(string(filterField))+" IN ?", whereArgs...))
     case model.FilterBetween:
         filterOperand, ok := filterOperation.Operand.(model.RangeOperand[T])
         if !ok {
