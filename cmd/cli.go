@@ -61,7 +61,7 @@ func WithBNTPBackend() CliOption {
 
 func WithConfigManager() CliOption {
 	return func(cli *Cli) {
-		cli.ConfigManager = config.NewConfigManager(cli.StdErr, cli.TestDB)
+		cli.ConfigManager = config.NewConfigManager(cli.StdErr, cli.DBOverride, cli.FsOverride)
 	}
 }
 
@@ -73,12 +73,13 @@ func WithStdErrOverride(stderrToUse io.Writer) CliOption {
 
 func WithDbOverride(dbToUse *sql.DB) CliOption {
 	return func(cli *Cli) {
-		cli.TestDB = dbToUse
+		cli.DBOverride = dbToUse
 	}
 }
 
 func WithFsOverride(fsToUse afero.Fs) CliOption {
 	return func(cli *Cli) {
+		cli.FsOverride = fsToUse
 		cli.Fs = fsToUse
 	}
 }
@@ -167,8 +168,9 @@ type Cli struct {
 	FilterRaw     string
 	UpdaterRaw    string
 	StdErr        io.Writer
-	TestDB        *sql.DB
+	DBOverride    *sql.DB
 	Logger        *log.Logger
+	FsOverride    afero.Fs
 	Fs            afero.Fs
 
 	BookmarkAddCmd        *cobra.Command

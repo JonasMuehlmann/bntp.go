@@ -63,8 +63,9 @@ type message struct {
 
 type ConfigManager struct {
 	Viper             *viper.Viper
-	testDB            *sql.DB
-	pendingLogMessage []message
+	DBOverride        *sql.DB
+	FSOverride        afero.Fs
+	PendingLogMessage []message
 	Logger            *log.Logger
 
 	PassedConfigPath   string
@@ -73,7 +74,7 @@ type ConfigManager struct {
 	ConfigSearchPaths  []string
 }
 
-func NewConfigManager(stderr io.Writer, dbOverride ...*sql.DB) *ConfigManager {
+func NewConfigManager(stderr io.Writer, dbOverride *sql.DB, fsOverride afero.Fs) *ConfigManager {
 	m := &ConfigManager{Viper: viper.New(), ConfigFileBaseName: "bntp"}
 
 	userConfigDir, err := os.UserConfigDir()
@@ -91,11 +92,14 @@ func NewConfigManager(stderr io.Writer, dbOverride ...*sql.DB) *ConfigManager {
 	m.ConfigSearchPaths = append(m.ConfigSearchPaths, m.ConfigDir)
 	m.ConfigSearchPaths = append(m.ConfigSearchPaths, cwd)
 
-	if len(dbOverride) > 0 {
-		m.testDB = dbOverride[0]
+	if dbOverride != nil {
+		m.DBOverride = dbOverride
+	}
+	if fsOverride != nil {
+		m.FSOverride = fsOverride
 	}
 
-	m.pendingLogMessage = make([]message, 0, 5)
+	m.PendingLogMessage = make([]message, 0, 5)
 
 	if m.PassedConfigPath != "" {
 		m.Viper.SetConfigFile(m.PassedConfigPath)
@@ -145,7 +149,7 @@ func NewConfigManager(stderr io.Writer, dbOverride ...*sql.DB) *ConfigManager {
 
 	m.Logger = helper.NewDefaultLogger(m.Viper.GetString(LogFile), consoleLogLevel, fileLogLevel, stderr)
 
-	for _, message := range m.pendingLogMessage {
+	for _, message := range m.PendingLogMessage {
 		m.Logger.Log(message.Level, message.Msg)
 		if message.Level == log.FatalLevel {
 			log.Exit(1)
@@ -162,8 +166,8 @@ func NewConfigManager(stderr io.Writer, dbOverride ...*sql.DB) *ConfigManager {
 }
 
 func (m *ConfigManager) NewDBFromConfig() *sql.DB {
-	if m.testDB != nil {
-		return m.testDB
+	if m.DBOverride != nil {
+		return m.DBOverride
 	}
 
 	dataSource := m.Viper.GetString(DB_DataSource)
@@ -328,8 +332,13 @@ func (m *ConfigManager) NewBackendFromConfig() *backend.Backend {
 
 	db := m.NewDBFromConfig()
 
-	// TODO: Extend config to allow creating custom fs
-	fs := afero.NewOsFs()
+	var fs afero.Fs
+	if m.FSOverride != nil {
+		fs = m.FSOverride
+	} else {
+		// TODO: Extend config to allow creating custom fs
+		fs = afero.NewOsFs()
+	}
 
 	tagRepository := m.NewTagsRepositoryFromConfig(m.Logger, db)
 	newBackend.BookmarkManager = m.NewBookmarkManagerFromConfig(m.Logger, m.NewBookmarkRepositoryFromConfig(m.Logger, db, tagRepository))
@@ -357,7 +366,7 @@ func (m *ConfigManager) NewBackendFromConfig() *backend.Backend {
 //******************************************************************//
 
 func (m *ConfigManager) addPendingLogMessage(level log.Level, format string, values ...any) {
-	m.pendingLogMessage = append(m.pendingLogMessage, newMessage(level, fmt.Sprintf(format, values...)))
+	m.PendingLogMessage = append(m.PendingLogMessage, newMessage(level, fmt.Sprintf(format, values...)))
 }
 
 func (m *ConfigManager) bfsSetDefault(path string, val any) error {
