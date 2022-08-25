@@ -25,17 +25,32 @@ import (
 	"errors"
 	"strings"
 
+	"github.com/JonasMuehlmann/bntp.go/internal/helper"
 	"github.com/JonasMuehlmann/goaoi"
 	"github.com/JonasMuehlmann/goaoi/functional"
 )
 
 // TODO: Implement context handling.
-func AddTags(ctx context.Context, content string, tags []string) (string, error) {
+func AddTags(ctx context.Context, content string, tags []string) (newContent string, err error) {
+	if len(tags) == 0 {
+		return "", helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
+	}
+	if content == "" {
+		return "", helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
+	}
+
+	err = goaoi.AnyOfSlice(tags, functional.IsZero[string])
+	if err == nil {
+		err = helper.NilInputError{}
+
+		return
+	}
+
 	lines := strings.Split(content, "\n")
 
 	iTagLine, err := findTagsLine(lines)
 	if err != nil {
-		return "", err
+		return
 	}
 
 	lines[iTagLine] += strings.Join(tags, ",")
@@ -43,7 +58,21 @@ func AddTags(ctx context.Context, content string, tags []string) (string, error)
 	return strings.Join(lines, "\n"), nil
 }
 
-func RemoveTags(ctx context.Context, content string, tags []string) (string, error) {
+func RemoveTags(ctx context.Context, content string, tags []string) (newContent string, err error) {
+	if len(tags) == 0 {
+		return "", helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
+	}
+	if content == "" {
+		return "", helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
+	}
+
+	err = goaoi.AnyOfSlice(tags, functional.IsZero[string])
+	if err == nil {
+		err = helper.NilInputError{}
+
+		return
+	}
+
 	lines := strings.Split(content, "\n")
 
 	iTagLine, err := findTagsLine(lines)
@@ -69,7 +98,21 @@ func RemoveTags(ctx context.Context, content string, tags []string) (string, err
 	return strings.Join(lines, "\n"), nil
 }
 
-func AddLinks(ctx context.Context, content string, links []string) (string, error) {
+func AddLinks(ctx context.Context, content string, links []string) (newContent string, err error) {
+	if len(links) == 0 {
+		return "", helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
+	}
+	if content == "" {
+		return "", helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
+	}
+
+	err = goaoi.AnyOfSlice(links, functional.IsZero[string])
+	if err == nil {
+		err = helper.NilInputError{}
+
+		return
+	}
+
 	lines := strings.Split(content, "\n")
 
 	iLinksLinesStart, err := findLinksLinesStart(lines)
@@ -78,7 +121,7 @@ func AddLinks(ctx context.Context, content string, links []string) (string, erro
 	}
 
 	unary_predicate := func(line string) bool {
-		return strings.HasPrefix(line, "- ")
+		return !strings.HasPrefix(line, "- ")
 	}
 
 	iLinksLinesEnd, err := goaoi.FindIfSlice(lines[iLinksLinesStart:], unary_predicate)
@@ -100,7 +143,21 @@ func AddLinks(ctx context.Context, content string, links []string) (string, erro
 	return strings.Join(lines, "\n"), nil
 }
 
-func RemoveLinks(ctx context.Context, content string, links []string) (string, error) {
+func RemoveLinks(ctx context.Context, content string, links []string) (newContent string, err error) {
+	if len(links) == 0 {
+		return "", helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
+	}
+	if content == "" {
+		return "", helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
+	}
+
+	err = goaoi.AnyOfSlice(links, functional.IsZero[string])
+	if err == nil {
+		err = helper.NilInputError{}
+
+		return
+	}
+
 	lines := strings.Split(content, "\n")
 
 	iLinksLinesStart, err := findLinksLinesStart(lines)
@@ -141,7 +198,21 @@ func RemoveLinks(ctx context.Context, content string, links []string) (string, e
 	return strings.Join(lines, "\n"), nil
 }
 
-func AddBacklinks(ctx context.Context, content string, backlinks []string) (string, error) {
+func AddBacklinks(ctx context.Context, content string, backlinks []string) (newContent string, err error) {
+	if len(backlinks) == 0 {
+		return "", helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
+	}
+	if content == "" {
+		return "", helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
+	}
+
+	err = goaoi.AnyOfSlice(backlinks, functional.IsZero[string])
+	if err == nil {
+		err = helper.NilInputError{}
+
+		return
+	}
+
 	lines := strings.Split(content, "\n")
 
 	iBacklinksLinesStart, err := findBacklinksLinesStart(lines)
@@ -172,7 +243,21 @@ func AddBacklinks(ctx context.Context, content string, backlinks []string) (stri
 	return strings.Join(lines, "\n"), nil
 }
 
-func RemoveBacklinks(ctx context.Context, content string, backlinks []string) (string, error) {
+func RemoveBacklinks(ctx context.Context, content string, backlinks []string) (newContent string, err error) {
+	if len(backlinks) == 0 {
+		return "", helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
+	}
+	if content == "" {
+		return "", helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
+	}
+
+	err = goaoi.AnyOfSlice(backlinks, functional.IsZero[string])
+	if err == nil {
+		err = helper.NilInputError{}
+
+		return
+	}
+
 	lines := strings.Split(content, "\n")
 
 	iBacklinksLinesStart, err := findBacklinksLinesStart(lines)
