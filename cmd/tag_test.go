@@ -105,7 +105,7 @@ func TestCmdTagAdd(t *testing.T) {
 			if test.err != nil {
 				assert.ErrorIs(t, err, test.err, test.name+", assert test error matches expected")
 			} else if test.errorMatcher != nil {
-				test.errorValidator(t, err.Error(), test.name+", assert error string matches")
+				test.errorMatcher(t, err.Error(), test.name+", assert error string matches")
 			} else {
 				assert.NoError(t, err, test.name+", assert test does not error unexpectedly")
 			}
@@ -221,7 +221,7 @@ func TestCmdTagReplace(t *testing.T) {
 			if test.err != nil {
 				assert.ErrorIs(t, err, test.err, test.name+", assert test error matches expected")
 			} else if test.errorMatcher != nil {
-				test.errorValidator(t, err.Error(), test.name+", assert error string matches")
+				test.errorMatcher(t, err.Error(), test.name+", assert error string matches")
 			} else {
 				assert.NoError(t, err, test.name+", assert test does not error unexpectedly")
 			}
@@ -335,7 +335,7 @@ func TestCmdTagUpsert(t *testing.T) {
 			if test.err != nil {
 				assert.ErrorIs(t, err, test.err, test.name+", assert test error matches expected")
 			} else if test.errorMatcher != nil {
-				test.errorValidator(t, err.Error(), test.name+", assert error string matches")
+				test.errorMatcher(t, err.Error(), test.name+", assert error string matches")
 			} else {
 				assert.NoError(t, err, test.name+", assert test does not error unexpectedly")
 			}
@@ -532,7 +532,7 @@ func TestCmdTagEdit(t *testing.T) {
 			if test.err != nil {
 				assert.ErrorIs(t, err, test.err, test.name+", assert test error matches expected")
 			} else if test.errorMatcher != nil {
-				test.errorValidator(t, err.Error(), test.name+", assert error string matches")
+				test.errorMatcher(t, err.Error(), test.name+", assert error string matches")
 			} else {
 				assert.NoError(t, err, test.name+", assert test does not error unexpectedly")
 			}
@@ -623,7 +623,7 @@ func TestCmdTagExport(t *testing.T) {
 			if test.err != nil {
 				assert.ErrorIs(t, err, test.err, test.name+", assert test error matches expected")
 			} else if test.errorMatcher != nil {
-				test.errorValidator(t, err.Error(), test.name+", assert error string matches")
+				test.errorMatcher(t, err.Error(), test.name+", assert error string matches")
 			} else {
 				assert.NoError(t, err, test.name+", assert test does not error unexpectedly")
 			}
@@ -722,7 +722,7 @@ func TestCmdTagImport(t *testing.T) {
 			if test.err != nil {
 				assert.ErrorIs(t, err, test.err, test.name+", assert test error matches expected")
 			} else if test.errorMatcher != nil {
-				test.errorValidator(t, err.Error(), test.name+", assert error string matches")
+				test.errorMatcher(t, err.Error(), test.name+", assert error string matches")
 			} else {
 				assert.NoError(t, err, test.name+", assert test does not error unexpectedly")
 			}
@@ -839,7 +839,7 @@ func TestCmdTagList(t *testing.T) {
 			if test.err != nil {
 				assert.ErrorIs(t, err, test.err, test.name+", assert test error matches expected")
 			} else if test.errorMatcher != nil {
-				test.errorValidator(t, err.Error(), test.name+", assert error string matches")
+				test.errorMatcher(t, err.Error(), test.name+", assert error string matches")
 			} else {
 				assert.NoError(t, err, test.name+", assert test does not error unexpectedly")
 			}
@@ -984,7 +984,7 @@ func TestCmdTagRemove(t *testing.T) {
 			if test.err != nil {
 				assert.ErrorIs(t, err, test.err, test.name+", assert test error matches expected")
 			} else if test.errorMatcher != nil {
-				test.errorValidator(t, err.Error(), test.name+", assert error string matches")
+				test.errorMatcher(t, err.Error(), test.name+", assert error string matches")
 			} else {
 				assert.NoError(t, err, test.name+", assert test does not error unexpectedly")
 			}
@@ -1081,7 +1081,7 @@ func TestCmdTagFind(t *testing.T) {
 			if test.err != nil {
 				assert.ErrorIs(t, err, test.err, test.name+", assert test error matches expected")
 			} else if test.errorMatcher != nil {
-				test.errorValidator(t, err.Error(), test.name+", assert error string matches")
+				test.errorMatcher(t, err.Error(), test.name+", assert error string matches")
 			} else {
 				assert.NoError(t, err, test.name+", assert test does not error unexpectedly")
 			}
@@ -1196,7 +1196,7 @@ func TestCmdTagCount(t *testing.T) {
 			if test.err != nil {
 				assert.ErrorIs(t, err, test.err, test.name+", assert test error matches expected")
 			} else if test.errorMatcher != nil {
-				test.errorValidator(t, err.Error(), test.name+", assert error string matches")
+				test.errorMatcher(t, err.Error(), test.name+", assert error string matches")
 			} else {
 				assert.NoError(t, err, test.name+", assert test does not error unexpectedly")
 			}
@@ -1337,7 +1337,7 @@ func TestCmdTagDoesExist(t *testing.T) {
 			if test.err != nil {
 				assert.ErrorIs(t, err, test.err, test.name+", assert test error matches expected")
 			} else if test.errorMatcher != nil {
-				test.errorValidator(t, err.Error(), test.name+", assert error string matches")
+				test.errorMatcher(t, err.Error(), test.name+", assert error string matches")
 			} else {
 				assert.NoError(t, err, test.name+", assert test does not error unexpectedly")
 			}

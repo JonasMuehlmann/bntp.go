@@ -105,7 +105,7 @@ func TestCmdBookmarkAdd(t *testing.T) {
 			if test.err != nil {
 				assert.ErrorIs(t, err, test.err, test.name+", assert test error matches expected")
 			} else if test.errorMatcher != nil {
-				test.errorValidator(t, err.Error(), test.name+", assert error string matches")
+				test.errorMatcher(t, err.Error(), test.name+", assert error string matches")
 			} else {
 				assert.NoError(t, err, test.name+", assert test does not error unexpectedly")
 			}
@@ -221,7 +221,7 @@ func TestCmdBookmarkReplace(t *testing.T) {
 			if test.err != nil {
 				assert.ErrorIs(t, err, test.err, test.name+", assert test error matches expected")
 			} else if test.errorMatcher != nil {
-				test.errorValidator(t, err.Error(), test.name+", assert error string matches")
+				test.errorMatcher(t, err.Error(), test.name+", assert error string matches")
 			} else {
 				assert.NoError(t, err, test.name+", assert test does not error unexpectedly")
 			}
@@ -335,7 +335,7 @@ func TestCmdBookmarkUpsert(t *testing.T) {
 			if test.err != nil {
 				assert.ErrorIs(t, err, test.err, test.name+", assert test error matches expected")
 			} else if test.errorMatcher != nil {
-				test.errorValidator(t, err.Error(), test.name+", assert error string matches")
+				test.errorMatcher(t, err.Error(), test.name+", assert error string matches")
 			} else {
 				assert.NoError(t, err, test.name+", assert test does not error unexpectedly")
 			}
@@ -532,7 +532,7 @@ func TestCmdBookmarkEdit(t *testing.T) {
 			if test.err != nil {
 				assert.ErrorIs(t, err, test.err, test.name+", assert test error matches expected")
 			} else if test.errorMatcher != nil {
-				test.errorValidator(t, err.Error(), test.name+", assert error string matches")
+				test.errorMatcher(t, err.Error(), test.name+", assert error string matches")
 			} else {
 				assert.NoError(t, err, test.name+", assert test does not error unexpectedly")
 			}
@@ -649,7 +649,7 @@ func TestCmdBookmarkList(t *testing.T) {
 			if test.err != nil {
 				assert.ErrorIs(t, err, test.err, test.name+", assert test error matches expected")
 			} else if test.errorMatcher != nil {
-				test.errorValidator(t, err.Error(), test.name+", assert error string matches")
+				test.errorMatcher(t, err.Error(), test.name+", assert error string matches")
 			} else {
 				assert.NoError(t, err, test.name+", assert test does not error unexpectedly")
 			}
@@ -794,7 +794,7 @@ func TestCmdBookmarkRemove(t *testing.T) {
 			if test.err != nil {
 				assert.ErrorIs(t, err, test.err, test.name+", assert test error matches expected")
 			} else if test.errorMatcher != nil {
-				test.errorValidator(t, err.Error(), test.name+", assert error string matches")
+				test.errorMatcher(t, err.Error(), test.name+", assert error string matches")
 			} else {
 				assert.NoError(t, err, test.name+", assert test does not error unexpectedly")
 			}
@@ -891,7 +891,7 @@ func TestCmdBookmarkFind(t *testing.T) {
 			if test.err != nil {
 				assert.ErrorIs(t, err, test.err, test.name+", assert test error matches expected")
 			} else if test.errorMatcher != nil {
-				test.errorValidator(t, err.Error(), test.name+", assert error string matches")
+				test.errorMatcher(t, err.Error(), test.name+", assert error string matches")
 			} else {
 				assert.NoError(t, err, test.name+", assert test does not error unexpectedly")
 			}
@@ -1006,7 +1006,7 @@ func TestCmdBookmarkCount(t *testing.T) {
 			if test.err != nil {
 				assert.ErrorIs(t, err, test.err, test.name+", assert test error matches expected")
 			} else if test.errorMatcher != nil {
-				test.errorValidator(t, err.Error(), test.name+", assert error string matches")
+				test.errorMatcher(t, err.Error(), test.name+", assert error string matches")
 			} else {
 				assert.NoError(t, err, test.name+", assert test does not error unexpectedly")
 			}
@@ -1147,7 +1147,7 @@ func TestCmdBookmarkDoesExist(t *testing.T) {
 			if test.err != nil {
 				assert.ErrorIs(t, err, test.err, test.name+", assert test error matches expected")
 			} else if test.errorMatcher != nil {
-				test.errorValidator(t, err.Error(), test.name+", assert error string matches")
+				test.errorMatcher(t, err.Error(), test.name+", assert error string matches")
 			} else {
 				assert.NoError(t, err, test.name+", assert test does not error unexpectedly")
 			}
