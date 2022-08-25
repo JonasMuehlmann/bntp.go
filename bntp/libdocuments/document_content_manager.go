@@ -56,7 +56,7 @@ func (m *DocumentContentManager) Add(ctx context.Context, pathContents []tuple.T
 	paths := bntp.TupleToSOA2(pathContents).V1
 
 	hookErr := goaoi.ForeachSlice(paths, m.Hooks.PartiallySpecializeExecuteHooksForNoPointer(ctx, bntp.BeforeAnyHook|bntp.BeforeAddHook))
-	if hookErr != nil && !errors.As(hookErr, &goaoi.EmptyIterableError{}) {
+	if hookErr != nil && !errors.Is(hookErr, goaoi.EmptyIterableError{}) {
 		hookErr = bntp.HookExecutionError{Inner: hookErr}
 		m.Logger.Error(hookErr)
 
@@ -69,7 +69,7 @@ func (m *DocumentContentManager) Add(ctx context.Context, pathContents []tuple.T
 	}
 
 	hookErr = goaoi.ForeachSlice(paths, m.Hooks.PartiallySpecializeExecuteHooksForNoPointer(ctx, bntp.AfterAnyHook|bntp.AfterAddHook))
-	if hookErr != nil && !errors.As(hookErr, &goaoi.EmptyIterableError{}) {
+	if hookErr != nil && !errors.Is(hookErr, goaoi.EmptyIterableError{}) {
 		hookErr = bntp.HookExecutionError{Inner: hookErr}
 		m.Logger.Error(hookErr)
 
@@ -82,7 +82,7 @@ func (m *DocumentContentManager) Update(ctx context.Context, pathContents []tupl
 	paths := bntp.TupleToSOA2(pathContents).V1
 
 	hookErr := goaoi.ForeachSlice(paths, m.Hooks.PartiallySpecializeExecuteHooksForNoPointer(ctx, bntp.BeforeAnyHook|bntp.BeforeUpdateHook))
-	if hookErr != nil && !errors.As(hookErr, &goaoi.EmptyIterableError{}) {
+	if hookErr != nil && !errors.Is(hookErr, goaoi.EmptyIterableError{}) {
 		hookErr = bntp.HookExecutionError{Inner: hookErr}
 		m.Logger.Error(hookErr)
 
@@ -95,7 +95,7 @@ func (m *DocumentContentManager) Update(ctx context.Context, pathContents []tupl
 	}
 
 	hookErr = goaoi.ForeachSlice(paths, m.Hooks.PartiallySpecializeExecuteHooksForNoPointer(ctx, bntp.AfterAnyHook|bntp.AfterUpdateHook))
-	if hookErr != nil && !errors.As(hookErr, &goaoi.EmptyIterableError{}) {
+	if hookErr != nil && !errors.Is(hookErr, goaoi.EmptyIterableError{}) {
 		hookErr = bntp.HookExecutionError{Inner: hookErr}
 		m.Logger.Error(hookErr)
 
@@ -108,7 +108,7 @@ func (m *DocumentContentManager) Move(ctx context.Context, pathChanges []tuple.T
 	paths := bntp.TupleToSOA2(pathChanges).V1
 
 	hookErr := goaoi.ForeachSlice(paths, m.Hooks.PartiallySpecializeExecuteHooksForNoPointer(ctx, bntp.BeforeAnyHook|bntp.BeforeUpdateHook))
-	if hookErr != nil && !errors.As(hookErr, &goaoi.EmptyIterableError{}) {
+	if hookErr != nil && !errors.Is(hookErr, goaoi.EmptyIterableError{}) {
 		hookErr = bntp.HookExecutionError{Inner: hookErr}
 		m.Logger.Error(hookErr)
 
@@ -121,7 +121,7 @@ func (m *DocumentContentManager) Move(ctx context.Context, pathChanges []tuple.T
 	}
 
 	hookErr = goaoi.ForeachSlice(paths, m.Hooks.PartiallySpecializeExecuteHooksForNoPointer(ctx, bntp.AfterAnyHook|bntp.AfterUpdateHook))
-	if hookErr != nil && !errors.As(hookErr, &goaoi.EmptyIterableError{}) {
+	if hookErr != nil && !errors.Is(hookErr, goaoi.EmptyIterableError{}) {
 		hookErr = bntp.HookExecutionError{Inner: hookErr}
 		m.Logger.Error(hookErr)
 
@@ -132,7 +132,7 @@ func (m *DocumentContentManager) Move(ctx context.Context, pathChanges []tuple.T
 
 func (m *DocumentContentManager) Delete(ctx context.Context, paths []string) error {
 	hookErr := goaoi.ForeachSlice(paths, m.Hooks.PartiallySpecializeExecuteHooksForNoPointer(ctx, bntp.BeforeAnyHook|bntp.BeforeDeleteHook))
-	if hookErr != nil && !errors.As(hookErr, &goaoi.EmptyIterableError{}) {
+	if hookErr != nil && !errors.Is(hookErr, goaoi.EmptyIterableError{}) {
 		hookErr = bntp.HookExecutionError{Inner: hookErr}
 		m.Logger.Error(hookErr)
 
@@ -145,7 +145,7 @@ func (m *DocumentContentManager) Delete(ctx context.Context, paths []string) err
 	}
 
 	hookErr = goaoi.ForeachSlice(paths, m.Hooks.PartiallySpecializeExecuteHooksForNoPointer(ctx, bntp.AfterAnyHook|bntp.AfterDeleteHook))
-	if hookErr != nil && !errors.As(hookErr, &goaoi.EmptyIterableError{}) {
+	if hookErr != nil && !errors.Is(hookErr, goaoi.EmptyIterableError{}) {
 		hookErr = bntp.HookExecutionError{Inner: hookErr}
 		m.Logger.Error(hookErr)
 
@@ -156,7 +156,7 @@ func (m *DocumentContentManager) Delete(ctx context.Context, paths []string) err
 
 func (m *DocumentContentManager) Get(ctx context.Context, paths []string) (contents []string, err error) {
 	hookErr := goaoi.ForeachSlice(paths, m.Hooks.PartiallySpecializeExecuteHooksForNoPointer(ctx, bntp.BeforeAnyHook|bntp.BeforeSelectHook))
-	if hookErr != nil && !errors.As(hookErr, &goaoi.EmptyIterableError{}) {
+	if hookErr != nil && !errors.Is(hookErr, goaoi.EmptyIterableError{}) {
 		hookErr = bntp.HookExecutionError{Inner: hookErr}
 		m.Logger.Error(hookErr)
 	}
@@ -167,7 +167,7 @@ func (m *DocumentContentManager) Get(ctx context.Context, paths []string) (conte
 	}
 
 	hookErr = goaoi.ForeachSlice(paths, m.Hooks.PartiallySpecializeExecuteHooksForNoPointer(ctx, bntp.AfterAnyHook|bntp.AfterSelectHook))
-	if hookErr != nil && !errors.As(hookErr, &goaoi.EmptyIterableError{}) {
+	if hookErr != nil && !errors.Is(hookErr, goaoi.EmptyIterableError{}) {
 		hookErr = bntp.HookExecutionError{Inner: hookErr}
 		m.Logger.Error(hookErr)
 	}
@@ -180,7 +180,7 @@ func (m *DocumentContentManager) AddTags(ctx context.Context, pathTags []tuple.T
 	paths := soa.V1
 
 	hookErr := goaoi.ForeachSlice(paths, m.Hooks.PartiallySpecializeExecuteHooksForNoPointer(ctx, bntp.BeforeAnyHook|bntp.BeforeAddHook))
-	if hookErr != nil && !errors.As(hookErr, &goaoi.EmptyIterableError{}) {
+	if hookErr != nil && !errors.Is(hookErr, goaoi.EmptyIterableError{}) {
 		hookErr = bntp.HookExecutionError{Inner: hookErr}
 		m.Logger.Error(hookErr)
 
@@ -216,7 +216,7 @@ func (m *DocumentContentManager) AddTags(ctx context.Context, pathTags []tuple.T
 	}
 
 	hookErr = goaoi.ForeachSlice(paths, m.Hooks.PartiallySpecializeExecuteHooksForNoPointer(ctx, bntp.AfterAnyHook|bntp.AfterAddHook))
-	if hookErr != nil && !errors.As(hookErr, &goaoi.EmptyIterableError{}) {
+	if hookErr != nil && !errors.Is(hookErr, goaoi.EmptyIterableError{}) {
 		hookErr = bntp.HookExecutionError{Inner: hookErr}
 		m.Logger.Error(hookErr)
 
@@ -230,7 +230,7 @@ func (m *DocumentContentManager) RemoveTags(ctx context.Context, pathTags []tupl
 	paths := soa.V1
 
 	hookErr := goaoi.ForeachSlice(paths, m.Hooks.PartiallySpecializeExecuteHooksForNoPointer(ctx, bntp.BeforeAnyHook|bntp.BeforeDeleteHook))
-	if hookErr != nil && !errors.As(hookErr, &goaoi.EmptyIterableError{}) {
+	if hookErr != nil && !errors.Is(hookErr, goaoi.EmptyIterableError{}) {
 		hookErr = bntp.HookExecutionError{Inner: hookErr}
 		m.Logger.Error(hookErr)
 
@@ -266,7 +266,7 @@ func (m *DocumentContentManager) RemoveTags(ctx context.Context, pathTags []tupl
 	}
 
 	hookErr = goaoi.ForeachSlice(paths, m.Hooks.PartiallySpecializeExecuteHooksForNoPointer(ctx, bntp.AfterAnyHook|bntp.AfterDeleteHook))
-	if hookErr != nil && !errors.As(hookErr, &goaoi.EmptyIterableError{}) {
+	if hookErr != nil && !errors.Is(hookErr, goaoi.EmptyIterableError{}) {
 		hookErr = bntp.HookExecutionError{Inner: hookErr}
 		m.Logger.Error(hookErr)
 
@@ -280,7 +280,7 @@ func (m *DocumentContentManager) AddLinks(ctx context.Context, pathLinks []tuple
 	paths := soa.V1
 
 	hookErr := goaoi.ForeachSlice(paths, m.Hooks.PartiallySpecializeExecuteHooksForNoPointer(ctx, bntp.BeforeAnyHook|bntp.BeforeAddHook))
-	if hookErr != nil && !errors.As(hookErr, &goaoi.EmptyIterableError{}) {
+	if hookErr != nil && !errors.Is(hookErr, goaoi.EmptyIterableError{}) {
 		hookErr = bntp.HookExecutionError{Inner: hookErr}
 		m.Logger.Error(hookErr)
 
@@ -316,7 +316,7 @@ func (m *DocumentContentManager) AddLinks(ctx context.Context, pathLinks []tuple
 	}
 
 	hookErr = goaoi.ForeachSlice(paths, m.Hooks.PartiallySpecializeExecuteHooksForNoPointer(ctx, bntp.AfterAnyHook|bntp.AfterAddHook))
-	if hookErr != nil && !errors.As(hookErr, &goaoi.EmptyIterableError{}) {
+	if hookErr != nil && !errors.Is(hookErr, goaoi.EmptyIterableError{}) {
 		hookErr = bntp.HookExecutionError{Inner: hookErr}
 		m.Logger.Error(hookErr)
 
@@ -330,7 +330,7 @@ func (m *DocumentContentManager) RemoveLinks(ctx context.Context, pathLinks []tu
 	paths := soa.V1
 
 	hookErr := goaoi.ForeachSlice(paths, m.Hooks.PartiallySpecializeExecuteHooksForNoPointer(ctx, bntp.BeforeAnyHook|bntp.BeforeDeleteHook))
-	if hookErr != nil && !errors.As(hookErr, &goaoi.EmptyIterableError{}) {
+	if hookErr != nil && !errors.Is(hookErr, goaoi.EmptyIterableError{}) {
 		hookErr = bntp.HookExecutionError{Inner: hookErr}
 		m.Logger.Error(hookErr)
 
@@ -366,7 +366,7 @@ func (m *DocumentContentManager) RemoveLinks(ctx context.Context, pathLinks []tu
 	}
 
 	hookErr = goaoi.ForeachSlice(paths, m.Hooks.PartiallySpecializeExecuteHooksForNoPointer(ctx, bntp.AfterAnyHook|bntp.AfterDeleteHook))
-	if hookErr != nil && !errors.As(hookErr, &goaoi.EmptyIterableError{}) {
+	if hookErr != nil && !errors.Is(hookErr, goaoi.EmptyIterableError{}) {
 		hookErr = bntp.HookExecutionError{Inner: hookErr}
 		m.Logger.Error(hookErr)
 
@@ -380,7 +380,7 @@ func (m *DocumentContentManager) AddBackLinks(ctx context.Context, pathBacklinks
 	paths := soa.V1
 
 	hookErr := goaoi.ForeachSlice(paths, m.Hooks.PartiallySpecializeExecuteHooksForNoPointer(ctx, bntp.BeforeAnyHook|bntp.BeforeAddHook))
-	if hookErr != nil && !errors.As(hookErr, &goaoi.EmptyIterableError{}) {
+	if hookErr != nil && !errors.Is(hookErr, goaoi.EmptyIterableError{}) {
 		hookErr = bntp.HookExecutionError{Inner: hookErr}
 		m.Logger.Error(hookErr)
 
@@ -416,7 +416,7 @@ func (m *DocumentContentManager) AddBackLinks(ctx context.Context, pathBacklinks
 	}
 
 	hookErr = goaoi.ForeachSlice(paths, m.Hooks.PartiallySpecializeExecuteHooksForNoPointer(ctx, bntp.AfterAnyHook|bntp.AfterAddHook))
-	if hookErr != nil && !errors.As(hookErr, &goaoi.EmptyIterableError{}) {
+	if hookErr != nil && !errors.Is(hookErr, goaoi.EmptyIterableError{}) {
 		hookErr = bntp.HookExecutionError{Inner: hookErr}
 		m.Logger.Error(hookErr)
 
@@ -430,7 +430,7 @@ func (m *DocumentContentManager) RemoveBackLinks(ctx context.Context, pathBackli
 	paths := soa.V1
 
 	hookErr := goaoi.ForeachSlice(paths, m.Hooks.PartiallySpecializeExecuteHooksForNoPointer(ctx, bntp.BeforeAnyHook|bntp.BeforeDeleteHook))
-	if hookErr != nil && !errors.As(hookErr, &goaoi.EmptyIterableError{}) {
+	if hookErr != nil && !errors.Is(hookErr, goaoi.EmptyIterableError{}) {
 		hookErr = bntp.HookExecutionError{Inner: hookErr}
 		m.Logger.Error(hookErr)
 
@@ -466,7 +466,7 @@ func (m *DocumentContentManager) RemoveBackLinks(ctx context.Context, pathBackli
 	}
 
 	hookErr = goaoi.ForeachSlice(paths, m.Hooks.PartiallySpecializeExecuteHooksForNoPointer(ctx, bntp.AfterAnyHook|bntp.AfterDeleteHook))
-	if hookErr != nil && !errors.As(hookErr, &goaoi.EmptyIterableError{}) {
+	if hookErr != nil && !errors.Is(hookErr, goaoi.EmptyIterableError{}) {
 		hookErr = bntp.HookExecutionError{Inner: hookErr}
 		m.Logger.Error(hookErr)
 
@@ -492,7 +492,7 @@ func (m *DocumentContentManager) UpdateDocumentContentsFromNewModels(ctx context
 		}
 
 		addedLinkIDs, err := GetAddedLinks(oldDocument, newDocument)
-		if err != nil {
+		if err != nil && !errors.Is(err, goaoi.EmptyIterableError{}) {
 			return err
 		}
 
@@ -513,7 +513,7 @@ func (m *DocumentContentManager) UpdateDocumentContentsFromNewModels(ctx context
 		addedPathLinks[i] = tuple.T2[string, []string]{oldDocument.Path, addedLinks}
 
 		removedLinkIDs, err := GetRemovedLinks(oldDocument, newDocument)
-		if err != nil {
+		if err != nil && !errors.Is(err, goaoi.EmptyIterableError{}) {
 			return err
 		}
 
@@ -534,7 +534,7 @@ func (m *DocumentContentManager) UpdateDocumentContentsFromNewModels(ctx context
 		removedPathLinks[i] = tuple.T2[string, []string]{oldDocument.Path, removedLinks}
 
 		addedBacklinkIDs, err := GetAddedBacklinks(oldDocument, newDocument)
-		if err != nil {
+		if err != nil && !errors.Is(err, goaoi.EmptyIterableError{}) {
 			return err
 		}
 
@@ -555,7 +555,7 @@ func (m *DocumentContentManager) UpdateDocumentContentsFromNewModels(ctx context
 		addedPathBacklinks[i] = tuple.T2[string, []string]{oldDocument.Path, addedBacklinks}
 
 		removedBacklinkIDs, err := GetRemovedBacklinks(oldDocument, newDocument)
-		if err != nil {
+		if err != nil && !errors.Is(err, goaoi.EmptyIterableError{}) {
 			return err
 		}
 
@@ -576,7 +576,7 @@ func (m *DocumentContentManager) UpdateDocumentContentsFromNewModels(ctx context
 		removedPathBacklinks[i] = tuple.T2[string, []string]{oldDocument.Path, removedBacklinks}
 
 		addedTagIDs, err := GetAddedTags(oldDocument, newDocument)
-		if err != nil {
+		if err != nil && !errors.Is(err, goaoi.EmptyIterableError{}) {
 			return err
 		}
 
@@ -597,7 +597,7 @@ func (m *DocumentContentManager) UpdateDocumentContentsFromNewModels(ctx context
 		addedPathTags[i] = tuple.T2[string, []string]{oldDocument.Path, addedTags}
 
 		removedTagIDs, err := GetRemovedTags(oldDocument, newDocument)
-		if err != nil {
+		if err != nil && !errors.Is(err, goaoi.EmptyIterableError{}) {
 			return err
 		}
 
