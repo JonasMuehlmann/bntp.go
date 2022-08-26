@@ -47,7 +47,7 @@ func WithDocumentCommand() CliOption {
 
 		cli.DocumentAddCmd = &cobra.Command{
 			Use:   "add MODEL...",
-			Short: "Add bntp documents",
+			Short: "Add a bntp document",
 			Long:  `A longer description`,
 			Args:  cobra.ArbitraryArgs,
 			RunE: func(cmd *cobra.Command, args []string) error {
@@ -60,7 +60,6 @@ func WithDocumentCommand() CliOption {
 					return err
 				}
 
-				// NOTE: Should we also try to add an empty document?
 				err = cli.BNTPBackend.DocumentManager.Add(context.Background(), documents)
 				if err != nil {
 					return err
@@ -90,11 +89,6 @@ func WithDocumentCommand() CliOption {
 					return err
 				}
 
-				err = cli.BNTPBackend.DocumentContentManager.UpdateDocumentContentsFromNewModels(context.Background(), documents, &cli.BNTPBackend.DocumentManager)
-				if err != nil {
-					return err
-				}
-
 				return nil
 			},
 		}
@@ -119,11 +113,6 @@ func WithDocumentCommand() CliOption {
 					return err
 				}
 
-				err = cli.BNTPBackend.DocumentContentManager.UpdateDocumentContentsFromNewModels(context.Background(), documents, &cli.BNTPBackend.DocumentManager)
-				if err != nil {
-					return err
-				}
-
 				return nil
 			},
 		}
@@ -134,36 +123,33 @@ func WithDocumentCommand() CliOption {
 			Long:  `A longer description`,
 			Args:  cobra.ArbitraryArgs,
 			RunE: func(cmd *cobra.Command, args []string) error {
-				if len(args) == 0 {
+				if len(args) == 0 && cli.FilterRaw == "" {
 					return helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
+				}
+				if len(args) > 0 && cli.FilterRaw != "" {
+					return ConflictingPositionalArgsAndFlagError{Flag: "filter"}
 				}
 
 				var err error
-				var filter *domain.DocumentFilter
+				filter := &domain.DocumentFilter{}
 				updater := &domain.DocumentUpdater{}
 				var numAffectedRecords int64
-
-				documents, err := UnmarshalEntities[domain.Document](cli, args, cli.Format)
-				if err != nil {
-					return err
-				}
 
 				err = cli.BNTPBackend.Unmarshallers[cli.Format].Unmarshall(updater, cli.UpdaterRaw)
 				if err != nil {
 					return EntityMarshallingError{Inner: err}
 				}
 				if cli.FilterRaw == "" {
-					err := cli.BNTPBackend.DocumentManager.Update(context.Background(), documents, updater)
+					documents, err := UnmarshalEntities[domain.Document](cli, args, cli.Format)
+					if err != nil {
+						return err
+					}
+					err = cli.BNTPBackend.DocumentManager.Update(context.Background(), documents, updater)
 					if err != nil {
 						return err
 					}
 
 					numAffectedRecords = int64(len(args))
-
-					err = cli.BNTPBackend.DocumentContentManager.UpdateDocumentContentsFromFilterAndUpdater(context.Background(), filter, updater, &cli.BNTPBackend.DocumentManager)
-					if err != nil {
-						return err
-					}
 				} else {
 					err = cli.BNTPBackend.Unmarshallers[cli.Format].Unmarshall(filter, cli.FilterRaw)
 					if err != nil {
@@ -174,11 +160,6 @@ func WithDocumentCommand() CliOption {
 					if err != nil {
 						return err
 					}
-
-					err = cli.BNTPBackend.DocumentContentManager.UpdateDocumentContentsFromNewModels(context.Background(), documents, &cli.BNTPBackend.DocumentManager)
-					if err != nil {
-						return err
-					}
 				}
 
 				fmt.Fprintln(cli.RootCmd.OutOrStdout(), numAffectedRecords)
@@ -186,18 +167,15 @@ func WithDocumentCommand() CliOption {
 				return nil
 			},
 		}
+
 		cli.DocumentListCmd = &cobra.Command{
 			Use:   "list",
 			Short: "List bntp documents",
 			Long:  `A longer description`,
 			Args:  cobra.NoArgs,
 			RunE: func(cmd *cobra.Command, args []string) error {
-				if len(args) == 0 {
-					return helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
-				}
-
 				var documents []*domain.Document
-				var filter *domain.DocumentFilter
+				filter := &domain.DocumentFilter{}
 				var output string
 				var err error
 
@@ -235,11 +213,14 @@ func WithDocumentCommand() CliOption {
 			Long:  `A longer description`,
 			Args:  cobra.ArbitraryArgs,
 			RunE: func(cmd *cobra.Command, args []string) error {
-				if len(args) == 0 {
+				if len(args) == 0 && cli.FilterRaw == "" {
 					return helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 				}
+				if len(args) > 0 && cli.FilterRaw != "" {
+					return ConflictingPositionalArgsAndFlagError{Flag: "filter"}
+				}
 
-				var filter *domain.DocumentFilter
+				filter := &domain.DocumentFilter{}
 				var err error
 				var numAffectedRecords int64
 
@@ -279,11 +260,7 @@ func WithDocumentCommand() CliOption {
 			Long:  `A longer description`,
 			Args:  cobra.NoArgs,
 			RunE: func(cmd *cobra.Command, args []string) error {
-				if len(args) == 0 {
-					return helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
-				}
-
-				var filter *domain.DocumentFilter
+				filter := &domain.DocumentFilter{}
 				var err error
 				var result *domain.Document
 				var output string
@@ -314,11 +291,7 @@ func WithDocumentCommand() CliOption {
 			Long:  `A longer description`,
 			Args:  cobra.NoArgs,
 			RunE: func(cmd *cobra.Command, args []string) error {
-				if len(args) == 0 {
-					return helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
-				}
-
-				var filter *domain.DocumentFilter
+				filter := &domain.DocumentFilter{}
 				var count int64
 				var err error
 
@@ -350,13 +323,16 @@ func WithDocumentCommand() CliOption {
 			Long:  `A longer description`,
 			Args:  cobra.RangeArgs(0, 1),
 			RunE: func(cmd *cobra.Command, args []string) error {
-				if len(args) == 0 {
+				if len(args) == 0 && cli.FilterRaw == "" {
 					return helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 				}
+				if len(args) > 0 && cli.FilterRaw != "" {
+					return ConflictingPositionalArgsAndFlagError{Flag: "filter"}
+				}
 
-				var filter *domain.DocumentFilter
+				filter := &domain.DocumentFilter{}
 				var err error
-				var document *domain.Document
+				document := &domain.Document{}
 				var doesExist bool
 
 				if cli.FilterRaw == "" {
@@ -389,9 +365,10 @@ func WithDocumentCommand() CliOption {
 
 		cli.RootCmd.AddCommand(cli.DocumentCmd)
 
-		cli.DocumentCmd.AddCommand(cli.DocumentAddCmd)
-		cli.DocumentCmd.AddCommand(cli.DocumentEditCmd)
 		cli.DocumentCmd.AddCommand(cli.DocumentListCmd)
+		cli.DocumentCmd.AddCommand(cli.DocumentReplaceCmd)
+		cli.DocumentCmd.AddCommand(cli.DocumentEditCmd)
+		cli.DocumentCmd.AddCommand(cli.DocumentAddCmd)
 		cli.DocumentCmd.AddCommand(cli.DocumentRemoveCmd)
 		cli.DocumentCmd.AddCommand(cli.DocumentCountCmd)
 		cli.DocumentCmd.AddCommand(cli.DocumentDoesExistCmd)
@@ -399,13 +376,13 @@ func WithDocumentCommand() CliOption {
 		cli.DocumentCmd.AddCommand(cli.DocumentUpsertCmd)
 
 		for _, subcommand := range cli.DocumentCmd.Commands() {
-			if slices.Contains([]*cobra.Command{cli.DocumentAddCmd, cli.DocumentListCmd, cli.DocumentRemoveCmd}, subcommand) {
+			if slices.Contains([]*cobra.Command{cli.DocumentAddCmd, cli.DocumentListCmd, cli.DocumentRemoveCmd, cli.DocumentFindCmd, cli.DocumentDoesExistCmd}, subcommand) {
 				subcommand.PersistentFlags().StringVar(&cli.Format, "format", "json", "The serialization format to use for i/o")
 			}
 		}
 
 		for _, subcommand := range cli.DocumentCmd.Commands() {
-			if slices.Contains([]*cobra.Command{cli.DocumentEditCmd, cli.DocumentListCmd, cli.DocumentRemoveCmd}, subcommand) {
+			if slices.Contains([]*cobra.Command{cli.DocumentEditCmd, cli.DocumentListCmd, cli.DocumentRemoveCmd, cli.DocumentFindCmd, cli.DocumentCountCmd, cli.DocumentDoesExistCmd}, subcommand) {
 				subcommand.PersistentFlags().StringVar(&cli.FilterRaw, "filter", "", "The filter to use for processing entities")
 			}
 		}
@@ -418,7 +395,5 @@ func WithDocumentCommand() CliOption {
 
 		cli.DocumentFindCmd.MarkPersistentFlagRequired("filter")
 		cli.DocumentEditCmd.MarkPersistentFlagRequired("updater")
-
-		// TODO: Add flag to not update document content, because they already were added through an editor
 	}
 }
