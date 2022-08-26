@@ -124,6 +124,10 @@ func MakeDomainToRepositoryEntityConverterGeneric[TIn any, TOut any](ctx context
 	}
 }
 
+//******************************************************************//
+//               ReferenceToNonExistentDependencyError              //
+//******************************************************************//
+
 type ReferenceToNonExistentDependencyError struct {
 	Inner error
 }

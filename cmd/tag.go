@@ -200,7 +200,7 @@ func WithTagCommand() CliOption {
 					return err
 				}
 
-				afero.WriteFile(cli.Fs, args[0], []byte(serializedTags), 0o644)
+				afero.WriteFile(cli.FsOverride, args[0], []byte(serializedTags), 0o644)
 
 				return nil
 			},
@@ -216,7 +216,7 @@ func WithTagCommand() CliOption {
 					return helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 				}
 
-				serializedTags, err := afero.ReadFile(cli.Fs, args[0])
+				serializedTags, err := afero.ReadFile(cli.FsOverride, args[0])
 				if err != nil {
 					return err
 				}
