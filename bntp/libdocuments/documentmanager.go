@@ -50,7 +50,7 @@ func NewDocumentManager(logger *log.Logger, hooks *bntp.Hooks[domain.Document], 
 // TODO: Allow skipping certain hooks.
 func (m *DocumentManager) Add(ctx context.Context, documents []*domain.Document) error {
 	hookErr := goaoi.ForeachSlice(documents, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.BeforeAnyHook|bntp.BeforeAddHook))
-	if hookErr != nil && !errors.As(hookErr, &goaoi.EmptyIterableError{}) {
+	if hookErr != nil && !errors.Is(hookErr, goaoi.EmptyIterableError{}) {
 		hookErr = bntp.HookExecutionError{Inner: hookErr}
 		m.Logger.Error(hookErr)
 
@@ -63,7 +63,7 @@ func (m *DocumentManager) Add(ctx context.Context, documents []*domain.Document)
 	}
 
 	hookErr = goaoi.ForeachSlice(documents, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.AfterAnyHook|bntp.AfterAddHook))
-	if hookErr != nil && !errors.As(hookErr, &goaoi.EmptyIterableError{}) {
+	if hookErr != nil && !errors.Is(hookErr, goaoi.EmptyIterableError{}) {
 		hookErr = bntp.HookExecutionError{Inner: hookErr}
 		m.Logger.Error(hookErr)
 
@@ -74,7 +74,7 @@ func (m *DocumentManager) Add(ctx context.Context, documents []*domain.Document)
 
 func (m *DocumentManager) Replace(ctx context.Context, documents []*domain.Document) error {
 	hookErr := goaoi.ForeachSlice(documents, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.BeforeAnyHook|bntp.BeforeUpdateHook))
-	if hookErr != nil && !errors.As(hookErr, &goaoi.EmptyIterableError{}) {
+	if hookErr != nil && !errors.Is(hookErr, goaoi.EmptyIterableError{}) {
 		hookErr = bntp.HookExecutionError{Inner: hookErr}
 		m.Logger.Error(hookErr)
 
@@ -87,7 +87,7 @@ func (m *DocumentManager) Replace(ctx context.Context, documents []*domain.Docum
 	}
 
 	hookErr = goaoi.ForeachSlice(documents, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.AfterAnyHook|bntp.AfterUpdateHook))
-	if hookErr != nil && !errors.As(hookErr, &goaoi.EmptyIterableError{}) {
+	if hookErr != nil && !errors.Is(hookErr, goaoi.EmptyIterableError{}) {
 		hookErr = bntp.HookExecutionError{Inner: hookErr}
 		m.Logger.Error(hookErr)
 
@@ -98,7 +98,7 @@ func (m *DocumentManager) Replace(ctx context.Context, documents []*domain.Docum
 
 func (m *DocumentManager) Upsert(ctx context.Context, documents []*domain.Document) error {
 	hookErr := goaoi.ForeachSlice(documents, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.BeforeAnyHook|bntp.BeforeUpdateHook))
-	if hookErr != nil && !errors.As(hookErr, &goaoi.EmptyIterableError{}) {
+	if hookErr != nil && !errors.Is(hookErr, goaoi.EmptyIterableError{}) {
 		hookErr = bntp.HookExecutionError{Inner: hookErr}
 		m.Logger.Error(hookErr)
 
@@ -111,7 +111,7 @@ func (m *DocumentManager) Upsert(ctx context.Context, documents []*domain.Docume
 	}
 
 	hookErr = goaoi.ForeachSlice(documents, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.AfterAnyHook|bntp.AfterUpdateHook))
-	if hookErr != nil && !errors.As(hookErr, &goaoi.EmptyIterableError{}) {
+	if hookErr != nil && !errors.Is(hookErr, goaoi.EmptyIterableError{}) {
 		hookErr = bntp.HookExecutionError{Inner: hookErr}
 		m.Logger.Error(hookErr)
 
@@ -122,7 +122,7 @@ func (m *DocumentManager) Upsert(ctx context.Context, documents []*domain.Docume
 
 func (m *DocumentManager) Update(ctx context.Context, documents []*domain.Document, documentUpdater *domain.DocumentUpdater) error {
 	hookErr := goaoi.ForeachSlice(documents, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.BeforeAnyHook|bntp.BeforeUpdateHook))
-	if hookErr != nil && !errors.As(hookErr, &goaoi.EmptyIterableError{}) {
+	if hookErr != nil && !errors.Is(hookErr, goaoi.EmptyIterableError{}) {
 		hookErr = bntp.HookExecutionError{Inner: hookErr}
 		m.Logger.Error(hookErr)
 
@@ -135,7 +135,7 @@ func (m *DocumentManager) Update(ctx context.Context, documents []*domain.Docume
 	}
 
 	hookErr = goaoi.ForeachSlice(documents, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.AfterAnyHook|bntp.AfterUpdateHook))
-	if hookErr != nil && !errors.As(hookErr, &goaoi.EmptyIterableError{}) {
+	if hookErr != nil && !errors.Is(hookErr, goaoi.EmptyIterableError{}) {
 		hookErr = bntp.HookExecutionError{Inner: hookErr}
 		m.Logger.Error(hookErr)
 
@@ -148,7 +148,7 @@ func (m *DocumentManager) UpdateWhere(ctx context.Context, documentFilter *domai
 	documents := []*domain.Document{}
 
 	hookErr := goaoi.ForeachSlice(documents, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.BeforeAnyHook|bntp.BeforeUpdateHook))
-	if hookErr != nil && !errors.As(hookErr, &goaoi.EmptyIterableError{}) {
+	if hookErr != nil && !errors.Is(hookErr, goaoi.EmptyIterableError{}) {
 		hookErr = bntp.HookExecutionError{Inner: hookErr}
 		m.Logger.Error(hookErr)
 
@@ -161,7 +161,7 @@ func (m *DocumentManager) UpdateWhere(ctx context.Context, documentFilter *domai
 	}
 
 	hookErr = goaoi.ForeachSlice(documents, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.AfterAnyHook|bntp.AfterUpdateHook))
-	if hookErr != nil && !errors.As(hookErr, &goaoi.EmptyIterableError{}) {
+	if hookErr != nil && !errors.Is(hookErr, goaoi.EmptyIterableError{}) {
 		hookErr = bntp.HookExecutionError{Inner: hookErr}
 		m.Logger.Error(hookErr)
 
@@ -172,7 +172,7 @@ func (m *DocumentManager) UpdateWhere(ctx context.Context, documentFilter *domai
 
 func (m *DocumentManager) Delete(ctx context.Context, documents []*domain.Document) error {
 	hookErr := goaoi.ForeachSlice(documents, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.BeforeAnyHook|bntp.BeforeDeleteHook))
-	if hookErr != nil && !errors.As(hookErr, &goaoi.EmptyIterableError{}) {
+	if hookErr != nil && !errors.Is(hookErr, goaoi.EmptyIterableError{}) {
 		hookErr = bntp.HookExecutionError{Inner: hookErr}
 		m.Logger.Error(hookErr)
 
@@ -184,7 +184,7 @@ func (m *DocumentManager) Delete(ctx context.Context, documents []*domain.Docume
 	}
 
 	hookErr = goaoi.ForeachSlice(documents, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.AfterAnyHook|bntp.AfterDeleteHook))
-	if hookErr != nil && !errors.As(hookErr, &goaoi.EmptyIterableError{}) {
+	if hookErr != nil && !errors.Is(hookErr, goaoi.EmptyIterableError{}) {
 		hookErr = bntp.HookExecutionError{Inner: hookErr}
 		m.Logger.Error(hookErr)
 
@@ -197,7 +197,7 @@ func (m *DocumentManager) DeleteWhere(ctx context.Context, documentFilter *domai
 	documents := []*domain.Document{}
 
 	hookErr := goaoi.ForeachSlice(documents, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.BeforeAnyHook|bntp.BeforeDeleteHook))
-	if hookErr != nil && !errors.As(hookErr, &goaoi.EmptyIterableError{}) {
+	if hookErr != nil && !errors.Is(hookErr, goaoi.EmptyIterableError{}) {
 		hookErr = bntp.HookExecutionError{Inner: hookErr}
 		m.Logger.Error(hookErr)
 
@@ -210,7 +210,7 @@ func (m *DocumentManager) DeleteWhere(ctx context.Context, documentFilter *domai
 	}
 
 	hookErr = goaoi.ForeachSlice(documents, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.AfterAnyHook|bntp.AfterDeleteHook))
-	if hookErr != nil && !errors.As(hookErr, &goaoi.EmptyIterableError{}) {
+	if hookErr != nil && !errors.Is(hookErr, goaoi.EmptyIterableError{}) {
 		hookErr = bntp.HookExecutionError{Inner: hookErr}
 		m.Logger.Error(hookErr)
 
@@ -223,7 +223,7 @@ func (m *DocumentManager) CountWhere(ctx context.Context, documentFilter *domain
 	documents := []*domain.Document{}
 
 	hookErr := goaoi.ForeachSlice(documents, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.BeforeAnyHook|bntp.BeforeSelectHook))
-	if hookErr != nil && !errors.As(hookErr, &goaoi.EmptyIterableError{}) {
+	if hookErr != nil && !errors.Is(hookErr, goaoi.EmptyIterableError{}) {
 		hookErr = bntp.HookExecutionError{Inner: hookErr}
 		m.Logger.Error(hookErr)
 
@@ -236,7 +236,7 @@ func (m *DocumentManager) CountWhere(ctx context.Context, documentFilter *domain
 	}
 
 	hookErr = goaoi.ForeachSlice(documents, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.AfterAnyHook|bntp.AfterSelectHook))
-	if hookErr != nil && !errors.As(hookErr, &goaoi.EmptyIterableError{}) {
+	if hookErr != nil && !errors.Is(hookErr, goaoi.EmptyIterableError{}) {
 		hookErr = bntp.HookExecutionError{Inner: hookErr}
 		m.Logger.Error(hookErr)
 
@@ -249,7 +249,7 @@ func (m *DocumentManager) CountAll(ctx context.Context) (numRecords int64, err e
 	documents := []*domain.Document{}
 
 	hookErr := goaoi.ForeachSlice(documents, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.BeforeAnyHook|bntp.BeforeSelectHook))
-	if hookErr != nil && !errors.As(hookErr, &goaoi.EmptyIterableError{}) {
+	if hookErr != nil && !errors.Is(hookErr, goaoi.EmptyIterableError{}) {
 		hookErr = bntp.HookExecutionError{Inner: hookErr}
 		m.Logger.Error(hookErr)
 
@@ -262,7 +262,7 @@ func (m *DocumentManager) CountAll(ctx context.Context) (numRecords int64, err e
 	}
 
 	hookErr = goaoi.ForeachSlice(documents, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.AfterAnyHook|bntp.AfterSelectHook))
-	if hookErr != nil && !errors.As(hookErr, &goaoi.EmptyIterableError{}) {
+	if hookErr != nil && !errors.Is(hookErr, goaoi.EmptyIterableError{}) {
 		hookErr = bntp.HookExecutionError{Inner: hookErr}
 		m.Logger.Error(hookErr)
 
@@ -275,7 +275,7 @@ func (m *DocumentManager) DoesExist(ctx context.Context, document *domain.Docume
 	documents := []*domain.Document{document}
 
 	hookErr := goaoi.ForeachSlice(documents, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.BeforeAnyHook|bntp.BeforeSelectHook))
-	if hookErr != nil && !errors.As(hookErr, &goaoi.EmptyIterableError{}) {
+	if hookErr != nil && !errors.Is(hookErr, goaoi.EmptyIterableError{}) {
 		hookErr = bntp.HookExecutionError{Inner: hookErr}
 		m.Logger.Error(hookErr)
 
@@ -288,7 +288,7 @@ func (m *DocumentManager) DoesExist(ctx context.Context, document *domain.Docume
 	}
 
 	hookErr = goaoi.ForeachSlice(documents, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.AfterAnyHook|bntp.AfterSelectHook))
-	if hookErr != nil && !errors.As(hookErr, &goaoi.EmptyIterableError{}) {
+	if hookErr != nil && !errors.Is(hookErr, goaoi.EmptyIterableError{}) {
 		hookErr = bntp.HookExecutionError{Inner: hookErr}
 		m.Logger.Error(hookErr)
 
@@ -301,7 +301,7 @@ func (m *DocumentManager) DoesExistWhere(ctx context.Context, documentFilter *do
 	documents := []*domain.Document{}
 
 	hookErr := goaoi.ForeachSlice(documents, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.BeforeAnyHook|bntp.BeforeSelectHook))
-	if hookErr != nil && !errors.As(hookErr, &goaoi.EmptyIterableError{}) {
+	if hookErr != nil && !errors.Is(hookErr, goaoi.EmptyIterableError{}) {
 		hookErr = bntp.HookExecutionError{Inner: hookErr}
 		m.Logger.Error(hookErr)
 
@@ -314,7 +314,7 @@ func (m *DocumentManager) DoesExistWhere(ctx context.Context, documentFilter *do
 	}
 
 	hookErr = goaoi.ForeachSlice(documents, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.AfterAnyHook|bntp.AfterSelectHook))
-	if hookErr != nil && !errors.As(hookErr, &goaoi.EmptyIterableError{}) {
+	if hookErr != nil && !errors.Is(hookErr, goaoi.EmptyIterableError{}) {
 		hookErr = bntp.HookExecutionError{Inner: hookErr}
 		m.Logger.Error(hookErr)
 
@@ -327,7 +327,7 @@ func (m *DocumentManager) GetWhere(ctx context.Context, documentFilter *domain.D
 	documents := []*domain.Document{}
 
 	hookErr := goaoi.ForeachSlice(documents, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.BeforeAnyHook|bntp.BeforeSelectHook))
-	if hookErr != nil && !errors.As(hookErr, &goaoi.EmptyIterableError{}) {
+	if hookErr != nil && !errors.Is(hookErr, goaoi.EmptyIterableError{}) {
 		hookErr = bntp.HookExecutionError{Inner: hookErr}
 		m.Logger.Error(hookErr)
 
@@ -339,7 +339,7 @@ func (m *DocumentManager) GetWhere(ctx context.Context, documentFilter *domain.D
 
 	}
 	hookErr = goaoi.ForeachSlice(documents, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.AfterAnyHook|bntp.AfterSelectHook))
-	if hookErr != nil && !errors.As(hookErr, &goaoi.EmptyIterableError{}) {
+	if hookErr != nil && !errors.Is(hookErr, goaoi.EmptyIterableError{}) {
 		hookErr = bntp.HookExecutionError{Inner: hookErr}
 		m.Logger.Error(hookErr)
 
@@ -352,7 +352,7 @@ func (m *DocumentManager) GetFirstWhere(ctx context.Context, documentFilter *dom
 	documents := []*domain.Document{}
 
 	hookErr := goaoi.ForeachSlice(documents, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.BeforeAnyHook|bntp.BeforeSelectHook))
-	if hookErr != nil && !errors.As(hookErr, &goaoi.EmptyIterableError{}) {
+	if hookErr != nil && !errors.Is(hookErr, goaoi.EmptyIterableError{}) {
 		hookErr = bntp.HookExecutionError{Inner: hookErr}
 		m.Logger.Error(hookErr)
 
@@ -365,7 +365,7 @@ func (m *DocumentManager) GetFirstWhere(ctx context.Context, documentFilter *dom
 	}
 
 	hookErr = goaoi.ForeachSlice(documents, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.AfterAnyHook|bntp.AfterSelectHook))
-	if hookErr != nil && !errors.As(hookErr, &goaoi.EmptyIterableError{}) {
+	if hookErr != nil && !errors.Is(hookErr, goaoi.EmptyIterableError{}) {
 		hookErr = bntp.HookExecutionError{Inner: hookErr}
 		m.Logger.Error(hookErr)
 
@@ -378,7 +378,7 @@ func (m *DocumentManager) GetAll(ctx context.Context) (records []*domain.Documen
 	documents := []*domain.Document{}
 
 	hookErr := goaoi.ForeachSlice(documents, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.BeforeAnyHook|bntp.BeforeSelectHook))
-	if hookErr != nil && !errors.As(hookErr, &goaoi.EmptyIterableError{}) {
+	if hookErr != nil && !errors.Is(hookErr, goaoi.EmptyIterableError{}) {
 		hookErr = bntp.HookExecutionError{Inner: hookErr}
 		m.Logger.Error(hookErr)
 
@@ -391,7 +391,7 @@ func (m *DocumentManager) GetAll(ctx context.Context) (records []*domain.Documen
 	}
 
 	hookErr = goaoi.ForeachSlice(documents, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.AfterAnyHook|bntp.AfterSelectHook))
-	if hookErr != nil && !errors.As(hookErr, &goaoi.EmptyIterableError{}) {
+	if hookErr != nil && !errors.Is(hookErr, goaoi.EmptyIterableError{}) {
 		hookErr = bntp.HookExecutionError{Inner: hookErr}
 		m.Logger.Error(hookErr)
 
@@ -404,7 +404,7 @@ func (m *DocumentManager) AddType(ctx context.Context, types []string) error {
 	documents := []*domain.Document{}
 
 	hookErr := goaoi.ForeachSlice(documents, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.BeforeAnyHook|bntp.BeforeAddHook))
-	if hookErr != nil && !errors.As(hookErr, &goaoi.EmptyIterableError{}) {
+	if hookErr != nil && !errors.Is(hookErr, goaoi.EmptyIterableError{}) {
 		hookErr = bntp.HookExecutionError{Inner: hookErr}
 		m.Logger.Error(hookErr)
 
@@ -417,7 +417,7 @@ func (m *DocumentManager) AddType(ctx context.Context, types []string) error {
 	}
 
 	hookErr = goaoi.ForeachSlice(documents, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.AfterAnyHook|bntp.AfterAddHook))
-	if hookErr != nil && !errors.As(hookErr, &goaoi.EmptyIterableError{}) {
+	if hookErr != nil && !errors.Is(hookErr, goaoi.EmptyIterableError{}) {
 		hookErr = bntp.HookExecutionError{Inner: hookErr}
 		m.Logger.Error(hookErr)
 
@@ -430,7 +430,7 @@ func (m *DocumentManager) DeleteType(ctx context.Context, types []string) error 
 	documents := []*domain.Document{}
 
 	hookErr := goaoi.ForeachSlice(documents, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.BeforeAnyHook|bntp.BeforeDeleteHook))
-	if hookErr != nil && !errors.As(hookErr, &goaoi.EmptyIterableError{}) {
+	if hookErr != nil && !errors.Is(hookErr, goaoi.EmptyIterableError{}) {
 		hookErr = bntp.HookExecutionError{Inner: hookErr}
 		m.Logger.Error(hookErr)
 
@@ -443,7 +443,7 @@ func (m *DocumentManager) DeleteType(ctx context.Context, types []string) error 
 	}
 
 	hookErr = goaoi.ForeachSlice(documents, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.AfterAnyHook|bntp.AfterDeleteHook))
-	if hookErr != nil && !errors.As(hookErr, &goaoi.EmptyIterableError{}) {
+	if hookErr != nil && !errors.Is(hookErr, goaoi.EmptyIterableError{}) {
 		hookErr = bntp.HookExecutionError{Inner: hookErr}
 		m.Logger.Error(hookErr)
 
@@ -456,7 +456,7 @@ func (m *DocumentManager) UpdateType(ctx context.Context, oldType string, newTyp
 	documents := []*domain.Document{}
 
 	hookErr := goaoi.ForeachSlice(documents, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.BeforeAnyHook|bntp.BeforeUpdateHook))
-	if hookErr != nil && !errors.As(hookErr, &goaoi.EmptyIterableError{}) {
+	if hookErr != nil && !errors.Is(hookErr, goaoi.EmptyIterableError{}) {
 		hookErr = bntp.HookExecutionError{Inner: hookErr}
 		m.Logger.Error(hookErr)
 
@@ -469,7 +469,7 @@ func (m *DocumentManager) UpdateType(ctx context.Context, oldType string, newTyp
 	}
 
 	hookErr = goaoi.ForeachSlice(documents, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.AfterAnyHook|bntp.AfterUpdateHook))
-	if hookErr != nil && !errors.As(hookErr, &goaoi.EmptyIterableError{}) {
+	if hookErr != nil && !errors.Is(hookErr, goaoi.EmptyIterableError{}) {
 		hookErr = bntp.HookExecutionError{Inner: hookErr}
 		m.Logger.Error(hookErr)
 

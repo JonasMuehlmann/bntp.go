@@ -483,7 +483,7 @@ func (m *DocumentContentManager) UpdateDocumentContentsFromNewModels(ctx context
 	addedPathTags := make([]tuple.T2[string, []string], 0, len(newDocuments))
 	removedPathTags := make([]tuple.T2[string, []string], 0, len(newDocuments))
 
-	for i, newDocument := range newDocuments {
+	for _, newDocument := range newDocuments {
 		filter := &domain.DocumentFilter{ID: optional.Make(model.FilterOperation[int64]{Operand: model.ScalarOperand[int64]{newDocument.ID}, Operator: model.FilterEqual})}
 
 		oldDocument, err := documentManager.GetFirstWhere(ctx, filter)
@@ -496,158 +496,170 @@ func (m *DocumentContentManager) UpdateDocumentContentsFromNewModels(ctx context
 			return err
 		}
 
-		addedLinkDocuments, err := documentManager.GetWhere(ctx, &domain.DocumentFilter{
-			LinkedDocumentIDs: optional.Make(model.FilterOperation[int64]{
-				Operator: model.FilterIn,
-				Operand:  model.ListOperand[int64]{addedLinkIDs}}),
-		})
-		if err != nil {
-			return err
-		}
+		if !errors.Is(err, goaoi.EmptyIterableError{}) {
+			addedLinkDocuments, err := documentManager.GetWhere(ctx, &domain.DocumentFilter{
+				LinkedDocumentIDs: optional.Make(model.FilterOperation[int64]{
+					Operator: model.FilterIn,
+					Operand:  model.ListOperand[int64]{addedLinkIDs}}),
+			})
+			if err != nil {
+				return err
+			}
 
-		addedLinks, err := goaoi.TransformCopySliceUnsafe(addedLinkDocuments, (*domain.Document).GetPath)
-		if err != nil {
-			return err
-		}
+			addedLinks, err := goaoi.TransformCopySliceUnsafe(addedLinkDocuments, (*domain.Document).GetPath)
+			if err != nil && !errors.Is(err, goaoi.EmptyIterableError{}) {
+				return err
+			}
 
-		addedPathLinks[i] = tuple.T2[string, []string]{oldDocument.Path, addedLinks}
+			addedPathLinks = append(addedPathLinks, tuple.T2[string, []string]{oldDocument.Path, addedLinks})
+		}
 
 		removedLinkIDs, err := GetRemovedLinks(oldDocument, newDocument)
 		if err != nil && !errors.Is(err, goaoi.EmptyIterableError{}) {
 			return err
 		}
 
-		removedLinkDocuments, err := documentManager.GetWhere(ctx, &domain.DocumentFilter{
-			LinkedDocumentIDs: optional.Make(model.FilterOperation[int64]{
-				Operator: model.FilterIn,
-				Operand:  model.ListOperand[int64]{removedLinkIDs}}),
-		})
-		if err != nil {
-			return err
-		}
+		if !errors.Is(err, goaoi.EmptyIterableError{}) {
+			removedLinkDocuments, err := documentManager.GetWhere(ctx, &domain.DocumentFilter{
+				LinkedDocumentIDs: optional.Make(model.FilterOperation[int64]{
+					Operator: model.FilterIn,
+					Operand:  model.ListOperand[int64]{removedLinkIDs}}),
+			})
+			if err != nil {
+				return err
+			}
 
-		removedLinks, err := goaoi.TransformCopySliceUnsafe(removedLinkDocuments, (*domain.Document).GetPath)
-		if err != nil {
-			return err
-		}
+			removedLinks, err := goaoi.TransformCopySliceUnsafe(removedLinkDocuments, (*domain.Document).GetPath)
+			if err != nil && !errors.Is(err, goaoi.EmptyIterableError{}) {
+				return err
+			}
 
-		removedPathLinks[i] = tuple.T2[string, []string]{oldDocument.Path, removedLinks}
+			removedPathLinks = append(removedPathLinks, tuple.T2[string, []string]{oldDocument.Path, removedLinks})
+		}
 
 		addedBacklinkIDs, err := GetAddedBacklinks(oldDocument, newDocument)
 		if err != nil && !errors.Is(err, goaoi.EmptyIterableError{}) {
 			return err
 		}
 
-		addedBacklinkDocuments, err := documentManager.GetWhere(ctx, &domain.DocumentFilter{
-			LinkedDocumentIDs: optional.Make(model.FilterOperation[int64]{
-				Operator: model.FilterIn,
-				Operand:  model.ListOperand[int64]{addedBacklinkIDs}}),
-		})
-		if err != nil {
-			return err
-		}
+		if !errors.Is(err, goaoi.EmptyIterableError{}) {
+			addedBacklinkDocuments, err := documentManager.GetWhere(ctx, &domain.DocumentFilter{
+				LinkedDocumentIDs: optional.Make(model.FilterOperation[int64]{
+					Operator: model.FilterIn,
+					Operand:  model.ListOperand[int64]{addedBacklinkIDs}}),
+			})
+			if err != nil {
+				return err
+			}
 
-		addedBacklinks, err := goaoi.TransformCopySliceUnsafe(addedBacklinkDocuments, (*domain.Document).GetPath)
-		if err != nil {
-			return err
-		}
+			addedBacklinks, err := goaoi.TransformCopySliceUnsafe(addedBacklinkDocuments, (*domain.Document).GetPath)
+			if err != nil && !errors.Is(err, goaoi.EmptyIterableError{}) {
+				return err
+			}
 
-		addedPathBacklinks[i] = tuple.T2[string, []string]{oldDocument.Path, addedBacklinks}
+			addedPathBacklinks = append(addedPathBacklinks, tuple.T2[string, []string]{oldDocument.Path, addedBacklinks})
+		}
 
 		removedBacklinkIDs, err := GetRemovedBacklinks(oldDocument, newDocument)
 		if err != nil && !errors.Is(err, goaoi.EmptyIterableError{}) {
 			return err
 		}
 
-		removedBacklinkDocuments, err := documentManager.GetWhere(ctx, &domain.DocumentFilter{
-			LinkedDocumentIDs: optional.Make(model.FilterOperation[int64]{
-				Operator: model.FilterIn,
-				Operand:  model.ListOperand[int64]{removedBacklinkIDs}}),
-		})
-		if err != nil {
-			return err
-		}
+		if !errors.Is(err, goaoi.EmptyIterableError{}) {
+			removedBacklinkDocuments, err := documentManager.GetWhere(ctx, &domain.DocumentFilter{
+				LinkedDocumentIDs: optional.Make(model.FilterOperation[int64]{
+					Operator: model.FilterIn,
+					Operand:  model.ListOperand[int64]{removedBacklinkIDs}}),
+			})
+			if err != nil {
+				return err
+			}
 
-		removedBacklinks, err := goaoi.TransformCopySliceUnsafe(removedBacklinkDocuments, (*domain.Document).GetPath)
-		if err != nil {
-			return err
-		}
+			removedBacklinks, err := goaoi.TransformCopySliceUnsafe(removedBacklinkDocuments, (*domain.Document).GetPath)
+			if err != nil && !errors.Is(err, goaoi.EmptyIterableError{}) {
+				return err
+			}
 
-		removedPathBacklinks[i] = tuple.T2[string, []string]{oldDocument.Path, removedBacklinks}
+			removedPathBacklinks = append(removedPathBacklinks, tuple.T2[string, []string]{oldDocument.Path, removedBacklinks})
+		}
 
 		addedTagIDs, err := GetAddedTags(oldDocument, newDocument)
 		if err != nil && !errors.Is(err, goaoi.EmptyIterableError{}) {
 			return err
 		}
 
-		addedTagTags, err := documentManager.Repository.GetTagRepository().GetWhere(ctx, &domain.TagFilter{
-			ID: optional.Make(model.FilterOperation[int64]{
-				Operator: model.FilterIn,
-				Operand:  model.ListOperand[int64]{addedTagIDs}}),
-		})
-		if err != nil {
-			return err
-		}
+		if !errors.Is(err, goaoi.EmptyIterableError{}) {
+			addedTagTags, err := documentManager.Repository.GetTagRepository().GetWhere(ctx, &domain.TagFilter{
+				ID: optional.Make(model.FilterOperation[int64]{
+					Operator: model.FilterIn,
+					Operand:  model.ListOperand[int64]{addedTagIDs}}),
+			})
+			if err != nil {
+				return err
+			}
 
-		addedTags, err := goaoi.TransformCopySliceUnsafe(addedTagTags, (*domain.Tag).GetTag)
-		if err != nil {
-			return err
-		}
+			addedTags, err := goaoi.TransformCopySliceUnsafe(addedTagTags, (*domain.Tag).GetTag)
+			if err != nil && !errors.Is(err, goaoi.EmptyIterableError{}) {
+				return err
+			}
 
-		addedPathTags[i] = tuple.T2[string, []string]{oldDocument.Path, addedTags}
+			addedPathTags = append(addedPathTags, tuple.T2[string, []string]{oldDocument.Path, addedTags})
+		}
 
 		removedTagIDs, err := GetRemovedTags(oldDocument, newDocument)
 		if err != nil && !errors.Is(err, goaoi.EmptyIterableError{}) {
 			return err
 		}
 
-		removedTagTags, err := documentManager.Repository.GetTagRepository().GetWhere(ctx, &domain.TagFilter{
-			ID: optional.Make(model.FilterOperation[int64]{
-				Operator: model.FilterIn,
-				Operand:  model.ListOperand[int64]{removedTagIDs}}),
-		})
-		if err != nil {
-			return err
-		}
+		if !errors.Is(err, goaoi.EmptyIterableError{}) {
+			removedTagTags, err := documentManager.Repository.GetTagRepository().GetWhere(ctx, &domain.TagFilter{
+				ID: optional.Make(model.FilterOperation[int64]{
+					Operator: model.FilterIn,
+					Operand:  model.ListOperand[int64]{removedTagIDs}}),
+			})
+			if err != nil {
+				return err
+			}
 
-		removedTags, err := goaoi.TransformCopySliceUnsafe(removedTagTags, (*domain.Tag).GetTag)
-		if err != nil {
-			return err
-		}
+			removedTags, err := goaoi.TransformCopySliceUnsafe(removedTagTags, (*domain.Tag).GetTag)
+			if err != nil && !errors.Is(err, goaoi.EmptyIterableError{}) {
+				return err
+			}
 
-		removedPathTags[i] = tuple.T2[string, []string]{oldDocument.Path, removedTags}
+			removedPathTags = append(removedPathTags, tuple.T2[string, []string]{oldDocument.Path, removedTags})
+		}
 	}
 
 	err := m.AddLinks(context.Background(), addedPathLinks)
-	if err != nil {
+	if err != nil && !errors.Is(err, goaoi.EmptyIterableError{}) {
 		return err
 	}
 	err = m.RemoveLinks(context.Background(), removedPathLinks)
-	if err != nil {
+	if err != nil && !errors.Is(err, goaoi.EmptyIterableError{}) {
 		return err
 	}
 
 	err = m.AddBackLinks(context.Background(), addedPathBacklinks)
-	if err != nil {
+	if err != nil && !errors.Is(err, goaoi.EmptyIterableError{}) {
 		return err
 	}
 
 	err = m.RemoveBackLinks(context.Background(), removedPathBacklinks)
-	if err != nil {
+	if err != nil && !errors.Is(err, goaoi.EmptyIterableError{}) {
 		return err
 	}
 
 	err = m.AddBackLinks(context.Background(), addedPathTags)
-	if err != nil {
+	if err != nil && !errors.Is(err, goaoi.EmptyIterableError{}) {
 		return err
 	}
 
 	err = m.RemoveBackLinks(context.Background(), removedPathTags)
-	if err != nil {
+	if err != nil && !errors.Is(err, goaoi.EmptyIterableError{}) {
 		return err
 	}
 
-	return err
+	return nil
 }
 
 // TODO: This mess needs a lot of cleaning up
@@ -676,7 +688,8 @@ func (m *DocumentContentManager) UpdateDocumentContentsFromFilterAndUpdater(ctx 
 	oldDocuments, err := documentManager.GetWhere(ctx, filter)
 
 	if updater.LinkedDocumentIDs.HasValue {
-		if updater.LinkedDocumentIDs.Wrappee.Operator == model.UpdateAppend || updater.LinkedDocumentIDs.Wrappee.Operator == model.UpdatePrepend {
+		switch updater.LinkedDocumentIDs.Wrappee.Operator {
+		case model.UpdateAppend, model.UpdatePrepend:
 			addedPathLinks := make([]tuple.T2[string, []string], 0, 10)
 
 			addedLinks, err := goaoi.TransformCopySliceUnsafe(updater.LinkedDocumentIDs.Wrappee.Operand, linksExtractorFromID)
@@ -692,12 +705,12 @@ func (m *DocumentContentManager) UpdateDocumentContentsFromFilterAndUpdater(ctx 
 			if err != nil {
 				return err
 			}
-		} else if updater.LinkedDocumentIDs.Wrappee.Operator == model.UpdateClear {
+		case model.UpdateClear:
 			err := m.handleClearLinks(ctx, updater.LinkedDocumentIDs.Wrappee.Operand, linksExtractorFromID, oldDocuments)
 			if err != nil {
 				return err
 			}
-		} else if updater.LinkedDocumentIDs.Wrappee.Operator == model.UpdateSet {
+		case model.UpdateSet:
 			err := m.handleClearLinks(ctx, updater.LinkedDocumentIDs.Wrappee.Operand, linksExtractorFromID, oldDocuments)
 			if err != nil {
 				return err
@@ -710,7 +723,8 @@ func (m *DocumentContentManager) UpdateDocumentContentsFromFilterAndUpdater(ctx 
 	}
 
 	if updater.BacklinkedDocumentsIDs.HasValue {
-		if updater.BacklinkedDocumentsIDs.Wrappee.Operator == model.UpdateAppend || updater.BacklinkedDocumentsIDs.Wrappee.Operator == model.UpdatePrepend {
+		switch updater.BacklinkedDocumentsIDs.Wrappee.Operator {
+		case model.UpdateAppend, model.UpdatePrepend:
 			addedPathBacklinks := make([]tuple.T2[string, []string], 0, 10)
 
 			addedBacklinks, err := goaoi.TransformCopySliceUnsafe(updater.BacklinkedDocumentsIDs.Wrappee.Operand, linksExtractorFromID)
@@ -726,12 +740,12 @@ func (m *DocumentContentManager) UpdateDocumentContentsFromFilterAndUpdater(ctx 
 			if err != nil {
 				return err
 			}
-		} else if updater.BacklinkedDocumentsIDs.Wrappee.Operator == model.UpdateClear {
+		case model.UpdateClear:
 			err := m.handleClearBacklinks(ctx, updater.BacklinkedDocumentsIDs.Wrappee.Operand, linksExtractorFromID, oldDocuments)
 			if err != nil {
 				return err
 			}
-		} else if updater.BacklinkedDocumentsIDs.Wrappee.Operator == model.UpdateSet {
+		case model.UpdateSet:
 			err := m.handleClearBacklinks(ctx, updater.BacklinkedDocumentsIDs.Wrappee.Operand, linksExtractorFromID, oldDocuments)
 			if err != nil {
 				return err
@@ -744,7 +758,8 @@ func (m *DocumentContentManager) UpdateDocumentContentsFromFilterAndUpdater(ctx 
 	}
 
 	if updater.TagIDs.HasValue {
-		if updater.TagIDs.Wrappee.Operator == model.UpdateAppend || updater.TagIDs.Wrappee.Operator == model.UpdatePrepend {
+		switch updater.TagIDs.Wrappee.Operator {
+		case model.UpdateAppend, model.UpdatePrepend:
 			addedPathTags := make([]tuple.T2[string, []string], 0, 10)
 
 			addedTags, err := goaoi.TransformCopySliceUnsafe(updater.TagIDs.Wrappee.Operand, tagsExtractorFromID)
@@ -760,12 +775,12 @@ func (m *DocumentContentManager) UpdateDocumentContentsFromFilterAndUpdater(ctx 
 			if err != nil {
 				return err
 			}
-		} else if updater.TagIDs.Wrappee.Operator == model.UpdateClear {
+		case model.UpdateClear:
 			err := m.handleClearTags(ctx, updater.TagIDs.Wrappee.Operand, tagsExtractorFromID, oldDocuments)
 			if err != nil {
 				return err
 			}
-		} else if updater.TagIDs.Wrappee.Operator == model.UpdateSet {
+		case model.UpdateSet:
 			err := m.handleClearTags(ctx, updater.TagIDs.Wrappee.Operand, tagsExtractorFromID, oldDocuments)
 			if err != nil {
 				return err

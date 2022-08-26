@@ -101,6 +101,41 @@ func (err NonExistentPrimaryDataError) As(target any) bool {
 }
 
 //******************************************************************//
+//                     NonExistentDependencyError                   //
+//******************************************************************//
+
+type NonExistentDependencyError struct {
+	Inner error
+}
+
+func (err NonExistentDependencyError) Error() string {
+	return fmt.Sprintf("Error when working with dependency data: %w", err.Inner)
+}
+
+func (err NonExistentDependencyError) Unwrap() error {
+	return err.Inner
+}
+
+func (err NonExistentDependencyError) Is(other error) bool {
+	switch other.(type) {
+	case NonExistentDependencyError:
+		return true
+	default:
+		return false
+	}
+}
+
+func (err NonExistentDependencyError) As(target any) bool {
+	switch target.(type) {
+	case NonExistentDependencyError:
+		reflect.Indirect(reflect.ValueOf(target)).Set(reflect.ValueOf(err))
+		return true
+	default:
+		return false
+	}
+}
+
+//******************************************************************//
 //                          NopUpdaterError                         //
 //******************************************************************//
 
