@@ -13,6 +13,7 @@ import (
 	repository "github.com/JonasMuehlmann/bntp.go/model/repository/sqlite3"
 	testCommon "github.com/JonasMuehlmann/bntp.go/test"
 	"github.com/JonasMuehlmann/optional.go"
+	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -110,14 +111,14 @@ func TestSQLBookmarkRepositoryAddTest(t *testing.T) {
 
 			tagRepo := new(repository.Sqlite3TagRepository)
 
-			tagRepoAbstract, err := tagRepo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db})
+			tagRepoAbstract, err := tagRepo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db, Logger: log.StandardLogger()})
 			assert.NoErrorf(t, err, test.name)
 
 			tagRepo = tagRepoAbstract.(*repository.Sqlite3TagRepository)
 
 			repo := new(repository.Sqlite3BookmarkRepository)
 
-			repoAbstract, err := repo.New(repository.Sqlite3BookmarkRepositoryConstructorArgs{DB: db, TagRepository: tagRepo})
+			repoAbstract, err := repo.New(repository.Sqlite3BookmarkRepositoryConstructorArgs{DB: db, Logger: log.StandardLogger(), TagRepository: tagRepo})
 
 			assert.NoErrorf(t, err, test.name)
 
@@ -330,14 +331,14 @@ func TestSQLBookmarkRepositoryReplaceTest(t *testing.T) {
 
 			tagRepo := new(repository.Sqlite3TagRepository)
 
-			tagRepoAbstract, err := tagRepo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db})
+			tagRepoAbstract, err := tagRepo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db, Logger: log.StandardLogger()})
 			assert.NoErrorf(t, err, test.name)
 
 			tagRepo = tagRepoAbstract.(*repository.Sqlite3TagRepository)
 
 			repo := new(repository.Sqlite3BookmarkRepository)
 
-			repoAbstract, err := repo.New(repository.Sqlite3BookmarkRepositoryConstructorArgs{DB: db, TagRepository: tagRepo})
+			repoAbstract, err := repo.New(repository.Sqlite3BookmarkRepositoryConstructorArgs{DB: db, Logger: log.StandardLogger(), TagRepository: tagRepo})
 
 			assert.NoErrorf(t, err, test.name)
 
@@ -557,14 +558,14 @@ func TestSQLBookmarkRepositoryUpsertTest(t *testing.T) {
 
 			tagRepo := new(repository.Sqlite3TagRepository)
 
-			tagRepoAbstract, err := tagRepo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db})
+			tagRepoAbstract, err := tagRepo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db, Logger: log.StandardLogger()})
 			assert.NoErrorf(t, err, test.name)
 
 			tagRepo = tagRepoAbstract.(*repository.Sqlite3TagRepository)
 
 			repo := new(repository.Sqlite3BookmarkRepository)
 
-			repoAbstract, err := repo.New(repository.Sqlite3BookmarkRepositoryConstructorArgs{DB: db, TagRepository: tagRepo})
+			repoAbstract, err := repo.New(repository.Sqlite3BookmarkRepositoryConstructorArgs{DB: db, Logger: log.StandardLogger(), TagRepository: tagRepo})
 
 			assert.NoErrorf(t, err, test.name)
 
@@ -786,14 +787,14 @@ func TestSQLBookmarkRepositoryUpdateTest(t *testing.T) {
 
 			tagRepo := new(repository.Sqlite3TagRepository)
 
-			tagRepoAbstract, err := tagRepo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db})
+			tagRepoAbstract, err := tagRepo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db, Logger: log.StandardLogger()})
 			assert.NoErrorf(t, err, test.name)
 
 			tagRepo = tagRepoAbstract.(*repository.Sqlite3TagRepository)
 
 			repo := new(repository.Sqlite3BookmarkRepository)
 
-			repoAbstract, err := repo.New(repository.Sqlite3BookmarkRepositoryConstructorArgs{DB: db, TagRepository: tagRepo})
+			repoAbstract, err := repo.New(repository.Sqlite3BookmarkRepositoryConstructorArgs{DB: db, Logger: log.StandardLogger(), TagRepository: tagRepo})
 
 			assert.NoErrorf(t, err, test.name)
 
@@ -950,14 +951,14 @@ func TestSQLBookmarkRepositoryUpdateWhereTest(t *testing.T) {
 
 			tagRepo := new(repository.Sqlite3TagRepository)
 
-			tagRepoAbstract, err := tagRepo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db})
+			tagRepoAbstract, err := tagRepo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db, Logger: log.StandardLogger()})
 			assert.NoErrorf(t, err, test.name)
 
 			tagRepo = tagRepoAbstract.(*repository.Sqlite3TagRepository)
 
 			repo := new(repository.Sqlite3BookmarkRepository)
 
-			repoAbstract, err := repo.New(repository.Sqlite3BookmarkRepositoryConstructorArgs{DB: db, TagRepository: tagRepo})
+			repoAbstract, err := repo.New(repository.Sqlite3BookmarkRepositoryConstructorArgs{DB: db, Logger: log.StandardLogger(), TagRepository: tagRepo})
 
 			assert.NoErrorf(t, err, test.name)
 
@@ -1038,14 +1039,14 @@ func TestSQLBookmarkRepositoryDeleteTest(t *testing.T) {
 
 			tagRepo := new(repository.Sqlite3TagRepository)
 
-			tagRepoAbstract, err := tagRepo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db})
+			tagRepoAbstract, err := tagRepo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db, Logger: log.StandardLogger()})
 			assert.NoErrorf(t, err, test.name)
 
 			tagRepo = tagRepoAbstract.(*repository.Sqlite3TagRepository)
 
 			repo := new(repository.Sqlite3BookmarkRepository)
 
-			repoAbstract, err := repo.New(repository.Sqlite3BookmarkRepositoryConstructorArgs{DB: db, TagRepository: tagRepo})
+			repoAbstract, err := repo.New(repository.Sqlite3BookmarkRepositoryConstructorArgs{DB: db, Logger: log.StandardLogger(), TagRepository: tagRepo})
 
 			assert.NoErrorf(t, err, test.name)
 
@@ -1137,14 +1138,14 @@ func TestSQLBookmarkRepositoryDeleteWhereTest(t *testing.T) {
 
 			tagRepo := new(repository.Sqlite3TagRepository)
 
-			tagRepoAbstract, err := tagRepo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db})
+			tagRepoAbstract, err := tagRepo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db, Logger: log.StandardLogger()})
 			assert.NoErrorf(t, err, test.name)
 
 			tagRepo = tagRepoAbstract.(*repository.Sqlite3TagRepository)
 
 			repo := new(repository.Sqlite3BookmarkRepository)
 
-			repoAbstract, err := repo.New(repository.Sqlite3BookmarkRepositoryConstructorArgs{DB: db, TagRepository: tagRepo})
+			repoAbstract, err := repo.New(repository.Sqlite3BookmarkRepositoryConstructorArgs{DB: db, Logger: log.StandardLogger(), TagRepository: tagRepo})
 
 			assert.NoErrorf(t, err, test.name)
 
@@ -1237,14 +1238,14 @@ func TestSQLBookmarkRepositoryCountWhereTest(t *testing.T) {
 
 			tagRepo := new(repository.Sqlite3TagRepository)
 
-			tagRepoAbstract, err := tagRepo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db})
+			tagRepoAbstract, err := tagRepo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db, Logger: log.StandardLogger()})
 			assert.NoErrorf(t, err, test.name)
 
 			tagRepo = tagRepoAbstract.(*repository.Sqlite3TagRepository)
 
 			repo := new(repository.Sqlite3BookmarkRepository)
 
-			repoAbstract, err := repo.New(repository.Sqlite3BookmarkRepositoryConstructorArgs{DB: db, TagRepository: tagRepo})
+			repoAbstract, err := repo.New(repository.Sqlite3BookmarkRepositoryConstructorArgs{DB: db, Logger: log.StandardLogger(), TagRepository: tagRepo})
 
 			assert.NoErrorf(t, err, test.name)
 
@@ -1342,14 +1343,14 @@ func TestSQLBookmarkRepositoryCountAllTest(t *testing.T) {
 
 			tagRepo := new(repository.Sqlite3TagRepository)
 
-			tagRepoAbstract, err := tagRepo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db})
+			tagRepoAbstract, err := tagRepo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db, Logger: log.StandardLogger()})
 			assert.NoErrorf(t, err, test.name)
 
 			tagRepo = tagRepoAbstract.(*repository.Sqlite3TagRepository)
 
 			repo := new(repository.Sqlite3BookmarkRepository)
 
-			repoAbstract, err := repo.New(repository.Sqlite3BookmarkRepositoryConstructorArgs{DB: db, TagRepository: tagRepo})
+			repoAbstract, err := repo.New(repository.Sqlite3BookmarkRepositoryConstructorArgs{DB: db, Logger: log.StandardLogger(), TagRepository: tagRepo})
 
 			assert.NoErrorf(t, err, test.name)
 
@@ -1424,14 +1425,14 @@ func TestSQLBookmarkRepositoryDoesExistTest(t *testing.T) {
 
 			tagRepo := new(repository.Sqlite3TagRepository)
 
-			tagRepoAbstract, err := tagRepo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db})
+			tagRepoAbstract, err := tagRepo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db, Logger: log.StandardLogger()})
 			assert.NoErrorf(t, err, test.name)
 
 			tagRepo = tagRepoAbstract.(*repository.Sqlite3TagRepository)
 
 			repo := new(repository.Sqlite3BookmarkRepository)
 
-			repoAbstract, err := repo.New(repository.Sqlite3BookmarkRepositoryConstructorArgs{DB: db, TagRepository: tagRepo})
+			repoAbstract, err := repo.New(repository.Sqlite3BookmarkRepositoryConstructorArgs{DB: db, Logger: log.StandardLogger(), TagRepository: tagRepo})
 
 			assert.NoErrorf(t, err, test.name)
 
@@ -1584,14 +1585,14 @@ func TestSQLBookmarkRepositoryDoesExistWhereTest(t *testing.T) {
 
 			tagRepo := new(repository.Sqlite3TagRepository)
 
-			tagRepoAbstract, err := tagRepo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db})
+			tagRepoAbstract, err := tagRepo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db, Logger: log.StandardLogger()})
 			assert.NoErrorf(t, err, test.name)
 
 			tagRepo = tagRepoAbstract.(*repository.Sqlite3TagRepository)
 
 			repo := new(repository.Sqlite3BookmarkRepository)
 
-			repoAbstract, err := repo.New(repository.Sqlite3BookmarkRepositoryConstructorArgs{DB: db, TagRepository: tagRepo})
+			repoAbstract, err := repo.New(repository.Sqlite3BookmarkRepositoryConstructorArgs{DB: db, Logger: log.StandardLogger(), TagRepository: tagRepo})
 
 			assert.NoErrorf(t, err, test.name)
 
@@ -1754,14 +1755,14 @@ func TestSQLBookmarkRepositoryGetWhereTest(t *testing.T) {
 
 			tagRepo := new(repository.Sqlite3TagRepository)
 
-			tagRepoAbstract, err := tagRepo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db})
+			tagRepoAbstract, err := tagRepo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db, Logger: log.StandardLogger()})
 			assert.NoErrorf(t, err, test.name)
 
 			tagRepo = tagRepoAbstract.(*repository.Sqlite3TagRepository)
 
 			repo := new(repository.Sqlite3BookmarkRepository)
 
-			repoAbstract, err := repo.New(repository.Sqlite3BookmarkRepositoryConstructorArgs{DB: db, TagRepository: tagRepo})
+			repoAbstract, err := repo.New(repository.Sqlite3BookmarkRepositoryConstructorArgs{DB: db, Logger: log.StandardLogger(), TagRepository: tagRepo})
 
 			assert.NoErrorf(t, err, test.name)
 
@@ -1889,14 +1890,14 @@ func TestSQLBookmarkRepositoryGetFirstWhereTest(t *testing.T) {
 
 			tagRepo := new(repository.Sqlite3TagRepository)
 
-			tagRepoAbstract, err := tagRepo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db})
+			tagRepoAbstract, err := tagRepo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db, Logger: log.StandardLogger()})
 			assert.NoErrorf(t, err, test.name)
 
 			tagRepo = tagRepoAbstract.(*repository.Sqlite3TagRepository)
 
 			repo := new(repository.Sqlite3BookmarkRepository)
 
-			repoAbstract, err := repo.New(repository.Sqlite3BookmarkRepositoryConstructorArgs{DB: db, TagRepository: tagRepo})
+			repoAbstract, err := repo.New(repository.Sqlite3BookmarkRepositoryConstructorArgs{DB: db, Logger: log.StandardLogger(), TagRepository: tagRepo})
 
 			assert.NoErrorf(t, err, test.name)
 
@@ -1969,14 +1970,14 @@ func TestSQLBookmarkRepositoryGetAllTest(t *testing.T) {
 
 			tagRepo := new(repository.Sqlite3TagRepository)
 
-			tagRepoAbstract, err := tagRepo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db})
+			tagRepoAbstract, err := tagRepo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db, Logger: log.StandardLogger()})
 			assert.NoErrorf(t, err, test.name)
 
 			tagRepo = tagRepoAbstract.(*repository.Sqlite3TagRepository)
 
 			repo := new(repository.Sqlite3BookmarkRepository)
 
-			repoAbstract, err := repo.New(repository.Sqlite3BookmarkRepositoryConstructorArgs{DB: db, TagRepository: tagRepo})
+			repoAbstract, err := repo.New(repository.Sqlite3BookmarkRepositoryConstructorArgs{DB: db, Logger: log.StandardLogger(), TagRepository: tagRepo})
 
 			assert.NoErrorf(t, err, test.name)
 
@@ -2031,14 +2032,14 @@ func TestSQLBookmarkRepositoryAddTypeTest(t *testing.T) {
 
 			tagRepo := new(repository.Sqlite3TagRepository)
 
-			tagRepoAbstract, err := tagRepo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db})
+			tagRepoAbstract, err := tagRepo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db, Logger: log.StandardLogger()})
 			assert.NoErrorf(t, err, test.name)
 
 			tagRepo = tagRepoAbstract.(*repository.Sqlite3TagRepository)
 
 			repo := new(repository.Sqlite3BookmarkRepository)
 
-			repoAbstract, err := repo.New(repository.Sqlite3BookmarkRepositoryConstructorArgs{DB: db, TagRepository: tagRepo})
+			repoAbstract, err := repo.New(repository.Sqlite3BookmarkRepositoryConstructorArgs{DB: db, Logger: log.StandardLogger(), TagRepository: tagRepo})
 
 			assert.NoErrorf(t, err, test.name)
 
@@ -2090,14 +2091,14 @@ func TestSQLBookmarkRepositoryUpdateTypeTest(t *testing.T) {
 
 			tagRepo := new(repository.Sqlite3TagRepository)
 
-			tagRepoAbstract, err := tagRepo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db})
+			tagRepoAbstract, err := tagRepo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db, Logger: log.StandardLogger()})
 			assert.NoErrorf(t, err, test.name)
 
 			tagRepo = tagRepoAbstract.(*repository.Sqlite3TagRepository)
 
 			repo := new(repository.Sqlite3BookmarkRepository)
 
-			repoAbstract, err := repo.New(repository.Sqlite3BookmarkRepositoryConstructorArgs{DB: db, TagRepository: tagRepo})
+			repoAbstract, err := repo.New(repository.Sqlite3BookmarkRepositoryConstructorArgs{DB: db, Logger: log.StandardLogger(), TagRepository: tagRepo})
 
 			assert.NoErrorf(t, err, test.name)
 
@@ -2148,14 +2149,14 @@ func TestSQLBookmarkRepositoryDeleteTypeTest(t *testing.T) {
 
 			tagRepo := new(repository.Sqlite3TagRepository)
 
-			tagRepoAbstract, err := tagRepo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db})
+			tagRepoAbstract, err := tagRepo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db, Logger: log.StandardLogger()})
 			assert.NoErrorf(t, err, test.name)
 
 			tagRepo = tagRepoAbstract.(*repository.Sqlite3TagRepository)
 
 			repo := new(repository.Sqlite3BookmarkRepository)
 
-			repoAbstract, err := repo.New(repository.Sqlite3BookmarkRepositoryConstructorArgs{DB: db, TagRepository: tagRepo})
+			repoAbstract, err := repo.New(repository.Sqlite3BookmarkRepositoryConstructorArgs{DB: db, Logger: log.StandardLogger(), TagRepository: tagRepo})
 
 			assert.NoErrorf(t, err, test.name)
 
@@ -2186,14 +2187,14 @@ func TestSQLBookmarkRepositoryBookmarkModelConverter(t *testing.T) {
 
 	tagRepo := new(repository.Sqlite3TagRepository)
 
-	tagRepoAbstract, err := tagRepo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db})
+	tagRepoAbstract, err := tagRepo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db, Logger: log.StandardLogger()})
 	assert.NoError(t, err)
 
 	tagRepo = tagRepoAbstract.(*repository.Sqlite3TagRepository)
 
 	repo := new(repository.Sqlite3BookmarkRepository)
 
-	repoAbstract, err := repo.New(repository.Sqlite3BookmarkRepositoryConstructorArgs{DB: db, TagRepository: tagRepo})
+	repoAbstract, err := repo.New(repository.Sqlite3BookmarkRepositoryConstructorArgs{DB: db, Logger: log.StandardLogger(), TagRepository: tagRepo})
 
 	assert.NoError(t, err)
 

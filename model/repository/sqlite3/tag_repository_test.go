@@ -11,6 +11,7 @@ import (
 	repository "github.com/JonasMuehlmann/bntp.go/model/repository/sqlite3"
 	testCommon "github.com/JonasMuehlmann/bntp.go/test"
 	"github.com/JonasMuehlmann/optional.go"
+	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -85,7 +86,7 @@ func TestSQLTagRepositoryAddTest(t *testing.T) {
 
 			repo := new(repository.Sqlite3TagRepository)
 
-			repoAbstract, err := repo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db})
+			repoAbstract, err := repo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db, Logger: log.StandardLogger()})
 
 			assert.NoErrorf(t, err, test.name)
 
@@ -233,7 +234,7 @@ func TestSQLTagRepositoryReplaceTest(t *testing.T) {
 
 			repo := new(repository.Sqlite3TagRepository)
 
-			repoAbstract, err := repo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db})
+			repoAbstract, err := repo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db, Logger: log.StandardLogger()})
 
 			assert.NoErrorf(t, err, test.name)
 
@@ -356,7 +357,7 @@ func TestSQLTagRepositoryUpsertTest(t *testing.T) {
 
 			repo := new(repository.Sqlite3TagRepository)
 
-			repoAbstract, err := repo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db})
+			repoAbstract, err := repo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db, Logger: log.StandardLogger()})
 
 			assert.NoErrorf(t, err, test.name)
 
@@ -516,7 +517,7 @@ func TestSQLTagRepositoryUpdateTest(t *testing.T) {
 
 			repo := new(repository.Sqlite3TagRepository)
 
-			repoAbstract, err := repo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db})
+			repoAbstract, err := repo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db, Logger: log.StandardLogger()})
 
 			assert.NoErrorf(t, err, test.name)
 
@@ -621,7 +622,7 @@ func TestSQLTagRepositoryUpdateWhereTest(t *testing.T) {
 
 			repo := new(repository.Sqlite3TagRepository)
 
-			repoAbstract, err := repo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db})
+			repoAbstract, err := repo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db, Logger: log.StandardLogger()})
 
 			assert.NoErrorf(t, err, test.name)
 
@@ -693,7 +694,7 @@ func TestSQLTagRepositoryDeleteTest(t *testing.T) {
 
 			repo := new(repository.Sqlite3TagRepository)
 
-			repoAbstract, err := repo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db})
+			repoAbstract, err := repo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db, Logger: log.StandardLogger()})
 
 			assert.NoErrorf(t, err, test.name)
 
@@ -776,7 +777,7 @@ func TestSQLTagRepositoryDeleteWhereTest(t *testing.T) {
 
 			repo := new(repository.Sqlite3TagRepository)
 
-			repoAbstract, err := repo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db})
+			repoAbstract, err := repo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db, Logger: log.StandardLogger()})
 
 			assert.NoErrorf(t, err, test.name)
 
@@ -860,7 +861,7 @@ func TestSQLTagRepositoryCountWhereTest(t *testing.T) {
 
 			repo := new(repository.Sqlite3TagRepository)
 
-			repoAbstract, err := repo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db})
+			repoAbstract, err := repo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db, Logger: log.StandardLogger()})
 
 			assert.NoErrorf(t, err, test.name)
 
@@ -939,7 +940,7 @@ func TestSQLTagRepositoryCountAllTest(t *testing.T) {
 
 			repo := new(repository.Sqlite3TagRepository)
 
-			repoAbstract, err := repo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db})
+			repoAbstract, err := repo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db, Logger: log.StandardLogger()})
 
 			assert.NoErrorf(t, err, test.name)
 
@@ -1004,7 +1005,7 @@ func TestSQLTagRepositoryDoesExistTest(t *testing.T) {
 
 			repo := new(repository.Sqlite3TagRepository)
 
-			repoAbstract, err := repo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db})
+			repoAbstract, err := repo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db, Logger: log.StandardLogger()})
 
 			assert.NoErrorf(t, err, test.name)
 
@@ -1128,7 +1129,7 @@ func TestSQLTagRepositoryDoesExistWhereTest(t *testing.T) {
 
 			repo := new(repository.Sqlite3TagRepository)
 
-			repoAbstract, err := repo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db})
+			repoAbstract, err := repo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db, Logger: log.StandardLogger()})
 
 			assert.NoErrorf(t, err, test.name)
 
@@ -1262,7 +1263,7 @@ func TestSQLTagRepositoryGetWhereTest(t *testing.T) {
 
 			repo := new(repository.Sqlite3TagRepository)
 
-			repoAbstract, err := repo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db})
+			repoAbstract, err := repo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db, Logger: log.StandardLogger()})
 
 			assert.NoErrorf(t, err, test.name)
 
@@ -1371,7 +1372,7 @@ func TestSQLTagRepositoryGetFirstWhereTest(t *testing.T) {
 
 			repo := new(repository.Sqlite3TagRepository)
 
-			repoAbstract, err := repo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db})
+			repoAbstract, err := repo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db, Logger: log.StandardLogger()})
 
 			assert.NoErrorf(t, err, test.name)
 
@@ -1435,7 +1436,7 @@ func TestSQLTagRepositoryGetAllTest(t *testing.T) {
 
 			repo := new(repository.Sqlite3TagRepository)
 
-			repoAbstract, err := repo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db})
+			repoAbstract, err := repo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db, Logger: log.StandardLogger()})
 
 			assert.NoErrorf(t, err, test.name)
 
@@ -1467,7 +1468,7 @@ func TestSQLTagRepositoryTagModelConverter(t *testing.T) {
 
 	repo := new(repository.Sqlite3TagRepository)
 
-	repoAbstract, err := repo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db})
+	repoAbstract, err := repo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db, Logger: log.StandardLogger()})
 
 	assert.NoError(t, err)
 

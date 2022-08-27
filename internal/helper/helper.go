@@ -109,7 +109,7 @@ type NonExistentDependencyError struct {
 }
 
 func (err NonExistentDependencyError) Error() string {
-	return fmt.Sprintf("Error when working with dependency data: %w", err.Inner)
+	return fmt.Sprintf("Error when working with dependency data: %v", err.Inner)
 }
 
 func (err NonExistentDependencyError) Unwrap() error {
