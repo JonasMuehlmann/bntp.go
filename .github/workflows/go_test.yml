@@ -31,7 +31,7 @@ jobs:
 
 
     - name: Test
-      run: go test -coverprofile coverage.out -v -coverpkg ./... ./...
+      run: go test -coverprofile coverage.out -v -coverpkg ./... ./... 1>/dev/null
 
     - name: Report coverage
       uses: codecov/codecov-action@v2
