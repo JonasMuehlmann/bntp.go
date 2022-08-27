@@ -24,11 +24,36 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"reflect"
 
 	"github.com/JonasMuehlmann/goaoi"
 )
 
-var BadHookPointError = errors.New("the hook point does not exist")
+type BadHookPointError struct{}
+
+func (err BadHookPointError) Error() string {
+	return "The hook point does not exist"
+}
+
+func (err BadHookPointError) Is(other error) bool {
+	switch other.(type) {
+	case BadHookPointError:
+		return true
+	default:
+		return false
+	}
+}
+
+func (err BadHookPointError) As(target any) bool {
+	switch target.(type) {
+	case BadHookPointError:
+		reflect.Indirect(reflect.ValueOf(target)).Set(reflect.ValueOf(err))
+
+		return true
+	default:
+		return false
+	}
+}
 
 type HookExecutionError struct {
 	Inner error
@@ -83,7 +108,7 @@ func NewHooks[TEntity any]() *Hooks[TEntity] {
 
 func (hooks *Hooks[TEntity]) AddHook(point HookPoint, hook func(context.Context, *TEntity) error) error {
 	if point < 1 || point > _end {
-		return BadHookPointError
+		return BadHookPointError{}
 	}
 
 	for hp := HookPoint(1); hp < _end; hp <<= 1 {
@@ -97,7 +122,7 @@ func (hooks *Hooks[TEntity]) AddHook(point HookPoint, hook func(context.Context,
 
 func (hooks *Hooks[TEntity]) ClearHooks(point HookPoint) error {
 	if point < 1 || point > _end {
-		return BadHookPointError
+		return BadHookPointError{}
 	}
 
 	for hp := HookPoint(1); hp < _end; hp <<= 1 {
@@ -111,7 +136,7 @@ func (hooks *Hooks[TEntity]) ClearHooks(point HookPoint) error {
 
 func (hooks *Hooks[TEntity]) ExecuteHooks(ctx context.Context, point HookPoint, entity *TEntity) error {
 	if point < 1 || point > _end {
-		return BadHookPointError
+		return BadHookPointError{}
 	}
 
 	for hp := HookPoint(1); hp < _end; hp <<= 1 {
