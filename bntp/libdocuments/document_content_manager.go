@@ -24,10 +24,12 @@ import (
 	"context"
 	"errors"
 
+	"github.com/JonasMuehlmann/bntp.go/internal/helper"
 	"github.com/JonasMuehlmann/bntp.go/model"
 	"github.com/JonasMuehlmann/bntp.go/model/domain"
 	repository "github.com/JonasMuehlmann/bntp.go/model/repository"
 	"github.com/JonasMuehlmann/goaoi"
+	"github.com/JonasMuehlmann/goaoi/functional"
 	"github.com/JonasMuehlmann/optional.go"
 
 	bntp "github.com/JonasMuehlmann/bntp.go/bntp"
@@ -41,7 +43,7 @@ type DocumentContentManager struct {
 	Logger     *log.Logger
 }
 
-func NewDocumentContentRepository(logger *log.Logger, hooks *bntp.Hooks[string], repository repository.DocumentContentRepository) (DocumentContentManager, error) {
+func NewDocumentContentManager(logger *log.Logger, hooks *bntp.Hooks[string], repository repository.DocumentContentRepository) (DocumentContentManager, error) {
 	m := DocumentContentManager{}
 	m.Repository = repository
 	m.Hooks = hooks
@@ -476,6 +478,21 @@ func (m *DocumentContentManager) RemoveBackLinks(ctx context.Context, pathBackli
 }
 
 func (m *DocumentContentManager) UpdateDocumentContentsFromNewModels(ctx context.Context, newDocuments []*domain.Document, documentManager *DocumentManager) error {
+	if len(newDocuments) == 0 {
+		return helper.IneffectiveOperationError{helper.EmptyInputError{}}
+	}
+
+	doesExistPredicate := func(d *domain.Document) (bool, error) { return documentManager.DoesExist(ctx, d) }
+	doExistRaw, err := goaoi.TransformCopySlice(newDocuments, doesExistPredicate)
+	if err != nil {
+		return err
+	}
+
+	isAnyMissingErr := goaoi.AnyOfSlice(doExistRaw, functional.IsFalse)
+	if isAnyMissingErr == nil {
+		return helper.NonExistentPrimaryDataError{}
+	}
+
 	addedPathLinks := make([]tuple.T2[string, []string], 0, len(newDocuments))
 	removedPathLinks := make([]tuple.T2[string, []string], 0, len(newDocuments))
 	addedPathBacklinks := make([]tuple.T2[string, []string], 0, len(newDocuments))
@@ -630,32 +647,32 @@ func (m *DocumentContentManager) UpdateDocumentContentsFromNewModels(ctx context
 		}
 	}
 
-	err := m.AddLinks(context.Background(), addedPathLinks)
-	if err != nil && !errors.Is(err, goaoi.EmptyIterableError{}) {
+	err = m.AddLinks(context.Background(), addedPathLinks)
+	if err != nil && !errors.Is(err, helper.EmptyInputError{}) {
 		return err
 	}
 	err = m.RemoveLinks(context.Background(), removedPathLinks)
-	if err != nil && !errors.Is(err, goaoi.EmptyIterableError{}) {
+	if err != nil && !errors.Is(err, helper.EmptyInputError{}) {
 		return err
 	}
 
 	err = m.AddBackLinks(context.Background(), addedPathBacklinks)
-	if err != nil && !errors.Is(err, goaoi.EmptyIterableError{}) {
+	if err != nil && !errors.Is(err, helper.EmptyInputError{}) {
 		return err
 	}
 
 	err = m.RemoveBackLinks(context.Background(), removedPathBacklinks)
-	if err != nil && !errors.Is(err, goaoi.EmptyIterableError{}) {
+	if err != nil && !errors.Is(err, helper.EmptyInputError{}) {
 		return err
 	}
 
 	err = m.AddBackLinks(context.Background(), addedPathTags)
-	if err != nil && !errors.Is(err, goaoi.EmptyIterableError{}) {
+	if err != nil && !errors.Is(err, helper.EmptyInputError{}) {
 		return err
 	}
 
 	err = m.RemoveBackLinks(context.Background(), removedPathTags)
-	if err != nil && !errors.Is(err, goaoi.EmptyIterableError{}) {
+	if err != nil && !errors.Is(err, helper.EmptyInputError{}) {
 		return err
 	}
 
