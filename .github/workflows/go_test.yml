@@ -24,6 +24,10 @@ jobs:
         go build -v ./...
         mkdir -p /home/runner/.config/bntp/
         touch /home/runner/.config/bntp/bntp.log
+        
+        # Lazy workaround for ci env <-> dev env inconsistency
+        mkdir -p /home/runner/work/bntp.go/schema/
+        cp schema/bntp_sqlite.sql /home/runner/work/bntp.go/schema/bntp_sqlite.sql
 
 
     - name: Test
