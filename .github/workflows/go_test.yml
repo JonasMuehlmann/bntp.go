@@ -22,6 +22,8 @@ jobs:
       run: |
         cp schema/bntp_sqlite.sql test/bntp.sql
         go build -v ./...
+        mkdir -p /home/runner/.config/bntp/
+        touch /home/runner/.config/bntp/bntp.log
 
 
     - name: Test
