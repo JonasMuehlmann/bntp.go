@@ -109,7 +109,7 @@ func NewConfigManager(stderr io.Writer, dbOverride *sql.DB, fsOverride afero.Fs)
 
 	err = m.setDefaultsFromStructOrMap(m.GetDefaultSettings())
 	if err != nil {
-		m.addPendingLogMessage(log.FatalLevel, "Error setting default values: %v", err)
+		m.addPendingLogMessage(log.PanicLevel, "Error setting default values: %v", err)
 	}
 
 	m.Viper.SetEnvPrefix("BNTP")
@@ -118,7 +118,7 @@ func NewConfigManager(stderr io.Writer, dbOverride *sql.DB, fsOverride afero.Fs)
 
 	err = m.Viper.ReadInConfig()
 	if err != nil && errors.Is(err, &viper.ConfigFileNotFoundError{}) {
-		m.addPendingLogMessage(log.FatalLevel, "Error reading config: %v", err)
+		m.addPendingLogMessage(log.PanicLevel, "Error reading config: %v", err)
 	}
 
 	//*********************    Validate settings    ********************//
@@ -139,7 +139,7 @@ func NewConfigManager(stderr io.Writer, dbOverride *sql.DB, fsOverride afero.Fs)
 
 		errs := err.(validator.ValidationErrors)
 		for _, e := range errs {
-			m.addPendingLogMessage(log.FatalLevel, "Error processing setting %v: %v", strcase.SnakeCase(e.Field()), formatValidationError(e))
+			m.addPendingLogMessage(log.PanicLevel, "Error processing setting %v: %v", strcase.SnakeCase(e.Field()), formatValidationError(e))
 		}
 	} else {
 		consoleLogLevel, _ = log.ParseLevel(m.Viper.GetString(ConsoleLogLevel))
@@ -151,9 +151,6 @@ func NewConfigManager(stderr io.Writer, dbOverride *sql.DB, fsOverride afero.Fs)
 
 	for _, message := range m.PendingLogMessage {
 		m.Logger.Log(message.Level, message.Msg)
-		if message.Level == log.FatalLevel {
-			log.Exit(1)
-		}
 	}
 
 	if m.PassedConfigPath != "" {
