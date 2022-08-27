@@ -24,6 +24,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/JonasMuehlmann/bntp.go/internal/helper"
 	commonRepo "github.com/JonasMuehlmann/bntp.go/model/repository"
 	"github.com/JonasMuehlmann/goaoi"
 	"github.com/barweiss/go-tuple"
@@ -54,6 +55,20 @@ func (repo *FSDocumentContentRepository) New(args any) (commonRepo.DocumentConte
 }
 
 func (repo *FSDocumentContentRepository) Add(ctx context.Context, pathContents []tuple.T2[string, string]) error {
+	if len(pathContents) == 0 {
+		repo.Logger.Debug(helper.LogMessageEmptyInput)
+
+		return helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
+	}
+
+	err := goaoi.AnyOfSlice(pathContents, func(e tuple.T2[string, string]) bool { return e == tuple.T2[string, string]{} })
+	if err == nil {
+		err = helper.NilInputError{}
+		repo.Logger.Error(err)
+
+		return err
+	}
+
 	transformer := func(pathContent tuple.T2[string, string]) error {
 		file, err := repo.fs.Create(pathContent.V1)
 		if err != nil {
@@ -72,6 +87,20 @@ func (repo *FSDocumentContentRepository) Add(ctx context.Context, pathContents [
 }
 
 func (repo *FSDocumentContentRepository) Update(ctx context.Context, pathContents []tuple.T2[string, string]) error {
+	if len(pathContents) == 0 {
+		repo.Logger.Debug(helper.LogMessageEmptyInput)
+
+		return helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
+	}
+
+	err := goaoi.AnyOfSlice(pathContents, func(e tuple.T2[string, string]) bool { return e == tuple.T2[string, string]{} })
+	if err == nil {
+		err = helper.NilInputError{}
+		repo.Logger.Error(err)
+
+		return err
+	}
+
 	transformer := func(pathChange tuple.T2[string, string]) error {
 		file, err := repo.fs.Open(pathChange.V1)
 		if err != nil {
@@ -90,6 +119,20 @@ func (repo *FSDocumentContentRepository) Update(ctx context.Context, pathContent
 }
 
 func (repo *FSDocumentContentRepository) Move(ctx context.Context, pathChanges []tuple.T2[string, string]) error {
+	if len(pathChanges) == 0 {
+		repo.Logger.Debug(helper.LogMessageEmptyInput)
+
+		return helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
+	}
+
+	err := goaoi.AnyOfSlice(pathChanges, func(e tuple.T2[string, string]) bool { return e == tuple.T2[string, string]{} })
+	if err == nil {
+		err = helper.NilInputError{}
+		repo.Logger.Error(err)
+
+		return err
+	}
+
 	transformer := func(pathChange tuple.T2[string, string]) error {
 		return repo.fs.Rename(pathChange.V1, pathChange.V2)
 	}
@@ -98,28 +141,29 @@ func (repo *FSDocumentContentRepository) Move(ctx context.Context, pathChanges [
 }
 
 func (repo *FSDocumentContentRepository) Delete(ctx context.Context, paths []string) error {
+	if len(paths) == 0 {
+		repo.Logger.Debug(helper.LogMessageEmptyInput)
+
+		return helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
+	}
+
 	return goaoi.ForeachSlice(paths, repo.fs.Remove)
 }
 
 func (repo *FSDocumentContentRepository) Get(ctx context.Context, paths []string) (contents []string, err error) {
+	if len(paths) == 0 {
+		repo.Logger.Debug(helper.EmptyInputError{})
+
+		return nil, helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
+	}
+
 	transformer := func(path string) (content string, err error) {
-		file, err := repo.fs.Open(path)
-		if err != nil {
-			return "", err
+		contentRaw, err := afero.ReadFile(repo.fs, path)
+		if err == nil {
+			content = string(contentRaw)
 		}
 
-		stat, err := file.Stat()
-		if err != nil {
-			return "", err
-		}
-
-		buffer := make([]byte, 0, stat.Size())
-		_, err = file.Read(buffer)
-		if err != nil {
-			return "", err
-		}
-
-		return string(buffer), nil
+		return
 	}
 
 	return goaoi.TransformCopySlice(paths, transformer)

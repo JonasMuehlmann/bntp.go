@@ -318,7 +318,7 @@ func (m *ConfigManager) NewDocumentManagerFromConfig(logger *log.Logger, repo re
 
 func (m *ConfigManager) NewDocumentContentManagerFromConfig(logger *log.Logger, repo repository.DocumentContentRepository) libdocuments.DocumentContentManager {
 	hooks := new(bntp.Hooks[string])
-	documentContentManager, err := libdocuments.NewDocumentContentRepository(logger, hooks, repo)
+	documentContentManager, err := libdocuments.NewDocumentContentManager(logger, hooks, repo)
 	if err != nil {
 		panic(err)
 	}

@@ -556,7 +556,7 @@ func TestCmdTagExport(t *testing.T) {
 				"tag",
 				"export",
 			},
-			errorMatcher:    testCommon.ValidatorContains("args", "received"),
+			errorMatcher:    testCommon.ValidatorContains("arg", "received"),
 			outputValidator: testCommon.ValidatorEmpty,
 			errorValidator:  testCommon.ValidatorContains("accepts", "received"),
 		},
@@ -647,7 +647,7 @@ func TestCmdTagImport(t *testing.T) {
 				"tag",
 				"import",
 			},
-			errorMatcher:    testCommon.ValidatorContains("args", "received"),
+			errorMatcher:    testCommon.ValidatorContains("arg", "received"),
 			outputValidator: testCommon.ValidatorEmpty,
 			errorValidator:  testCommon.ValidatorContains("accepts", "received"),
 		}, {
