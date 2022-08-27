@@ -106,8 +106,8 @@ func TestDocumentContentManagerUpdateDocumentContentsFromNewModels(t *testing.T)
 		oldDocumentPathContents []tuple.T2[string, string]
 		addedDocuments          []*domain.Document
 		newDocumentPathContents []tuple.T2[string, string]
-		addNew                  bool
 		tags                    []*domain.Tag
+		addNew                  bool
 	}{
 		{
 			name: "empty args",

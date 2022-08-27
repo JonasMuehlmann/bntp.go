@@ -23,7 +23,8 @@
 package repository
 
 import (
-    "context"
+	"context"
+
 	"github.com/JonasMuehlmann/bntp.go/model/domain"
 )
 
@@ -44,11 +45,10 @@ type TagRepository interface {
 	GetWhere(ctx context.Context, domainFilter *domain.TagFilter) (records []*domain.Tag, err error)
 	GetFirstWhere(ctx context.Context, domainFilter *domain.TagFilter) (record *domain.Tag, err error)
 	GetAll(ctx context.Context) (records []*domain.Tag, err error)
-    
 
-    TagRepositoryToDomainModel(ctx context.Context, repositoryModel any) (domainModel *domain.Tag, err error)
-    TagDomainToRepositoryModel(ctx context.Context, domainModel *domain.Tag) (repositoryModel any, err error)
+	TagRepositoryToDomainModel(ctx context.Context, repositoryModel any) (domainModel *domain.Tag, err error)
+	TagDomainToRepositoryModel(ctx context.Context, domainModel *domain.Tag) (repositoryModel any, err error)
 
-    TagDomainToRepositoryFilter(ctx context.Context, domainFilter *domain.TagFilter) (repositoryFilter any, err error)
-    TagDomainToRepositoryUpdater(ctx context.Context, domainUpdater *domain.TagUpdater) (repositoryUpdater any, err error)
+	TagDomainToRepositoryFilter(ctx context.Context, domainFilter *domain.TagFilter) (repositoryFilter any, err error)
+	TagDomainToRepositoryUpdater(ctx context.Context, domainUpdater *domain.TagUpdater) (repositoryUpdater any, err error)
 }

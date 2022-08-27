@@ -12,12 +12,12 @@ import (
 
 func TestAddTags(t *testing.T) {
 	tests := []struct {
-		name               string
-		tagsToAdd          []string
-		content            string
-		expectedNewContent string
 		err                error
 		errorMatcher       testCommon.OutputValidator
+		name               string
+		content            string
+		expectedNewContent string
+		tagsToAdd          []string
 	}{
 		{
 			name:      "empty document",
@@ -85,12 +85,12 @@ func TestAddTags(t *testing.T) {
 
 func TestRemoveTags(t *testing.T) {
 	tests := []struct {
-		name               string
-		tagsToRemove       []string
-		content            string
-		expectedNewContent string
 		err                error
 		errorMatcher       testCommon.OutputValidator
+		name               string
+		content            string
+		expectedNewContent string
+		tagsToRemove       []string
 	}{
 		{
 			name:         "empty document",
@@ -164,12 +164,12 @@ func TestRemoveTags(t *testing.T) {
 
 func TestAddLinks(t *testing.T) {
 	tests := []struct {
-		name               string
-		linksToAdd         []string
-		content            string
-		expectedNewContent string
 		err                error
 		errorMatcher       testCommon.OutputValidator
+		name               string
+		content            string
+		expectedNewContent string
+		linksToAdd         []string
 	}{
 		{
 			name:       "empty document",
@@ -237,12 +237,12 @@ func TestAddLinks(t *testing.T) {
 
 func TestRemoveLinks(t *testing.T) {
 	tests := []struct {
-		name               string
-		linksToRemove      []string
-		content            string
-		expectedNewContent string
 		err                error
 		errorMatcher       testCommon.OutputValidator
+		name               string
+		content            string
+		expectedNewContent string
+		linksToRemove      []string
 	}{
 		{
 			name:          "empty document",
@@ -316,12 +316,12 @@ func TestRemoveLinks(t *testing.T) {
 
 func TestAddBacklinks(t *testing.T) {
 	tests := []struct {
-		name               string
-		linksToAdd         []string
-		content            string
-		expectedNewContent string
 		err                error
 		errorMatcher       testCommon.OutputValidator
+		name               string
+		content            string
+		expectedNewContent string
+		linksToAdd         []string
 	}{
 		{
 			name:       "empty document",
@@ -389,12 +389,12 @@ func TestAddBacklinks(t *testing.T) {
 
 func TestRemoveBacklinks(t *testing.T) {
 	tests := []struct {
-		name               string
-		linksToRemove      []string
-		content            string
-		expectedNewContent string
 		err                error
 		errorMatcher       testCommon.OutputValidator
+		name               string
+		content            string
+		expectedNewContent string
+		linksToRemove      []string
 	}{
 		{
 			name:          "empty document",
