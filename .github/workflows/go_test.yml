@@ -28,6 +28,8 @@ jobs:
         # Lazy workaround for ci env <-> dev env inconsistency
         mkdir -p /home/runner/work/bntp.go/schema/
         cp schema/bntp_sqlite.sql /home/runner/work/bntp.go/schema/bntp_sqlite.sql
+        sqlite3 bntp_db.sql < schema/bntp_sqlite.sql
+        mv bntp_db.sql /home/runner/.config/bntp/
 
 
     - name: Test
