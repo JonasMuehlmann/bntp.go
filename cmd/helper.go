@@ -105,3 +105,15 @@ func (err ConflictingPositionalArgsAndFlagError) As(target any) bool {
 		return false
 	}
 }
+
+//******************************************************************//
+//                     Non entity output structs                    //
+//******************************************************************//
+
+type DoesExist struct {
+	DoesExist bool `json:"doesExist"`
+}
+
+type Count struct {
+	Count int64 `json:"count"`
+}

@@ -369,11 +369,11 @@ func WithTagCommand() CliOption {
 			Args:  cobra.NoArgs,
 			RunE: func(cmd *cobra.Command, args []string) error {
 				filter := &domain.TagFilter{}
-				var count int64
+				var countRaw int64
 				var err error
 
 				if cli.FilterRaw == "" {
-					count, err = cli.BNTPBackend.TagManager.CountAll(context.Background())
+					countRaw, err = cli.BNTPBackend.TagManager.CountAll(context.Background())
 					if err != nil {
 						return err
 					}
@@ -383,10 +383,15 @@ func WithTagCommand() CliOption {
 						return EntityMarshallingError{Inner: err}
 					}
 
-					count, err = cli.BNTPBackend.TagManager.CountWhere(context.Background(), filter)
+					countRaw, err = cli.BNTPBackend.TagManager.CountWhere(context.Background(), filter)
 					if err != nil {
 						return err
 					}
+				}
+
+				count, err := cli.BNTPBackend.Marshallers[cli.Format].Marshall(Count{countRaw})
+				if err != nil {
+					return err
 				}
 
 				fmt.Fprintln(cli.RootCmd.OutOrStdout(), count)
@@ -411,7 +416,7 @@ func WithTagCommand() CliOption {
 				filter := &domain.TagFilter{}
 				var err error
 				tag := &domain.Tag{}
-				var doesExist bool
+				var doesExistRaw bool
 
 				if cli.FilterRaw == "" {
 					err = cli.BNTPBackend.Unmarshallers[cli.Format].Unmarshall(tag, args[0])
@@ -419,7 +424,7 @@ func WithTagCommand() CliOption {
 						return EntityMarshallingError{Inner: err}
 					}
 
-					doesExist, err = cli.BNTPBackend.TagManager.DoesExist(context.Background(), tag)
+					doesExistRaw, err = cli.BNTPBackend.TagManager.DoesExist(context.Background(), tag)
 					if err != nil {
 						return err
 					}
@@ -429,10 +434,15 @@ func WithTagCommand() CliOption {
 						return EntityMarshallingError{Inner: err}
 					}
 
-					doesExist, err = cli.BNTPBackend.TagManager.DoesExistWhere(context.Background(), filter)
+					doesExistRaw, err = cli.BNTPBackend.TagManager.DoesExistWhere(context.Background(), filter)
 					if err != nil {
 						return err
 					}
+				}
+
+				doesExist, err := cli.BNTPBackend.Marshallers[cli.Format].Marshall(DoesExist{doesExistRaw})
+				if err != nil {
+					return err
 				}
 
 				fmt.Fprintln(cli.RootCmd.OutOrStdout(), doesExist)

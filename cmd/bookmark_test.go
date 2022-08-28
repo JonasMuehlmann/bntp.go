@@ -915,7 +915,7 @@ func TestCmdBookmarkCount(t *testing.T) {
 				"bookmark",
 				"count",
 			},
-			outputValidator: testCommon.ValidatorEqual("0\n"),
+			outputValidator: testCommon.ValidatorEqual(string(drop.From2To1(json.Marshal(cmd.Count{0}))) + "\n"),
 			errorValidator:  testCommon.ValidatorEmpty,
 		},
 		{
@@ -925,7 +925,7 @@ func TestCmdBookmarkCount(t *testing.T) {
 				"count",
 			},
 			tags:            []*domain.Bookmark{{ID: 1, URL: "foo"}, {ID: 2, URL: "bar"}},
-			outputValidator: testCommon.ValidatorEqual("2\n"),
+			outputValidator: testCommon.ValidatorEqual(string(drop.From2To1(json.Marshal(cmd.Count{2}))) + "\n"),
 			errorValidator:  testCommon.ValidatorEmpty,
 		},
 		{
@@ -949,7 +949,7 @@ func TestCmdBookmarkCount(t *testing.T) {
 				"--filter",
 				string(drop.From2To1(json.Marshal(domain.BookmarkFilter{URL: optional.Make(model.FilterOperation[string]{Operator: model.FilterEqual, Operand: model.ScalarOperand[string]{Operand: "foo"}})}))),
 			},
-			outputValidator: testCommon.ValidatorEqual("0\n"),
+			outputValidator: testCommon.ValidatorEqual(string(drop.From2To1(json.Marshal(cmd.Count{0}))) + "\n"),
 			errorValidator:  testCommon.ValidatorEmpty,
 		},
 
@@ -963,7 +963,7 @@ func TestCmdBookmarkCount(t *testing.T) {
 				string(drop.From2To1(json.Marshal(domain.BookmarkFilter{URL: optional.Make(model.FilterOperation[string]{Operator: model.FilterEqual, Operand: model.ScalarOperand[string]{Operand: "foo"}})}))),
 			},
 			tags:            []*domain.Bookmark{{ID: 1, URL: "foo"}, {ID: 2, URL: "bar"}},
-			outputValidator: testCommon.ValidatorEqual("1\n"),
+			outputValidator: testCommon.ValidatorEqual(string(drop.From2To1(json.Marshal(cmd.Count{1}))) + "\n"),
 			errorValidator:  testCommon.ValidatorEmpty,
 		},
 	}
@@ -1042,7 +1042,7 @@ func TestCmdBookmarkDoesExist(t *testing.T) {
 				string(drop.From2To1(json.Marshal(domain.Bookmark{ID: 1, URL: "foo"}))),
 			},
 			tag:             &domain.Bookmark{ID: 1, URL: "foo"},
-			outputValidator: testCommon.ValidatorContains("true\n"),
+			outputValidator: testCommon.ValidatorEqual(string(drop.From2To1(json.Marshal(cmd.DoesExist{true}))) + "\n"),
 			errorValidator:  testCommon.ValidatorEmpty,
 		},
 		{
@@ -1066,7 +1066,7 @@ func TestCmdBookmarkDoesExist(t *testing.T) {
 				"--filter",
 				string(drop.From2To1(json.Marshal(domain.BookmarkFilter{URL: optional.Make(model.FilterOperation[string]{Operator: model.FilterEqual, Operand: model.ScalarOperand[string]{Operand: "foo"}})}))),
 			},
-			outputValidator: testCommon.ValidatorEqual("false\n"),
+			outputValidator: testCommon.ValidatorEqual(string(drop.From2To1(json.Marshal(cmd.DoesExist{false}))) + "\n"),
 			errorValidator:  testCommon.ValidatorEmpty,
 		},
 
@@ -1080,7 +1080,7 @@ func TestCmdBookmarkDoesExist(t *testing.T) {
 				string(drop.From2To1(json.Marshal(domain.BookmarkFilter{URL: optional.Make(model.FilterOperation[string]{Operator: model.FilterEqual, Operand: model.ScalarOperand[string]{Operand: "foo"}})}))),
 			},
 			tag:             &domain.Bookmark{ID: 1, URL: "foo"},
-			outputValidator: testCommon.ValidatorContains("true\n"),
+			outputValidator: testCommon.ValidatorEqual(string(drop.From2To1(json.Marshal(cmd.DoesExist{true}))) + "\n"),
 			errorValidator:  testCommon.ValidatorEmpty,
 		},
 		{

@@ -1105,7 +1105,7 @@ func TestCmdTagCount(t *testing.T) {
 				"tag",
 				"count",
 			},
-			outputValidator: testCommon.ValidatorEqual("0\n"),
+			outputValidator: testCommon.ValidatorEqual(string(drop.From2To1(json.Marshal(cmd.Count{0}))) + "\n"),
 			errorValidator:  testCommon.ValidatorEmpty,
 		},
 		{
@@ -1115,7 +1115,7 @@ func TestCmdTagCount(t *testing.T) {
 				"count",
 			},
 			tags:            []*domain.Tag{{ID: 1, Tag: "foo"}, {ID: 2, Tag: "bar"}},
-			outputValidator: testCommon.ValidatorEqual("2\n"),
+			outputValidator: testCommon.ValidatorEqual(string(drop.From2To1(json.Marshal(cmd.Count{2}))) + "\n"),
 			errorValidator:  testCommon.ValidatorEmpty,
 		},
 		{
@@ -1139,7 +1139,7 @@ func TestCmdTagCount(t *testing.T) {
 				"--filter",
 				string(drop.From2To1(json.Marshal(domain.TagFilter{Tag: optional.Make(model.FilterOperation[string]{Operator: model.FilterEqual, Operand: model.ScalarOperand[string]{Operand: "foo"}})}))),
 			},
-			outputValidator: testCommon.ValidatorEqual("0\n"),
+			outputValidator: testCommon.ValidatorEqual(string(drop.From2To1(json.Marshal(cmd.Count{0}))) + "\n"),
 			errorValidator:  testCommon.ValidatorEmpty,
 		},
 
@@ -1153,7 +1153,7 @@ func TestCmdTagCount(t *testing.T) {
 				string(drop.From2To1(json.Marshal(domain.TagFilter{Tag: optional.Make(model.FilterOperation[string]{Operator: model.FilterEqual, Operand: model.ScalarOperand[string]{Operand: "foo"}})}))),
 			},
 			tags:            []*domain.Tag{{ID: 1, Tag: "foo"}, {ID: 2, Tag: "bar"}},
-			outputValidator: testCommon.ValidatorEqual("1\n"),
+			outputValidator: testCommon.ValidatorEqual(string(drop.From2To1(json.Marshal(cmd.Count{1}))) + "\n"),
 			errorValidator:  testCommon.ValidatorEmpty,
 		},
 	}
@@ -1232,7 +1232,7 @@ func TestCmdTagDoesExist(t *testing.T) {
 				string(drop.From2To1(json.Marshal(domain.Tag{ID: 1, Tag: "foo"}))),
 			},
 			tag:             &domain.Tag{ID: 1, Tag: "foo"},
-			outputValidator: testCommon.ValidatorContains("true\n"),
+			outputValidator: testCommon.ValidatorEqual(string(drop.From2To1(json.Marshal(cmd.DoesExist{true}))) + "\n"),
 			errorValidator:  testCommon.ValidatorEmpty,
 		},
 		{
@@ -1256,7 +1256,7 @@ func TestCmdTagDoesExist(t *testing.T) {
 				"--filter",
 				string(drop.From2To1(json.Marshal(domain.TagFilter{Tag: optional.Make(model.FilterOperation[string]{Operator: model.FilterEqual, Operand: model.ScalarOperand[string]{Operand: "foo"}})}))),
 			},
-			outputValidator: testCommon.ValidatorEqual("false\n"),
+			outputValidator: testCommon.ValidatorEqual(string(drop.From2To1(json.Marshal(cmd.DoesExist{false}))) + "\n"),
 			errorValidator:  testCommon.ValidatorEmpty,
 		},
 
@@ -1270,7 +1270,7 @@ func TestCmdTagDoesExist(t *testing.T) {
 				string(drop.From2To1(json.Marshal(domain.TagFilter{Tag: optional.Make(model.FilterOperation[string]{Operator: model.FilterEqual, Operand: model.ScalarOperand[string]{Operand: "foo"}})}))),
 			},
 			tag:             &domain.Tag{ID: 1, Tag: "foo"},
-			outputValidator: testCommon.ValidatorContains("true\n"),
+			outputValidator: testCommon.ValidatorEqual(string(drop.From2To1(json.Marshal(cmd.DoesExist{true}))) + "\n"),
 			errorValidator:  testCommon.ValidatorEmpty,
 		},
 		{
