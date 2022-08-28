@@ -445,3 +445,27 @@ func (m *BookmarkManager) UpdateType(ctx context.Context, oldType string, newTyp
 
 	return err
 }
+
+func (m *BookmarkManager) GetFromIDs(ctx context.Context, ids []int64) (records []*domain.Bookmark, err error) {
+	tags := []*domain.Bookmark{}
+
+	hookErr := goaoi.ForeachSlice(tags, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.BeforeAnyHook|bntp.BeforeSelectHook))
+	if hookErr != nil && !errors.Is(hookErr, goaoi.EmptyIterableError{}) {
+		hookErr = bntp.HookExecutionError{Inner: hookErr}
+		m.Logger.Error(hookErr)
+	}
+
+	records, err = m.Repository.GetFromIDs(ctx, ids)
+	if err != nil {
+		m.Logger.Error(err)
+
+	}
+
+	hookErr = goaoi.ForeachSlice(tags, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.AfterAnyHook|bntp.AfterSelectHook))
+	if hookErr != nil && !errors.Is(hookErr, goaoi.EmptyIterableError{}) {
+		hookErr = bntp.HookExecutionError{Inner: hookErr}
+		m.Logger.Error(hookErr)
+	}
+
+	return
+}
