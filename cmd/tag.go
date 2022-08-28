@@ -178,7 +178,7 @@ func WithTagCommand() CliOption {
 
 				numAffectedRecords, err := cli.BNTPBackend.Marshallers[cli.InFormat].Marshall(NumAffectedRecords{numAffectedRecordsRaw})
 				if err != nil {
-					return err
+					return EntityMarshallingError{Inner: err}
 				}
 
 				fmt.Fprintln(cli.RootCmd.OutOrStdout(), numAffectedRecords)
@@ -348,7 +348,7 @@ func WithTagCommand() CliOption {
 
 				numAffectedRecords, err := cli.BNTPBackend.Marshallers[cli.InFormat].Marshall(NumAffectedRecords{numAffectedRecordsRaw})
 				if err != nil {
-					return err
+					return EntityMarshallingError{Inner: err}
 				}
 
 				fmt.Fprintln(cli.RootCmd.OutOrStdout(), numAffectedRecords)
@@ -426,7 +426,7 @@ func WithTagCommand() CliOption {
 
 				count, err := cli.BNTPBackend.Marshallers[cli.OutFormat].Marshall(Count{countRaw})
 				if err != nil {
-					return err
+					return EntityMarshallingError{Inner: err}
 				}
 
 				fmt.Fprintln(cli.RootCmd.OutOrStdout(), count)
@@ -477,7 +477,7 @@ func WithTagCommand() CliOption {
 
 				doesExist, err := cli.BNTPBackend.Marshallers[cli.OutFormat].Marshall(DoesExist{doesExistRaw})
 				if err != nil {
-					return err
+					return EntityMarshallingError{Inner: err}
 				}
 
 				fmt.Fprintln(cli.RootCmd.OutOrStdout(), doesExist)
