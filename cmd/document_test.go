@@ -421,7 +421,7 @@ func TestCmdDocumentEdit(t *testing.T) {
 				"--updater",
 				string(drop.From2To1(json.Marshal(domain.DocumentUpdater{Path: optional.Make(model.UpdateOperation[string]{Operator: model.UpdateAppend, Operand: "foo"})}))),
 			},
-			outputValidator: testCommon.ValidatorEqual("2\n"),
+			outputValidator: testCommon.ValidatorEqual(string(drop.From2To1(json.Marshal(cmd.NumAffectedRecords{2}))) + "\n"),
 		},
 		{
 			name: "Bad filter",
@@ -463,7 +463,7 @@ func TestCmdDocumentEdit(t *testing.T) {
 				"--updater",
 				string(drop.From2To1(json.Marshal(domain.DocumentUpdater{Path: optional.Make(model.UpdateOperation[string]{Operator: model.UpdateAppend, Operand: "foo"})}))),
 			},
-			outputValidator: testCommon.ValidatorEqual("1\n"),
+			outputValidator: testCommon.ValidatorEqual(string(drop.From2To1(json.Marshal(cmd.NumAffectedRecords{1}))) + "\n"),
 		},
 		// FIX: This actually tests the manager, not the cli
 		{
@@ -689,7 +689,7 @@ func TestCmdDocumentRemove(t *testing.T) {
 				string(drop.From2To1(json.Marshal(domain.Document{ID: 1, Path: "foo"}))),
 				string(drop.From2To1(json.Marshal(domain.Document{ID: 2, Path: "bar"}))),
 			},
-			outputValidator: testCommon.ValidatorEqual("2\n"),
+			outputValidator: testCommon.ValidatorEqual(string(drop.From2To1(json.Marshal(cmd.NumAffectedRecords{2}))) + "\n"),
 		},
 		{
 			name: "Bad filter",
@@ -725,7 +725,7 @@ func TestCmdDocumentRemove(t *testing.T) {
 				"--filter",
 				string(drop.From2To1(json.Marshal(domain.DocumentFilter{Path: optional.Make(model.FilterOperation[string]{Operator: model.FilterEqual, Operand: model.ScalarOperand[string]{Operand: "foo"}})}))),
 			},
-			outputValidator: testCommon.ValidatorEqual("1\n"),
+			outputValidator: testCommon.ValidatorEqual(string(drop.From2To1(json.Marshal(cmd.NumAffectedRecords{1}))) + "\n"),
 		},
 		// FIX: This actually tests the manager, not the cli
 		{

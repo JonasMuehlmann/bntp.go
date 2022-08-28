@@ -117,3 +117,7 @@ type DoesExist struct {
 type Count struct {
 	Count int64 `json:"count"`
 }
+
+type NumAffectedRecords struct {
+	NumAffectedRecords int64 `json:"numAffectedRecords"`
+}

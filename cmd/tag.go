@@ -142,7 +142,7 @@ func WithTagCommand() CliOption {
 				var err error
 				filter := &domain.TagFilter{}
 				updater := &domain.TagUpdater{}
-				var numAffectedRecords int64
+				var numAffectedRecordsRaw int64
 
 				err = cli.BNTPBackend.Unmarshallers[cli.InFormat].Unmarshall(updater, cli.UpdaterRaw)
 				if err != nil {
@@ -161,7 +161,7 @@ func WithTagCommand() CliOption {
 						return err
 					}
 
-					numAffectedRecords = int64(len(args))
+					numAffectedRecordsRaw = int64(len(args))
 
 					//************************    Use filter    ************************//
 				} else {
@@ -170,10 +170,15 @@ func WithTagCommand() CliOption {
 						return EntityMarshallingError{Inner: err}
 					}
 
-					numAffectedRecords, err = cli.BNTPBackend.TagManager.UpdateWhere(context.Background(), filter, updater)
+					numAffectedRecordsRaw, err = cli.BNTPBackend.TagManager.UpdateWhere(context.Background(), filter, updater)
 					if err != nil {
 						return err
 					}
+				}
+
+				numAffectedRecords, err := cli.BNTPBackend.Marshallers[cli.InFormat].Marshall(NumAffectedRecords{numAffectedRecordsRaw})
+				if err != nil {
+					return err
 				}
 
 				fmt.Fprintln(cli.RootCmd.OutOrStdout(), numAffectedRecords)
@@ -312,7 +317,7 @@ func WithTagCommand() CliOption {
 
 				var err error
 				filter := &domain.TagFilter{}
-				var numAffectedRecords int64
+				var numAffectedRecordsRaw int64
 
 				//********************    Use provided tags      *******************//
 				if cli.FilterRaw == "" {
@@ -326,7 +331,7 @@ func WithTagCommand() CliOption {
 						return err
 					}
 
-					numAffectedRecords = int64(len(args))
+					numAffectedRecordsRaw = int64(len(args))
 
 					//********************       Use filter      *******************//
 				} else {
@@ -335,10 +340,15 @@ func WithTagCommand() CliOption {
 						return EntityMarshallingError{Inner: err}
 					}
 
-					numAffectedRecords, err = cli.BNTPBackend.TagManager.DeleteWhere(context.Background(), filter)
+					numAffectedRecordsRaw, err = cli.BNTPBackend.TagManager.DeleteWhere(context.Background(), filter)
 					if err != nil {
 						return err
 					}
+				}
+
+				numAffectedRecords, err := cli.BNTPBackend.Marshallers[cli.InFormat].Marshall(NumAffectedRecords{numAffectedRecordsRaw})
+				if err != nil {
+					return err
 				}
 
 				fmt.Fprintln(cli.RootCmd.OutOrStdout(), numAffectedRecords)

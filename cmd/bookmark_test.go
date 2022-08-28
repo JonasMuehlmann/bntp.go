@@ -416,7 +416,7 @@ func TestCmdBookmarkEdit(t *testing.T) {
 				"--updater",
 				string(drop.From2To1(json.Marshal(domain.BookmarkUpdater{URL: optional.Make(model.UpdateOperation[string]{Operator: model.UpdateAppend, Operand: "foo"})}))),
 			},
-			outputValidator: testCommon.ValidatorEqual("2\n"),
+			outputValidator: testCommon.ValidatorEqual(string(drop.From2To1(json.Marshal(cmd.NumAffectedRecords{2}))) + "\n"),
 			errorValidator:  testCommon.ValidatorEmpty,
 		},
 		{
@@ -459,7 +459,7 @@ func TestCmdBookmarkEdit(t *testing.T) {
 				"--updater",
 				string(drop.From2To1(json.Marshal(domain.BookmarkUpdater{URL: optional.Make(model.UpdateOperation[string]{Operator: model.UpdateAppend, Operand: "foo"})}))),
 			},
-			outputValidator: testCommon.ValidatorEqual("1\n"),
+			outputValidator: testCommon.ValidatorEqual(string(drop.From2To1(json.Marshal(cmd.NumAffectedRecords{1}))) + "\n"),
 			errorValidator:  testCommon.ValidatorEmpty,
 		},
 		// FIX: This actually tests the manager, not the cli
@@ -688,7 +688,7 @@ func TestCmdBookmarkRemove(t *testing.T) {
 				string(drop.From2To1(json.Marshal(domain.Bookmark{ID: 1, URL: "foo"}))),
 				string(drop.From2To1(json.Marshal(domain.Bookmark{ID: 2, URL: "bar"}))),
 			},
-			outputValidator: testCommon.ValidatorEqual("2\n"),
+			outputValidator: testCommon.ValidatorEqual(string(drop.From2To1(json.Marshal(cmd.NumAffectedRecords{2}))) + "\n"),
 			errorValidator:  testCommon.ValidatorEmpty,
 		},
 		{
@@ -725,7 +725,7 @@ func TestCmdBookmarkRemove(t *testing.T) {
 				"--filter",
 				string(drop.From2To1(json.Marshal(domain.BookmarkFilter{URL: optional.Make(model.FilterOperation[string]{Operator: model.FilterEqual, Operand: model.ScalarOperand[string]{Operand: "foo"}})}))),
 			},
-			outputValidator: testCommon.ValidatorEqual("1\n"),
+			outputValidator: testCommon.ValidatorEqual(string(drop.From2To1(json.Marshal(cmd.NumAffectedRecords{1}))) + "\n"),
 			errorValidator:  testCommon.ValidatorEmpty,
 		},
 		// FIX: This actually tests the manager, not the cli

@@ -133,7 +133,7 @@ func WithBookmarkCommand() CliOption {
 				var err error
 				filter := &domain.BookmarkFilter{}
 				updater := &domain.BookmarkUpdater{}
-				var numAffectedRecords int64
+				var numAffectedRecordsRaw int64
 
 				err = cli.BNTPBackend.Unmarshallers[cli.InFormat].Unmarshall(updater, cli.UpdaterRaw)
 				if err != nil {
@@ -149,17 +149,22 @@ func WithBookmarkCommand() CliOption {
 						return err
 					}
 
-					numAffectedRecords = int64(len(args))
+					numAffectedRecordsRaw = int64(len(args))
 				} else {
 					err = cli.BNTPBackend.Unmarshallers[cli.InFormat].Unmarshall(filter, cli.FilterRaw)
 					if err != nil {
 						return EntityMarshallingError{Inner: err}
 					}
 
-					numAffectedRecords, err = cli.BNTPBackend.BookmarkManager.UpdateWhere(context.Background(), filter, updater)
+					numAffectedRecordsRaw, err = cli.BNTPBackend.BookmarkManager.UpdateWhere(context.Background(), filter, updater)
 					if err != nil {
 						return err
 					}
+				}
+
+				numAffectedRecords, err := cli.BNTPBackend.Marshallers[cli.InFormat].Marshall(NumAffectedRecords{numAffectedRecordsRaw})
+				if err != nil {
+					return err
 				}
 
 				fmt.Fprintln(cli.RootCmd.OutOrStdout(), numAffectedRecords)
@@ -222,7 +227,7 @@ func WithBookmarkCommand() CliOption {
 
 				filter := &domain.BookmarkFilter{}
 				var err error
-				var numAffectedRecords int64
+				var numAffectedRecordsRaw int64
 
 				if cli.FilterRaw == "" {
 					bookmarks, err := UnmarshalEntities[domain.Bookmark](cli, args, cli.InFormat)
@@ -235,17 +240,22 @@ func WithBookmarkCommand() CliOption {
 						return err
 					}
 
-					numAffectedRecords = int64(len(args))
+					numAffectedRecordsRaw = int64(len(args))
 				} else {
 					err = cli.BNTPBackend.Unmarshallers[cli.InFormat].Unmarshall(filter, cli.FilterRaw)
 					if err != nil {
 						return EntityMarshallingError{Inner: err}
 					}
 
-					numAffectedRecords, err = cli.BNTPBackend.BookmarkManager.DeleteWhere(context.Background(), filter)
+					numAffectedRecordsRaw, err = cli.BNTPBackend.BookmarkManager.DeleteWhere(context.Background(), filter)
 					if err != nil {
 						return err
 					}
+				}
+
+				numAffectedRecords, err := cli.BNTPBackend.Marshallers[cli.InFormat].Marshall(NumAffectedRecords{numAffectedRecordsRaw})
+				if err != nil {
+					return err
 				}
 
 				fmt.Fprintln(cli.RootCmd.OutOrStdout(), numAffectedRecords)
