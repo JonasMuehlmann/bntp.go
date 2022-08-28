@@ -1999,6 +1999,98 @@ func TestSQLBookmarkRepositoryGetAllTest(t *testing.T) {
 	}
 }
 
+func TestSQLBookmarkRepositoryGetFromIDsTest(t *testing.T) {
+	tests := []struct {
+		err               error
+		name              string
+		models            []*domain.Bookmark
+		ids               []int64
+		numRecords        int
+		insertBeforeCheck bool
+	}{
+		{
+			name: "Nil input", ids: nil, err: helper.NilInputError{},
+		},
+		{
+
+			name: "Two existing minimal inputs, get all", numRecords: 2, insertBeforeCheck: true,
+			models: []*domain.Bookmark{
+				{
+					URL: "https://foo.example.com",
+					ID:  1,
+				},
+				{
+					URL: "https://bar.example.com",
+					ID:  3,
+				},
+			},
+			ids: []int64{1, 3},
+		},
+		{
+			name: "Two existing minimal inputs, get one ", numRecords: 1, insertBeforeCheck: true,
+			models: []*domain.Bookmark{
+				{
+					URL: "https://foo.example.com",
+					ID:  1,
+				},
+				{
+					URL: "https://bar.example.com",
+					ID:  3,
+				},
+			},
+			ids: []int64{1},
+		},
+		{
+			name: "Two existing minimal inputs, IDs don't exist", numRecords: 0, insertBeforeCheck: true,
+			models: []*domain.Bookmark{
+				{
+					URL: "https://foo.example.com",
+					ID:  1,
+				},
+				{
+					URL: "https://bar.example.com",
+					ID:  3,
+				},
+			},
+			ids: []int64{4, 5},
+			err: helper.NonExistentPrimaryDataError{},
+		},
+	}
+
+	for _, test := range tests {
+		test := test
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+			defer testCommon.HandlePanic(t, test.name)
+
+			db, err := testCommon.GetDB()
+			require.NoErrorf(t, err, test.name+", db open")
+			defer db.Close()
+
+			repo := new(repository.Sqlite3BookmarkRepository)
+
+			repoAbstract, err := repo.New(repository.Sqlite3BookmarkRepositoryConstructorArgs{DB: db, Logger: log.StandardLogger()})
+
+			assert.NoErrorf(t, err, test.name)
+
+			repo = repoAbstract.(*repository.Sqlite3BookmarkRepository)
+
+			if test.insertBeforeCheck {
+				err = repo.Add(context.Background(), test.models)
+				assert.NoErrorf(t, err, test.name)
+			}
+
+			records, err := repo.GetFromIDs(context.Background(), test.ids)
+			if test.err == nil {
+				assert.NoErrorf(t, err, test.name)
+			} else {
+				assert.ErrorAsf(t, err, &test.err, test.name)
+			}
+			assert.Equalf(t, test.numRecords, len(records), test.name)
+		})
+	}
+}
+
 func TestSQLBookmarkRepositoryAddTypeTest(t *testing.T) {
 	tests := []struct {
 		err          error

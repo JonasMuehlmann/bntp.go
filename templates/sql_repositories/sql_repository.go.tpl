@@ -1013,6 +1013,55 @@ func (repo *{{$StructName}}) GetAll(ctx context.Context) (records []*domain.{{$E
     return
 }
 
+func (repo *{{$StructName}}) GetFromIDs(ctx context.Context, IDs []int64) (records []*domain.{{$EntityName}}, err error) {
+    filter := &domain.{{$EntityName}}Filter{ID: optional.Make(model.FilterOperation[int64]{Operand: model.ListOperand[int64]{IDs}, Operator: model.FilterIn})}
+
+    var repositoryFilter any
+    repositoryFilter, err = repo.{{$EntityName}}DomainToRepositoryFilter(ctx, filter)
+    if err != nil {
+        return
+    }
+
+    repoFilter, ok := repositoryFilter.(*{{$EntityName}}Filter)
+    if !ok {
+        err = fmt.Errorf("expected type *{{$EntityName}}Filter but got %T", repoFilter)
+
+        return
+    }
+
+
+
+
+	queryFilters := buildQueryModListFromFilter{{$EntityName}}(repoFilter)
+
+    var repositoryModels {{$EntityName}}Slice
+    repositoryModels, err = {{$EntityName}}s(queryFilters...).All(ctx, repo.db)
+    if err != nil {
+        return
+    }
+
+    if len(repositoryModels) == 0 {
+    err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
+
+        return
+    }
+
+
+    records = make([]*domain.{{$EntityName}}, 0, len(repositoryModels))
+
+    var domainModel *domain.{{$EntityName}}
+    for _, repoModel := range repositoryModels {
+        domainModel, err = repo.{{$EntityName}}RepositoryToDomainModel(ctx, repoModel)
+        if err != nil {
+            return
+        }
+
+        records = append(records, domainModel)
+    }
+
+    return
+}
+
 {{ if ne $EntityName "Tag" }}
 func (repo *{{$StructName}}) AddType(ctx context.Context, types []string)  (err error){
     for _, type_ := range types {

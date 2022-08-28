@@ -45,6 +45,7 @@ type TagRepository interface {
 	GetWhere(ctx context.Context, domainFilter *domain.TagFilter) (records []*domain.Tag, err error)
 	GetFirstWhere(ctx context.Context, domainFilter *domain.TagFilter) (record *domain.Tag, err error)
 	GetAll(ctx context.Context) (records []*domain.Tag, err error)
+	GetFromIDs(ctx context.Context, ids []int64) (records []*domain.Tag, err error)
 
 	TagRepositoryToDomainModel(ctx context.Context, repositoryModel any) (domainModel *domain.Tag, err error)
 	TagDomainToRepositoryModel(ctx context.Context, domainModel *domain.Tag) (repositoryModel any, err error)

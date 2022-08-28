@@ -45,6 +45,7 @@ type BookmarkRepository interface {
 	GetWhere(ctx context.Context, domainFilter *domain.BookmarkFilter) (records []*domain.Bookmark, err error)
 	GetFirstWhere(ctx context.Context, domainFilter *domain.BookmarkFilter) (record *domain.Bookmark, err error)
 	GetAll(ctx context.Context) (records []*domain.Bookmark, err error)
+	GetFromIDs(ctx context.Context, ids []int64) (records []*domain.Bookmark, err error)
 
 	AddType(ctx context.Context, types []string) error
 	DeleteType(ctx context.Context, types []string) error

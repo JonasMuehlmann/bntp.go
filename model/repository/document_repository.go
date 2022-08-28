@@ -45,6 +45,7 @@ type DocumentRepository interface {
 	GetWhere(ctx context.Context, domainFilter *domain.DocumentFilter) (records []*domain.Document, err error)
 	GetFirstWhere(ctx context.Context, domainFilter *domain.DocumentFilter) (record *domain.Document, err error)
 	GetAll(ctx context.Context) (records []*domain.Document, err error)
+	GetFromIDs(ctx context.Context, ids []int64) (records []*domain.Document, err error)
 
 	AddType(ctx context.Context, types []string) error
 	DeleteType(ctx context.Context, types []string) error
