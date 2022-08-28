@@ -18,10 +18,10 @@ func TestLibtagsMarshalPath(t *testing.T) {
 	tests := []struct {
 		err          error
 		errorMatcher testCommon.OutputValidator
-		name         string
-		tags         []*domain.Tag
 		tag          *domain.Tag
+		name         string
 		path         string
+		tags         []*domain.Tag
 	}{
 		{
 			name: "no args",
