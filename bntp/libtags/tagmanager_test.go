@@ -62,7 +62,7 @@ func TestLibtagsMarshalPath(t *testing.T) {
 				assert.NoError(t, err, test.name+", assert tag creation")
 			}
 
-			path, err := tagManager.MarshalPath(context.Background(), test.tag)
+			path, err := tagManager.MarshalPath(context.Background(), test.tag, false)
 
 			if test.err != nil {
 				assert.ErrorIs(t, err, test.err, test.name+", assert test error matches expected")

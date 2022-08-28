@@ -23,9 +23,11 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/JonasMuehlmann/bntp.go/internal/helper"
 	"github.com/JonasMuehlmann/bntp.go/model/domain"
+	"github.com/JonasMuehlmann/goaoi"
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 	"golang.org/x/exp/slices"
@@ -55,7 +57,7 @@ func WithTagCommand() CliOption {
 				if len(args) == 0 {
 					return helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 				}
-				tags, err := UnmarshalEntities[domain.Tag](cli, args, cli.Format)
+				tags, err := UnmarshalEntities[domain.Tag](cli, args, cli.InFormat)
 				if err != nil {
 					return err
 				}
@@ -92,7 +94,7 @@ func WithTagCommand() CliOption {
 					return helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 				}
 
-				tags, err := UnmarshalEntities[domain.Tag](cli, args, cli.Format)
+				tags, err := UnmarshalEntities[domain.Tag](cli, args, cli.InFormat)
 				if err != nil {
 					return err
 				}
@@ -113,7 +115,7 @@ func WithTagCommand() CliOption {
 					return helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 				}
 
-				tags, err := UnmarshalEntities[domain.Tag](cli, args, cli.Format)
+				tags, err := UnmarshalEntities[domain.Tag](cli, args, cli.InFormat)
 				if err != nil {
 					return err
 				}
@@ -142,14 +144,14 @@ func WithTagCommand() CliOption {
 				updater := &domain.TagUpdater{}
 				var numAffectedRecords int64
 
-				err = cli.BNTPBackend.Unmarshallers[cli.Format].Unmarshall(updater, cli.UpdaterRaw)
+				err = cli.BNTPBackend.Unmarshallers[cli.InFormat].Unmarshall(updater, cli.UpdaterRaw)
 				if err != nil {
 					return EntityMarshallingError{Inner: err}
 				}
 
 				//*********************    Use provided tags    ********************//
 				if cli.FilterRaw == "" {
-					tags, err := UnmarshalEntities[domain.Tag](cli, args, cli.Format)
+					tags, err := UnmarshalEntities[domain.Tag](cli, args, cli.InFormat)
 					if err != nil {
 						return err
 					}
@@ -163,7 +165,7 @@ func WithTagCommand() CliOption {
 
 					//************************    Use filter    ************************//
 				} else {
-					err = cli.BNTPBackend.Unmarshallers[cli.Format].Unmarshall(filter, cli.FilterRaw)
+					err = cli.BNTPBackend.Unmarshallers[cli.InFormat].Unmarshall(filter, cli.FilterRaw)
 					if err != nil {
 						return EntityMarshallingError{Inner: err}
 					}
@@ -195,7 +197,7 @@ func WithTagCommand() CliOption {
 					return err
 				}
 
-				serializedTags, err := cli.BNTPBackend.Marshallers[cli.Format].Marshall(tags)
+				serializedTags, err := cli.BNTPBackend.Marshallers[cli.InFormat].Marshall(tags)
 				if err != nil {
 					return err
 				}
@@ -227,7 +229,7 @@ func WithTagCommand() CliOption {
 
 				var tags []*domain.Tag
 
-				err = cli.BNTPBackend.Unmarshallers[cli.Format].Unmarshall(&tags, string(serializedTags))
+				err = cli.BNTPBackend.Unmarshallers[cli.InFormat].Unmarshall(&tags, string(serializedTags))
 				if err != nil {
 					return EntityMarshallingError{Inner: err}
 				}
@@ -258,7 +260,7 @@ func WithTagCommand() CliOption {
 
 					//********************    Use provided filter    *******************//
 				} else {
-					err = cli.BNTPBackend.Unmarshallers[cli.Format].Unmarshall(filter, cli.FilterRaw)
+					err = cli.BNTPBackend.Unmarshallers[cli.InFormat].Unmarshall(filter, cli.FilterRaw)
 					if err != nil {
 						return EntityMarshallingError{Inner: err}
 					}
@@ -269,9 +271,24 @@ func WithTagCommand() CliOption {
 					}
 				}
 
-				output, err = cli.BNTPBackend.Marshallers[cli.Format].Marshall(tags)
-				if err != nil {
-					return EntityMarshallingError{Inner: err}
+				if cli.PathFormat || cli.ShortFormat {
+					pathMarshaller := func(t *domain.Tag) (string, error) {
+						return cli.BNTPBackend.TagManager.MarshalPath(context.Background(), t, cli.ShortFormat)
+					}
+					var paths []string
+
+					paths, err = goaoi.TransformCopySlice(tags, pathMarshaller)
+					if err != nil {
+						return err
+					}
+
+					output = strings.Join(paths, "\n")
+				} else {
+
+					output, err = cli.BNTPBackend.Marshallers[cli.OutFormat].Marshall(tags)
+					if err != nil {
+						return EntityMarshallingError{Inner: err}
+					}
 				}
 
 				fmt.Fprintln(cli.RootCmd.OutOrStdout(), output)
@@ -299,7 +316,7 @@ func WithTagCommand() CliOption {
 
 				//********************    Use provided tags      *******************//
 				if cli.FilterRaw == "" {
-					tags, err := UnmarshalEntities[domain.Tag](cli, args, cli.Format)
+					tags, err := UnmarshalEntities[domain.Tag](cli, args, cli.InFormat)
 					if err != nil {
 						return err
 					}
@@ -313,7 +330,7 @@ func WithTagCommand() CliOption {
 
 					//********************       Use filter      *******************//
 				} else {
-					err = cli.BNTPBackend.Unmarshallers[cli.Format].Unmarshall(filter, cli.FilterRaw)
+					err = cli.BNTPBackend.Unmarshallers[cli.InFormat].Unmarshall(filter, cli.FilterRaw)
 					if err != nil {
 						return EntityMarshallingError{Inner: err}
 					}
@@ -341,7 +358,7 @@ func WithTagCommand() CliOption {
 				var result *domain.Tag
 				var output string
 
-				err = cli.BNTPBackend.Unmarshallers[cli.Format].Unmarshall(filter, cli.FilterRaw)
+				err = cli.BNTPBackend.Unmarshallers[cli.InFormat].Unmarshall(filter, cli.FilterRaw)
 				if err != nil {
 					return EntityMarshallingError{Inner: err}
 				}
@@ -350,10 +367,18 @@ func WithTagCommand() CliOption {
 				if err != nil {
 					return err
 				}
+				if cli.PathFormat || cli.ShortFormat {
+					output, err = cli.BNTPBackend.TagManager.MarshalPath(context.Background(), result, cli.ShortFormat)
 
-				output, err = cli.BNTPBackend.Marshallers[cli.Format].Marshall(result)
-				if err != nil {
-					return EntityMarshallingError{Inner: err}
+					if err != nil {
+						return err
+					}
+				} else {
+
+					output, err = cli.BNTPBackend.Marshallers[cli.OutFormat].Marshall(result)
+					if err != nil {
+						return EntityMarshallingError{Inner: err}
+					}
 				}
 
 				fmt.Fprintln(cli.RootCmd.OutOrStdout(), output)
@@ -378,7 +403,7 @@ func WithTagCommand() CliOption {
 						return err
 					}
 				} else {
-					err = cli.BNTPBackend.Unmarshallers[cli.Format].Unmarshall(filter, cli.FilterRaw)
+					err = cli.BNTPBackend.Unmarshallers[cli.InFormat].Unmarshall(filter, cli.FilterRaw)
 					if err != nil {
 						return EntityMarshallingError{Inner: err}
 					}
@@ -389,7 +414,7 @@ func WithTagCommand() CliOption {
 					}
 				}
 
-				count, err := cli.BNTPBackend.Marshallers[cli.Format].Marshall(Count{countRaw})
+				count, err := cli.BNTPBackend.Marshallers[cli.OutFormat].Marshall(Count{countRaw})
 				if err != nil {
 					return err
 				}
@@ -419,7 +444,7 @@ func WithTagCommand() CliOption {
 				var doesExistRaw bool
 
 				if cli.FilterRaw == "" {
-					err = cli.BNTPBackend.Unmarshallers[cli.Format].Unmarshall(tag, args[0])
+					err = cli.BNTPBackend.Unmarshallers[cli.InFormat].Unmarshall(tag, args[0])
 					if err != nil {
 						return EntityMarshallingError{Inner: err}
 					}
@@ -429,7 +454,7 @@ func WithTagCommand() CliOption {
 						return err
 					}
 				} else {
-					err = cli.BNTPBackend.Unmarshallers[cli.Format].Unmarshall(filter, cli.FilterRaw)
+					err = cli.BNTPBackend.Unmarshallers[cli.InFormat].Unmarshall(filter, cli.FilterRaw)
 					if err != nil {
 						return EntityMarshallingError{Inner: err}
 					}
@@ -440,7 +465,7 @@ func WithTagCommand() CliOption {
 					}
 				}
 
-				doesExist, err := cli.BNTPBackend.Marshallers[cli.Format].Marshall(DoesExist{doesExistRaw})
+				doesExist, err := cli.BNTPBackend.Marshallers[cli.OutFormat].Marshall(DoesExist{doesExistRaw})
 				if err != nil {
 					return err
 				}
@@ -486,7 +511,8 @@ func WithTagCommand() CliOption {
 		for _, subcommand := range cli.TagCmd.Commands() {
 			// TODO: Should this flag be used for every command?
 			if slices.Contains([]*cobra.Command{cli.TagAddCmd, cli.TagListCmd, cli.TagRemoveCmd, cli.TagFindCmd, cli.TagDoesExistCmd}, subcommand) {
-				subcommand.PersistentFlags().StringVar(&cli.Format, "format", "json", "The serialization format to use for i/o")
+				subcommand.PersistentFlags().StringVar(&cli.InFormat, "out-format", "json", "The serialization format to use for reading input")
+				subcommand.PersistentFlags().StringVar(&cli.OutFormat, "in-format", "json", "The serialization format to use for writing output")
 			}
 		}
 
@@ -505,6 +531,14 @@ func WithTagCommand() CliOption {
 		cli.TagFindCmd.MarkPersistentFlagRequired("filter")
 		cli.TagEditCmd.MarkPersistentFlagRequired("updater")
 
-		cli.TagListCmd.Flags().BoolP("short", "s", false, "Whetever to list shortened tags instead of fully qualified ones")
+		for _, subcommand := range cli.TagCmd.Commands() {
+			if slices.Contains([]*cobra.Command{cli.TagListCmd, cli.TagFindCmd}, subcommand) {
+				subcommand.PersistentFlags().BoolVar(&cli.PathFormat, "path-format", false, "Whetever to list tags in path format instead of --format format")
+				subcommand.PersistentFlags().BoolVar(&cli.ShortFormat, "short-format", false, "Whetever to list tags in shortened path format instead of --format format")
+
+				subcommand.MarkFlagsMutuallyExclusive("path-format", "short-format", "out-format")
+			}
+		}
+
 	}
 }

@@ -425,7 +425,9 @@ func (m *TagManager) GetFromIDs(ctx context.Context, ids []int64) (records []*do
 	return
 }
 
-func (m *TagManager) MarshalPath(ctx context.Context, tag *domain.Tag) (path string, err error) {
+// TODO: Handle shortening path
+
+func (m *TagManager) MarshalPath(ctx context.Context, tag *domain.Tag, shorten bool) (path string, err error) {
 	if tag == nil {
 		err = helper.IneffectiveOperationError{helper.NilInputError{}}
 
