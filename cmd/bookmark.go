@@ -55,7 +55,7 @@ func WithBookmarkCommand() CliOption {
 					return helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 				}
 
-				bookmarks, err := UnmarshalEntities[domain.Bookmark](cli, args, cli.Format)
+				bookmarks, err := UnmarshalEntities[domain.Bookmark](cli, args, cli.InFormat)
 				if err != nil {
 					return err
 				}
@@ -79,7 +79,7 @@ func WithBookmarkCommand() CliOption {
 					return helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 				}
 
-				bookmarks, err := UnmarshalEntities[domain.Bookmark](cli, args, cli.Format)
+				bookmarks, err := UnmarshalEntities[domain.Bookmark](cli, args, cli.InFormat)
 				if err != nil {
 					return err
 				}
@@ -103,7 +103,7 @@ func WithBookmarkCommand() CliOption {
 					return helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 				}
 
-				bookmarks, err := UnmarshalEntities[domain.Bookmark](cli, args, cli.Format)
+				bookmarks, err := UnmarshalEntities[domain.Bookmark](cli, args, cli.InFormat)
 				if err != nil {
 					return err
 				}
@@ -135,12 +135,12 @@ func WithBookmarkCommand() CliOption {
 				updater := &domain.BookmarkUpdater{}
 				var numAffectedRecords int64
 
-				err = cli.BNTPBackend.Unmarshallers[cli.Format].Unmarshall(updater, cli.UpdaterRaw)
+				err = cli.BNTPBackend.Unmarshallers[cli.InFormat].Unmarshall(updater, cli.UpdaterRaw)
 				if err != nil {
 					return EntityMarshallingError{Inner: err}
 				}
 				if cli.FilterRaw == "" {
-					bookmarks, err := UnmarshalEntities[domain.Bookmark](cli, args, cli.Format)
+					bookmarks, err := UnmarshalEntities[domain.Bookmark](cli, args, cli.InFormat)
 					if err != nil {
 						return err
 					}
@@ -151,7 +151,7 @@ func WithBookmarkCommand() CliOption {
 
 					numAffectedRecords = int64(len(args))
 				} else {
-					err = cli.BNTPBackend.Unmarshallers[cli.Format].Unmarshall(filter, cli.FilterRaw)
+					err = cli.BNTPBackend.Unmarshallers[cli.InFormat].Unmarshall(filter, cli.FilterRaw)
 					if err != nil {
 						return EntityMarshallingError{Inner: err}
 					}
@@ -185,7 +185,7 @@ func WithBookmarkCommand() CliOption {
 						return err
 					}
 				} else {
-					err = cli.BNTPBackend.Unmarshallers[cli.Format].Unmarshall(filter, cli.FilterRaw)
+					err = cli.BNTPBackend.Unmarshallers[cli.InFormat].Unmarshall(filter, cli.FilterRaw)
 					if err != nil {
 						return EntityMarshallingError{Inner: err}
 					}
@@ -196,7 +196,7 @@ func WithBookmarkCommand() CliOption {
 					}
 				}
 
-				output, err = cli.BNTPBackend.Marshallers[cli.Format].Marshall(bookmarks)
+				output, err = cli.BNTPBackend.Marshallers[cli.OutFormat].Marshall(bookmarks)
 				if err != nil {
 					return EntityMarshallingError{Inner: err}
 				}
@@ -225,7 +225,7 @@ func WithBookmarkCommand() CliOption {
 				var numAffectedRecords int64
 
 				if cli.FilterRaw == "" {
-					bookmarks, err := UnmarshalEntities[domain.Bookmark](cli, args, cli.Format)
+					bookmarks, err := UnmarshalEntities[domain.Bookmark](cli, args, cli.InFormat)
 					if err != nil {
 						return err
 					}
@@ -237,7 +237,7 @@ func WithBookmarkCommand() CliOption {
 
 					numAffectedRecords = int64(len(args))
 				} else {
-					err = cli.BNTPBackend.Unmarshallers[cli.Format].Unmarshall(filter, cli.FilterRaw)
+					err = cli.BNTPBackend.Unmarshallers[cli.InFormat].Unmarshall(filter, cli.FilterRaw)
 					if err != nil {
 						return EntityMarshallingError{Inner: err}
 					}
@@ -265,7 +265,7 @@ func WithBookmarkCommand() CliOption {
 				var result *domain.Bookmark
 				var output string
 
-				err = cli.BNTPBackend.Unmarshallers[cli.Format].Unmarshall(filter, cli.FilterRaw)
+				err = cli.BNTPBackend.Unmarshallers[cli.InFormat].Unmarshall(filter, cli.FilterRaw)
 				if err != nil {
 					return EntityMarshallingError{Inner: err}
 				}
@@ -275,7 +275,7 @@ func WithBookmarkCommand() CliOption {
 					return err
 				}
 
-				output, err = cli.BNTPBackend.Marshallers[cli.Format].Marshall(result)
+				output, err = cli.BNTPBackend.Marshallers[cli.OutFormat].Marshall(result)
 				if err != nil {
 					return EntityMarshallingError{Inner: err}
 				}
@@ -301,7 +301,7 @@ func WithBookmarkCommand() CliOption {
 						return err
 					}
 				} else {
-					err = cli.BNTPBackend.Unmarshallers[cli.Format].Unmarshall(filter, cli.FilterRaw)
+					err = cli.BNTPBackend.Unmarshallers[cli.InFormat].Unmarshall(filter, cli.FilterRaw)
 					if err != nil {
 						return EntityMarshallingError{Inner: err}
 					}
@@ -312,7 +312,7 @@ func WithBookmarkCommand() CliOption {
 					}
 				}
 
-				count, err := cli.BNTPBackend.Marshallers[cli.Format].Marshall(Count{countRaw})
+				count, err := cli.BNTPBackend.Marshallers[cli.OutFormat].Marshall(Count{countRaw})
 				if err != nil {
 					return err
 				}
@@ -341,7 +341,7 @@ func WithBookmarkCommand() CliOption {
 				var doesExistRaw bool
 
 				if cli.FilterRaw == "" {
-					err = cli.BNTPBackend.Unmarshallers[cli.Format].Unmarshall(bookmark, args[0])
+					err = cli.BNTPBackend.Unmarshallers[cli.InFormat].Unmarshall(bookmark, args[0])
 					if err != nil {
 						return EntityMarshallingError{Inner: err}
 					}
@@ -351,7 +351,7 @@ func WithBookmarkCommand() CliOption {
 						return err
 					}
 				} else {
-					err = cli.BNTPBackend.Unmarshallers[cli.Format].Unmarshall(filter, cli.FilterRaw)
+					err = cli.BNTPBackend.Unmarshallers[cli.InFormat].Unmarshall(filter, cli.FilterRaw)
 					if err != nil {
 						return EntityMarshallingError{Inner: err}
 					}
@@ -362,7 +362,7 @@ func WithBookmarkCommand() CliOption {
 					}
 				}
 
-				doesExist, err := cli.BNTPBackend.Marshallers[cli.Format].Marshall(DoesExist{doesExistRaw})
+				doesExist, err := cli.BNTPBackend.Marshallers[cli.OutFormat].Marshall(DoesExist{doesExistRaw})
 				if err != nil {
 					return err
 				}
@@ -387,7 +387,8 @@ func WithBookmarkCommand() CliOption {
 
 		for _, subcommand := range cli.BookmarkCmd.Commands() {
 			if slices.Contains([]*cobra.Command{cli.BookmarkAddCmd, cli.BookmarkListCmd, cli.BookmarkRemoveCmd, cli.BookmarkFindCmd, cli.BookmarkDoesExistCmd}, subcommand) {
-				subcommand.PersistentFlags().StringVar(&cli.Format, "format", "json", "The serialization format to use for i/o")
+				subcommand.PersistentFlags().StringVar(&cli.InFormat, "out-format", "json", "The serialization format to use for reading input")
+				subcommand.PersistentFlags().StringVar(&cli.OutFormat, "in-format", "json", "The serialization format to use for writing output")
 			}
 		}
 

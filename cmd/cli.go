@@ -164,9 +164,12 @@ func (cli *Cli) Execute() error {
 type Cli struct {
 	ConfigManager *config.ConfigManager
 	BNTPBackend   *backend.Backend
-	Format        string
+	InFormat      string
+	OutFormat     string
 	FilterRaw     string
 	UpdaterRaw    string
+	PathFormat    bool
+	ShortFormat   bool
 	StdErr        io.Writer
 	DBOverride    *sql.DB
 	Logger        *log.Logger
