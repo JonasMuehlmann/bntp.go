@@ -1619,6 +1619,11 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryModel(ctx context.
 				return
 			}
 			repositoryModelConcrete.Path += strconv.FormatInt(repositoryParentTag.ID, 10) + ";"
+
+			err = repositoryModelConcrete.AddParentTagTags(ctx, repo.db, false, repositoryParentTag)
+			if err != nil {
+				return
+			}
 		}
 	}
 
@@ -1681,7 +1686,7 @@ func (repo *{{$StructName}}) {{$EntityName}}RepositoryToDomainModel(ctx context.
 //***********************    Set ParentPath    **********************//
 var parent{{$EntityName}}ID int64
 
-if len(repositoryModelConcrete.Path) > 1 {
+if len(repositoryModelConcrete.Path) > 0 {
     pathIDs :=strings.Split(repositoryModelConcrete.Path, ";")
     pathIDs = pathIDs[:len(pathIDs) -1]
     for _, parent{{$EntityName}}IDRaw := range pathIDs {

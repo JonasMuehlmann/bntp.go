@@ -1561,7 +1561,6 @@ func TestSQLTagRepositoryTagModelConverter(t *testing.T) {
 	repo := new(repository.Sqlite3TagRepository)
 
 	repoAbstract, err := repo.New(repository.Sqlite3TagRepositoryConstructorArgs{DB: db, Logger: log.StandardLogger()})
-
 	assert.NoError(t, err)
 
 	repo = repoAbstract.(*repository.Sqlite3TagRepository)
@@ -1603,16 +1602,17 @@ func TestSQLTagRepositoryTagModelConverter(t *testing.T) {
 		ParentPathIDs: []int64{2, 1},
 	}
 
-	err = repo.Add(context.Background(), []*domain.Tag{parent1, parent2, original, child1, child2})
+	tags := []*domain.Tag{parent1, parent2, original, child1, child2}
 
+	err = repo.Add(context.Background(), tags)
 	assert.NoError(t, err)
 
-	repositoryModel, err := repo.TagDomainToRepositoryModel(context.Background(), original)
+	for _, tag := range tags {
+		repositoryModel, err := repo.TagDomainToRepositoryModel(context.Background(), tag)
+		assert.NoError(t, err)
 
-	assert.NoError(t, err)
-
-	convertedBack, err := repo.TagRepositoryToDomainModel(context.Background(), repositoryModel.(*repository.Tag))
-
-	assert.NoError(t, err)
-	assert.EqualValues(t, original, convertedBack)
+		convertedBack, err := repo.TagRepositoryToDomainModel(context.Background(), repositoryModel.(*repository.Tag))
+		assert.NoError(t, err)
+		assert.EqualValues(t, tag, convertedBack)
+	}
 }
