@@ -232,12 +232,10 @@ func TestDocumentContentManagerUpdateDocumentContentsFromNewModels(t *testing.T)
 
 			tagRepoConcrete = tagRepoAbstract.(*sqlite3Repo.Sqlite3TagRepository)
 
-			documentRepoConcrete := &sqlite3Repo.Sqlite3DocumentRepository{}
-
 			//******************    Setup document manager    ******************//
+			documentRepoConcrete := &sqlite3Repo.Sqlite3DocumentRepository{}
 			documentRepoAbstract, err := documentRepoConcrete.New(sqlite3Repo.Sqlite3DocumentRepositoryConstructorArgs{DB: db, TagRepository: tagRepoConcrete, Logger: repoConcrete.Logger})
 			assert.NoError(t, err, test.name+", assert document repository creation")
-
 			documentRepoConcrete = documentRepoAbstract.(*sqlite3Repo.Sqlite3DocumentRepository)
 
 			documentManager, err := libdocuments.NewDocumentManager(repoConcrete.Logger, &bntp.Hooks[domain.Document]{}, documentRepoConcrete)

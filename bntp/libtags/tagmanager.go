@@ -23,7 +23,9 @@ package libtags
 import (
 	"context"
 	"errors"
+	"strings"
 
+	"github.com/JonasMuehlmann/bntp.go/internal/helper"
 	domain "github.com/JonasMuehlmann/bntp.go/model/domain"
 	repository "github.com/JonasMuehlmann/bntp.go/model/repository"
 	"github.com/JonasMuehlmann/goaoi"
@@ -397,6 +399,8 @@ func (m *TagManager) GetAll(ctx context.Context) (records []*domain.Tag, err err
 	return
 }
 
+// FIX: hooks are processing the wrong values
+
 func (m *TagManager) GetFromIDs(ctx context.Context, ids []int64) (records []*domain.Tag, err error) {
 	tags := []*domain.Tag{}
 
@@ -413,6 +417,51 @@ func (m *TagManager) GetFromIDs(ctx context.Context, ids []int64) (records []*do
 	}
 
 	hookErr = goaoi.ForeachSlice(tags, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.AfterAnyHook|bntp.AfterSelectHook))
+	if hookErr != nil && !errors.Is(hookErr, goaoi.EmptyIterableError{}) {
+		hookErr = bntp.HookExecutionError{Inner: hookErr}
+		m.Logger.Error(hookErr)
+	}
+
+	return
+}
+
+func (m *TagManager) MarshalPath(ctx context.Context, tag *domain.Tag) (path string, err error) {
+	if tag == nil {
+		err = helper.IneffectiveOperationError{helper.NilInputError{}}
+
+		return
+	}
+
+	parentPathTags := []*domain.Tag{}
+
+	hookErr := goaoi.ForeachSlice(parentPathTags, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.BeforeAnyHook|bntp.BeforeSelectHook))
+	if hookErr != nil && !errors.Is(hookErr, goaoi.EmptyIterableError{}) {
+		hookErr = bntp.HookExecutionError{Inner: hookErr}
+		m.Logger.Error(hookErr)
+	}
+
+	if len(tag.ParentPathIDs) == 0 {
+		return tag.Tag, nil
+
+	}
+
+	parentPathTags, err = m.Repository.GetFromIDs(ctx, tag.ParentPathIDs)
+	if err != nil {
+		m.Logger.Error(err)
+
+	} else {
+		pathTags := append(parentPathTags, tag)
+
+		tags, err := goaoi.TransformCopySliceUnsafe(pathTags, (*domain.Tag).GetTag)
+		if err != nil {
+			m.Logger.Error(err)
+		} else {
+			// Forming a tag path should be defined in a function
+			path = strings.Join(tags, "::")
+		}
+	}
+
+	hookErr = goaoi.ForeachSlice(parentPathTags, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.AfterAnyHook|bntp.AfterSelectHook))
 	if hookErr != nil && !errors.Is(hookErr, goaoi.EmptyIterableError{}) {
 		hookErr = bntp.HookExecutionError{Inner: hookErr}
 		m.Logger.Error(hookErr)
