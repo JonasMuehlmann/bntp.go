@@ -1150,6 +1150,14 @@ func (repo *PsqlBookmarkRepository) GetFromIDs(ctx context.Context, IDs []int64)
 
 
 func (repo *PsqlBookmarkRepository) AddType(ctx context.Context, types []string)  (err error){
+    if len(types) == 0 {
+        repo.Logger.Debug(helper.LogMessageEmptyInput)
+
+        err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
+
+        return
+    }
+
     for _, type_ := range types {
         repositoryModel := BookmarkType{BookmarkType: type_}
 
@@ -1167,8 +1175,21 @@ func (repo *PsqlBookmarkRepository) AddType(ctx context.Context, types []string)
 }
 
 func (repo *PsqlBookmarkRepository) DeleteType(ctx context.Context, types []string)  (err error){
-    _, err = BookmarkTypes(BookmarkTypeWhere.BookmarkType.IN(types)).DeleteAll(ctx, repo.db)
-    if err != nil {
+    if len(types) == 0 {
+        repo.Logger.Debug(helper.LogMessageEmptyInput)
+
+        err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
+
+        return
+    }
+
+    var numAffectedRecords int64
+
+    numAffectedRecords, err = BookmarkTypes(BookmarkTypeWhere.BookmarkType.IN(types)).DeleteAll(ctx, repo.db)
+    if numAffectedRecords == 0 {
+        err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
+
+        return
     }
 
 	return
@@ -1178,6 +1199,10 @@ func (repo *PsqlBookmarkRepository) UpdateType(ctx context.Context, oldType stri
     var repositoryModel *BookmarkType
     repositoryModel, err = BookmarkTypes(BookmarkTypeWhere.BookmarkType.EQ(oldType)).One(ctx, repo.db)
     if err != nil {
+        if  errors.Is(err, sql.ErrNoRows){
+            err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
+        }
+
         return
     }
 
@@ -1188,9 +1213,20 @@ func (repo *PsqlBookmarkRepository) UpdateType(ctx context.Context, oldType stri
     if err != nil {
         if strings.Contains(err.Error(), "UNIQUE") {
             err = helper.DuplicateInsertionError{Inner: err}
+
+            return
         }
-        if numAffectedRecords == 0 {
-            err = helper.NonExistentPrimaryDataError{}
+    }
+
+    if numAffectedRecords == 0 {
+        var doesExist bool
+        doesExist, err = BookmarkTypes(BookmarkTypeWhere.BookmarkType.EQ(oldType)).Exists(ctx, repo.db)
+        if err != nil {
+            return err
+        }
+
+        if !doesExist {
+            err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
 
             return
         }

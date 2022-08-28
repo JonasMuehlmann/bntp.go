@@ -1111,6 +1111,14 @@ func (repo *PsqlDocumentRepository) GetFromIDs(ctx context.Context, IDs []int64)
 
 
 func (repo *PsqlDocumentRepository) AddType(ctx context.Context, types []string)  (err error){
+    if len(types) == 0 {
+        repo.Logger.Debug(helper.LogMessageEmptyInput)
+
+        err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
+
+        return
+    }
+
     for _, type_ := range types {
         repositoryModel := DocumentType{DocumentType: type_}
 
@@ -1128,8 +1136,21 @@ func (repo *PsqlDocumentRepository) AddType(ctx context.Context, types []string)
 }
 
 func (repo *PsqlDocumentRepository) DeleteType(ctx context.Context, types []string)  (err error){
-    _, err = DocumentTypes(DocumentTypeWhere.DocumentType.IN(types)).DeleteAll(ctx, repo.db)
-    if err != nil {
+    if len(types) == 0 {
+        repo.Logger.Debug(helper.LogMessageEmptyInput)
+
+        err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
+
+        return
+    }
+
+    var numAffectedRecords int64
+
+    numAffectedRecords, err = DocumentTypes(DocumentTypeWhere.DocumentType.IN(types)).DeleteAll(ctx, repo.db)
+    if numAffectedRecords == 0 {
+        err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
+
+        return
     }
 
 	return
@@ -1139,6 +1160,10 @@ func (repo *PsqlDocumentRepository) UpdateType(ctx context.Context, oldType stri
     var repositoryModel *DocumentType
     repositoryModel, err = DocumentTypes(DocumentTypeWhere.DocumentType.EQ(oldType)).One(ctx, repo.db)
     if err != nil {
+        if  errors.Is(err, sql.ErrNoRows){
+            err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
+        }
+
         return
     }
 
@@ -1149,9 +1174,20 @@ func (repo *PsqlDocumentRepository) UpdateType(ctx context.Context, oldType stri
     if err != nil {
         if strings.Contains(err.Error(), "UNIQUE") {
             err = helper.DuplicateInsertionError{Inner: err}
+
+            return
         }
-        if numAffectedRecords == 0 {
-            err = helper.NonExistentPrimaryDataError{}
+    }
+
+    if numAffectedRecords == 0 {
+        var doesExist bool
+        doesExist, err = DocumentTypes(DocumentTypeWhere.DocumentType.EQ(oldType)).Exists(ctx, repo.db)
+        if err != nil {
+            return err
+        }
+
+        if !doesExist {
+            err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
 
             return
         }

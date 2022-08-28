@@ -1064,6 +1064,14 @@ func (repo *{{$StructName}}) GetFromIDs(ctx context.Context, IDs []int64) (recor
 
 {{ if ne $EntityName "Tag" }}
 func (repo *{{$StructName}}) AddType(ctx context.Context, types []string)  (err error){
+    if len(types) == 0 {
+        repo.Logger.Debug(helper.LogMessageEmptyInput)
+
+        err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
+
+        return
+    }
+
     for _, type_ := range types {
         repositoryModel := {{$EntityName}}Type{{"{"}}{{$EntityName}}Type: type_}
 
@@ -1081,8 +1089,21 @@ func (repo *{{$StructName}}) AddType(ctx context.Context, types []string)  (err 
 }
 
 func (repo *{{$StructName}}) DeleteType(ctx context.Context, types []string)  (err error){
-    _, err = {{$EntityName}}Types({{$EntityName}}TypeWhere.{{$EntityName}}Type.IN(types)).DeleteAll(ctx, repo.db)
-    if err != nil {
+    if len(types) == 0 {
+        repo.Logger.Debug(helper.LogMessageEmptyInput)
+
+        err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
+
+        return
+    }
+
+    var numAffectedRecords int64
+
+    numAffectedRecords, err = {{$EntityName}}Types({{$EntityName}}TypeWhere.{{$EntityName}}Type.IN(types)).DeleteAll(ctx, repo.db)
+    if numAffectedRecords == 0 {
+        err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
+
+        return
     }
 
 	return
@@ -1092,6 +1113,10 @@ func (repo *{{$StructName}}) UpdateType(ctx context.Context, oldType string, new
     var repositoryModel *{{$EntityName}}Type
     repositoryModel, err = {{$EntityName}}Types({{$EntityName}}TypeWhere.{{$EntityName}}Type.EQ(oldType)).One(ctx, repo.db)
     if err != nil {
+        if  errors.Is(err, sql.ErrNoRows){
+            err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
+        }
+
         return
     }
 
@@ -1102,9 +1127,20 @@ func (repo *{{$StructName}}) UpdateType(ctx context.Context, oldType string, new
     if err != nil {
         if strings.Contains(err.Error(), "UNIQUE") {
             err = helper.DuplicateInsertionError{Inner: err}
+
+            return
         }
-        if numAffectedRecords == 0 {
-            err = helper.NonExistentPrimaryDataError{}
+    }
+
+    if numAffectedRecords == 0 {
+        var doesExist bool
+        doesExist, err = {{$EntityName}}Types({{$EntityName}}TypeWhere.{{$EntityName}}Type.EQ(oldType)).Exists(ctx, repo.db)
+        if err != nil {
+            return err
+        }
+
+        if !doesExist {
+            err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
 
             return
         }

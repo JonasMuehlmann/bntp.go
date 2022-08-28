@@ -53,11 +53,8 @@ func WithBookmarkTypeCommand() CliOption {
 				}
 
 				err := cli.BNTPBackend.BookmarkManager.AddType(context.Background(), args)
-				if err != nil {
-					return err
-				}
 
-				return nil
+				return err
 			},
 		}
 
@@ -67,16 +64,9 @@ func WithBookmarkTypeCommand() CliOption {
 			Long:  `A longer description`,
 			Args:  cobra.ExactArgs(2),
 			RunE: func(cmd *cobra.Command, args []string) error {
-				if len(args) == 0 {
-					return helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
-				}
-
 				err := cli.BNTPBackend.BookmarkManager.UpdateType(context.Background(), args[0], args[1])
-				if err != nil {
-					return err
-				}
 
-				return nil
+				return err
 			},
 		}
 
@@ -91,11 +81,8 @@ func WithBookmarkTypeCommand() CliOption {
 				}
 
 				err := cli.BNTPBackend.BookmarkManager.DeleteType(context.Background(), args)
-				if err != nil {
-					return err
-				}
 
-				return nil
+				return err
 			},
 		}
 

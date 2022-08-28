@@ -44,6 +44,7 @@ type {{.EntityName}}Repository interface {
 	GetWhere(ctx context.Context, domainFilter *domain.{{.EntityName}}Filter) (records []*domain.{{.EntityName}}, err error)
 	GetFirstWhere(ctx context.Context, domainFilter *domain.{{.EntityName}}Filter) (record *domain.{{.EntityName}}, err error)
 	GetAll(ctx context.Context) (records []*domain.{{.EntityName}}, err error)
+	GetFromIDs(ctx context.Context, ids []int64) (records []*domain.{{.EntityName}}, err error)
     {{if or (eq .EntityName "Bookmark") (eq .EntityName "Document")}}
     AddType(ctx context.Context, types  []string) error
     DeleteType(ctx context.Context, types  []string) error

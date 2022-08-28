@@ -53,11 +53,8 @@ func WithDocumentTypeCommand() CliOption {
 				}
 
 				err := cli.BNTPBackend.DocumentManager.AddType(context.Background(), args)
-				if err != nil {
-					return err
-				}
 
-				return nil
+				return err
 			},
 		}
 
@@ -72,11 +69,8 @@ func WithDocumentTypeCommand() CliOption {
 				}
 
 				err := cli.BNTPBackend.DocumentManager.UpdateType(context.Background(), args[0], args[1])
-				if err != nil {
-					return err
-				}
 
-				return nil
+				return err
 			},
 		}
 
@@ -91,11 +85,8 @@ func WithDocumentTypeCommand() CliOption {
 				}
 
 				err := cli.BNTPBackend.DocumentManager.DeleteType(context.Background(), args)
-				if err != nil {
-					return err
-				}
 
-				return nil
+				return err
 			},
 		}
 

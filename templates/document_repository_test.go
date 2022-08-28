@@ -1978,7 +1978,7 @@ func TestSQLDocumentRepositoryDeleteTypeTest(t *testing.T) {
 		preAddedTypes []string
 	}{
 		{
-			name: "Deleting non-existent type", type_: []string{"Text"},
+			name: "Deleting non-existent type", type_: []string{"Text"}, err: helper.IneffectiveOperationError{},
 		},
 		{
 			name: "Deleting existing type", preAddedTypes: []string{"Text"}, type_: []string{"Text"},
