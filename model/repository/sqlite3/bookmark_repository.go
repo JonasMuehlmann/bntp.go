@@ -525,8 +525,6 @@ func (repo *Sqlite3BookmarkRepository) Replace(ctx context.Context, domainModels
             return
         }
 
-        
-
         var numAffectedRecords int64
 		numAffectedRecords, err = repoModel.Update(ctx, tx, boil.Infer())
 		if err != nil {
@@ -552,6 +550,12 @@ func (repo *Sqlite3BookmarkRepository) Replace(ctx context.Context, domainModels
                 }
             }
         }
+
+        err = repo.UpdateRelatedEntities(ctx,tx, repositoryModel.(*Bookmark))
+        if err != nil {
+            return err
+        }
+
 	}
 
 	tx.Commit()
@@ -606,6 +610,11 @@ func (repo *Sqlite3BookmarkRepository) Upsert(ctx context.Context, domainModels 
 
 			return
 		}
+
+        err = repo.UpdateRelatedEntities(ctx,tx, repositoryModel.(*Bookmark))
+        if err != nil {
+            return err
+        }
 	}
 
 	tx.Commit()
@@ -693,6 +702,11 @@ func (repo *Sqlite3BookmarkRepository) Update(ctx context.Context, domainModels 
             err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
 
             return
+        }
+
+        err = repo.UpdateRelatedEntities(ctx,tx, repositoryModel.(*Bookmark))
+        if err != nil {
+            return err
         }
     }
 
@@ -785,6 +799,11 @@ func (repo *Sqlite3BookmarkRepository) UpdateWhere(ctx context.Context, domainCo
             return
         }
 
+        err = repo.UpdateRelatedEntities(ctx,tx, repoModel)
+        if err != nil {
+            return
+        }
+
     }
 
     tx.Commit()
@@ -843,6 +862,11 @@ func (repo *Sqlite3BookmarkRepository) Delete(ctx context.Context, domainModels 
             err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
 
             return
+        }
+
+        err = repo.UpdateRelatedEntities(ctx,tx, repositoryModel.(*Bookmark))
+        if err != nil {
+            return err
         }
 	}
 
@@ -1014,6 +1038,23 @@ func (repo *Sqlite3BookmarkRepository) GetWhere(ctx context.Context, domainColum
     }
 
 
+    tx, err := repo.db.BeginTx(ctx, nil)
+    if err != nil {
+        return
+    }
+
+    for _, repoModel := range repositoryModels {
+        repo.LoadEntityRelations(ctx, tx, repoModel)
+        if err != nil {
+            return
+        }
+    }
+
+    err = tx.Commit()
+    if err != nil {
+        return
+    }
+
     records = make([]*domain.Bookmark, 0, len(repositoryModels))
 
     var domainModel *domain.Bookmark
@@ -1065,6 +1106,20 @@ func (repo *Sqlite3BookmarkRepository) GetFirstWhere(ctx context.Context, domain
     }
 
 
+    tx, err := repo.db.BeginTx(ctx, nil)
+    if err != nil {
+        return
+    }
+
+    repo.LoadEntityRelations(ctx, tx, repositoryModel)
+    if err != nil {
+        return
+    }
+
+    err = tx.Commit()
+    if err != nil {
+        return
+    }
 
     record , err =repo.BookmarkRepositoryToDomainModel(ctx, repositoryModel)
 
@@ -1083,6 +1138,22 @@ func (repo *Sqlite3BookmarkRepository) GetAll(ctx context.Context) (records []*d
         return
     }
 
+    tx, err := repo.db.BeginTx(ctx, nil)
+    if err != nil {
+        return
+    }
+
+    for _, repoModel := range repositoryModels {
+        repo.LoadEntityRelations(ctx, tx, repoModel)
+        if err != nil {
+            return
+        }
+    }
+
+    err = tx.Commit()
+    if err != nil {
+        return
+    }
 
     records = make([]*domain.Bookmark, 0, len(repositoryModels))
 
@@ -1132,6 +1203,22 @@ func (repo *Sqlite3BookmarkRepository) GetFromIDs(ctx context.Context, IDs []int
         return
     }
 
+    tx, err := repo.db.BeginTx(ctx, nil)
+    if err != nil {
+        return
+    }
+
+    for _, repoModel := range repositoryModels {
+        repo.LoadEntityRelations(ctx, tx, repoModel)
+        if err != nil {
+            return
+        }
+    }
+
+    err = tx.Commit()
+    if err != nil {
+        return
+    }
 
     records = make([]*domain.Bookmark, 0, len(repositoryModels))
 
@@ -1681,3 +1768,54 @@ func (repo *Sqlite3BookmarkRepository) BookmarkDomainToRepositoryUpdater(ctx con
 
 
 
+
+
+func (repo *Sqlite3BookmarkRepository) UpdateRelatedEntities(ctx context.Context, tx *sql.Tx, repositoryModel *Bookmark) error  {
+	var err error
+
+
+	err = repositoryModel.SetTags(ctx, tx, false, repositoryModel.R.Tags...)
+	if err != nil {
+		return err
+	}
+	for _, tag := range repositoryModel.R.Tags {
+		err = tag.Upsert(ctx, tx, true, []string{}, boil.Infer(), boil.Infer())
+		if err != nil {
+			return err
+		}
+	}
+
+    if repositoryModel.R.BookmarkType != nil {
+        err = repositoryModel.SetBookmarkType(ctx, tx, false, repositoryModel.R.BookmarkType)
+        if err != nil {
+            return err
+        }
+        if repositoryModel.R.BookmarkType != nil {
+            err = repositoryModel.R.BookmarkType.Upsert(ctx, tx, true, []string{}, boil.Infer(), boil.Infer())
+            if err != nil {
+                return err
+            }
+        }
+    }
+
+	return nil
+
+}
+
+// PERF: This can probably be sped up by not using singular mode
+func (repo *Sqlite3BookmarkRepository) LoadEntityRelations(ctx context.Context, tx *sql.Tx, repoModel *Bookmark) (err error) {
+    if repoModel.R == nil {
+        repoModel.R = repoModel.R.NewStruct()
+    }
+
+
+    err = repoModel.L.LoadTags(ctx, repo.db, true, repoModel, nil)
+    if err != nil {
+        return
+    }
+
+    err = repoModel.L.LoadBookmarkType(ctx, repo.db, true, repoModel, nil)
+
+    return
+
+}

@@ -16,6 +16,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
 func TestSQLDocumentRepositoryAddTest(t *testing.T) {
@@ -2078,6 +2079,8 @@ func TestSQLDocumentRepositoryTagModelConverter(t *testing.T) {
 		ID:  1,
 	}
 
+	boil.DebugMode = true
+
 	err = repo.GetTagRepository().Add(context.Background(), []*domain.Tag{tag})
 	assert.NoError(t, err)
 
@@ -2094,6 +2097,14 @@ func TestSQLDocumentRepositoryTagModelConverter(t *testing.T) {
 		assert.NoError(t, err)
 
 		convertedBack, err := repo.DocumentRepositoryToDomainModel(context.Background(), repositoryModel.(*repository.Document))
+		assert.NoError(t, err)
+		assert.EqualValues(t, document, convertedBack)
+
+		err = repositoryModel.(*repository.Document).Reload(context.Background(), db)
+		assert.NoError(t, err)
+		assert.EqualValues(t, document, convertedBack)
+
+		convertedBack, err = repo.DocumentRepositoryToDomainModel(context.Background(), repositoryModel.(*repository.Document))
 		assert.NoError(t, err)
 		assert.EqualValues(t, document, convertedBack)
 	}

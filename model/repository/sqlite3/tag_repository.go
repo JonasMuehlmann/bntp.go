@@ -459,8 +459,6 @@ func (repo *Sqlite3TagRepository) Replace(ctx context.Context, domainModels []*d
             return
         }
 
-        
-
         var numAffectedRecords int64
 		numAffectedRecords, err = repoModel.Update(ctx, tx, boil.Infer())
 		if err != nil {
@@ -486,6 +484,12 @@ func (repo *Sqlite3TagRepository) Replace(ctx context.Context, domainModels []*d
                 }
             }
         }
+
+        err = repo.UpdateRelatedEntities(ctx,tx, repositoryModel.(*Tag))
+        if err != nil {
+            return err
+        }
+
 	}
 
 	tx.Commit()
@@ -540,6 +544,11 @@ func (repo *Sqlite3TagRepository) Upsert(ctx context.Context, domainModels []*do
 
 			return
 		}
+
+        err = repo.UpdateRelatedEntities(ctx,tx, repositoryModel.(*Tag))
+        if err != nil {
+            return err
+        }
 	}
 
 	tx.Commit()
@@ -627,6 +636,11 @@ func (repo *Sqlite3TagRepository) Update(ctx context.Context, domainModels []*do
             err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
 
             return
+        }
+
+        err = repo.UpdateRelatedEntities(ctx,tx, repositoryModel.(*Tag))
+        if err != nil {
+            return err
         }
     }
 
@@ -719,6 +733,11 @@ func (repo *Sqlite3TagRepository) UpdateWhere(ctx context.Context, domainColumnF
             return
         }
 
+        err = repo.UpdateRelatedEntities(ctx,tx, repoModel)
+        if err != nil {
+            return
+        }
+
     }
 
     tx.Commit()
@@ -777,6 +796,11 @@ func (repo *Sqlite3TagRepository) Delete(ctx context.Context, domainModels []*do
             err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
 
             return
+        }
+
+        err = repo.UpdateRelatedEntities(ctx,tx, repositoryModel.(*Tag))
+        if err != nil {
+            return err
         }
 	}
 
@@ -948,6 +972,23 @@ func (repo *Sqlite3TagRepository) GetWhere(ctx context.Context, domainColumnFilt
     }
 
 
+    tx, err := repo.db.BeginTx(ctx, nil)
+    if err != nil {
+        return
+    }
+
+    for _, repoModel := range repositoryModels {
+        repo.LoadEntityRelations(ctx, tx, repoModel)
+        if err != nil {
+            return
+        }
+    }
+
+    err = tx.Commit()
+    if err != nil {
+        return
+    }
+
     records = make([]*domain.Tag, 0, len(repositoryModels))
 
     var domainModel *domain.Tag
@@ -999,6 +1040,20 @@ func (repo *Sqlite3TagRepository) GetFirstWhere(ctx context.Context, domainColum
     }
 
 
+    tx, err := repo.db.BeginTx(ctx, nil)
+    if err != nil {
+        return
+    }
+
+    repo.LoadEntityRelations(ctx, tx, repositoryModel)
+    if err != nil {
+        return
+    }
+
+    err = tx.Commit()
+    if err != nil {
+        return
+    }
 
     record , err =repo.TagRepositoryToDomainModel(ctx, repositoryModel)
 
@@ -1017,6 +1072,22 @@ func (repo *Sqlite3TagRepository) GetAll(ctx context.Context) (records []*domain
         return
     }
 
+    tx, err := repo.db.BeginTx(ctx, nil)
+    if err != nil {
+        return
+    }
+
+    for _, repoModel := range repositoryModels {
+        repo.LoadEntityRelations(ctx, tx, repoModel)
+        if err != nil {
+            return
+        }
+    }
+
+    err = tx.Commit()
+    if err != nil {
+        return
+    }
 
     records = make([]*domain.Tag, 0, len(repositoryModels))
 
@@ -1066,6 +1137,22 @@ func (repo *Sqlite3TagRepository) GetFromIDs(ctx context.Context, IDs []int64) (
         return
     }
 
+    tx, err := repo.db.BeginTx(ctx, nil)
+    if err != nil {
+        return
+    }
+
+    for _, repoModel := range repositoryModels {
+        repo.LoadEntityRelations(ctx, tx, repoModel)
+        if err != nil {
+            return
+        }
+    }
+
+    err = tx.Commit()
+    if err != nil {
+        return
+    }
 
     records = make([]*domain.Tag, 0, len(repositoryModels))
 
@@ -1135,9 +1222,10 @@ func (repo *Sqlite3TagRepository) TagDomainToRepositoryModel(ctx context.Context
 		}
 
 		repositoryModelConcrete.ParentTag = null.NewInt64(repositoryParentTag.ID, true)
+		repositoryModelConcrete.R.ParentTagTag =repositoryParentTag
 	}
 //*************************    Set Path    *************************//
-	if len(domainModel.ParentPathIDs) > 1 {
+	if len(domainModel.ParentPathIDs) > 0 {
 		var repositoryParentTag *Tag
 		for _, tagID := range domainModel.ParentPathIDs[:len(domainModel.ParentPathIDs)] {
 			repositoryParentTag, err = Tags(TagWhere.ID.EQ(tagID)).One(ctx, repo.db)
@@ -1148,10 +1236,7 @@ func (repo *Sqlite3TagRepository) TagDomainToRepositoryModel(ctx context.Context
 			}
 			repositoryModelConcrete.Path += strconv.FormatInt(repositoryParentTag.ID, 10) + ";"
 
-			err = repositoryModelConcrete.AddParentTagTags(ctx, repo.db, false, repositoryParentTag)
-			if err != nil {
-				return
-			}
+			repositoryModelConcrete.R.ParentTagTags = append(repositoryModelConcrete.R.ParentTagTags, repositoryParentTag)
 		}
 	}
 
@@ -1337,3 +1422,58 @@ func (repo *Sqlite3TagRepository) TagDomainToRepositoryUpdater(ctx context.Conte
 	return
 }
 
+
+
+func (repo *Sqlite3TagRepository) UpdateRelatedEntities(ctx context.Context, tx *sql.Tx, repositoryModel *Tag) error  {
+	var err error
+
+
+	// err = repositoryModel.SetParentTagTags(ctx, tx, false, repositoryModel.R.ParentTagTags...)
+	// if err != nil {
+	// 	return err
+	// }
+	// for _, tag := range repositoryModel.R.ParentTagTags {
+	// 	err = tag.Upsert(ctx, tx, true, []string{}, boil.Infer(), boil.Infer())
+	// 	if err != nil {
+	// 		return err
+	// 	}
+	// }
+
+    parentTagTag := repositoryModel.R.ParentTagTag
+
+    if parentTagTag != nil {
+        // err = repositoryModel.SetParentTagTag(ctx, tx, false, parentTagTag)
+        // if err != nil {
+        //     return err
+        // }
+
+        if len(parentTagTag.Children) == 0 {
+        parentTagTag.Children = strconv.FormatInt(repositoryModel.ID, 10)
+        }  else {
+        parentTagTag.Children += ";" + strconv.FormatInt(repositoryModel.ID, 10)
+        }
+
+        err = parentTagTag.Upsert(ctx, tx, true, []string{}, boil.Infer(), boil.Infer())
+    }
+
+    return err
+
+}
+
+// PERF: This can probably be sped up by not using singular mode
+func (repo *Sqlite3TagRepository) LoadEntityRelations(ctx context.Context, tx *sql.Tx, repoModel *Tag) (err error) {
+    if repoModel.R == nil {
+        repoModel.R = repoModel.R.NewStruct()
+    }
+
+
+    err = repoModel.L.LoadParentTagTag(ctx, repo.db, true, repoModel, nil)
+    if err != nil {
+        return
+    }
+
+    err = repoModel.L.LoadParentTagTags(ctx, repo.db, true, repoModel, nil)
+
+    return
+
+}

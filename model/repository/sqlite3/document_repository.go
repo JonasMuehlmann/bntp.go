@@ -486,8 +486,6 @@ func (repo *Sqlite3DocumentRepository) Replace(ctx context.Context, domainModels
             return
         }
 
-        
-
         var numAffectedRecords int64
 		numAffectedRecords, err = repoModel.Update(ctx, tx, boil.Infer())
 		if err != nil {
@@ -513,6 +511,12 @@ func (repo *Sqlite3DocumentRepository) Replace(ctx context.Context, domainModels
                 }
             }
         }
+
+        err = repo.UpdateRelatedEntities(ctx,tx, repositoryModel.(*Document))
+        if err != nil {
+            return err
+        }
+
 	}
 
 	tx.Commit()
@@ -567,6 +571,11 @@ func (repo *Sqlite3DocumentRepository) Upsert(ctx context.Context, domainModels 
 
 			return
 		}
+
+        err = repo.UpdateRelatedEntities(ctx,tx, repositoryModel.(*Document))
+        if err != nil {
+            return err
+        }
 	}
 
 	tx.Commit()
@@ -654,6 +663,11 @@ func (repo *Sqlite3DocumentRepository) Update(ctx context.Context, domainModels 
             err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
 
             return
+        }
+
+        err = repo.UpdateRelatedEntities(ctx,tx, repositoryModel.(*Document))
+        if err != nil {
+            return err
         }
     }
 
@@ -746,6 +760,11 @@ func (repo *Sqlite3DocumentRepository) UpdateWhere(ctx context.Context, domainCo
             return
         }
 
+        err = repo.UpdateRelatedEntities(ctx,tx, repoModel)
+        if err != nil {
+            return
+        }
+
     }
 
     tx.Commit()
@@ -804,6 +823,11 @@ func (repo *Sqlite3DocumentRepository) Delete(ctx context.Context, domainModels 
             err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
 
             return
+        }
+
+        err = repo.UpdateRelatedEntities(ctx,tx, repositoryModel.(*Document))
+        if err != nil {
+            return err
         }
 	}
 
@@ -975,6 +999,23 @@ func (repo *Sqlite3DocumentRepository) GetWhere(ctx context.Context, domainColum
     }
 
 
+    tx, err := repo.db.BeginTx(ctx, nil)
+    if err != nil {
+        return
+    }
+
+    for _, repoModel := range repositoryModels {
+        repo.LoadEntityRelations(ctx, tx, repoModel)
+        if err != nil {
+            return
+        }
+    }
+
+    err = tx.Commit()
+    if err != nil {
+        return
+    }
+
     records = make([]*domain.Document, 0, len(repositoryModels))
 
     var domainModel *domain.Document
@@ -1026,6 +1067,20 @@ func (repo *Sqlite3DocumentRepository) GetFirstWhere(ctx context.Context, domain
     }
 
 
+    tx, err := repo.db.BeginTx(ctx, nil)
+    if err != nil {
+        return
+    }
+
+    repo.LoadEntityRelations(ctx, tx, repositoryModel)
+    if err != nil {
+        return
+    }
+
+    err = tx.Commit()
+    if err != nil {
+        return
+    }
 
     record , err =repo.DocumentRepositoryToDomainModel(ctx, repositoryModel)
 
@@ -1044,6 +1099,22 @@ func (repo *Sqlite3DocumentRepository) GetAll(ctx context.Context) (records []*d
         return
     }
 
+    tx, err := repo.db.BeginTx(ctx, nil)
+    if err != nil {
+        return
+    }
+
+    for _, repoModel := range repositoryModels {
+        repo.LoadEntityRelations(ctx, tx, repoModel)
+        if err != nil {
+            return
+        }
+    }
+
+    err = tx.Commit()
+    if err != nil {
+        return
+    }
 
     records = make([]*domain.Document, 0, len(repositoryModels))
 
@@ -1093,6 +1164,22 @@ func (repo *Sqlite3DocumentRepository) GetFromIDs(ctx context.Context, IDs []int
         return
     }
 
+    tx, err := repo.db.BeginTx(ctx, nil)
+    if err != nil {
+        return
+    }
+
+    for _, repoModel := range repositoryModels {
+        repo.LoadEntityRelations(ctx, tx, repoModel)
+        if err != nil {
+            return
+        }
+    }
+
+    err = tx.Commit()
+    if err != nil {
+        return
+    }
 
     records = make([]*domain.Document, 0, len(repositoryModels))
 
@@ -1623,3 +1710,91 @@ func (repo *Sqlite3DocumentRepository) DocumentDomainToRepositoryUpdater(ctx con
 }
 
 
+
+
+func (repo *Sqlite3DocumentRepository) UpdateRelatedEntities(ctx context.Context, tx *sql.Tx, repositoryModel *Document) error  {
+	var err error
+
+
+	if repositoryModel.R == nil {
+		return nil
+	}
+
+	err = repositoryModel.SetSourceDocuments(ctx, tx, false, repositoryModel.R.SourceDocuments...)
+	if err != nil {
+		return err
+	}
+	for _, linkedDocument := range repositoryModel.R.SourceDocuments {
+		err = linkedDocument.Upsert(ctx, tx, true, []string{}, boil.Infer(), boil.Infer())
+		if err != nil {
+			return err
+		}
+	}
+
+
+	err = repositoryModel.SetDestinationDocuments(ctx, tx, false, repositoryModel.R.DestinationDocuments...)
+	if err != nil {
+		return err
+	}
+	for _, backlinkedDocument := range repositoryModel.R.DestinationDocuments {
+		err = backlinkedDocument.Upsert(ctx, tx, true, []string{}, boil.Infer(), boil.Infer())
+		if err != nil {
+			return err
+		}
+	}
+
+	err = repositoryModel.SetTags(ctx, tx, false, repositoryModel.R.Tags...)
+	if err != nil {
+		return err
+	}
+	for _, tag := range repositoryModel.R.Tags {
+		err = tag.Upsert(ctx, tx, true, []string{}, boil.Infer(), boil.Infer())
+		if err != nil {
+			return err
+		}
+	}
+
+    if repositoryModel.R.DocumentType != nil {
+        err = repositoryModel.SetDocumentType(ctx, tx, false, repositoryModel.R.DocumentType)
+        if err != nil {
+            return err
+        }
+        if repositoryModel.R.DocumentType != nil {
+            err = repositoryModel.R.DocumentType.Upsert(ctx, tx, true, []string{}, boil.Infer(), boil.Infer())
+            if err != nil {
+                return err
+            }
+        }
+    }
+
+	return nil
+
+}
+
+// PERF: This can probably be sped up by not using singular mode
+func (repo *Sqlite3DocumentRepository) LoadEntityRelations(ctx context.Context, tx *sql.Tx, repoModel *Document) (err error) {
+    if repoModel.R == nil {
+        repoModel.R = repoModel.R.NewStruct()
+    }
+
+
+    err = repoModel.L.LoadDestinationDocuments(ctx, repo.db, true, repoModel, nil)
+    if err != nil {
+        return
+    }
+
+    err = repoModel.L.LoadSourceDocuments(ctx, repo.db, true, repoModel, nil)
+    if err != nil {
+        return
+    }
+
+    err = repoModel.L.LoadTags(ctx, repo.db, true, repoModel, nil)
+    if err != nil {
+        return
+    }
+
+    err = repoModel.L.LoadDocumentType(ctx, repo.db, true, repoModel, nil)
+
+    return
+
+}
