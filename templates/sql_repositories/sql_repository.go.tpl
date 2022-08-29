@@ -1574,12 +1574,18 @@ func (repo *{{$StructName}}) {{$EntityName}}RepositoryToDomainModel(ctx context.
     {{end}}
 
     //*************************    Set Tags    *************************//
-    domainModel.TagIDs, _ = goaoi.TransformCopySliceUnsafe(repositoryModelConcrete.R.Tags, func (t *Tag) int64 {return t.ID;})
+    if len(repositoryModelConcrete.R.Tags) > 0 {
+        domainModel.TagIDs, _ = goaoi.TransformCopySliceUnsafe(repositoryModelConcrete.R.Tags, func (t *Tag) int64 {return t.ID;})
+    }
 
     //**************    Set linked/backlinked documents    *************//
 
-    domainModel.Linked{{$EntityName}}IDs, _ = goaoi.TransformCopySliceUnsafe(repositoryModelConcrete.R.DestinationDocuments, func (d *Document) int64 {return d.ID;})
-    domainModel.Backlinked{{$EntityName}}sIDs, _ = goaoi.TransformCopySliceUnsafe(repositoryModelConcrete.R.SourceDocuments, func (d *Document) int64 {return d.ID;})
+    if len(repositoryModelConcrete.R.DestinationDocuments) > 0 {
+        domainModel.Linked{{$EntityName}}IDs, _ = goaoi.TransformCopySliceUnsafe(repositoryModelConcrete.R.DestinationDocuments, func (d *Document) int64 {return d.ID;})
+    }
+    if len(repositoryModelConcrete.R.SourceDocuments) > 0 {
+        domainModel.Backlinked{{$EntityName}}sIDs, _ = goaoi.TransformCopySliceUnsafe(repositoryModelConcrete.R.SourceDocuments, func (d *Document) int64 {return d.ID;})
+    }
 
     return
 }

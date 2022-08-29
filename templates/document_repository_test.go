@@ -2084,13 +2084,17 @@ func TestSQLDocumentRepositoryTagModelConverter(t *testing.T) {
 	err = repo.AddType(context.Background(), []string{original.DocumentType.Wrappee})
 	assert.NoError(t, err)
 
-	err = repo.Add(context.Background(), []*domain.Document{refOut, refIn, original})
+	documents := []*domain.Document{refOut, refIn, original}
+
+	err = repo.Add(context.Background(), documents)
 	assert.NoError(t, err)
 
-	repositoryModel, err := repo.DocumentDomainToRepositoryModel(context.Background(), original)
-	assert.NoError(t, err)
+	for _, document := range documents {
+		repositoryModel, err := repo.DocumentDomainToRepositoryModel(context.Background(), document)
+		assert.NoError(t, err)
 
-	convertedBack, err := repo.DocumentRepositoryToDomainModel(context.Background(), repositoryModel.(*repository.Document))
-	assert.NoError(t, err)
-	assert.EqualValues(t, original, convertedBack)
+		convertedBack, err := repo.DocumentRepositoryToDomainModel(context.Background(), repositoryModel.(*repository.Document))
+		assert.NoError(t, err)
+		assert.EqualValues(t, document, convertedBack)
+	}
 }
