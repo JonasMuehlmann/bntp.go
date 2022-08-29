@@ -1746,7 +1746,10 @@ func (repo *PsqlBookmarkRepository) UpdateRelatedEntities(ctx context.Context, t
 		return err
 	}
 	for _, tag := range repositoryModel.R.Tags {
+
+        
 		err = tag.Upsert(ctx, tx, true, []string{}, boil.Infer(), boil.Infer())
+        
 		if err != nil {
 			return err
 		}
@@ -1758,7 +1761,13 @@ func (repo *PsqlBookmarkRepository) UpdateRelatedEntities(ctx context.Context, t
             return err
         }
         if repositoryModel.R.BookmarkType != nil {
-            err = repositoryModel.R.BookmarkType.Upsert(ctx, tx, true, []string{}, boil.Infer(), boil.Infer())
+            
+            err =repositoryModel.R.BookmarkType.Upsert(ctx, tx, true, []string{}, boil.Infer(), boil.Infer())
+            
+
+        
+		err =repositoryModel.Upsert(ctx, tx, true, []string{}, boil.Infer(), boil.Infer())
+        
             if err != nil {
                 return err
             }

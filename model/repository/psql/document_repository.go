@@ -1692,7 +1692,10 @@ func (repo *PsqlDocumentRepository) UpdateRelatedEntities(ctx context.Context, t
 		return err
 	}
 	for _, linkedDocument := range repositoryModel.R.SourceDocuments {
-		err = linkedDocument.Upsert(ctx, tx, true, []string{}, boil.Infer(), boil.Infer())
+
+        
+		err =linkedDocument.Upsert(ctx, tx, true, []string{}, boil.Infer(), boil.Infer())
+        
 		if err != nil {
 			return err
 		}
@@ -1704,7 +1707,9 @@ func (repo *PsqlDocumentRepository) UpdateRelatedEntities(ctx context.Context, t
 		return err
 	}
 	for _, backlinkedDocument := range repositoryModel.R.DestinationDocuments {
-		err = backlinkedDocument.Upsert(ctx, tx, true, []string{}, boil.Infer(), boil.Infer())
+        
+		err =backlinkedDocument.Upsert(ctx, tx, true, []string{}, boil.Infer(), boil.Infer())
+        
 		if err != nil {
 			return err
 		}
@@ -1715,7 +1720,9 @@ func (repo *PsqlDocumentRepository) UpdateRelatedEntities(ctx context.Context, t
 		return err
 	}
 	for _, tag := range repositoryModel.R.Tags {
+        
 		err = tag.Upsert(ctx, tx, true, []string{}, boil.Infer(), boil.Infer())
+        
 		if err != nil {
 			return err
 		}
@@ -1727,7 +1734,9 @@ func (repo *PsqlDocumentRepository) UpdateRelatedEntities(ctx context.Context, t
             return err
         }
         if repositoryModel.R.DocumentType != nil {
-            err = repositoryModel.R.DocumentType.Upsert(ctx, tx, true, []string{}, boil.Infer(), boil.Infer())
+            
+            err =repositoryModel.R.DocumentType.Upsert(ctx, tx, true, []string{}, boil.Infer(), boil.Infer())
+            
             if err != nil {
                 return err
             }

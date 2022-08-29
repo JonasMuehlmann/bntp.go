@@ -1428,32 +1428,18 @@ func (repo *PsqlTagRepository) UpdateRelatedEntities(ctx context.Context, tx *sq
 	var err error
 
 
-	// err = repositoryModel.SetParentTagTags(ctx, tx, false, repositoryModel.R.ParentTagTags...)
-	// if err != nil {
-	// 	return err
-	// }
-	// for _, tag := range repositoryModel.R.ParentTagTags {
-	// 	err = tag.Upsert(ctx, tx, true, []string{}, boil.Infer(), boil.Infer())
-	// 	if err != nil {
-	// 		return err
-	// 	}
-	// }
-
     parentTagTag := repositoryModel.R.ParentTagTag
 
     if parentTagTag != nil {
-        // err = repositoryModel.SetParentTagTag(ctx, tx, false, parentTagTag)
-        // if err != nil {
-        //     return err
-        // }
-
         if len(parentTagTag.Children) == 0 {
         parentTagTag.Children = strconv.FormatInt(repositoryModel.ID, 10)
         }  else {
         parentTagTag.Children += ";" + strconv.FormatInt(repositoryModel.ID, 10)
         }
 
-        err = parentTagTag.Upsert(ctx, tx, true, []string{}, boil.Infer(), boil.Infer())
+        
+        err =parentTagTag.Upsert(ctx, tx, true, []string{}, boil.Infer(), boil.Infer())
+        
     }
 
     return err

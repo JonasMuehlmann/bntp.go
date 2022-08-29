@@ -2402,7 +2402,12 @@ func (repo *{{$StructName}}) UpdateRelatedEntities(ctx context.Context, tx *sql.
 		return err
 	}
 	for _, tag := range repositoryModel.R.Tags {
+
+        {{ if eq .DatabaseName "mssql" }}
+		err = tag.Upsert(ctx, tx, boil.Infer(), boil.Infer())
+        {{else}}
 		err = tag.Upsert(ctx, tx, true, []string{}, boil.Infer(), boil.Infer())
+        {{end}}
 		if err != nil {
 			return err
 		}
@@ -2414,7 +2419,17 @@ func (repo *{{$StructName}}) UpdateRelatedEntities(ctx context.Context, tx *sql.
             return err
         }
         if repositoryModel.R.BookmarkType != nil {
-            err = repositoryModel.R.BookmarkType.Upsert(ctx, tx, true, []string{}, boil.Infer(), boil.Infer())
+            {{ if eq .DatabaseName "mssql" }}
+            err =repositoryModel.R.BookmarkType.Upsert(ctx, tx, boil.Infer(), boil.Infer())
+            {{else}}
+            err =repositoryModel.R.BookmarkType.Upsert(ctx, tx, true, []string{}, boil.Infer(), boil.Infer())
+            {{end}}
+
+        {{ if eq .DatabaseName "mssql" }}
+		err =repositoryModel.Upsert(ctx, tx, boil.Infer(), boil.Infer())
+        {{else}}
+		err =repositoryModel.Upsert(ctx, tx, true, []string{}, boil.Infer(), boil.Infer())
+        {{end}}
             if err != nil {
                 return err
             }
@@ -2432,7 +2447,12 @@ func (repo *{{$StructName}}) UpdateRelatedEntities(ctx context.Context, tx *sql.
 		return err
 	}
 	for _, linkedDocument := range repositoryModel.R.SourceDocuments {
-		err = linkedDocument.Upsert(ctx, tx, true, []string{}, boil.Infer(), boil.Infer())
+
+        {{ if eq .DatabaseName "mssql" }}
+		err =linkedDocument.Upsert(ctx, tx, boil.Infer(), boil.Infer())
+        {{else}}
+		err =linkedDocument.Upsert(ctx, tx, true, []string{}, boil.Infer(), boil.Infer())
+        {{end}}
 		if err != nil {
 			return err
 		}
@@ -2444,7 +2464,11 @@ func (repo *{{$StructName}}) UpdateRelatedEntities(ctx context.Context, tx *sql.
 		return err
 	}
 	for _, backlinkedDocument := range repositoryModel.R.DestinationDocuments {
-		err = backlinkedDocument.Upsert(ctx, tx, true, []string{}, boil.Infer(), boil.Infer())
+        {{ if eq .DatabaseName "mssql" }}
+		err =backlinkedDocument.Upsert(ctx, tx, boil.Infer(), boil.Infer())
+        {{else}}
+		err =backlinkedDocument.Upsert(ctx, tx, true, []string{}, boil.Infer(), boil.Infer())
+        {{end}}
 		if err != nil {
 			return err
 		}
@@ -2455,7 +2479,11 @@ func (repo *{{$StructName}}) UpdateRelatedEntities(ctx context.Context, tx *sql.
 		return err
 	}
 	for _, tag := range repositoryModel.R.Tags {
+        {{ if eq .DatabaseName "mssql" }}
+		err = tag.Upsert(ctx, tx, boil.Infer(), boil.Infer())
+        {{else}}
 		err = tag.Upsert(ctx, tx, true, []string{}, boil.Infer(), boil.Infer())
+        {{end}}
 		if err != nil {
 			return err
 		}
@@ -2467,7 +2495,11 @@ func (repo *{{$StructName}}) UpdateRelatedEntities(ctx context.Context, tx *sql.
             return err
         }
         if repositoryModel.R.DocumentType != nil {
-            err = repositoryModel.R.DocumentType.Upsert(ctx, tx, true, []string{}, boil.Infer(), boil.Infer())
+            {{ if eq .DatabaseName "mssql" }}
+            err =repositoryModel.R.DocumentType.Upsert(ctx, tx, boil.Infer(), boil.Infer())
+            {{else}}
+            err =repositoryModel.R.DocumentType.Upsert(ctx, tx, true, []string{}, boil.Infer(), boil.Infer())
+            {{end}}
             if err != nil {
                 return err
             }
@@ -2476,32 +2508,20 @@ func (repo *{{$StructName}}) UpdateRelatedEntities(ctx context.Context, tx *sql.
 
 	return nil
 {{else if eq $EntityName "Tag"}}
-	// err = repositoryModel.SetParentTagTags(ctx, tx, false, repositoryModel.R.ParentTagTags...)
-	// if err != nil {
-	// 	return err
-	// }
-	// for _, tag := range repositoryModel.R.ParentTagTags {
-	// 	err = tag.Upsert(ctx, tx, true, []string{}, boil.Infer(), boil.Infer())
-	// 	if err != nil {
-	// 		return err
-	// 	}
-	// }
-
     parentTagTag := repositoryModel.R.ParentTagTag
 
     if parentTagTag != nil {
-        // err = repositoryModel.SetParentTagTag(ctx, tx, false, parentTagTag)
-        // if err != nil {
-        //     return err
-        // }
-
         if len(parentTagTag.Children) == 0 {
         parentTagTag.Children = strconv.FormatInt(repositoryModel.ID, 10)
         }  else {
         parentTagTag.Children += ";" + strconv.FormatInt(repositoryModel.ID, 10)
         }
 
-        err = parentTagTag.Upsert(ctx, tx, true, []string{}, boil.Infer(), boil.Infer())
+        {{ if eq .DatabaseName "mssql" }}
+        err =parentTagTag.Upsert(ctx, tx, boil.Infer(), boil.Infer())
+        {{else}}
+        err =parentTagTag.Upsert(ctx, tx, true, []string{}, boil.Infer(), boil.Infer())
+        {{end}}
     }
 
     return err

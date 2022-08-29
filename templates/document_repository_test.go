@@ -16,7 +16,6 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
 func TestSQLDocumentRepositoryAddTest(t *testing.T) {
@@ -2078,8 +2077,6 @@ func TestSQLDocumentRepositoryTagModelConverter(t *testing.T) {
 		Tag: "Programming languages",
 		ID:  1,
 	}
-
-	boil.DebugMode = true
 
 	err = repo.GetTagRepository().Add(context.Background(), []*domain.Tag{tag})
 	assert.NoError(t, err)
