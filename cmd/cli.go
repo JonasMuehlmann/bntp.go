@@ -36,6 +36,7 @@ import (
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 	"github.com/stoewer/go-strcase"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
 type CliOption func(*Cli)
@@ -124,6 +125,14 @@ func NewCli(options ...CliOption) *Cli {
 		"The config file to use instead of ones found in search paths",
 	)
 
+	cli.RootCmd.PersistentFlags().BoolVar(
+		&cli.DebugMode,
+		"debug",
+		false,
+		"Whetever to enable debug mode for extra logic/logging",
+	)
+
+	cli.RootCmd.PersistentPreRun = cli.PersistentPreRun
 	cli.RootCmd.PersistentFlags().String(
 		strcase.KebabCase(config.ConsoleLogLevel),
 		cli.ConfigManager.GetDefaultSettings()[config.ConsoleLogLevel].(string),
@@ -161,6 +170,12 @@ func (cli *Cli) Execute() error {
 	return err
 }
 
+func (cli *Cli) PersistentPreRun(cmd *cobra.Command, args []string) {
+	if cli.DebugMode {
+		boil.DebugMode = true
+	}
+}
+
 type Cli struct {
 	ConfigManager *config.ConfigManager
 	BNTPBackend   *backend.Backend
@@ -170,6 +185,7 @@ type Cli struct {
 	UpdaterRaw    string
 	PathFormat    bool
 	ShortFormat   bool
+	DebugMode     bool
 	StdErr        io.Writer
 	DBOverride    *sql.DB
 	Logger        *log.Logger
