@@ -55,7 +55,10 @@ func (marshaller *JsonMarshaller) Marshall(from any) (to string, err error) {
 type JsonUnmarshaller struct{}
 
 func (unmarshaller *JsonUnmarshaller) Unmarshall(out any, in string) error {
-	return json.Unmarshal([]byte(in), out)
+	decoder := json.NewDecoder(strings.NewReader(in))
+	decoder.DisallowUnknownFields()
+
+	return decoder.Decode(out)
 }
 
 // ******************************************************************//
