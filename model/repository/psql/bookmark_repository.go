@@ -421,20 +421,30 @@ func (repo *PsqlBookmarkRepository) Add(ctx context.Context, domainModels []*dom
 	}
 
     
-    err = repo.AddMinimal(ctx, domainModels)
+    var tx *sql.Tx
+
+    tx, err = repo.db.BeginTx(ctx, nil)
     if err != nil {
         return err
     }
 
-    err = repo.Replace(ctx, domainModels)
+
+    err = repo.AddMinimal(ctx, domainModels, tx)
     if err != nil {
         return err
     }
+
+    err = repo.ReplaceTx(ctx, domainModels, tx)
+    if err != nil {
+        return err
+    }
+
+    tx.Commit()
 
     return
 }
 
-func (repo *PsqlBookmarkRepository) AddMinimal(ctx context.Context, domainModels []*domain.Bookmark)  (err error){
+func (repo *PsqlBookmarkRepository) AddMinimal(ctx context.Context, domainModels []*domain.Bookmark, tx *sql.Tx)  (err error){
     if len(domainModels) == 0 {
         repo.Logger.Debug(helper.LogMessageEmptyInput)
 
@@ -457,12 +467,12 @@ func (repo *PsqlBookmarkRepository) AddMinimal(ctx context.Context, domainModels
 		return
 	}
 
-    var tx *sql.Tx
-
-	tx, err = repo.db.BeginTx(ctx, nil)
-	if err != nil {
-		return
-	}
+    if tx == nil {
+        tx, err = repo.db.BeginTx(ctx, nil)
+        if err != nil {
+            return
+        }
+    }
 
 	for _, repositoryModel := range repositoryModels {
         repoModel, ok := repositoryModel.(*Bookmark)
@@ -482,7 +492,80 @@ func (repo *PsqlBookmarkRepository) AddMinimal(ctx context.Context, domainModels
 		}
 	}
 
-	tx.Commit()
+    return
+}
+
+func (repo *PsqlBookmarkRepository) ReplaceTx(ctx context.Context, domainModels []*domain.Bookmark, tx *sql.Tx)  (err error){
+    
+    if len(domainModels) == 0 {
+        repo.Logger.Debug(helper.LogMessageEmptyInput)
+
+        err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
+
+        return
+    }
+
+	err = goaoi.AnyOfSlice(domainModels, func (e *domain.Bookmark) bool {return e == nil || e.IsDefault()})
+	if err == nil{
+		err = helper.NilInputError{}
+		repo.Logger.Error(err)
+
+		return
+	}
+
+    var repositoryModels []any
+    repositoryModels, err = goaoi.TransformCopySlice(domainModels, repo.GetBookmarkDomainToRepositoryModel(ctx))
+	if err != nil {
+		return
+	}
+
+    if tx == nil {
+        tx, err = repo.db.BeginTx(ctx, nil)
+        if err != nil {
+            return
+        }
+    }
+
+	for _, repositoryModel := range repositoryModels {
+        repoModel, ok := repositoryModel.(*Bookmark)
+        if !ok {
+            err = fmt.Errorf("expected type *Bookmark but got %T", repoModel)
+
+            return
+        }
+
+        var numAffectedRecords int64
+		numAffectedRecords, err = repoModel.Update(ctx, tx, boil.Infer())
+		if err != nil {
+            if strings.Contains(err.Error(), "UNIQUE") {
+                err = helper.DuplicateInsertionError{Inner: err}
+            }
+
+			return
+		}
+
+        if numAffectedRecords == 0 {
+            var doesExist bool
+            for _, repositoryBookmark := range repositoryModels {
+                doesExist, err = Bookmarks(BookmarkWhere.ID.EQ(repositoryBookmark.(*Bookmark).ID)).Exists(ctx, tx)
+                if err != nil {
+                    return err
+                }
+
+                if !doesExist {
+                    err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
+
+                    return
+                }
+            }
+        }
+
+        err = repo.UpdateRelatedEntities(ctx,tx, repositoryModel.(*Bookmark))
+        if err != nil {
+            return err
+        }
+
+	}
 
     return
 }
@@ -563,6 +646,7 @@ func (repo *PsqlBookmarkRepository) Replace(ctx context.Context, domainModels []
 
     return
 }
+
 func (repo *PsqlBookmarkRepository) Upsert(ctx context.Context, domainModels []*domain.Bookmark)  (err error){
     if len(domainModels) == 0 {
         repo.Logger.Debug(helper.LogMessageEmptyInput)

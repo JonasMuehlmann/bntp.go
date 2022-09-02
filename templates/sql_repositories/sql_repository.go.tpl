@@ -333,20 +333,30 @@ func (repo *{{$StructName}}) Add(ctx context.Context, domainModels []*domain.{{$
 	}
 
     {{/*FIX: This should use a transaction*/}}
-    err = repo.AddMinimal(ctx, domainModels)
+    var tx *sql.Tx
+
+    tx, err = repo.db.BeginTx(ctx, nil)
     if err != nil {
         return err
     }
 
-    err = repo.Replace(ctx, domainModels)
+
+    err = repo.AddMinimal(ctx, domainModels, tx)
     if err != nil {
         return err
     }
+
+    err = repo.ReplaceTx(ctx, domainModels, tx)
+    if err != nil {
+        return err
+    }
+
+    tx.Commit()
 
     return
 }
 
-func (repo *{{$StructName}}) AddMinimal(ctx context.Context, domainModels []*domain.{{$EntityName}})  (err error){
+func (repo *{{$StructName}}) AddMinimal(ctx context.Context, domainModels []*domain.{{$EntityName}}, tx *sql.Tx)  (err error){
     if len(domainModels) == 0 {
         repo.Logger.Debug(helper.LogMessageEmptyInput)
 
@@ -369,12 +379,12 @@ func (repo *{{$StructName}}) AddMinimal(ctx context.Context, domainModels []*dom
 		return
 	}
 
-    var tx *sql.Tx
-
-	tx, err = repo.db.BeginTx(ctx, nil)
-	if err != nil {
-		return
-	}
+    if tx == nil {
+        tx, err = repo.db.BeginTx(ctx, nil)
+        if err != nil {
+            return
+        }
+    }
 
 	for _, repositoryModel := range repositoryModels {
         repoModel, ok := repositoryModel.(*{{$EntityName}})
@@ -394,7 +404,80 @@ func (repo *{{$StructName}}) AddMinimal(ctx context.Context, domainModels []*dom
 		}
 	}
 
-	tx.Commit()
+    return
+}
+
+func (repo *{{$StructName}}) ReplaceTx(ctx context.Context, domainModels []*domain.{{$EntityName}}, tx *sql.Tx)  (err error){
+    {{/* TODO: Handle empty inputs and input containing/being nil values */}}
+    if len(domainModels) == 0 {
+        repo.Logger.Debug(helper.LogMessageEmptyInput)
+
+        err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
+
+        return
+    }
+
+	err = goaoi.AnyOfSlice(domainModels, func (e *domain.{{$EntityName}}) bool {return e == nil || e.IsDefault()})
+	if err == nil{
+		err = helper.NilInputError{}
+		repo.Logger.Error(err)
+
+		return
+	}
+
+    var repositoryModels []any
+    repositoryModels, err = goaoi.TransformCopySlice(domainModels, repo.Get{{$EntityName}}DomainToRepositoryModel(ctx))
+	if err != nil {
+		return
+	}
+
+    if tx == nil {
+        tx, err = repo.db.BeginTx(ctx, nil)
+        if err != nil {
+            return
+        }
+    }
+
+	for _, repositoryModel := range repositoryModels {
+        repoModel, ok := repositoryModel.(*{{$EntityName}})
+        if !ok {
+            err = fmt.Errorf("expected type *{{$EntityName}} but got %T", repoModel)
+
+            return
+        }
+
+        var numAffectedRecords int64
+		numAffectedRecords, err = repoModel.Update(ctx, tx, boil.Infer())
+		if err != nil {
+            if strings.Contains(err.Error(), "UNIQUE") {
+                err = helper.DuplicateInsertionError{Inner: err}
+            }
+
+			return
+		}
+
+        if numAffectedRecords == 0 {
+            var doesExist bool
+            for _, repository{{$EntityName}} := range repositoryModels {
+                doesExist, err = {{$EntityName}}s({{$EntityName}}Where.ID.EQ(repository{{$EntityName}}.(*{{$EntityName}}).ID)).Exists(ctx, tx)
+                if err != nil {
+                    return err
+                }
+
+                if !doesExist {
+                    err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
+
+                    return
+                }
+            }
+        }
+
+        err = repo.UpdateRelatedEntities(ctx,tx, repositoryModel.(*{{$EntityName}}))
+        if err != nil {
+            return err
+        }
+
+	}
 
     return
 }
@@ -475,6 +558,7 @@ func (repo *{{$StructName}}) Replace(ctx context.Context, domainModels []*domain
 
     return
 }
+
 func (repo *{{$StructName}}) Upsert(ctx context.Context, domainModels []*domain.{{$EntityName}})  (err error){
     if len(domainModels) == 0 {
         repo.Logger.Debug(helper.LogMessageEmptyInput)

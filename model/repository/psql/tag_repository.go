@@ -355,20 +355,30 @@ func (repo *PsqlTagRepository) Add(ctx context.Context, domainModels []*domain.T
 	}
 
     
-    err = repo.AddMinimal(ctx, domainModels)
+    var tx *sql.Tx
+
+    tx, err = repo.db.BeginTx(ctx, nil)
     if err != nil {
         return err
     }
 
-    err = repo.Replace(ctx, domainModels)
+
+    err = repo.AddMinimal(ctx, domainModels, tx)
     if err != nil {
         return err
     }
+
+    err = repo.ReplaceTx(ctx, domainModels, tx)
+    if err != nil {
+        return err
+    }
+
+    tx.Commit()
 
     return
 }
 
-func (repo *PsqlTagRepository) AddMinimal(ctx context.Context, domainModels []*domain.Tag)  (err error){
+func (repo *PsqlTagRepository) AddMinimal(ctx context.Context, domainModels []*domain.Tag, tx *sql.Tx)  (err error){
     if len(domainModels) == 0 {
         repo.Logger.Debug(helper.LogMessageEmptyInput)
 
@@ -391,12 +401,12 @@ func (repo *PsqlTagRepository) AddMinimal(ctx context.Context, domainModels []*d
 		return
 	}
 
-    var tx *sql.Tx
-
-	tx, err = repo.db.BeginTx(ctx, nil)
-	if err != nil {
-		return
-	}
+    if tx == nil {
+        tx, err = repo.db.BeginTx(ctx, nil)
+        if err != nil {
+            return
+        }
+    }
 
 	for _, repositoryModel := range repositoryModels {
         repoModel, ok := repositoryModel.(*Tag)
@@ -416,7 +426,80 @@ func (repo *PsqlTagRepository) AddMinimal(ctx context.Context, domainModels []*d
 		}
 	}
 
-	tx.Commit()
+    return
+}
+
+func (repo *PsqlTagRepository) ReplaceTx(ctx context.Context, domainModels []*domain.Tag, tx *sql.Tx)  (err error){
+    
+    if len(domainModels) == 0 {
+        repo.Logger.Debug(helper.LogMessageEmptyInput)
+
+        err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
+
+        return
+    }
+
+	err = goaoi.AnyOfSlice(domainModels, func (e *domain.Tag) bool {return e == nil || e.IsDefault()})
+	if err == nil{
+		err = helper.NilInputError{}
+		repo.Logger.Error(err)
+
+		return
+	}
+
+    var repositoryModels []any
+    repositoryModels, err = goaoi.TransformCopySlice(domainModels, repo.GetTagDomainToRepositoryModel(ctx))
+	if err != nil {
+		return
+	}
+
+    if tx == nil {
+        tx, err = repo.db.BeginTx(ctx, nil)
+        if err != nil {
+            return
+        }
+    }
+
+	for _, repositoryModel := range repositoryModels {
+        repoModel, ok := repositoryModel.(*Tag)
+        if !ok {
+            err = fmt.Errorf("expected type *Tag but got %T", repoModel)
+
+            return
+        }
+
+        var numAffectedRecords int64
+		numAffectedRecords, err = repoModel.Update(ctx, tx, boil.Infer())
+		if err != nil {
+            if strings.Contains(err.Error(), "UNIQUE") {
+                err = helper.DuplicateInsertionError{Inner: err}
+            }
+
+			return
+		}
+
+        if numAffectedRecords == 0 {
+            var doesExist bool
+            for _, repositoryTag := range repositoryModels {
+                doesExist, err = Tags(TagWhere.ID.EQ(repositoryTag.(*Tag).ID)).Exists(ctx, tx)
+                if err != nil {
+                    return err
+                }
+
+                if !doesExist {
+                    err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
+
+                    return
+                }
+            }
+        }
+
+        err = repo.UpdateRelatedEntities(ctx,tx, repositoryModel.(*Tag))
+        if err != nil {
+            return err
+        }
+
+	}
 
     return
 }
@@ -497,6 +580,7 @@ func (repo *PsqlTagRepository) Replace(ctx context.Context, domainModels []*doma
 
     return
 }
+
 func (repo *PsqlTagRepository) Upsert(ctx context.Context, domainModels []*domain.Tag)  (err error){
     if len(domainModels) == 0 {
         repo.Logger.Debug(helper.LogMessageEmptyInput)
