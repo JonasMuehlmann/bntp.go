@@ -332,6 +332,7 @@ func (repo *{{$StructName}}) Add(ctx context.Context, domainModels []*domain.{{$
 		return
 	}
 
+    {{/*FIX: This should use a transaction*/}}
     err = repo.AddMinimal(ctx, domainModels)
     if err != nil {
         return err

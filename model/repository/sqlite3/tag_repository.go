@@ -354,6 +354,7 @@ func (repo *Sqlite3TagRepository) Add(ctx context.Context, domainModels []*domai
 		return
 	}
 
+    
     err = repo.AddMinimal(ctx, domainModels)
     if err != nil {
         return err

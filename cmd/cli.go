@@ -161,13 +161,7 @@ func (cli *Cli) Execute() error {
 	cli.RootCmd.SilenceUsage = true
 	cli.RootCmd.SilenceErrors = true
 
-	err := cli.RootCmd.Execute()
-
-	if err != nil {
-		cli.Logger.Error(err)
-	}
-
-	return err
+	return cli.RootCmd.Execute()
 }
 
 func (cli *Cli) PersistentPreRun(cmd *cobra.Command, args []string) {

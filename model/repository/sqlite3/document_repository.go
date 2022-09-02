@@ -381,6 +381,7 @@ func (repo *Sqlite3DocumentRepository) Add(ctx context.Context, domainModels []*
 		return
 	}
 
+    
     err = repo.AddMinimal(ctx, domainModels)
     if err != nil {
         return err

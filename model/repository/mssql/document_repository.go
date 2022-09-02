@@ -381,6 +381,7 @@ func (repo *MssqlDocumentRepository) Add(ctx context.Context, domainModels []*do
 		return
 	}
 
+    
     err = repo.AddMinimal(ctx, domainModels)
     if err != nil {
         return err

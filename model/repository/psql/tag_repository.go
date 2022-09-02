@@ -354,6 +354,7 @@ func (repo *PsqlTagRepository) Add(ctx context.Context, domainModels []*domain.T
 		return
 	}
 
+    
     err = repo.AddMinimal(ctx, domainModels)
     if err != nil {
         return err
