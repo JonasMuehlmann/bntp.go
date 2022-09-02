@@ -23,374 +23,357 @@
 package repository
 
 import (
-	 repoCommon "github.com/JonasMuehlmann/bntp.go/model/repository"
 	"container/list"
+	"context"
+	"database/sql"
+	"errors"
 	"fmt"
-    "errors"
+	"strings"
+
 	"github.com/JonasMuehlmann/bntp.go/internal/helper"
 	"github.com/JonasMuehlmann/bntp.go/model"
 	"github.com/JonasMuehlmann/bntp.go/model/domain"
+	repoCommon "github.com/JonasMuehlmann/bntp.go/model/repository"
 	"github.com/JonasMuehlmann/goaoi"
 	"github.com/JonasMuehlmann/optional.go"
-	"github.com/volatiletech/null/v8"
-    "context"
-    "database/sql"
-    "github.com/volatiletech/sqlboiler/v4/boil"
-    "github.com/volatiletech/sqlboiler/v4/queries"
-    "github.com/volatiletech/sqlboiler/v4/queries/qm"
-    log "github.com/sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 	"github.com/stoewer/go-strcase"
-    "strings"
-    
-    "strconv"
-    
-    
-)
+	"github.com/volatiletech/null/v8"
+	"github.com/volatiletech/sqlboiler/v4/boil"
+	"github.com/volatiletech/sqlboiler/v4/queries"
+	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 
+	"strconv"
+)
 
 //******************************************************************//
 //                        Types and constants                       //
 //******************************************************************//
 type Sqlite3TagRepository struct {
-    db *sql.DB
-    Logger *log.Logger
-    
+	db     *sql.DB
+	Logger *log.Logger
 }
 
 type TagField string
 
 var TagFields = struct {
-    Tag  TagField
-    Path  TagField
-    Children  TagField
-    ParentTag  TagField
-    ID  TagField
-    
+	Tag       TagField
+	Path      TagField
+	Children  TagField
+	ParentTag TagField
+	ID        TagField
 }{
-    Tag: "tag",
-    Path: "path",
-    Children: "children",
-    ParentTag: "parent_tag",
-    ID: "id",
-    
+	Tag:       "tag",
+	Path:      "path",
+	Children:  "children",
+	ParentTag: "parent_tag",
+	ID:        "id",
 }
 
 var TagFieldsList = []TagField{
-    TagField("Tag"),
-    TagField("Path"),
-    TagField("Children"),
-    TagField("ParentTag"),
-    TagField("ID"),
-    
+	TagField("Tag"),
+	TagField("Path"),
+	TagField("Children"),
+	TagField("ParentTag"),
+	TagField("ID"),
 }
 
 var TagRelationsList = []string{
-    "ParentTagTag",
-    "Bookmarks",
-    "Documents",
-    "ParentTagTags",
-    
+	"ParentTagTag",
+	"Bookmarks",
+	"Documents",
+	"ParentTagTags",
 }
 
 type TagFilter struct {
-    Tag optional.Optional[model.FilterOperation[string]]
-    Path optional.Optional[model.FilterOperation[string]]
-    Children optional.Optional[model.FilterOperation[string]]
-    ParentTag optional.Optional[model.FilterOperation[null.Int64]]
-    ID optional.Optional[model.FilterOperation[int64]]
-    
-    
+	Tag       optional.Optional[model.FilterOperation[string]]
+	Path      optional.Optional[model.FilterOperation[string]]
+	Children  optional.Optional[model.FilterOperation[string]]
+	ParentTag optional.Optional[model.FilterOperation[null.Int64]]
+	ID        optional.Optional[model.FilterOperation[int64]]
 }
 
 type TagUpdater struct {
-    Tag optional.Optional[model.UpdateOperation[string]]
-    Path optional.Optional[model.UpdateOperation[string]]
-    Children optional.Optional[model.UpdateOperation[string]]
-    ParentTag optional.Optional[model.UpdateOperation[null.Int64]]
-    ID optional.Optional[model.UpdateOperation[int64]]
-    
-    
+	Tag       optional.Optional[model.UpdateOperation[string]]
+	Path      optional.Optional[model.UpdateOperation[string]]
+	Children  optional.Optional[model.UpdateOperation[string]]
+	ParentTag optional.Optional[model.UpdateOperation[null.Int64]]
+	ID        optional.Optional[model.UpdateOperation[int64]]
 }
 
 type TagUpdaterMapping[T any] struct {
-    Field TagField
-    Updater model.UpdateOperation[T]
+	Field   TagField
+	Updater model.UpdateOperation[T]
 }
 
 func (updater *TagUpdater) GetSetUpdaters() *list.List {
-    setUpdaters := list.New()
+	setUpdaters := list.New()
 
-    if updater.Tag.HasValue {
-    setUpdaters.PushBack(TagUpdaterMapping[string]{Field: TagFields.Tag, Updater: updater.Tag.Wrappee})
-    }
-    if updater.Path.HasValue {
-    setUpdaters.PushBack(TagUpdaterMapping[string]{Field: TagFields.Path, Updater: updater.Path.Wrappee})
-    }
-    if updater.Children.HasValue {
-    setUpdaters.PushBack(TagUpdaterMapping[string]{Field: TagFields.Children, Updater: updater.Children.Wrappee})
-    }
-    if updater.ParentTag.HasValue {
-    setUpdaters.PushBack(TagUpdaterMapping[null.Int64]{Field: TagFields.ParentTag, Updater: updater.ParentTag.Wrappee})
-    }
-    if updater.ID.HasValue {
-    setUpdaters.PushBack(TagUpdaterMapping[int64]{Field: TagFields.ID, Updater: updater.ID.Wrappee})
-    }
-    
+	if updater.Tag.HasValue {
+		setUpdaters.PushBack(TagUpdaterMapping[string]{Field: TagFields.Tag, Updater: updater.Tag.Wrappee})
+	}
+	if updater.Path.HasValue {
+		setUpdaters.PushBack(TagUpdaterMapping[string]{Field: TagFields.Path, Updater: updater.Path.Wrappee})
+	}
+	if updater.Children.HasValue {
+		setUpdaters.PushBack(TagUpdaterMapping[string]{Field: TagFields.Children, Updater: updater.Children.Wrappee})
+	}
+	if updater.ParentTag.HasValue {
+		setUpdaters.PushBack(TagUpdaterMapping[null.Int64]{Field: TagFields.ParentTag, Updater: updater.ParentTag.Wrappee})
+	}
+	if updater.ID.HasValue {
+		setUpdaters.PushBack(TagUpdaterMapping[int64]{Field: TagFields.ID, Updater: updater.ID.Wrappee})
+	}
 
-    return setUpdaters
+	return setUpdaters
 }
 
 func (updater *TagUpdater) ApplyToModel(tagModel *Tag) {
-    if updater.Tag.HasValue {
-        model.ApplyUpdater(&(*tagModel).Tag, updater.Tag.Wrappee)
-    }
-    if updater.Path.HasValue {
-        model.ApplyUpdater(&(*tagModel).Path, updater.Path.Wrappee)
-    }
-    if updater.Children.HasValue {
-        model.ApplyUpdater(&(*tagModel).Children, updater.Children.Wrappee)
-    }
-    if updater.ParentTag.HasValue {
-        model.ApplyUpdater(&(*tagModel).ParentTag, updater.ParentTag.Wrappee)
-    }
-    if updater.ID.HasValue {
-        model.ApplyUpdater(&(*tagModel).ID, updater.ID.Wrappee)
-    }
-    
+	if updater.Tag.HasValue {
+		model.ApplyUpdater(&(*tagModel).Tag, updater.Tag.Wrappee)
+	}
+	if updater.Path.HasValue {
+		model.ApplyUpdater(&(*tagModel).Path, updater.Path.Wrappee)
+	}
+	if updater.Children.HasValue {
+		model.ApplyUpdater(&(*tagModel).Children, updater.Children.Wrappee)
+	}
+	if updater.ParentTag.HasValue {
+		model.ApplyUpdater(&(*tagModel).ParentTag, updater.ParentTag.Wrappee)
+	}
+	if updater.ID.HasValue {
+		model.ApplyUpdater(&(*tagModel).ID, updater.ID.Wrappee)
+	}
+
 }
 
 type queryModSliceTag []qm.QueryMod
 
 func (s queryModSliceTag) Apply(q *queries.Query) {
-    qm.Apply(q, s...)
+	qm.Apply(q, s...)
 }
 
 func buildQueryModFilterTag[T any](filterField TagField, filterOperation model.FilterOperation[T]) queryModSliceTag {
-    var newQueryMod queryModSliceTag
+	var newQueryMod queryModSliceTag
 
-    filterOperator := filterOperation.Operator
+	filterOperator := filterOperation.Operator
 
-    switch filterOperator {
-    case model.FilterEqual:
-        filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[T])
-        if !ok {
-            panic("expected a scalar operand for FilterEqual operator")
-        }
+	switch filterOperator {
+	case model.FilterEqual:
+		filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[T])
+		if !ok {
+			panic("expected a scalar operand for FilterEqual operator")
+		}
 
-        newQueryMod = append(newQueryMod, qm.Where(strcase.SnakeCase(string(filterField))+" = ?", filterOperand.Operand))
-    case model.FilterNEqual:
-        filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[T])
-        if !ok {
-            panic("expected a scalar operand for FilterNEqual operator")
-        }
+		newQueryMod = append(newQueryMod, qm.Where(strcase.SnakeCase(string(filterField))+" = ?", filterOperand.Operand))
+	case model.FilterNEqual:
+		filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[T])
+		if !ok {
+			panic("expected a scalar operand for FilterNEqual operator")
+		}
 
-        newQueryMod = append(newQueryMod, qm.Where(strcase.SnakeCase(string(filterField))+" != ?", filterOperand.Operand))
-    case model.FilterGreaterThan:
-        filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[T])
-        if !ok {
-            panic("expected a scalar operand for FilterGreaterThan operator")
-        }
+		newQueryMod = append(newQueryMod, qm.Where(strcase.SnakeCase(string(filterField))+" != ?", filterOperand.Operand))
+	case model.FilterGreaterThan:
+		filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[T])
+		if !ok {
+			panic("expected a scalar operand for FilterGreaterThan operator")
+		}
 
-        newQueryMod = append(newQueryMod, qm.Where(strcase.SnakeCase(string(filterField))+" > ?", filterOperand.Operand))
-    case model.FilterGreaterThanEqual:
-        filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[T])
-        if !ok {
-            panic("expected a scalar operand for FilterGreaterThanEqual operator")
-        }
+		newQueryMod = append(newQueryMod, qm.Where(strcase.SnakeCase(string(filterField))+" > ?", filterOperand.Operand))
+	case model.FilterGreaterThanEqual:
+		filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[T])
+		if !ok {
+			panic("expected a scalar operand for FilterGreaterThanEqual operator")
+		}
 
-        newQueryMod = append(newQueryMod, qm.Where(strcase.SnakeCase(string(filterField))+" >= ?", filterOperand.Operand))
-    case model.FilterLessThan:
-        filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[T])
-        if !ok {
-            panic("expected a scalar operand for FilterLessThan operator")
-        }
+		newQueryMod = append(newQueryMod, qm.Where(strcase.SnakeCase(string(filterField))+" >= ?", filterOperand.Operand))
+	case model.FilterLessThan:
+		filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[T])
+		if !ok {
+			panic("expected a scalar operand for FilterLessThan operator")
+		}
 
-        newQueryMod = append(newQueryMod, qm.Where(strcase.SnakeCase(string(filterField))+" < ?", filterOperand.Operand))
-    case model.FilterLessThanEqual:
-        filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[T])
-        if !ok {
-            panic("expected a scalar operand for FilterLessThanEqual operator")
-        }
+		newQueryMod = append(newQueryMod, qm.Where(strcase.SnakeCase(string(filterField))+" < ?", filterOperand.Operand))
+	case model.FilterLessThanEqual:
+		filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[T])
+		if !ok {
+			panic("expected a scalar operand for FilterLessThanEqual operator")
+		}
 
-        newQueryMod = append(newQueryMod, qm.Where(strcase.SnakeCase(string(filterField))+" <= ?", filterOperand.Operand))
-    case model.FilterIn:
-        filterOperand, ok := filterOperation.Operand.(model.ListOperand[T])
-        if !ok {
-            panic("expected a list operand for FilterIn operator")
-        }
-
-		whereArgs, _ := goaoi.TransformCopySliceUnsafe(filterOperand.Operands, func(a T) any { return any(a) })
-
-        newQueryMod = append(newQueryMod, qm.WhereIn(strcase.SnakeCase(string(filterField))+" IN ?", whereArgs...))
-    case model.FilterNotIn:
-        filterOperand, ok := filterOperation.Operand.(model.ListOperand[T])
-        if !ok {
-            panic("expected a list operand for FilterNotIn operator")
-        }
+		newQueryMod = append(newQueryMod, qm.Where(strcase.SnakeCase(string(filterField))+" <= ?", filterOperand.Operand))
+	case model.FilterIn:
+		filterOperand, ok := filterOperation.Operand.(model.ListOperand[T])
+		if !ok {
+			panic("expected a list operand for FilterIn operator")
+		}
 
 		whereArgs, _ := goaoi.TransformCopySliceUnsafe(filterOperand.Operands, func(a T) any { return any(a) })
 
-        newQueryMod = append(newQueryMod, qm.WhereNotIn(strcase.SnakeCase(string(filterField))+" IN ?", whereArgs...))
-    case model.FilterBetween:
-        filterOperand, ok := filterOperation.Operand.(model.RangeOperand[T])
-        if !ok {
-            panic("expected a scalar operand for FilterBetween operator")
-        }
+		newQueryMod = append(newQueryMod, qm.WhereIn(strcase.SnakeCase(string(filterField))+" IN ?", whereArgs...))
+	case model.FilterNotIn:
+		filterOperand, ok := filterOperation.Operand.(model.ListOperand[T])
+		if !ok {
+			panic("expected a list operand for FilterNotIn operator")
+		}
 
-        newQueryMod = append(newQueryMod, qm.Where(strcase.SnakeCase(string(filterField))+" BETWEEN ? AND ?", filterOperand.Start, filterOperand.End))
-    case model.FilterNotBetween:
-        filterOperand, ok := filterOperation.Operand.(model.RangeOperand[T])
-        if !ok {
-            panic("expected a scalar operand for FilterNotBetween operator")
-        }
+		whereArgs, _ := goaoi.TransformCopySliceUnsafe(filterOperand.Operands, func(a T) any { return any(a) })
 
-        newQueryMod = append(newQueryMod, qm.Where(strcase.SnakeCase(string(filterField))+" NOT BETWEEN ? AND ?", filterOperand.Start, filterOperand.End))
-    case model.FilterLike:
-        filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[T])
-        if !ok {
-            panic("expected a scalar operand for FilterLike operator")
-        }
+		newQueryMod = append(newQueryMod, qm.WhereNotIn(strcase.SnakeCase(string(filterField))+" IN ?", whereArgs...))
+	case model.FilterBetween:
+		filterOperand, ok := filterOperation.Operand.(model.RangeOperand[T])
+		if !ok {
+			panic("expected a scalar operand for FilterBetween operator")
+		}
 
-        newQueryMod = append(newQueryMod, qm.Where(strcase.SnakeCase(string(filterField))+" LIKE ?", filterOperand.Operand))
-    case model.FilterNotLike:
-        filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[T])
-        if !ok {
-            panic("expected a scalar operand for FilterLike operator")
-        }
+		newQueryMod = append(newQueryMod, qm.Where(strcase.SnakeCase(string(filterField))+" BETWEEN ? AND ?", filterOperand.Start, filterOperand.End))
+	case model.FilterNotBetween:
+		filterOperand, ok := filterOperation.Operand.(model.RangeOperand[T])
+		if !ok {
+			panic("expected a scalar operand for FilterNotBetween operator")
+		}
 
-        newQueryMod = append(newQueryMod, qm.Where(strcase.SnakeCase(string(filterField))+" NOT LIKE ?", filterOperand.Operand))
-    case model.FilterOr:
-        filterOperand, ok := filterOperation.Operand.(model.CompoundOperand[T])
-        if !ok {
-            panic("expected a scalar operand for FilterOr operator")
-        }
-        newQueryMod = append(newQueryMod, qm.Expr(buildQueryModFilterTag(filterField, filterOperand.LHS)))
-        newQueryMod = append(newQueryMod, qm.Or2(qm.Expr(buildQueryModFilterTag(filterField, filterOperand.RHS))))
-    case model.FilterAnd:
-        filterOperand, ok := filterOperation.Operand.(model.CompoundOperand[T])
-        if !ok {
-            panic("expected a scalar operand for FilterAnd operator")
-        }
+		newQueryMod = append(newQueryMod, qm.Where(strcase.SnakeCase(string(filterField))+" NOT BETWEEN ? AND ?", filterOperand.Start, filterOperand.End))
+	case model.FilterLike:
+		filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[T])
+		if !ok {
+			panic("expected a scalar operand for FilterLike operator")
+		}
 
-        newQueryMod = append(newQueryMod, qm.Expr(buildQueryModFilterTag(filterField, filterOperand.LHS)))
-        newQueryMod = append(newQueryMod, qm.Expr(buildQueryModFilterTag(filterField, filterOperand.RHS)))
-    default:
-        panic("Unhandled FilterOperator")
-    }
+		newQueryMod = append(newQueryMod, qm.Where(strcase.SnakeCase(string(filterField))+" LIKE ?", filterOperand.Operand))
+	case model.FilterNotLike:
+		filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[T])
+		if !ok {
+			panic("expected a scalar operand for FilterLike operator")
+		}
 
-    return newQueryMod
+		newQueryMod = append(newQueryMod, qm.Where(strcase.SnakeCase(string(filterField))+" NOT LIKE ?", filterOperand.Operand))
+	case model.FilterOr:
+		filterOperand, ok := filterOperation.Operand.(model.CompoundOperand[T])
+		if !ok {
+			panic("expected a scalar operand for FilterOr operator")
+		}
+		newQueryMod = append(newQueryMod, qm.Expr(buildQueryModFilterTag(filterField, filterOperand.LHS)))
+		newQueryMod = append(newQueryMod, qm.Or2(qm.Expr(buildQueryModFilterTag(filterField, filterOperand.RHS))))
+	case model.FilterAnd:
+		filterOperand, ok := filterOperation.Operand.(model.CompoundOperand[T])
+		if !ok {
+			panic("expected a scalar operand for FilterAnd operator")
+		}
+
+		newQueryMod = append(newQueryMod, qm.Expr(buildQueryModFilterTag(filterField, filterOperand.LHS)))
+		newQueryMod = append(newQueryMod, qm.Expr(buildQueryModFilterTag(filterField, filterOperand.RHS)))
+	default:
+		panic("Unhandled FilterOperator")
+	}
+
+	return newQueryMod
 }
 
 func buildQueryModListFromFilterTag(filter *TagFilter) queryModSliceTag {
 	queryModList := make(queryModSliceTag, 0, 5)
 
-    if filter.Tag.HasValue {
-        newQueryMod := buildQueryModFilterTag("Tag", filter.Tag.Wrappee)
-        queryModList = append(queryModList, newQueryMod...)
-    }
-    if filter.Path.HasValue {
-        newQueryMod := buildQueryModFilterTag("Path", filter.Path.Wrappee)
-        queryModList = append(queryModList, newQueryMod...)
-    }
-    if filter.Children.HasValue {
-        newQueryMod := buildQueryModFilterTag("Children", filter.Children.Wrappee)
-        queryModList = append(queryModList, newQueryMod...)
-    }
-    if filter.ParentTag.HasValue {
-        newQueryMod := buildQueryModFilterTag("ParentTag", filter.ParentTag.Wrappee)
-        queryModList = append(queryModList, newQueryMod...)
-    }
-    if filter.ID.HasValue {
-        newQueryMod := buildQueryModFilterTag("ID", filter.ID.Wrappee)
-        queryModList = append(queryModList, newQueryMod...)
-    }
-    
+	if filter.Tag.HasValue {
+		newQueryMod := buildQueryModFilterTag("Tag", filter.Tag.Wrappee)
+		queryModList = append(queryModList, newQueryMod...)
+	}
+	if filter.Path.HasValue {
+		newQueryMod := buildQueryModFilterTag("Path", filter.Path.Wrappee)
+		queryModList = append(queryModList, newQueryMod...)
+	}
+	if filter.Children.HasValue {
+		newQueryMod := buildQueryModFilterTag("Children", filter.Children.Wrappee)
+		queryModList = append(queryModList, newQueryMod...)
+	}
+	if filter.ParentTag.HasValue {
+		newQueryMod := buildQueryModFilterTag("ParentTag", filter.ParentTag.Wrappee)
+		queryModList = append(queryModList, newQueryMod...)
+	}
+	if filter.ID.HasValue {
+		newQueryMod := buildQueryModFilterTag("ID", filter.ID.Wrappee)
+		queryModList = append(queryModList, newQueryMod...)
+	}
 
 	return queryModList
 }
 
-
 type Sqlite3TagRepositoryConstructorArgs struct {
-    DB *sql.DB
-    Logger *log.Logger
-    
+	DB     *sql.DB
+	Logger *log.Logger
 }
 
 func (repo *Sqlite3TagRepository) New(args any) (newRepo repoCommon.TagRepository, err error) {
-    constructorArgs, ok := args.(Sqlite3TagRepositoryConstructorArgs)
-    if !ok {
-        err = fmt.Errorf("expected type %T but got %T", Sqlite3TagRepositoryConstructorArgs{}, args)
+	constructorArgs, ok := args.(Sqlite3TagRepositoryConstructorArgs)
+	if !ok {
+		err = fmt.Errorf("expected type %T but got %T", Sqlite3TagRepositoryConstructorArgs{}, args)
 
-        return
-    }
+		return
+	}
 
-    repo.db = constructorArgs.DB
-    repo.Logger = constructorArgs.Logger
-    
+	repo.db = constructorArgs.DB
+	repo.Logger = constructorArgs.Logger
 
-    newRepo = repo
+	newRepo = repo
 
-    return
+	return
 }
-
 
 //******************************************************************//
 //                              Methods                             //
 //******************************************************************//
-func (repo *Sqlite3TagRepository) Add(ctx context.Context, domainModels []*domain.Tag)  (err error){
-    if len(domainModels) == 0 {
-        repo.Logger.Debug(helper.LogMessageEmptyInput)
+func (repo *Sqlite3TagRepository) Add(ctx context.Context, domainModels []*domain.Tag) (err error) {
+	if len(domainModels) == 0 {
+		repo.Logger.Debug(helper.LogMessageEmptyInput)
 
-        err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
+		err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 
-        return
-    }
+		return
+	}
 
-	err = goaoi.AnyOfSlice(domainModels, func (e *domain.Tag) bool {return e == nil || e.IsDefault()})
-	if err == nil{
+	err = goaoi.AnyOfSlice(domainModels, func(e *domain.Tag) bool { return e == nil || e.IsDefault() })
+	if err == nil {
 		err = helper.NilInputError{}
 		repo.Logger.Error(err)
 
 		return
 	}
 
-    err = repo.AddMinimal(ctx, domainModels)
-    if err != nil {
-        return err
-    }
+	err = repo.AddMinimal(ctx, domainModels)
+	if err != nil {
+		return err
+	}
 
-    err = repo.Replace(ctx, domainModels)
-    if err != nil {
-        return err
-    }
+	err = repo.Replace(ctx, domainModels)
+	if err != nil {
+		return err
+	}
 
-    return
+	return
 }
 
-func (repo *Sqlite3TagRepository) AddMinimal(ctx context.Context, domainModels []*domain.Tag)  (err error){
-    if len(domainModels) == 0 {
-        repo.Logger.Debug(helper.LogMessageEmptyInput)
+func (repo *Sqlite3TagRepository) AddMinimal(ctx context.Context, domainModels []*domain.Tag) (err error) {
+	if len(domainModels) == 0 {
+		repo.Logger.Debug(helper.LogMessageEmptyInput)
 
-        err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
+		err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 
-        return
-    }
+		return
+	}
 
-	err = goaoi.AnyOfSlice(domainModels, func (e *domain.Tag) bool {return e == nil || e.IsDefault()})
-	if err == nil{
+	err = goaoi.AnyOfSlice(domainModels, func(e *domain.Tag) bool { return e == nil || e.IsDefault() })
+	if err == nil {
 		err = helper.NilInputError{}
 		repo.Logger.Error(err)
 
 		return
 	}
 
-    var repositoryModels []any
-    repositoryModels, err = goaoi.TransformCopySlice(domainModels, repo.GetTagDomainToRepositoryModelMinimal(ctx))
+	var repositoryModels []any
+	repositoryModels, err = goaoi.TransformCopySlice(domainModels, repo.GetTagDomainToRepositoryModelMinimal(ctx))
 	if err != nil {
 		return
 	}
 
-    var tx *sql.Tx
+	var tx *sql.Tx
 
 	tx, err = repo.db.BeginTx(ctx, nil)
 	if err != nil {
@@ -398,18 +381,18 @@ func (repo *Sqlite3TagRepository) AddMinimal(ctx context.Context, domainModels [
 	}
 
 	for _, repositoryModel := range repositoryModels {
-        repoModel, ok := repositoryModel.(*Tag)
-        if !ok {
-            err = fmt.Errorf("expected type *Tag but got %T", repoModel)
+		repoModel, ok := repositoryModel.(*Tag)
+		if !ok {
+			err = fmt.Errorf("expected type *Tag but got %T", repoModel)
 
-            return
-        }
+			return
+		}
 
 		err = repoModel.Insert(ctx, tx, boil.Infer())
 		if err != nil {
-            if strings.Contains(err.Error(), "UNIQUE") {
-                err = helper.DuplicateInsertionError{Inner: err}
-            }
+			if strings.Contains(err.Error(), "UNIQUE") {
+				err = helper.DuplicateInsertionError{Inner: err}
+			}
 
 			return
 		}
@@ -417,34 +400,34 @@ func (repo *Sqlite3TagRepository) AddMinimal(ctx context.Context, domainModels [
 
 	tx.Commit()
 
-    return
+	return
 }
 
-func (repo *Sqlite3TagRepository) Replace(ctx context.Context, domainModels []*domain.Tag)  (err error){
-    
-    if len(domainModels) == 0 {
-        repo.Logger.Debug(helper.LogMessageEmptyInput)
+func (repo *Sqlite3TagRepository) Replace(ctx context.Context, domainModels []*domain.Tag) (err error) {
 
-        err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
+	if len(domainModels) == 0 {
+		repo.Logger.Debug(helper.LogMessageEmptyInput)
 
-        return
-    }
+		err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 
-	err = goaoi.AnyOfSlice(domainModels, func (e *domain.Tag) bool {return e == nil || e.IsDefault()})
-	if err == nil{
+		return
+	}
+
+	err = goaoi.AnyOfSlice(domainModels, func(e *domain.Tag) bool { return e == nil || e.IsDefault() })
+	if err == nil {
 		err = helper.NilInputError{}
 		repo.Logger.Error(err)
 
 		return
 	}
 
-    var repositoryModels []any
-    repositoryModels, err = goaoi.TransformCopySlice(domainModels, repo.GetTagDomainToRepositoryModel(ctx))
+	var repositoryModels []any
+	repositoryModels, err = goaoi.TransformCopySlice(domainModels, repo.GetTagDomainToRepositoryModel(ctx))
 	if err != nil {
 		return
 	}
 
-    var tx *sql.Tx
+	var tx *sql.Tx
 
 	tx, err = repo.db.BeginTx(ctx, nil)
 	if err != nil {
@@ -452,74 +435,74 @@ func (repo *Sqlite3TagRepository) Replace(ctx context.Context, domainModels []*d
 	}
 
 	for _, repositoryModel := range repositoryModels {
-        repoModel, ok := repositoryModel.(*Tag)
-        if !ok {
-            err = fmt.Errorf("expected type *Tag but got %T", repoModel)
+		repoModel, ok := repositoryModel.(*Tag)
+		if !ok {
+			err = fmt.Errorf("expected type *Tag but got %T", repoModel)
 
-            return
-        }
+			return
+		}
 
-        var numAffectedRecords int64
+		var numAffectedRecords int64
 		numAffectedRecords, err = repoModel.Update(ctx, tx, boil.Infer())
 		if err != nil {
-            if strings.Contains(err.Error(), "UNIQUE") {
-                err = helper.DuplicateInsertionError{Inner: err}
-            }
+			if strings.Contains(err.Error(), "UNIQUE") {
+				err = helper.DuplicateInsertionError{Inner: err}
+			}
 
 			return
 		}
 
-        if numAffectedRecords == 0 {
-            var doesExist bool
-            for _, repositoryTag := range repositoryModels {
-                doesExist, err = Tags(TagWhere.ID.EQ(repositoryTag.(*Tag).ID)).Exists(ctx, tx)
-                if err != nil {
-                    return err
-                }
+		if numAffectedRecords == 0 {
+			var doesExist bool
+			for _, repositoryTag := range repositoryModels {
+				doesExist, err = Tags(TagWhere.ID.EQ(repositoryTag.(*Tag).ID)).Exists(ctx, tx)
+				if err != nil {
+					return err
+				}
 
-                if !doesExist {
-                    err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
+				if !doesExist {
+					err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
 
-                    return
-                }
-            }
-        }
+					return
+				}
+			}
+		}
 
-        err = repo.UpdateRelatedEntities(ctx,tx, repositoryModel.(*Tag))
-        if err != nil {
-            return err
-        }
+		err = repo.UpdateRelatedEntities(ctx, tx, repositoryModel.(*Tag))
+		if err != nil {
+			return err
+		}
 
 	}
 
 	tx.Commit()
 
-    return
+	return
 }
-func (repo *Sqlite3TagRepository) Upsert(ctx context.Context, domainModels []*domain.Tag)  (err error){
-    if len(domainModels) == 0 {
-        repo.Logger.Debug(helper.LogMessageEmptyInput)
+func (repo *Sqlite3TagRepository) Upsert(ctx context.Context, domainModels []*domain.Tag) (err error) {
+	if len(domainModels) == 0 {
+		repo.Logger.Debug(helper.LogMessageEmptyInput)
 
-        err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
+		err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 
-        return
-    }
+		return
+	}
 
-	err = goaoi.AnyOfSlice(domainModels, func (e *domain.Tag) bool {return e == nil || e.IsDefault()})
-	if err == nil{
+	err = goaoi.AnyOfSlice(domainModels, func(e *domain.Tag) bool { return e == nil || e.IsDefault() })
+	if err == nil {
 		err = helper.NilInputError{}
 		repo.Logger.Error(err)
 
 		return
 	}
 
-    var repositoryModels []any
-    repositoryModels, err = goaoi.TransformCopySlice(domainModels, repo.GetTagDomainToRepositoryModel(ctx))
+	var repositoryModels []any
+	repositoryModels, err = goaoi.TransformCopySlice(domainModels, repo.GetTagDomainToRepositoryModel(ctx))
 	if err != nil {
 		return
 	}
 
-    var tx *sql.Tx
+	var tx *sql.Tx
 
 	tx, err = repo.db.BeginTx(ctx, nil)
 	if err != nil {
@@ -527,180 +510,176 @@ func (repo *Sqlite3TagRepository) Upsert(ctx context.Context, domainModels []*do
 	}
 
 	for _, repositoryModel := range repositoryModels {
-        repoModel, ok := repositoryModel.(*Tag)
-        if !ok {
-            err = fmt.Errorf("expected type *Tag but got %T", repoModel)
-
-            return
-        }
-
-        
-		err = repoModel.Upsert(ctx, tx, true, []string{}, boil.Infer(), boil.Infer())
-        
-		if err != nil {
-            if strings.Contains(err.Error(), "UNIQUE") {
-                err = helper.DuplicateInsertionError{Inner: err}
-            }
+		repoModel, ok := repositoryModel.(*Tag)
+		if !ok {
+			err = fmt.Errorf("expected type *Tag but got %T", repoModel)
 
 			return
 		}
 
-        err = repo.UpdateRelatedEntities(ctx,tx, repositoryModel.(*Tag))
-        if err != nil {
-            return err
-        }
+		err = repoModel.Upsert(ctx, tx, true, []string{}, boil.Infer(), boil.Infer())
+
+		if err != nil {
+			if strings.Contains(err.Error(), "UNIQUE") {
+				err = helper.DuplicateInsertionError{Inner: err}
+			}
+
+			return
+		}
+
+		err = repo.UpdateRelatedEntities(ctx, tx, repositoryModel.(*Tag))
+		if err != nil {
+			return err
+		}
 	}
 
 	tx.Commit()
 
-    return
+	return
 }
 
-func (repo *Sqlite3TagRepository) Update(ctx context.Context, domainModels []*domain.Tag, domainColumnUpdater *domain.TagUpdater)  (err error){
-    if len(domainModels) == 0 {
-        repo.Logger.Debug(helper.LogMessageEmptyInput)
+func (repo *Sqlite3TagRepository) Update(ctx context.Context, domainModels []*domain.Tag, domainColumnUpdater *domain.TagUpdater) (err error) {
+	if len(domainModels) == 0 {
+		repo.Logger.Debug(helper.LogMessageEmptyInput)
 
-        err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
+		err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 
-        return
-    }
+		return
+	}
 
-	err = goaoi.AnyOfSlice(domainModels, func (e *domain.Tag) bool {return e == nil || e.IsDefault()})
-	if err == nil{
+	err = goaoi.AnyOfSlice(domainModels, func(e *domain.Tag) bool { return e == nil || e.IsDefault() })
+	if err == nil {
 		err = helper.NilInputError{}
 		repo.Logger.Error(err)
 
 		return
 	}
 
-	if  domainColumnUpdater == nil {
+	if domainColumnUpdater == nil {
 		err = helper.NilInputError{}
 		repo.Logger.Error(err)
 
 		return
-    }
+	}
 
-	if  domainColumnUpdater.IsDefault() {
-        err = helper.IneffectiveOperationError{Inner: helper.NopUpdaterError{}}
+	if domainColumnUpdater.IsDefault() {
+		err = helper.IneffectiveOperationError{Inner: helper.NopUpdaterError{}}
 		repo.Logger.Error(err)
 
 		return
-    }
+	}
 
-    var repositoryModels []any
-    repositoryModels, err = goaoi.TransformCopySlice(domainModels, repo.GetTagDomainToRepositoryModel(ctx))
+	var repositoryModels []any
+	repositoryModels, err = goaoi.TransformCopySlice(domainModels, repo.GetTagDomainToRepositoryModel(ctx))
 	if err != nil {
 		return
 	}
 
-    var repositoryUpdater any
-    repositoryUpdater, err = repo.TagDomainToRepositoryUpdater(ctx, domainColumnUpdater)
-    if err != nil {
-        return
-    }
-
-    var tx *sql.Tx
-
-   	tx, err = repo.db.BeginTx(ctx, nil)
+	var repositoryUpdater any
+	repositoryUpdater, err = repo.TagDomainToRepositoryUpdater(ctx, domainColumnUpdater)
 	if err != nil {
 		return
 	}
 
-    var numAffectedRecords int64
-    for _, repositoryModel := range   repositoryModels {
-        repoModel, ok := repositoryModel.(*Tag)
-        if !ok {
-            err = fmt.Errorf("expected type *Tag but got %T", repoModel)
+	var tx *sql.Tx
 
-            return
-        }
+	tx, err = repo.db.BeginTx(ctx, nil)
+	if err != nil {
+		return
+	}
 
-        repoUpdater, ok := repositoryUpdater.(*TagUpdater)
-        if !ok {
-            err = fmt.Errorf("expected type *Tag but got %T", repoModel)
+	var numAffectedRecords int64
+	for _, repositoryModel := range repositoryModels {
+		repoModel, ok := repositoryModel.(*Tag)
+		if !ok {
+			err = fmt.Errorf("expected type *Tag but got %T", repoModel)
 
-            return
-        }
+			return
+		}
 
-        repoUpdater.ApplyToModel(repoModel)
-        numAffectedRecords, err = repoModel.Update(ctx, tx, boil.Infer())
-        if err != nil {
-            if strings.Contains(err.Error(), "UNIQUE") {
-                err = helper.DuplicateInsertionError{Inner: err}
-            }
+		repoUpdater, ok := repositoryUpdater.(*TagUpdater)
+		if !ok {
+			err = fmt.Errorf("expected type *Tag but got %T", repoModel)
 
-            return
-        }
+			return
+		}
 
-        if numAffectedRecords == 0 {
-            err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
+		repoUpdater.ApplyToModel(repoModel)
+		numAffectedRecords, err = repoModel.Update(ctx, tx, boil.Infer())
+		if err != nil {
+			if strings.Contains(err.Error(), "UNIQUE") {
+				err = helper.DuplicateInsertionError{Inner: err}
+			}
 
-            return
-        }
+			return
+		}
 
-        err = repo.UpdateRelatedEntities(ctx,tx, repositoryModel.(*Tag))
-        if err != nil {
-            return err
-        }
-    }
+		if numAffectedRecords == 0 {
+			err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
 
-    err = tx.Commit()
+			return
+		}
 
-    return
+		err = repo.UpdateRelatedEntities(ctx, tx, repositoryModel.(*Tag))
+		if err != nil {
+			return err
+		}
+	}
+
+	err = tx.Commit()
+
+	return
 }
 
 func (repo *Sqlite3TagRepository) UpdateWhere(ctx context.Context, domainColumnFilter *domain.TagFilter, domainColumnUpdater *domain.TagUpdater) (numAffectedRecords int64, err error) {
 	var modelsToUpdate TagSlice
 
-	if  domainColumnFilter == nil {
+	if domainColumnFilter == nil {
 		err = helper.NilInputError{}
 		repo.Logger.Error(err)
 
 		return
-    }
+	}
 
-	if  domainColumnUpdater == nil {
+	if domainColumnUpdater == nil {
 		err = helper.NilInputError{}
 		repo.Logger.Error(err)
 
 		return
-    }
+	}
 
-	if  domainColumnUpdater.IsDefault() {
-        err = helper.IneffectiveOperationError{Inner: helper.NopUpdaterError{}}
+	if domainColumnUpdater.IsDefault() {
+		err = helper.IneffectiveOperationError{Inner: helper.NopUpdaterError{}}
 		repo.Logger.Error(err)
 
 		return
-    }
+	}
 
-    var repositoryFilter any
-    repositoryFilter, err = repo.TagDomainToRepositoryFilter(ctx, domainColumnFilter)
-    if err != nil {
-        return
-    }
+	var repositoryFilter any
+	repositoryFilter, err = repo.TagDomainToRepositoryFilter(ctx, domainColumnFilter)
+	if err != nil {
+		return
+	}
 
-    var repositoryUpdater any
-    repositoryUpdater, err = repo.TagDomainToRepositoryUpdater(ctx, domainColumnUpdater)
-    if err != nil {
-        return
-    }
+	var repositoryUpdater any
+	repositoryUpdater, err = repo.TagDomainToRepositoryUpdater(ctx, domainColumnUpdater)
+	if err != nil {
+		return
+	}
 
-    repoUpdater, ok := repositoryUpdater.(*TagUpdater)
-    if !ok {
-        err = fmt.Errorf("expected type *TagUpdater but got %T", repoUpdater)
+	repoUpdater, ok := repositoryUpdater.(*TagUpdater)
+	if !ok {
+		err = fmt.Errorf("expected type *TagUpdater but got %T", repoUpdater)
 
-        return
-    }
+		return
+	}
 
+	repoFilter, ok := repositoryFilter.(*TagFilter)
+	if !ok {
+		err = fmt.Errorf("expected type *TagFilter but got %T", repoFilter)
 
-    repoFilter, ok := repositoryFilter.(*TagFilter)
-    if !ok {
-        err = fmt.Errorf("expected type *TagFilter but got %T", repoFilter)
-
-        return
-    }
-
-
+		return
+	}
 
 	queryFilters := buildQueryModListFromFilterTag(repoFilter)
 
@@ -709,132 +688,130 @@ func (repo *Sqlite3TagRepository) UpdateWhere(ctx context.Context, domainColumnF
 		return
 	}
 
-    if len(modelsToUpdate) == 0 {
-        err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
+	if len(modelsToUpdate) == 0 {
+		err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
 
-        return
-    }
+		return
+	}
 
-    var tx *sql.Tx
+	var tx *sql.Tx
 
 	tx, err = repo.db.BeginTx(ctx, nil)
 	if err != nil {
 		return
 	}
 
-    for _, repoModel := range modelsToUpdate {
-        repoUpdater.ApplyToModel(repoModel)
-        _, err = repoModel.Update(ctx, tx, boil.Infer())
-        if err != nil {
-            if strings.Contains(err.Error(), "UNIQUE") {
-                err = helper.DuplicateInsertionError{Inner: err}
-            }
+	for _, repoModel := range modelsToUpdate {
+		repoUpdater.ApplyToModel(repoModel)
+		_, err = repoModel.Update(ctx, tx, boil.Infer())
+		if err != nil {
+			if strings.Contains(err.Error(), "UNIQUE") {
+				err = helper.DuplicateInsertionError{Inner: err}
+			}
 
-            return
-        }
+			return
+		}
 
-        err = repo.UpdateRelatedEntities(ctx,tx, repoModel)
-        if err != nil {
-            return
-        }
+		err = repo.UpdateRelatedEntities(ctx, tx, repoModel)
+		if err != nil {
+			return
+		}
 
-    }
+	}
 
-    tx.Commit()
+	tx.Commit()
 
-    numAffectedRecords = int64(len(modelsToUpdate))
+	numAffectedRecords = int64(len(modelsToUpdate))
 
-    return
+	return
 }
 
-func (repo *Sqlite3TagRepository) Delete(ctx context.Context, domainModels []*domain.Tag)  (err error){
-    if len(domainModels) == 0 {
-        repo.Logger.Debug(helper.LogMessageEmptyInput)
+func (repo *Sqlite3TagRepository) Delete(ctx context.Context, domainModels []*domain.Tag) (err error) {
+	if len(domainModels) == 0 {
+		repo.Logger.Debug(helper.LogMessageEmptyInput)
 
-        err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
+		err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 
-        return
-    }
+		return
+	}
 
-	err = goaoi.AnyOfSlice(domainModels, func (e *domain.Tag) bool {return e == nil || e.IsDefault()})
-	if err == nil{
+	err = goaoi.AnyOfSlice(domainModels, func(e *domain.Tag) bool { return e == nil || e.IsDefault() })
+	if err == nil {
 		err = helper.NilInputError{}
 		repo.Logger.Error(err)
 
 		return
 	}
 
-    var repositoryModels []any
-    repositoryModels, err = goaoi.TransformCopySlice(domainModels, repo.GetTagDomainToRepositoryModel(ctx))
+	var repositoryModels []any
+	repositoryModels, err = goaoi.TransformCopySlice(domainModels, repo.GetTagDomainToRepositoryModel(ctx))
 	if err != nil {
 		return
 	}
 
-    var tx *sql.Tx
+	var tx *sql.Tx
 
 	tx, err = repo.db.BeginTx(ctx, nil)
 	if err != nil {
 		return
 	}
 
-    var numAffectedRecords int64
+	var numAffectedRecords int64
 
 	for _, repositoryModel := range repositoryModels {
-        repoModel, ok := repositoryModel.(*Tag)
-        if !ok {
-            err = fmt.Errorf("expected type *Tag but got %T", repoModel)
+		repoModel, ok := repositoryModel.(*Tag)
+		if !ok {
+			err = fmt.Errorf("expected type *Tag but got %T", repoModel)
 
-            return
-        }
+			return
+		}
 
 		numAffectedRecords, err = repoModel.Delete(ctx, tx)
 		if err != nil {
 			return
 		}
 
-        if numAffectedRecords == 0 {
-            err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
+		if numAffectedRecords == 0 {
+			err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
 
-            return
-        }
+			return
+		}
 
-        err = repo.UpdateRelatedEntities(ctx,tx, repositoryModel.(*Tag))
-        if err != nil {
-            return err
-        }
+		err = repo.UpdateRelatedEntities(ctx, tx, repositoryModel.(*Tag))
+		if err != nil {
+			return err
+		}
 	}
 
 	tx.Commit()
 
-    return
+	return
 }
 
 func (repo *Sqlite3TagRepository) DeleteWhere(ctx context.Context, domainColumnFilter *domain.TagFilter) (numAffectedRecords int64, err error) {
-	if  domainColumnFilter == nil {
+	if domainColumnFilter == nil {
 		err = helper.NilInputError{}
 		repo.Logger.Error(err)
 
 		return
-    }
+	}
 
-    var repositoryFilter any
-    repositoryFilter, err = repo.TagDomainToRepositoryFilter(ctx, domainColumnFilter)
-    if err != nil {
-        return
-    }
+	var repositoryFilter any
+	repositoryFilter, err = repo.TagDomainToRepositoryFilter(ctx, domainColumnFilter)
+	if err != nil {
+		return
+	}
 
-    repoFilter, ok := repositoryFilter.(*TagFilter)
-    if !ok {
-        err = fmt.Errorf("expected type *TagFilter but got %T", repoFilter)
+	repoFilter, ok := repositoryFilter.(*TagFilter)
+	if !ok {
+		err = fmt.Errorf("expected type *TagFilter but got %T", repoFilter)
 
-        return
-    }
-
-
+		return
+	}
 
 	queryFilters := buildQueryModListFromFilterTag(repoFilter)
 
-    var tx *sql.Tx
+	var tx *sql.Tx
 
 	tx, err = repo.db.BeginTx(ctx, nil)
 	if err != nil {
@@ -843,33 +820,31 @@ func (repo *Sqlite3TagRepository) DeleteWhere(ctx context.Context, domainColumnF
 
 	numAffectedRecords, err = Tags(queryFilters...).DeleteAll(ctx, tx)
 
-    tx.Commit()
+	tx.Commit()
 
-    return
+	return
 }
 
 func (repo *Sqlite3TagRepository) CountWhere(ctx context.Context, domainColumnFilter *domain.TagFilter) (numRecords int64, err error) {
-	if  domainColumnFilter == nil {
+	if domainColumnFilter == nil {
 		err = helper.NilInputError{}
 		repo.Logger.Error(err)
 
 		return
-    }
+	}
 
-    var repositoryFilter any
-    repositoryFilter, err = repo.TagDomainToRepositoryFilter(ctx, domainColumnFilter)
-    if err != nil {
-        return
-    }
+	var repositoryFilter any
+	repositoryFilter, err = repo.TagDomainToRepositoryFilter(ctx, domainColumnFilter)
+	if err != nil {
+		return
+	}
 
-    repoFilter, ok := repositoryFilter.(*TagFilter)
-    if !ok {
-        err = fmt.Errorf("expected type *TagFilter but got %T", repoFilter)
+	repoFilter, ok := repositoryFilter.(*TagFilter)
+	if !ok {
+		err = fmt.Errorf("expected type *TagFilter but got %T", repoFilter)
 
-        return
-    }
-
-
+		return
+	}
 
 	queryFilters := buildQueryModListFromFilterTag(repoFilter)
 
@@ -882,51 +857,48 @@ func (repo *Sqlite3TagRepository) CountAll(ctx context.Context) (numRecords int6
 
 func (repo *Sqlite3TagRepository) DoesExist(ctx context.Context, domainModel *domain.Tag) (doesExist bool, err error) {
 	if domainModel == nil {
-        err = helper.NilInputError{}
+		err = helper.NilInputError{}
 		repo.Logger.Error(err)
 
 		return
 	}
 
-    var repositoryModel any
-    repositoryModel, err = repo.TagDomainToRepositoryModel(ctx, domainModel)
-    if err != nil {
-        return
-    }
+	var repositoryModel any
+	repositoryModel, err = repo.TagDomainToRepositoryModel(ctx, domainModel)
+	if err != nil {
+		return
+	}
 
-    repoModel, ok := repositoryModel.(*Tag)
-    if !ok {
-        err = fmt.Errorf("expected type *Tag but got %T", repoModel)
+	repoModel, ok := repositoryModel.(*Tag)
+	if !ok {
+		err = fmt.Errorf("expected type *Tag but got %T", repoModel)
 
-        return
-    }
-
+		return
+	}
 
 	return TagExists(ctx, repo.db, repoModel.ID)
 }
 
 func (repo *Sqlite3TagRepository) DoesExistWhere(ctx context.Context, domainColumnFilter *domain.TagFilter) (doesExist bool, err error) {
-	if  domainColumnFilter == nil {
+	if domainColumnFilter == nil {
 		err = helper.NilInputError{}
 		repo.Logger.Error(err)
 
 		return
-    }
+	}
 
-    var repositoryFilter any
-    repositoryFilter, err = repo.TagDomainToRepositoryFilter(ctx, domainColumnFilter)
-    if err != nil {
-        return
-    }
+	var repositoryFilter any
+	repositoryFilter, err = repo.TagDomainToRepositoryFilter(ctx, domainColumnFilter)
+	if err != nil {
+		return
+	}
 
-    repoFilter, ok := repositoryFilter.(*TagFilter)
-    if !ok {
-        err = fmt.Errorf("expected type *TagFilter but got %T", repoFilter)
+	repoFilter, ok := repositoryFilter.(*TagFilter)
+	if !ok {
+		err = fmt.Errorf("expected type *TagFilter but got %T", repoFilter)
 
-        return
-    }
-
-
+		return
+	}
 
 	queryFilters := buildQueryModListFromFilterTag(repoFilter)
 
@@ -934,283 +906,267 @@ func (repo *Sqlite3TagRepository) DoesExistWhere(ctx context.Context, domainColu
 }
 
 func (repo *Sqlite3TagRepository) GetWhere(ctx context.Context, domainColumnFilter *domain.TagFilter) (records []*domain.Tag, err error) {
-	if  domainColumnFilter == nil {
+	if domainColumnFilter == nil {
 		err = helper.NilInputError{}
 		repo.Logger.Error(err)
 
 		return
-    }
+	}
 
-    var repositoryFilter any
-    repositoryFilter, err = repo.TagDomainToRepositoryFilter(ctx, domainColumnFilter)
-    if err != nil {
-        return
-    }
+	var repositoryFilter any
+	repositoryFilter, err = repo.TagDomainToRepositoryFilter(ctx, domainColumnFilter)
+	if err != nil {
+		return
+	}
 
-    repoFilter, ok := repositoryFilter.(*TagFilter)
-    if !ok {
-        err = fmt.Errorf("expected type *TagFilter but got %T", repoFilter)
+	repoFilter, ok := repositoryFilter.(*TagFilter)
+	if !ok {
+		err = fmt.Errorf("expected type *TagFilter but got %T", repoFilter)
 
-        return
-    }
-
-
-
+		return
+	}
 
 	queryFilters := buildQueryModListFromFilterTag(repoFilter)
 
-    var repositoryModels TagSlice
-    repositoryModels, err = Tags(queryFilters...).All(ctx, repo.db)
-    if err != nil {
-        return
-    }
+	var repositoryModels TagSlice
+	repositoryModels, err = Tags(queryFilters...).All(ctx, repo.db)
+	if err != nil {
+		return
+	}
 
-    if len(repositoryModels) == 0 {
-    err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
+	if len(repositoryModels) == 0 {
+		err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
 
-        return
-    }
+		return
+	}
 
+	tx, err := repo.db.BeginTx(ctx, nil)
+	if err != nil {
+		return
+	}
 
-    tx, err := repo.db.BeginTx(ctx, nil)
-    if err != nil {
-        return
-    }
+	for _, repoModel := range repositoryModels {
+		repo.LoadEntityRelations(ctx, tx, repoModel)
+		if err != nil {
+			return
+		}
+	}
 
-    for _, repoModel := range repositoryModels {
-        repo.LoadEntityRelations(ctx, tx, repoModel)
-        if err != nil {
-            return
-        }
-    }
+	err = tx.Commit()
+	if err != nil {
+		return
+	}
 
-    err = tx.Commit()
-    if err != nil {
-        return
-    }
+	records = make([]*domain.Tag, 0, len(repositoryModels))
 
-    records = make([]*domain.Tag, 0, len(repositoryModels))
+	var domainModel *domain.Tag
+	for _, repoModel := range repositoryModels {
+		domainModel, err = repo.TagRepositoryToDomainModel(ctx, repoModel)
+		if err != nil {
+			return
+		}
 
-    var domainModel *domain.Tag
-    for _, repoModel := range repositoryModels {
-        domainModel, err = repo.TagRepositoryToDomainModel(ctx, repoModel)
-        if err != nil {
-            return
-        }
+		records = append(records, domainModel)
+	}
 
-        records = append(records, domainModel)
-    }
-
-    return
+	return
 }
 
 func (repo *Sqlite3TagRepository) GetFirstWhere(ctx context.Context, domainColumnFilter *domain.TagFilter) (record *domain.Tag, err error) {
-	if  domainColumnFilter == nil {
+	if domainColumnFilter == nil {
 		err = helper.NilInputError{}
 		repo.Logger.Error(err)
 
 		return
-    }
+	}
 
-    var repositoryFilter any
-    repositoryFilter, err = repo.TagDomainToRepositoryFilter(ctx, domainColumnFilter)
-    if err != nil {
-        return
-    }
+	var repositoryFilter any
+	repositoryFilter, err = repo.TagDomainToRepositoryFilter(ctx, domainColumnFilter)
+	if err != nil {
+		return
+	}
 
-    repoFilter, ok := repositoryFilter.(*TagFilter)
-    if !ok {
-        err =  fmt.Errorf("expected type *TagFilter but got %T", repoFilter)
+	repoFilter, ok := repositoryFilter.(*TagFilter)
+	if !ok {
+		err = fmt.Errorf("expected type *TagFilter but got %T", repoFilter)
 
-        return
-    }
-
-
+		return
+	}
 
 	queryFilters := buildQueryModListFromFilterTag(repoFilter)
 
-    var repositoryModel *Tag
-    repositoryModel, err = Tags(queryFilters...).One(ctx, repo.db)
-    if err != nil {
-        if  errors.Is(err, sql.ErrNoRows){
-            err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
-        }
+	var repositoryModel *Tag
+	repositoryModel, err = Tags(queryFilters...).One(ctx, repo.db)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
+		}
 
-        return
-    }
+		return
+	}
 
+	tx, err := repo.db.BeginTx(ctx, nil)
+	if err != nil {
+		return
+	}
 
-    tx, err := repo.db.BeginTx(ctx, nil)
-    if err != nil {
-        return
-    }
+	repo.LoadEntityRelations(ctx, tx, repositoryModel)
+	if err != nil {
+		return
+	}
 
-    repo.LoadEntityRelations(ctx, tx, repositoryModel)
-    if err != nil {
-        return
-    }
+	err = tx.Commit()
+	if err != nil {
+		return
+	}
 
-    err = tx.Commit()
-    if err != nil {
-        return
-    }
+	record, err = repo.TagRepositoryToDomainModel(ctx, repositoryModel)
 
-    record , err =repo.TagRepositoryToDomainModel(ctx, repositoryModel)
-
-    return
+	return
 }
 
 func (repo *Sqlite3TagRepository) GetAll(ctx context.Context) (records []*domain.Tag, err error) {
-    var repositoryModels TagSlice
-    repositoryModels, err = Tags().All(ctx, repo.db)
-    if err != nil {
-        return
-    }
-    if len(repositoryModels) == 0 {
-        err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
+	var repositoryModels TagSlice
+	repositoryModels, err = Tags().All(ctx, repo.db)
+	if err != nil {
+		return
+	}
+	if len(repositoryModels) == 0 {
+		err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
 
-        return
-    }
+		return
+	}
 
-    tx, err := repo.db.BeginTx(ctx, nil)
-    if err != nil {
-        return
-    }
+	tx, err := repo.db.BeginTx(ctx, nil)
+	if err != nil {
+		return
+	}
 
-    for _, repoModel := range repositoryModels {
-        repo.LoadEntityRelations(ctx, tx, repoModel)
-        if err != nil {
-            return
-        }
-    }
+	for _, repoModel := range repositoryModels {
+		repo.LoadEntityRelations(ctx, tx, repoModel)
+		if err != nil {
+			return
+		}
+	}
 
-    err = tx.Commit()
-    if err != nil {
-        return
-    }
+	err = tx.Commit()
+	if err != nil {
+		return
+	}
 
-    records = make([]*domain.Tag, 0, len(repositoryModels))
+	records = make([]*domain.Tag, 0, len(repositoryModels))
 
-    var domainModel *domain.Tag
-    for _, repoModel := range repositoryModels {
-        domainModel, err = repo.TagRepositoryToDomainModel(ctx, repoModel)
-        if err != nil {
-            return
-        }
+	var domainModel *domain.Tag
+	for _, repoModel := range repositoryModels {
+		domainModel, err = repo.TagRepositoryToDomainModel(ctx, repoModel)
+		if err != nil {
+			return
+		}
 
-        records = append(records, domainModel)
-    }
+		records = append(records, domainModel)
+	}
 
-    return
+	return
 }
 
 func (repo *Sqlite3TagRepository) GetFromIDs(ctx context.Context, IDs []int64) (records []*domain.Tag, err error) {
-    filter := &domain.TagFilter{ID: optional.Make(model.FilterOperation[int64]{Operand: model.ListOperand[int64]{IDs}, Operator: model.FilterIn})}
+	filter := &domain.TagFilter{ID: optional.Make(model.FilterOperation[int64]{Operand: model.ListOperand[int64]{IDs}, Operator: model.FilterIn})}
 
-    var repositoryFilter any
-    repositoryFilter, err = repo.TagDomainToRepositoryFilter(ctx, filter)
-    if err != nil {
-        return
-    }
+	var repositoryFilter any
+	repositoryFilter, err = repo.TagDomainToRepositoryFilter(ctx, filter)
+	if err != nil {
+		return
+	}
 
-    repoFilter, ok := repositoryFilter.(*TagFilter)
-    if !ok {
-        err = fmt.Errorf("expected type *TagFilter but got %T", repoFilter)
+	repoFilter, ok := repositoryFilter.(*TagFilter)
+	if !ok {
+		err = fmt.Errorf("expected type *TagFilter but got %T", repoFilter)
 
-        return
-    }
-
-
-
+		return
+	}
 
 	queryFilters := buildQueryModListFromFilterTag(repoFilter)
 
-    var repositoryModels TagSlice
-    repositoryModels, err = Tags(queryFilters...).All(ctx, repo.db)
-    if err != nil {
-        return
-    }
+	var repositoryModels TagSlice
+	repositoryModels, err = Tags(queryFilters...).All(ctx, repo.db)
+	if err != nil {
+		return
+	}
 
-    if len(repositoryModels) == 0 {
-    err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
+	if len(repositoryModels) == 0 {
+		err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
 
-        return
-    }
+		return
+	}
 
-    tx, err := repo.db.BeginTx(ctx, nil)
-    if err != nil {
-        return
-    }
+	tx, err := repo.db.BeginTx(ctx, nil)
+	if err != nil {
+		return
+	}
 
-    for _, repoModel := range repositoryModels {
-        repo.LoadEntityRelations(ctx, tx, repoModel)
-        if err != nil {
-            return
-        }
-    }
+	for _, repoModel := range repositoryModels {
+		repo.LoadEntityRelations(ctx, tx, repoModel)
+		if err != nil {
+			return
+		}
+	}
 
-    err = tx.Commit()
-    if err != nil {
-        return
-    }
+	err = tx.Commit()
+	if err != nil {
+		return
+	}
 
-    records = make([]*domain.Tag, 0, len(repositoryModels))
+	records = make([]*domain.Tag, 0, len(repositoryModels))
 
-    var domainModel *domain.Tag
-    for _, repoModel := range repositoryModels {
-        domainModel, err = repo.TagRepositoryToDomainModel(ctx, repoModel)
-        if err != nil {
-            return
-        }
+	var domainModel *domain.Tag
+	for _, repoModel := range repositoryModels {
+		domainModel, err = repo.TagRepositoryToDomainModel(ctx, repoModel)
+		if err != nil {
+			return
+		}
 
-        records = append(records, domainModel)
-    }
+		records = append(records, domainModel)
+	}
 
-    return
+	return
 }
-
-
-
 
 //******************************************************************//
 //                            Converters                            //
 //******************************************************************//
 func (repo *Sqlite3TagRepository) GetTagDomainToRepositoryModel(ctx context.Context) func(domainModel *domain.Tag) (repositoryModel any, err error) {
-    return func(domainModel *domain.Tag) (repositoryModel any, err error) {
-        return repo.TagDomainToRepositoryModel(ctx, domainModel)
-    }
+	return func(domainModel *domain.Tag) (repositoryModel any, err error) {
+		return repo.TagDomainToRepositoryModel(ctx, domainModel)
+	}
 }
 
 func (repo *Sqlite3TagRepository) GetTagRepositoryToDomainModel(ctx context.Context) func(repositoryModel any) (domainModel *domain.Tag, err error) {
-    return func(repositoryModel any) (domainModel *domain.Tag, err error) {
+	return func(repositoryModel any) (domainModel *domain.Tag, err error) {
 
-        return repo.TagRepositoryToDomainModel(ctx,repositoryModel)
-    }
+		return repo.TagRepositoryToDomainModel(ctx, repositoryModel)
+	}
 }
 
 func (repo *Sqlite3TagRepository) GetTagDomainToRepositoryModelMinimal(ctx context.Context) func(domainModel *domain.Tag) (repositoryModel any, err error) {
-    return func(domainModel *domain.Tag) (repositoryModel any, err error) {
-        return repo.TagDomainToRepositoryModelMinimal(ctx, domainModel)
-    }
+	return func(domainModel *domain.Tag) (repositoryModel any, err error) {
+		return repo.TagDomainToRepositoryModelMinimal(ctx, domainModel)
+	}
 }
 
 //******************************************************************//
 //                          Model Converter                         //
 //******************************************************************//
 
+func (repo *Sqlite3TagRepository) TagDomainToRepositoryModel(ctx context.Context, domainModel *domain.Tag) (repositoryModel any, err error) {
 
+	repositoryModelConcrete := new(Tag)
+	repositoryModelConcrete.R = repositoryModelConcrete.R.NewStruct()
 
-func (repo *Sqlite3TagRepository) TagDomainToRepositoryModel(ctx context.Context, domainModel *domain.Tag) (repositoryModel any, err error)  {
+	repositoryModelConcrete.ID = domainModel.ID
+	repositoryModelConcrete.Tag = domainModel.Tag
 
-    repositoryModelConcrete := new(Tag)
-    repositoryModelConcrete.R = repositoryModelConcrete.R.NewStruct()
-
-    repositoryModelConcrete.ID = domainModel.ID
-    repositoryModelConcrete.Tag = domainModel.Tag
-
-
-//***********************    Set ParentTag    **********************//
-   	if len(domainModel.ParentPathIDs) > 0 {
+	//***********************    Set ParentTag    **********************//
+	if len(domainModel.ParentPathIDs) > 0 {
 		var repositoryParentTag *Tag
 
 		domainParentTagID := domainModel.ParentPathIDs[len(domainModel.ParentPathIDs)-1]
@@ -1222,9 +1178,9 @@ func (repo *Sqlite3TagRepository) TagDomainToRepositoryModel(ctx context.Context
 		}
 
 		repositoryModelConcrete.ParentTag = null.NewInt64(repositoryParentTag.ID, true)
-		repositoryModelConcrete.R.ParentTagTag =repositoryParentTag
+		repositoryModelConcrete.R.ParentTagTag = repositoryParentTag
 	}
-//*************************    Set Path    *************************//
+	//*************************    Set Path    *************************//
 	if len(domainModel.ParentPathIDs) > 0 {
 		var repositoryParentTag *Tag
 		for _, tagID := range domainModel.ParentPathIDs[:len(domainModel.ParentPathIDs)] {
@@ -1241,7 +1197,7 @@ func (repo *Sqlite3TagRepository) TagDomainToRepositoryModel(ctx context.Context
 	}
 
 	repositoryModelConcrete.Path += strconv.FormatInt(domainModel.ID, 10)
-//************************    Set Children  ************************//
+	//************************    Set Children  ************************//
 	if len(domainModel.SubtagIDs) > 0 {
 		var repositoryChildTag *Tag
 		for _, tagID := range domainModel.SubtagIDs[:len(domainModel.SubtagIDs)-1] {
@@ -1261,84 +1217,79 @@ func (repo *Sqlite3TagRepository) TagDomainToRepositoryModel(ctx context.Context
 
 			return
 		}
-        repositoryModelConcrete.Children += strconv.FormatInt(repositoryChildTag.ID, 10)
-    }
+		repositoryModelConcrete.Children += strconv.FormatInt(repositoryChildTag.ID, 10)
+	}
 
+	repositoryModel = repositoryModelConcrete
 
-
-    repositoryModel = repositoryModelConcrete
-
-    return
+	return
 }
 
-func (repo *Sqlite3TagRepository) TagDomainToRepositoryModelMinimal(ctx context.Context, domainModel *domain.Tag) (repositoryModel any, err error)  {
+func (repo *Sqlite3TagRepository) TagDomainToRepositoryModelMinimal(ctx context.Context, domainModel *domain.Tag) (repositoryModel any, err error) {
 
-    repositoryModelConcrete := new(Tag)
-    repositoryModelConcrete.R = repositoryModelConcrete.R.NewStruct()
+	repositoryModelConcrete := new(Tag)
+	repositoryModelConcrete.R = repositoryModelConcrete.R.NewStruct()
 
-    repositoryModelConcrete.ID = domainModel.ID
-    repositoryModelConcrete.Tag = domainModel.Tag
+	repositoryModelConcrete.ID = domainModel.ID
+	repositoryModelConcrete.Tag = domainModel.Tag
 
 	repositoryModelConcrete.Path = strconv.FormatInt(domainModel.ID, 10)
 
+	repositoryModel = repositoryModelConcrete
 
-    repositoryModel = repositoryModelConcrete
-
-    return
+	return
 }
 
 // TODO: These functions should be context aware
 func (repo *Sqlite3TagRepository) TagRepositoryToDomainModel(ctx context.Context, repositoryModel any) (domainModel *domain.Tag, err error) {
-    domainModel = new(domain.Tag)
+	domainModel = new(domain.Tag)
 
-    repositoryModelConcrete := repositoryModel.(*Tag)
+	repositoryModelConcrete := repositoryModel.(*Tag)
 
-    domainModel.ID = repositoryModelConcrete.ID
-    domainModel.Tag = repositoryModelConcrete.Tag
+	domainModel.ID = repositoryModelConcrete.ID
+	domainModel.Tag = repositoryModelConcrete.Tag
 
-//***********************    Set ParentPath    **********************//
-var parentTagID int64
+	//***********************    Set ParentPath    **********************//
+	var parentTagID int64
 
-if len(repositoryModelConcrete.Path) > 0 {
-    pathIDs :=strings.Split(repositoryModelConcrete.Path, ";")
-    pathIDs = pathIDs[:len(pathIDs) -1]
-    for _, parentTagIDRaw := range pathIDs {
-        parentTagID, err = strconv.ParseInt(parentTagIDRaw, 10, 64)
-        if err != nil {
-            return
-        }
+	if len(repositoryModelConcrete.Path) > 0 {
+		pathIDs := strings.Split(repositoryModelConcrete.Path, ";")
+		pathIDs = pathIDs[:len(pathIDs)-1]
+		for _, parentTagIDRaw := range pathIDs {
+			parentTagID, err = strconv.ParseInt(parentTagIDRaw, 10, 64)
+			if err != nil {
+				return
+			}
 
-        domainModel.ParentPathIDs = append(domainModel.ParentPathIDs, parentTagID)
-    }
-}
+			domainModel.ParentPathIDs = append(domainModel.ParentPathIDs, parentTagID)
+		}
+	}
 
-//************************    Set Subtags ************************//
-var childTagID int64
+	//************************    Set Subtags ************************//
+	var childTagID int64
 
-if len(repositoryModelConcrete.Children) > 0 {
-    for _, childTagIDRaw := range strings.Split(repositoryModelConcrete.Children, ";"){
-        childTagID, err = strconv.ParseInt(childTagIDRaw, 10, 64)
-        if err != nil {
-            return
-        }
+	if len(repositoryModelConcrete.Children) > 0 {
+		for _, childTagIDRaw := range strings.Split(repositoryModelConcrete.Children, ";") {
+			childTagID, err = strconv.ParseInt(childTagIDRaw, 10, 64)
+			if err != nil {
+				return
+			}
 
-        domainModel.SubtagIDs = append(domainModel.SubtagIDs, childTagID)
-    }
-}
+			domainModel.SubtagIDs = append(domainModel.SubtagIDs, childTagID)
+		}
+	}
 
-    repositoryModel = repositoryModelConcrete
+	repositoryModel = repositoryModelConcrete
 
-    return
+	return
 }
 
 //******************************************************************//
 //                         Filter Converter                         //
 //******************************************************************//
 
-
-
-func (repo *Sqlite3TagRepository) TagDomainToRepositoryFilter(ctx context.Context, domainFilter *domain.TagFilter) (repositoryFilter any, err error)  {
-    repositoryFilterConcrete := new(TagFilter)
+func (repo *Sqlite3TagRepository) TagDomainToRepositoryFilter(ctx context.Context, domainFilter *domain.TagFilter) (repositoryFilter any, err error) {
+	repositoryFilterConcrete := new(TagFilter)
 
 	repositoryFilterConcrete.ID = domainFilter.ID
 	repositoryFilterConcrete.Tag = domainFilter.Tag
@@ -1354,7 +1305,7 @@ func (repo *Sqlite3TagRepository) TagDomainToRepositoryFilter(ctx context.Contex
 		}
 
 		repositoryFilterConcrete.Path.Set(convertedPathFilter)
-    }
+	}
 	//**********************    Set child tags *********************//
 	if domainFilter.SubtagIDs.HasValue {
 		var convertedFilter model.FilterOperation[string]
@@ -1367,7 +1318,7 @@ func (repo *Sqlite3TagRepository) TagDomainToRepositoryFilter(ctx context.Contex
 		repositoryFilterConcrete.Children.Set(convertedFilter)
 	}
 
-    repositoryFilter = repositoryFilterConcrete
+	repositoryFilter = repositoryFilterConcrete
 
 	return
 }
@@ -1376,10 +1327,8 @@ func (repo *Sqlite3TagRepository) TagDomainToRepositoryFilter(ctx context.Contex
 //                         Updater Converter                        //
 //******************************************************************//
 
-
-
-func (repo *Sqlite3TagRepository) TagDomainToRepositoryUpdater(ctx context.Context, domainUpdater *domain.TagUpdater) (repositoryUpdater any, err error)  {
-    repositoryUpdaterConcrete := new(TagUpdater)
+func (repo *Sqlite3TagRepository) TagDomainToRepositoryUpdater(ctx context.Context, domainUpdater *domain.TagUpdater) (repositoryUpdater any, err error) {
+	repositoryUpdaterConcrete := new(TagUpdater)
 
 	//**************************    Set tag    *************************//
 	if domainUpdater.Tag.HasValue {
@@ -1417,49 +1366,44 @@ func (repo *Sqlite3TagRepository) TagDomainToRepositoryUpdater(ctx context.Conte
 		repositoryUpdaterConcrete.ID.Set(model.UpdateOperation[int64]{Operator: domainUpdater.ID.Wrappee.Operator, Operand: domainUpdater.ID.Wrappee.Operand})
 	}
 
-    repositoryUpdater = repositoryUpdaterConcrete
+	repositoryUpdater = repositoryUpdaterConcrete
 
 	return
 }
 
-
-
-func (repo *Sqlite3TagRepository) UpdateRelatedEntities(ctx context.Context, tx *sql.Tx, repositoryModel *Tag) error  {
+func (repo *Sqlite3TagRepository) UpdateRelatedEntities(ctx context.Context, tx *sql.Tx, repositoryModel *Tag) error {
 	var err error
 
+	parentTagTag := repositoryModel.R.ParentTagTag
 
-    parentTagTag := repositoryModel.R.ParentTagTag
+	if parentTagTag != nil {
+		if len(parentTagTag.Children) == 0 {
+			parentTagTag.Children = strconv.FormatInt(repositoryModel.ID, 10)
+		} else {
+			parentTagTag.Children += ";" + strconv.FormatInt(repositoryModel.ID, 10)
+		}
 
-    if parentTagTag != nil {
-        if len(parentTagTag.Children) == 0 {
-        parentTagTag.Children = strconv.FormatInt(repositoryModel.ID, 10)
-        }  else {
-        parentTagTag.Children += ";" + strconv.FormatInt(repositoryModel.ID, 10)
-        }
+		err = parentTagTag.Upsert(ctx, tx, true, []string{}, boil.Infer(), boil.Infer())
 
-        
-        err =parentTagTag.Upsert(ctx, tx, true, []string{}, boil.Infer(), boil.Infer())
-        
-    }
+	}
 
-    return err
+	return err
 
 }
 
 // PERF: This can probably be sped up by not using singular mode
 func (repo *Sqlite3TagRepository) LoadEntityRelations(ctx context.Context, tx *sql.Tx, repoModel *Tag) (err error) {
-    if repoModel.R == nil {
-        repoModel.R = repoModel.R.NewStruct()
-    }
+	if repoModel.R == nil {
+		repoModel.R = repoModel.R.NewStruct()
+	}
 
+	err = repoModel.L.LoadParentTagTag(ctx, repo.db, true, repoModel, nil)
+	if err != nil {
+		return
+	}
 
-    err = repoModel.L.LoadParentTagTag(ctx, repo.db, true, repoModel, nil)
-    if err != nil {
-        return
-    }
+	err = repoModel.L.LoadParentTagTags(ctx, repo.db, true, repoModel, nil)
 
-    err = repoModel.L.LoadParentTagTags(ctx, repo.db, true, repoModel, nil)
-
-    return
+	return
 
 }
