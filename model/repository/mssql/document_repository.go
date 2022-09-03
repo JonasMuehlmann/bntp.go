@@ -383,12 +383,16 @@ func (repo *MssqlDocumentRepository) Add(ctx context.Context, domainModels []*do
 
     err = repo.AddMinimal(ctx, domainModels)
     if err != nil {
-        return err
+        repo.Logger.Error(err)
+
+return err
     }
 
     err = repo.Replace(ctx, domainModels)
     if err != nil {
-        return err
+        repo.Logger.Error(err)
+
+return err
     }
 
     return
@@ -501,7 +505,9 @@ func (repo *MssqlDocumentRepository) Replace(ctx context.Context, domainModels [
             for _, repositoryDocument := range repositoryModels {
                 doesExist, err = Documents(DocumentWhere.ID.EQ(repositoryDocument.(*Document).ID)).Exists(ctx, tx)
                 if err != nil {
-                    return err
+                    repo.Logger.Error(err)
+
+return err
                 }
 
                 if !doesExist {
@@ -514,7 +520,9 @@ func (repo *MssqlDocumentRepository) Replace(ctx context.Context, domainModels [
 
         err = repo.UpdateRelatedEntities(ctx,tx, repositoryModel.(*Document))
         if err != nil {
-            return err
+            repo.Logger.Error(err)
+
+return err
         }
 
 	}
@@ -574,7 +582,9 @@ func (repo *MssqlDocumentRepository) Upsert(ctx context.Context, domainModels []
 
         err = repo.UpdateRelatedEntities(ctx,tx, repositoryModel.(*Document))
         if err != nil {
-            return err
+            repo.Logger.Error(err)
+
+return err
         }
 	}
 
@@ -667,7 +677,9 @@ func (repo *MssqlDocumentRepository) Update(ctx context.Context, domainModels []
 
         err = repo.UpdateRelatedEntities(ctx,tx, repositoryModel.(*Document))
         if err != nil {
-            return err
+            repo.Logger.Error(err)
+
+return err
         }
     }
 
@@ -827,7 +839,9 @@ func (repo *MssqlDocumentRepository) Delete(ctx context.Context, domainModels []
 
         err = repo.UpdateRelatedEntities(ctx,tx, repositoryModel.(*Document))
         if err != nil {
-            return err
+            repo.Logger.Error(err)
+
+return err
         }
 	}
 
@@ -1270,7 +1284,9 @@ func (repo *MssqlDocumentRepository) UpdateType(ctx context.Context, oldType str
         var doesExist bool
         doesExist, err = DocumentTypes(DocumentTypeWhere.DocumentType.EQ(oldType)).Exists(ctx, repo.db)
         if err != nil {
-            return err
+            repo.Logger.Error(err)
+
+return err
         }
 
         if !doesExist {
@@ -1707,23 +1723,31 @@ func (repo *MssqlDocumentRepository) UpdateRelatedEntities(ctx context.Context, 
 
 	err = repositoryModel.SetSourceDocuments(ctx, tx, false, repositoryModel.R.SourceDocuments...)
 	if err != nil {
-		return err
+		repo.Logger.Error(err)
+
+return err
 	}
 
 	err = repositoryModel.SetDestinationDocuments(ctx, tx, false, repositoryModel.R.DestinationDocuments...)
 	if err != nil {
-		return err
+		repo.Logger.Error(err)
+
+return err
 	}
 
 	err = repositoryModel.SetTags(ctx, tx, false, repositoryModel.R.Tags...)
 	if err != nil {
-		return err
+		repo.Logger.Error(err)
+
+return err
 	}
 
     if repositoryModel.R.DocumentType != nil {
         err = repositoryModel.SetDocumentType(ctx, tx, false, repositoryModel.R.DocumentType)
         if err != nil {
-            return err
+            repo.Logger.Error(err)
+
+return err
         }
     }
 

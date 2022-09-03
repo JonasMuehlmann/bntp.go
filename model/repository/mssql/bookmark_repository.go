@@ -422,12 +422,16 @@ func (repo *MssqlBookmarkRepository) Add(ctx context.Context, domainModels []*do
 
     err = repo.AddMinimal(ctx, domainModels)
     if err != nil {
-        return err
+        repo.Logger.Error(err)
+
+return err
     }
 
     err = repo.Replace(ctx, domainModels)
     if err != nil {
-        return err
+        repo.Logger.Error(err)
+
+return err
     }
 
     return
@@ -540,7 +544,9 @@ func (repo *MssqlBookmarkRepository) Replace(ctx context.Context, domainModels [
             for _, repositoryBookmark := range repositoryModels {
                 doesExist, err = Bookmarks(BookmarkWhere.ID.EQ(repositoryBookmark.(*Bookmark).ID)).Exists(ctx, tx)
                 if err != nil {
-                    return err
+                    repo.Logger.Error(err)
+
+return err
                 }
 
                 if !doesExist {
@@ -553,7 +559,9 @@ func (repo *MssqlBookmarkRepository) Replace(ctx context.Context, domainModels [
 
         err = repo.UpdateRelatedEntities(ctx,tx, repositoryModel.(*Bookmark))
         if err != nil {
-            return err
+            repo.Logger.Error(err)
+
+return err
         }
 
 	}
@@ -613,7 +621,9 @@ func (repo *MssqlBookmarkRepository) Upsert(ctx context.Context, domainModels []
 
         err = repo.UpdateRelatedEntities(ctx,tx, repositoryModel.(*Bookmark))
         if err != nil {
-            return err
+            repo.Logger.Error(err)
+
+return err
         }
 	}
 
@@ -706,7 +716,9 @@ func (repo *MssqlBookmarkRepository) Update(ctx context.Context, domainModels []
 
         err = repo.UpdateRelatedEntities(ctx,tx, repositoryModel.(*Bookmark))
         if err != nil {
-            return err
+            repo.Logger.Error(err)
+
+return err
         }
     }
 
@@ -866,7 +878,9 @@ func (repo *MssqlBookmarkRepository) Delete(ctx context.Context, domainModels []
 
         err = repo.UpdateRelatedEntities(ctx,tx, repositoryModel.(*Bookmark))
         if err != nil {
-            return err
+            repo.Logger.Error(err)
+
+return err
         }
 	}
 
@@ -1309,7 +1323,9 @@ func (repo *MssqlBookmarkRepository) UpdateType(ctx context.Context, oldType str
         var doesExist bool
         doesExist, err = BookmarkTypes(BookmarkTypeWhere.BookmarkType.EQ(oldType)).Exists(ctx, repo.db)
         if err != nil {
-            return err
+            repo.Logger.Error(err)
+
+return err
         }
 
         if !doesExist {
@@ -1764,12 +1780,16 @@ func (repo *MssqlBookmarkRepository) UpdateRelatedEntities(ctx context.Context, 
 
 	err = repositoryModel.SetTags(ctx, tx, false, repositoryModel.R.Tags...)
 	if err != nil {
-		return err
+		repo.Logger.Error(err)
+
+return err
 	}
     if repositoryModel.R.BookmarkType != nil {
         err = repositoryModel.SetBookmarkType(ctx, tx, false, repositoryModel.R.BookmarkType)
         if err != nil {
-            return err
+            repo.Logger.Error(err)
+
+return err
         }
     }
 

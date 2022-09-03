@@ -334,12 +334,16 @@ func (repo *{{$StructName}}) Add(ctx context.Context, domainModels []*domain.{{$
 
     err = repo.AddMinimal(ctx, domainModels)
     if err != nil {
-        return err
+        repo.Logger.Error(err)
+
+return err
     }
 
     err = repo.Replace(ctx, domainModels)
     if err != nil {
-        return err
+        repo.Logger.Error(err)
+
+return err
     }
 
     return
@@ -452,7 +456,9 @@ func (repo *{{$StructName}}) Replace(ctx context.Context, domainModels []*domain
             for _, repository{{$EntityName}} := range repositoryModels {
                 doesExist, err = {{$EntityName}}s({{$EntityName}}Where.ID.EQ(repository{{$EntityName}}.(*{{$EntityName}}).ID)).Exists(ctx, tx)
                 if err != nil {
-                    return err
+                    repo.Logger.Error(err)
+
+return err
                 }
 
                 if !doesExist {
@@ -465,7 +471,9 @@ func (repo *{{$StructName}}) Replace(ctx context.Context, domainModels []*domain
 
         err = repo.UpdateRelatedEntities(ctx,tx, repositoryModel.(*{{$EntityName}}))
         if err != nil {
-            return err
+            repo.Logger.Error(err)
+
+return err
         }
 
 	}
@@ -527,7 +535,9 @@ func (repo *{{$StructName}}) Upsert(ctx context.Context, domainModels []*domain.
 
         err = repo.UpdateRelatedEntities(ctx,tx, repositoryModel.(*{{$EntityName}}))
         if err != nil {
-            return err
+            repo.Logger.Error(err)
+
+return err
         }
 	}
 
@@ -620,7 +630,9 @@ func (repo *{{$StructName}}) Update(ctx context.Context, domainModels []*domain.
 
         err = repo.UpdateRelatedEntities(ctx,tx, repositoryModel.(*{{$EntityName}}))
         if err != nil {
-            return err
+            repo.Logger.Error(err)
+
+return err
         }
     }
 
@@ -780,7 +792,9 @@ func (repo *{{$StructName}}) Delete(ctx context.Context, domainModels []*domain.
 
         err = repo.UpdateRelatedEntities(ctx,tx, repositoryModel.(*{{$EntityName}}))
         if err != nil {
-            return err
+            repo.Logger.Error(err)
+
+return err
         }
 	}
 
@@ -1223,7 +1237,9 @@ func (repo *{{$StructName}}) UpdateType(ctx context.Context, oldType string, new
         var doesExist bool
         doesExist, err = {{$EntityName}}Types({{$EntityName}}TypeWhere.{{$EntityName}}Type.EQ(oldType)).Exists(ctx, repo.db)
         if err != nil {
-            return err
+            repo.Logger.Error(err)
+
+return err
         }
 
         if !doesExist {
@@ -2420,12 +2436,16 @@ func (repo *{{$StructName}}) UpdateRelatedEntities(ctx context.Context, tx *sql.
 {{if eq $EntityName "Bookmark"}}
 	err = repositoryModel.SetTags(ctx, tx, false, repositoryModel.R.Tags...)
 	if err != nil {
-		return err
+		repo.Logger.Error(err)
+
+return err
 	}
     if repositoryModel.R.BookmarkType != nil {
         err = repositoryModel.SetBookmarkType(ctx, tx, false, repositoryModel.R.BookmarkType)
         if err != nil {
-            return err
+            repo.Logger.Error(err)
+
+return err
         }
     }
 
@@ -2434,23 +2454,31 @@ func (repo *{{$StructName}}) UpdateRelatedEntities(ctx context.Context, tx *sql.
 
 	err = repositoryModel.SetSourceDocuments(ctx, tx, false, repositoryModel.R.SourceDocuments...)
 	if err != nil {
-		return err
+		repo.Logger.Error(err)
+
+return err
 	}
 
 	err = repositoryModel.SetDestinationDocuments(ctx, tx, false, repositoryModel.R.DestinationDocuments...)
 	if err != nil {
-		return err
+		repo.Logger.Error(err)
+
+return err
 	}
 
 	err = repositoryModel.SetTags(ctx, tx, false, repositoryModel.R.Tags...)
 	if err != nil {
-		return err
+		repo.Logger.Error(err)
+
+return err
 	}
 
     if repositoryModel.R.DocumentType != nil {
         err = repositoryModel.SetDocumentType(ctx, tx, false, repositoryModel.R.DocumentType)
         if err != nil {
-            return err
+            repo.Logger.Error(err)
+
+return err
         }
     }
 

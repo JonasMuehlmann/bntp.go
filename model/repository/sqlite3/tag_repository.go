@@ -356,12 +356,16 @@ func (repo *Sqlite3TagRepository) Add(ctx context.Context, domainModels []*domai
 
     err = repo.AddMinimal(ctx, domainModels)
     if err != nil {
-        return err
+        repo.Logger.Error(err)
+
+return err
     }
 
     err = repo.Replace(ctx, domainModels)
     if err != nil {
-        return err
+        repo.Logger.Error(err)
+
+return err
     }
 
     return
@@ -474,7 +478,9 @@ func (repo *Sqlite3TagRepository) Replace(ctx context.Context, domainModels []*d
             for _, repositoryTag := range repositoryModels {
                 doesExist, err = Tags(TagWhere.ID.EQ(repositoryTag.(*Tag).ID)).Exists(ctx, tx)
                 if err != nil {
-                    return err
+                    repo.Logger.Error(err)
+
+return err
                 }
 
                 if !doesExist {
@@ -487,7 +493,9 @@ func (repo *Sqlite3TagRepository) Replace(ctx context.Context, domainModels []*d
 
         err = repo.UpdateRelatedEntities(ctx,tx, repositoryModel.(*Tag))
         if err != nil {
-            return err
+            repo.Logger.Error(err)
+
+return err
         }
 
 	}
@@ -547,7 +555,9 @@ func (repo *Sqlite3TagRepository) Upsert(ctx context.Context, domainModels []*do
 
         err = repo.UpdateRelatedEntities(ctx,tx, repositoryModel.(*Tag))
         if err != nil {
-            return err
+            repo.Logger.Error(err)
+
+return err
         }
 	}
 
@@ -640,7 +650,9 @@ func (repo *Sqlite3TagRepository) Update(ctx context.Context, domainModels []*do
 
         err = repo.UpdateRelatedEntities(ctx,tx, repositoryModel.(*Tag))
         if err != nil {
-            return err
+            repo.Logger.Error(err)
+
+return err
         }
     }
 
@@ -800,7 +812,9 @@ func (repo *Sqlite3TagRepository) Delete(ctx context.Context, domainModels []*do
 
         err = repo.UpdateRelatedEntities(ctx,tx, repositoryModel.(*Tag))
         if err != nil {
-            return err
+            repo.Logger.Error(err)
+
+return err
         }
 	}
 
