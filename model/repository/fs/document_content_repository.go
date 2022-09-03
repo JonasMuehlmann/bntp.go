@@ -23,6 +23,7 @@ package repository
 import (
 	"context"
 	"fmt"
+	"io/fs"
 	"os"
 
 	"github.com/JonasMuehlmann/bntp.go/internal/helper"
@@ -71,6 +72,15 @@ func (repo *FSDocumentContentRepository) Add(ctx context.Context, pathContents [
 	}
 
 	transformer := func(pathContent tuple.T2[string, string]) error {
+		doesExist, err := afero.Exists(repo.fs, pathContent.V1)
+		if err != nil {
+			return err
+		}
+
+		if doesExist {
+			return helper.DuplicateInsertionError{Inner: fs.ErrExist}
+		}
+
 		file, err := repo.fs.Create(pathContent.V1)
 		if err != nil {
 			return err
@@ -135,6 +145,16 @@ func (repo *FSDocumentContentRepository) Move(ctx context.Context, pathChanges [
 	}
 
 	transformer := func(pathChange tuple.T2[string, string]) error {
+
+		doesExist, err := afero.Exists(repo.fs, pathChange.V2)
+		if err != nil {
+			return err
+		}
+
+		if doesExist {
+			return helper.DuplicateInsertionError{Inner: fs.ErrExist}
+		}
+
 		return repo.fs.Rename(pathChange.V1, pathChange.V2)
 	}
 

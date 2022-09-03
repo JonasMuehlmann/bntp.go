@@ -2032,7 +2032,7 @@ func TestSQLDocumentRepositoryDocumentModelConverter(t *testing.T) {
 	t.Parallel()
 	defer testCommon.HandlePanic(t, t.Name())
 
-	db, err := testCommon.GetPhysicalDB()
+	db, err := testCommon.GetDB()
 	require.NoError(t, err, ", db open")
 	defer db.Close()
 
