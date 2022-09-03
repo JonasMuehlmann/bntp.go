@@ -346,7 +346,9 @@ func (repo *Sqlite3DocumentRepository) New(args any) (newRepo repoCommon.Documen
     if !ok {
         err = fmt.Errorf("expected type %T but got %T", Sqlite3DocumentRepositoryConstructorArgs{}, args)
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     repo.db = constructorArgs.DB
@@ -370,7 +372,9 @@ func (repo *Sqlite3DocumentRepository) Add(ctx context.Context, domainModels []*
 
         err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
 	err = goaoi.AnyOfSlice(domainModels, func (e *domain.Document) bool {return e == nil || e.IsDefault()})
@@ -400,6 +404,8 @@ return err
 
     err = repo.ReplaceTx(ctx, domainModels, tx)
     if err != nil {
+        repo.Logger.Error(err)
+
         return err
     }
 
@@ -414,7 +420,9 @@ func (repo *Sqlite3DocumentRepository) AddMinimal(ctx context.Context, domainMod
 
         err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
 	err = goaoi.AnyOfSlice(domainModels, func (e *domain.Document) bool {return e == nil || e.IsDefault()})
@@ -429,7 +437,9 @@ func (repo *Sqlite3DocumentRepository) AddMinimal(ctx context.Context, domainMod
     if tx == nil {
         tx, err = repo.db.BeginTx(ctx, nil)
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
         commitHere = true
     }
@@ -445,7 +455,9 @@ func (repo *Sqlite3DocumentRepository) AddMinimal(ctx context.Context, domainMod
         if !ok {
             err = fmt.Errorf("expected type *Document but got %T", repoModel)
 
-            return
+repo.Logger.Error(err)
+
+return
         }
 
 		err = repoModel.Insert(ctx, tx, boil.Infer())
@@ -472,7 +484,9 @@ func (repo *Sqlite3DocumentRepository) ReplaceTx(ctx context.Context, domainMode
 
         err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
 	err = goaoi.AnyOfSlice(domainModels, func (e *domain.Document) bool {return e == nil || e.IsDefault()})
@@ -487,7 +501,9 @@ func (repo *Sqlite3DocumentRepository) ReplaceTx(ctx context.Context, domainMode
     if tx == nil {
         tx, err = repo.db.BeginTx(ctx, nil)
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         commitHere = true
@@ -504,7 +520,9 @@ func (repo *Sqlite3DocumentRepository) ReplaceTx(ctx context.Context, domainMode
         if !ok {
             err = fmt.Errorf("expected type *Document but got %T", repoModel)
 
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         var numAffectedRecords int64
@@ -528,7 +546,9 @@ func (repo *Sqlite3DocumentRepository) ReplaceTx(ctx context.Context, domainMode
                 if !doesExist {
                     err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
 
-                    return
+repo.Logger.Error(err)
+
+return
                 }
             }
         }
@@ -554,7 +574,9 @@ func (repo *Sqlite3DocumentRepository) Replace(ctx context.Context, domainModels
 
         err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
 	err = goaoi.AnyOfSlice(domainModels, func (e *domain.Document) bool {return e == nil || e.IsDefault()})
@@ -583,7 +605,9 @@ func (repo *Sqlite3DocumentRepository) Replace(ctx context.Context, domainModels
         if !ok {
             err = fmt.Errorf("expected type *Document but got %T", repoModel)
 
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         var numAffectedRecords int64
@@ -609,7 +633,9 @@ return err
                 if !doesExist {
                     err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
 
-                    return
+repo.Logger.Error(err)
+
+return
                 }
             }
         }
@@ -634,7 +660,9 @@ func (repo *Sqlite3DocumentRepository) Upsert(ctx context.Context, domainModels 
 
         err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
 	err = goaoi.AnyOfSlice(domainModels, func (e *domain.Document) bool {return e == nil || e.IsDefault()})
@@ -663,7 +691,9 @@ func (repo *Sqlite3DocumentRepository) Upsert(ctx context.Context, domainModels 
         if !ok {
             err = fmt.Errorf("expected type *Document but got %T", repoModel)
 
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         
@@ -696,7 +726,9 @@ func (repo *Sqlite3DocumentRepository) Update(ctx context.Context, domainModels 
 
         err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
 	err = goaoi.AnyOfSlice(domainModels, func (e *domain.Document) bool {return e == nil || e.IsDefault()})
@@ -730,7 +762,9 @@ func (repo *Sqlite3DocumentRepository) Update(ctx context.Context, domainModels 
     var repositoryUpdater any
     repositoryUpdater, err = repo.DocumentDomainToRepositoryUpdater(ctx, domainColumnUpdater)
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     var tx *sql.Tx
@@ -746,14 +780,18 @@ func (repo *Sqlite3DocumentRepository) Update(ctx context.Context, domainModels 
         if !ok {
             err = fmt.Errorf("expected type *Document but got %T", repoModel)
 
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         repoUpdater, ok := repositoryUpdater.(*DocumentUpdater)
         if !ok {
             err = fmt.Errorf("expected type *Document but got %T", repoModel)
 
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         repoUpdater.ApplyToModel(repoModel)
@@ -763,13 +801,17 @@ func (repo *Sqlite3DocumentRepository) Update(ctx context.Context, domainModels 
                 err = helper.DuplicateInsertionError{Inner: err}
             }
 
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         if numAffectedRecords == 0 {
             err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
 
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         err = repo.UpdateRelatedEntities(ctx,tx, repositoryModel.(*Document))
@@ -812,20 +854,26 @@ func (repo *Sqlite3DocumentRepository) UpdateWhere(ctx context.Context, domainCo
     var repositoryFilter any
     repositoryFilter, err = repo.DocumentDomainToRepositoryFilter(ctx, domainColumnFilter)
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     var repositoryUpdater any
     repositoryUpdater, err = repo.DocumentDomainToRepositoryUpdater(ctx, domainColumnUpdater)
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     repoUpdater, ok := repositoryUpdater.(*DocumentUpdater)
     if !ok {
         err = fmt.Errorf("expected type *DocumentUpdater but got %T", repoUpdater)
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
 
@@ -833,7 +881,9 @@ func (repo *Sqlite3DocumentRepository) UpdateWhere(ctx context.Context, domainCo
     if !ok {
         err = fmt.Errorf("expected type *DocumentFilter but got %T", repoFilter)
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
 
@@ -848,7 +898,9 @@ func (repo *Sqlite3DocumentRepository) UpdateWhere(ctx context.Context, domainCo
     if len(modelsToUpdate) == 0 {
         err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     var tx *sql.Tx
@@ -866,12 +918,16 @@ func (repo *Sqlite3DocumentRepository) UpdateWhere(ctx context.Context, domainCo
                 err = helper.DuplicateInsertionError{Inner: err}
             }
 
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         err = repo.UpdateRelatedEntities(ctx,tx, repoModel)
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
 
     }
@@ -889,7 +945,9 @@ func (repo *Sqlite3DocumentRepository) Delete(ctx context.Context, domainModels 
 
         err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
 	err = goaoi.AnyOfSlice(domainModels, func (e *domain.Document) bool {return e == nil || e.IsDefault()})
@@ -920,7 +978,9 @@ func (repo *Sqlite3DocumentRepository) Delete(ctx context.Context, domainModels 
         if !ok {
             err = fmt.Errorf("expected type *Document but got %T", repoModel)
 
-            return
+repo.Logger.Error(err)
+
+return
         }
 
 		numAffectedRecords, err = repoModel.Delete(ctx, tx)
@@ -931,7 +991,9 @@ func (repo *Sqlite3DocumentRepository) Delete(ctx context.Context, domainModels 
         if numAffectedRecords == 0 {
             err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
 
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         err = repo.UpdateRelatedEntities(ctx,tx, repositoryModel.(*Document))
@@ -958,14 +1020,18 @@ func (repo *Sqlite3DocumentRepository) DeleteWhere(ctx context.Context, domainCo
     var repositoryFilter any
     repositoryFilter, err = repo.DocumentDomainToRepositoryFilter(ctx, domainColumnFilter)
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     repoFilter, ok := repositoryFilter.(*DocumentFilter)
     if !ok {
         err = fmt.Errorf("expected type *DocumentFilter but got %T", repoFilter)
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
 
@@ -997,14 +1063,18 @@ func (repo *Sqlite3DocumentRepository) CountWhere(ctx context.Context, domainCol
     var repositoryFilter any
     repositoryFilter, err = repo.DocumentDomainToRepositoryFilter(ctx, domainColumnFilter)
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     repoFilter, ok := repositoryFilter.(*DocumentFilter)
     if !ok {
         err = fmt.Errorf("expected type *DocumentFilter but got %T", repoFilter)
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
 
@@ -1029,14 +1099,18 @@ func (repo *Sqlite3DocumentRepository) DoesExist(ctx context.Context, domainMode
     var repositoryModel any
     repositoryModel, err = repo.DocumentDomainToRepositoryModel(ctx, domainModel)
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     repoModel, ok := repositoryModel.(*Document)
     if !ok {
         err = fmt.Errorf("expected type *Document but got %T", repoModel)
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
 
@@ -1054,14 +1128,18 @@ func (repo *Sqlite3DocumentRepository) DoesExistWhere(ctx context.Context, domai
     var repositoryFilter any
     repositoryFilter, err = repo.DocumentDomainToRepositoryFilter(ctx, domainColumnFilter)
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     repoFilter, ok := repositoryFilter.(*DocumentFilter)
     if !ok {
         err = fmt.Errorf("expected type *DocumentFilter but got %T", repoFilter)
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
 
@@ -1082,14 +1160,18 @@ func (repo *Sqlite3DocumentRepository) GetWhere(ctx context.Context, domainColum
     var repositoryFilter any
     repositoryFilter, err = repo.DocumentDomainToRepositoryFilter(ctx, domainColumnFilter)
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     repoFilter, ok := repositoryFilter.(*DocumentFilter)
     if !ok {
         err = fmt.Errorf("expected type *DocumentFilter but got %T", repoFilter)
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
 
@@ -1100,31 +1182,41 @@ func (repo *Sqlite3DocumentRepository) GetWhere(ctx context.Context, domainColum
     var repositoryModels DocumentSlice
     repositoryModels, err = Documents(queryFilters...).All(ctx, repo.db)
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     if len(repositoryModels) == 0 {
     err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
 
     tx, err := repo.db.BeginTx(ctx, nil)
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     for _, repoModel := range repositoryModels {
         err = repo.LoadEntityRelations(ctx, tx, repoModel)
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
     }
 
     err = tx.Commit()
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     records = make([]*domain.Document, 0, len(repositoryModels))
@@ -1133,7 +1225,9 @@ func (repo *Sqlite3DocumentRepository) GetWhere(ctx context.Context, domainColum
     for _, repoModel := range repositoryModels {
         domainModel, err = repo.DocumentRepositoryToDomainModel(ctx, repoModel)
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         records = append(records, domainModel)
@@ -1153,14 +1247,18 @@ func (repo *Sqlite3DocumentRepository) GetFirstWhere(ctx context.Context, domain
     var repositoryFilter any
     repositoryFilter, err = repo.DocumentDomainToRepositoryFilter(ctx, domainColumnFilter)
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     repoFilter, ok := repositoryFilter.(*DocumentFilter)
     if !ok {
         err =  fmt.Errorf("expected type *DocumentFilter but got %T", repoFilter)
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
 
@@ -1174,23 +1272,31 @@ func (repo *Sqlite3DocumentRepository) GetFirstWhere(ctx context.Context, domain
             err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
         }
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
 
     tx, err := repo.db.BeginTx(ctx, nil)
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     err = repo.LoadEntityRelations(ctx, tx, repositoryModel)
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     err = tx.Commit()
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     record , err =repo.DocumentRepositoryToDomainModel(ctx, repositoryModel)
@@ -1202,29 +1308,39 @@ func (repo *Sqlite3DocumentRepository) GetAll(ctx context.Context) (records []*d
     var repositoryModels DocumentSlice
     repositoryModels, err = Documents().All(ctx, repo.db)
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
     if len(repositoryModels) == 0 {
         err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     tx, err := repo.db.BeginTx(ctx, nil)
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     for _, repoModel := range repositoryModels {
         err = repo.LoadEntityRelations(ctx, tx, repoModel)
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
     }
 
     err = tx.Commit()
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     records = make([]*domain.Document, 0, len(repositoryModels))
@@ -1233,7 +1349,9 @@ func (repo *Sqlite3DocumentRepository) GetAll(ctx context.Context) (records []*d
     for _, repoModel := range repositoryModels {
         domainModel, err = repo.DocumentRepositoryToDomainModel(ctx, repoModel)
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         records = append(records, domainModel)
@@ -1248,14 +1366,18 @@ func (repo *Sqlite3DocumentRepository) GetFromIDs(ctx context.Context, IDs []int
     var repositoryFilter any
     repositoryFilter, err = repo.DocumentDomainToRepositoryFilter(ctx, filter)
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     repoFilter, ok := repositoryFilter.(*DocumentFilter)
     if !ok {
         err = fmt.Errorf("expected type *DocumentFilter but got %T", repoFilter)
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
 
@@ -1266,30 +1388,40 @@ func (repo *Sqlite3DocumentRepository) GetFromIDs(ctx context.Context, IDs []int
     var repositoryModels DocumentSlice
     repositoryModels, err = Documents(queryFilters...).All(ctx, repo.db)
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     if len(repositoryModels) == 0 {
     err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     tx, err := repo.db.BeginTx(ctx, nil)
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     for _, repoModel := range repositoryModels {
         err = repo.LoadEntityRelations(ctx, tx, repoModel)
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
     }
 
     err = tx.Commit()
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     records = make([]*domain.Document, 0, len(repositoryModels))
@@ -1298,7 +1430,9 @@ func (repo *Sqlite3DocumentRepository) GetFromIDs(ctx context.Context, IDs []int
     for _, repoModel := range repositoryModels {
         domainModel, err = repo.DocumentRepositoryToDomainModel(ctx, repoModel)
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         records = append(records, domainModel)
@@ -1314,7 +1448,9 @@ func (repo *Sqlite3DocumentRepository) AddType(ctx context.Context, types []stri
 
         err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     for _, type_ := range types {
@@ -1326,7 +1462,9 @@ func (repo *Sqlite3DocumentRepository) AddType(ctx context.Context, types []stri
                 err = helper.DuplicateInsertionError{Inner: err}
             }
 
-            return
+repo.Logger.Error(err)
+
+return
         }
     }
 
@@ -1339,7 +1477,9 @@ func (repo *Sqlite3DocumentRepository) DeleteType(ctx context.Context, types []s
 
         err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     var numAffectedRecords int64
@@ -1348,7 +1488,9 @@ func (repo *Sqlite3DocumentRepository) DeleteType(ctx context.Context, types []s
     if numAffectedRecords == 0 {
         err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
 	return
@@ -1362,7 +1504,9 @@ func (repo *Sqlite3DocumentRepository) UpdateType(ctx context.Context, oldType s
             err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
         }
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     repositoryModel.DocumentType = newType
@@ -1373,7 +1517,9 @@ func (repo *Sqlite3DocumentRepository) UpdateType(ctx context.Context, oldType s
         if strings.Contains(err.Error(), "UNIQUE") {
             err = helper.DuplicateInsertionError{Inner: err}
 
-            return
+repo.Logger.Error(err)
+
+return
         }
     }
 
@@ -1389,7 +1535,9 @@ return err
         if !doesExist {
             err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
 
-            return
+repo.Logger.Error(err)
+
+return
         }
     }
 
@@ -1400,12 +1548,16 @@ func (repo *Sqlite3DocumentRepository) GetAllTypes(ctx context.Context) (records
     var repositoryModels []*DocumentType
     repositoryModels, err = DocumentTypes().All(ctx, repo.db)
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
     if len(repositoryModels) == 0 {
         err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
 
@@ -1527,7 +1679,9 @@ func (repo *Sqlite3DocumentRepository) DocumentDomainToRepositoryModel(ctx conte
         if err != nil {
             err = repoCommon.ReferenceToNonExistentDependencyError{Inner: err}
 
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         repositoryModelConcrete.R.DestinationDocuments = append(repositoryModelConcrete.R.DestinationDocuments, repositoryDocumentRaw.(*Document))
@@ -1538,7 +1692,9 @@ func (repo *Sqlite3DocumentRepository) DocumentDomainToRepositoryModel(ctx conte
         if err != nil {
             err = repoCommon.ReferenceToNonExistentDependencyError{Inner: err}
 
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         repositoryModelConcrete.R.SourceDocuments = append(repositoryModelConcrete.R.SourceDocuments, repositoryDocumentRaw.(*Document))
@@ -1593,12 +1749,16 @@ func (repo *Sqlite3DocumentRepository) DocumentRepositoryToDomainModel(ctx conte
     
     domainModel.CreatedAt, err = time.Parse(helper.DateFormat, repositoryModelConcrete.CreatedAt)
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     domainModel.UpdatedAt, err = time.Parse(helper.DateFormat, repositoryModelConcrete.UpdatedAt)
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     var t time.Time
@@ -1606,7 +1766,9 @@ func (repo *Sqlite3DocumentRepository) DocumentRepositoryToDomainModel(ctx conte
     if repositoryModelConcrete.DeletedAt.Valid {
         t, err = time.Parse(helper.DateFormat, repositoryModelConcrete.DeletedAt.String)
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         domainModel.DeletedAt.Set(t)
@@ -1696,7 +1858,9 @@ func (repo *Sqlite3DocumentRepository) DocumentDomainToRepositoryModelTx(ctx con
         if err != nil {
             err = repoCommon.ReferenceToNonExistentDependencyError{Inner: err}
 
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         repositoryModelConcrete.R.DestinationDocuments = append(repositoryModelConcrete.R.DestinationDocuments, repositoryDocumentRaw.(*Document))
@@ -1707,7 +1871,9 @@ func (repo *Sqlite3DocumentRepository) DocumentDomainToRepositoryModelTx(ctx con
         if err != nil {
             err = repoCommon.ReferenceToNonExistentDependencyError{Inner: err}
 
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         repositoryModelConcrete.R.SourceDocuments = append(repositoryModelConcrete.R.SourceDocuments, repositoryDocumentRaw.(*Document))
@@ -1762,12 +1928,16 @@ func (repo *Sqlite3DocumentRepository) DocumentRepositoryToDomainModelTx(ctx con
     
     domainModel.CreatedAt, err = time.Parse(helper.DateFormat, repositoryModelConcrete.CreatedAt)
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     domainModel.UpdatedAt, err = time.Parse(helper.DateFormat, repositoryModelConcrete.UpdatedAt)
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     var t time.Time
@@ -1775,7 +1945,9 @@ func (repo *Sqlite3DocumentRepository) DocumentRepositoryToDomainModelTx(ctx con
     if repositoryModelConcrete.DeletedAt.Valid {
         t, err = time.Parse(helper.DateFormat, repositoryModelConcrete.DeletedAt.String)
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         domainModel.DeletedAt.Set(t)
@@ -1821,7 +1993,9 @@ func (repo *Sqlite3DocumentRepository) DocumentDomainToRepositoryFilter(ctx cont
 
         convertedFilter, err = model.ConvertFilter[string, time.Time](domainFilter.CreatedAt.Wrappee, repoCommon.TimeToStr)
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         repositoryFilterConcrete.CreatedAt.Set(convertedFilter)
@@ -1831,7 +2005,9 @@ func (repo *Sqlite3DocumentRepository) DocumentDomainToRepositoryFilter(ctx cont
 
         convertedFilter, err = model.ConvertFilter[string, time.Time](domainFilter.UpdatedAt.Wrappee, repoCommon.TimeToStr)
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         repositoryFilterConcrete.UpdatedAt.Set(convertedFilter)
@@ -1841,7 +2017,9 @@ func (repo *Sqlite3DocumentRepository) DocumentDomainToRepositoryFilter(ctx cont
 
         convertedFilter, err = model.ConvertFilter[null.String, optional.Optional[time.Time]](domainFilter.DeletedAt.Wrappee, repoCommon.OptionalTimeToNullStr)
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         repositoryFilterConcrete.DeletedAt.Set(convertedFilter)
@@ -1855,7 +2033,9 @@ func (repo *Sqlite3DocumentRepository) DocumentDomainToRepositoryFilter(ctx cont
         converter := func (tagID int64) (*Tag, error) {return Tags(TagWhere.ID.EQ(tagID)).One(ctx, repo.db)}
         convertedFilter, err = model.ConvertFilter[*Tag, int64](domainFilter.TagIDs.Wrappee, converter)
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         repositoryFilterConcrete.Tags.Set(convertedFilter)
@@ -1876,7 +2056,9 @@ func (repo *Sqlite3DocumentRepository) DocumentDomainToRepositoryFilter(ctx cont
             return null.NewInt64(bookmarkType.ID, true), err
         })
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
 
 
@@ -1891,7 +2073,9 @@ func (repo *Sqlite3DocumentRepository) DocumentDomainToRepositoryFilter(ctx cont
         converter := func (documentID int64) (*Document, error) {return Documents(DocumentWhere.ID.EQ(documentID)).One(ctx, repo.db)}
         convertedFilter, err = model.ConvertFilter[*Document,int64](domainFilter.LinkedDocumentIDs.Wrappee, converter)
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         repositoryFilterConcrete.SourceDocuments.Set(convertedFilter)
@@ -1902,7 +2086,9 @@ func (repo *Sqlite3DocumentRepository) DocumentDomainToRepositoryFilter(ctx cont
         converter := func (documentID int64) (*Document, error) {return Documents(DocumentWhere.ID.EQ(documentID)).One(ctx, repo.db)}
         convertedFilter, err = model.ConvertFilter[*Document,int64](domainFilter.BacklinkedDocumentsIDs.Wrappee, converter)
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         repositoryFilterConcrete.DestinationDocuments.Set(convertedFilter)
@@ -1940,7 +2126,9 @@ func (repo *Sqlite3DocumentRepository) DocumentDomainToRepositoryUpdater(ctx con
         var convertedUpdater string
         convertedUpdater, err = repoCommon.TimeToStr(domainUpdater.CreatedAt.Wrappee.Operand)
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         repositoryUpdaterConcrete.CreatedAt.Set(model.UpdateOperation[string]{Operator: domainUpdater.CreatedAt.Wrappee.Operator, Operand: convertedUpdater})
@@ -1952,7 +2140,9 @@ func (repo *Sqlite3DocumentRepository) DocumentDomainToRepositoryUpdater(ctx con
         var convertedUpdater string
         convertedUpdater, err = repoCommon.TimeToStr(domainUpdater.UpdatedAt.Wrappee.Operand)
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         repositoryUpdaterConcrete.UpdatedAt.Set(model.UpdateOperation[string]{Operator: domainUpdater.UpdatedAt.Wrappee.Operator, Operand: convertedUpdater})
@@ -1964,7 +2154,9 @@ func (repo *Sqlite3DocumentRepository) DocumentDomainToRepositoryUpdater(ctx con
         var convertedUpdater null.String
         convertedUpdater, err = repoCommon.OptionalTimeToNullStr(domainUpdater.DeletedAt.Wrappee.Operand)
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         repositoryUpdaterConcrete.DeletedAt.Set(model.UpdateOperation[null.String]{Operator: domainUpdater.UpdatedAt.Wrappee.Operator, Operand: convertedUpdater})
@@ -1978,7 +2170,9 @@ func (repo *Sqlite3DocumentRepository) DocumentDomainToRepositoryUpdater(ctx con
         for _, tag := range domainUpdater.TagIDs.Wrappee.Operand {
             rawTag, err =  Tags(TagWhere.ID.EQ(tag)).One(ctx, repo.db)
             if err != nil {
-                return
+repo.Logger.Error(err)
+
+return
             }
 
             convertedUpdater = append(convertedUpdater, rawTag)
@@ -1994,7 +2188,9 @@ func (repo *Sqlite3DocumentRepository) DocumentDomainToRepositoryUpdater(ctx con
         for _, document := range domainUpdater.LinkedDocumentIDs.Wrappee.Operand {
             convertedDocumentRaw, err =  Documents(DocumentWhere.ID.EQ(document)).One(ctx, repo.db)
             if err != nil {
-                return
+repo.Logger.Error(err)
+
+return
             }
 
             convertedUpdater = append(convertedUpdater, convertedDocumentRaw)
@@ -2010,7 +2206,9 @@ func (repo *Sqlite3DocumentRepository) DocumentDomainToRepositoryUpdater(ctx con
         for _, document := range domainUpdater.BacklinkedDocumentsIDs.Wrappee.Operand {
             convertedDocumentRaw, err =  Documents(DocumentWhere.ID.EQ(document)).One(ctx, repo.db)
             if err != nil {
-                return
+repo.Logger.Error(err)
+
+return
             }
 
             convertedUpdater = append(convertedUpdater, convertedDocumentRaw.(*Document))
@@ -2083,17 +2281,23 @@ func (repo *Sqlite3DocumentRepository) LoadEntityRelations(ctx context.Context, 
 
     err = repoModel.L.LoadDestinationDocuments(ctx, repo.db, true, repoModel, nil)
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     err = repoModel.L.LoadSourceDocuments(ctx, repo.db, true, repoModel, nil)
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     err = repoModel.L.LoadTags(ctx, repo.db, true, repoModel, nil)
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     err = repoModel.L.LoadDocumentType(ctx, repo.db, true, repoModel, nil)

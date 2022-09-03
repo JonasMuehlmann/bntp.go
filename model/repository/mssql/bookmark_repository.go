@@ -385,7 +385,9 @@ func (repo *MssqlBookmarkRepository) New(args any) (newRepo repoCommon.BookmarkR
     if !ok {
         err = fmt.Errorf("expected type %T but got %T", MssqlBookmarkRepositoryConstructorArgs{}, args)
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     repo.db = constructorArgs.DB
@@ -409,7 +411,9 @@ func (repo *MssqlBookmarkRepository) Add(ctx context.Context, domainModels []*do
 
         err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
 	err = goaoi.AnyOfSlice(domainModels, func (e *domain.Bookmark) bool {return e == nil || e.IsDefault()})
@@ -439,6 +443,8 @@ return err
 
     err = repo.ReplaceTx(ctx, domainModels, tx)
     if err != nil {
+        repo.Logger.Error(err)
+
         return err
     }
 
@@ -453,7 +459,9 @@ func (repo *MssqlBookmarkRepository) AddMinimal(ctx context.Context, domainModel
 
         err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
 	err = goaoi.AnyOfSlice(domainModels, func (e *domain.Bookmark) bool {return e == nil || e.IsDefault()})
@@ -468,7 +476,9 @@ func (repo *MssqlBookmarkRepository) AddMinimal(ctx context.Context, domainModel
     if tx == nil {
         tx, err = repo.db.BeginTx(ctx, nil)
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
         commitHere = true
     }
@@ -484,7 +494,9 @@ func (repo *MssqlBookmarkRepository) AddMinimal(ctx context.Context, domainModel
         if !ok {
             err = fmt.Errorf("expected type *Bookmark but got %T", repoModel)
 
-            return
+repo.Logger.Error(err)
+
+return
         }
 
 		err = repoModel.Insert(ctx, tx, boil.Infer())
@@ -511,7 +523,9 @@ func (repo *MssqlBookmarkRepository) ReplaceTx(ctx context.Context, domainModels
 
         err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
 	err = goaoi.AnyOfSlice(domainModels, func (e *domain.Bookmark) bool {return e == nil || e.IsDefault()})
@@ -526,7 +540,9 @@ func (repo *MssqlBookmarkRepository) ReplaceTx(ctx context.Context, domainModels
     if tx == nil {
         tx, err = repo.db.BeginTx(ctx, nil)
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         commitHere = true
@@ -543,7 +559,9 @@ func (repo *MssqlBookmarkRepository) ReplaceTx(ctx context.Context, domainModels
         if !ok {
             err = fmt.Errorf("expected type *Bookmark but got %T", repoModel)
 
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         var numAffectedRecords int64
@@ -567,7 +585,9 @@ func (repo *MssqlBookmarkRepository) ReplaceTx(ctx context.Context, domainModels
                 if !doesExist {
                     err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
 
-                    return
+repo.Logger.Error(err)
+
+return
                 }
             }
         }
@@ -593,7 +613,9 @@ func (repo *MssqlBookmarkRepository) Replace(ctx context.Context, domainModels [
 
         err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
 	err = goaoi.AnyOfSlice(domainModels, func (e *domain.Bookmark) bool {return e == nil || e.IsDefault()})
@@ -622,7 +644,9 @@ func (repo *MssqlBookmarkRepository) Replace(ctx context.Context, domainModels [
         if !ok {
             err = fmt.Errorf("expected type *Bookmark but got %T", repoModel)
 
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         var numAffectedRecords int64
@@ -648,7 +672,9 @@ return err
                 if !doesExist {
                     err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
 
-                    return
+repo.Logger.Error(err)
+
+return
                 }
             }
         }
@@ -673,7 +699,9 @@ func (repo *MssqlBookmarkRepository) Upsert(ctx context.Context, domainModels []
 
         err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
 	err = goaoi.AnyOfSlice(domainModels, func (e *domain.Bookmark) bool {return e == nil || e.IsDefault()})
@@ -702,7 +730,9 @@ func (repo *MssqlBookmarkRepository) Upsert(ctx context.Context, domainModels []
         if !ok {
             err = fmt.Errorf("expected type *Bookmark but got %T", repoModel)
 
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         
@@ -735,7 +765,9 @@ func (repo *MssqlBookmarkRepository) Update(ctx context.Context, domainModels []
 
         err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
 	err = goaoi.AnyOfSlice(domainModels, func (e *domain.Bookmark) bool {return e == nil || e.IsDefault()})
@@ -769,7 +801,9 @@ func (repo *MssqlBookmarkRepository) Update(ctx context.Context, domainModels []
     var repositoryUpdater any
     repositoryUpdater, err = repo.BookmarkDomainToRepositoryUpdater(ctx, domainColumnUpdater)
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     var tx *sql.Tx
@@ -785,14 +819,18 @@ func (repo *MssqlBookmarkRepository) Update(ctx context.Context, domainModels []
         if !ok {
             err = fmt.Errorf("expected type *Bookmark but got %T", repoModel)
 
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         repoUpdater, ok := repositoryUpdater.(*BookmarkUpdater)
         if !ok {
             err = fmt.Errorf("expected type *Bookmark but got %T", repoModel)
 
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         repoUpdater.ApplyToModel(repoModel)
@@ -802,13 +840,17 @@ func (repo *MssqlBookmarkRepository) Update(ctx context.Context, domainModels []
                 err = helper.DuplicateInsertionError{Inner: err}
             }
 
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         if numAffectedRecords == 0 {
             err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
 
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         err = repo.UpdateRelatedEntities(ctx,tx, repositoryModel.(*Bookmark))
@@ -851,20 +893,26 @@ func (repo *MssqlBookmarkRepository) UpdateWhere(ctx context.Context, domainColu
     var repositoryFilter any
     repositoryFilter, err = repo.BookmarkDomainToRepositoryFilter(ctx, domainColumnFilter)
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     var repositoryUpdater any
     repositoryUpdater, err = repo.BookmarkDomainToRepositoryUpdater(ctx, domainColumnUpdater)
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     repoUpdater, ok := repositoryUpdater.(*BookmarkUpdater)
     if !ok {
         err = fmt.Errorf("expected type *BookmarkUpdater but got %T", repoUpdater)
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
 
@@ -872,7 +920,9 @@ func (repo *MssqlBookmarkRepository) UpdateWhere(ctx context.Context, domainColu
     if !ok {
         err = fmt.Errorf("expected type *BookmarkFilter but got %T", repoFilter)
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
 
@@ -887,7 +937,9 @@ func (repo *MssqlBookmarkRepository) UpdateWhere(ctx context.Context, domainColu
     if len(modelsToUpdate) == 0 {
         err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     var tx *sql.Tx
@@ -905,12 +957,16 @@ func (repo *MssqlBookmarkRepository) UpdateWhere(ctx context.Context, domainColu
                 err = helper.DuplicateInsertionError{Inner: err}
             }
 
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         err = repo.UpdateRelatedEntities(ctx,tx, repoModel)
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
 
     }
@@ -928,7 +984,9 @@ func (repo *MssqlBookmarkRepository) Delete(ctx context.Context, domainModels []
 
         err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
 	err = goaoi.AnyOfSlice(domainModels, func (e *domain.Bookmark) bool {return e == nil || e.IsDefault()})
@@ -959,7 +1017,9 @@ func (repo *MssqlBookmarkRepository) Delete(ctx context.Context, domainModels []
         if !ok {
             err = fmt.Errorf("expected type *Bookmark but got %T", repoModel)
 
-            return
+repo.Logger.Error(err)
+
+return
         }
 
 		numAffectedRecords, err = repoModel.Delete(ctx, tx)
@@ -970,7 +1030,9 @@ func (repo *MssqlBookmarkRepository) Delete(ctx context.Context, domainModels []
         if numAffectedRecords == 0 {
             err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
 
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         err = repo.UpdateRelatedEntities(ctx,tx, repositoryModel.(*Bookmark))
@@ -997,14 +1059,18 @@ func (repo *MssqlBookmarkRepository) DeleteWhere(ctx context.Context, domainColu
     var repositoryFilter any
     repositoryFilter, err = repo.BookmarkDomainToRepositoryFilter(ctx, domainColumnFilter)
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     repoFilter, ok := repositoryFilter.(*BookmarkFilter)
     if !ok {
         err = fmt.Errorf("expected type *BookmarkFilter but got %T", repoFilter)
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
 
@@ -1036,14 +1102,18 @@ func (repo *MssqlBookmarkRepository) CountWhere(ctx context.Context, domainColum
     var repositoryFilter any
     repositoryFilter, err = repo.BookmarkDomainToRepositoryFilter(ctx, domainColumnFilter)
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     repoFilter, ok := repositoryFilter.(*BookmarkFilter)
     if !ok {
         err = fmt.Errorf("expected type *BookmarkFilter but got %T", repoFilter)
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
 
@@ -1068,14 +1138,18 @@ func (repo *MssqlBookmarkRepository) DoesExist(ctx context.Context, domainModel 
     var repositoryModel any
     repositoryModel, err = repo.BookmarkDomainToRepositoryModel(ctx, domainModel)
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     repoModel, ok := repositoryModel.(*Bookmark)
     if !ok {
         err = fmt.Errorf("expected type *Bookmark but got %T", repoModel)
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
 
@@ -1093,14 +1167,18 @@ func (repo *MssqlBookmarkRepository) DoesExistWhere(ctx context.Context, domainC
     var repositoryFilter any
     repositoryFilter, err = repo.BookmarkDomainToRepositoryFilter(ctx, domainColumnFilter)
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     repoFilter, ok := repositoryFilter.(*BookmarkFilter)
     if !ok {
         err = fmt.Errorf("expected type *BookmarkFilter but got %T", repoFilter)
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
 
@@ -1121,14 +1199,18 @@ func (repo *MssqlBookmarkRepository) GetWhere(ctx context.Context, domainColumnF
     var repositoryFilter any
     repositoryFilter, err = repo.BookmarkDomainToRepositoryFilter(ctx, domainColumnFilter)
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     repoFilter, ok := repositoryFilter.(*BookmarkFilter)
     if !ok {
         err = fmt.Errorf("expected type *BookmarkFilter but got %T", repoFilter)
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
 
@@ -1139,31 +1221,41 @@ func (repo *MssqlBookmarkRepository) GetWhere(ctx context.Context, domainColumnF
     var repositoryModels BookmarkSlice
     repositoryModels, err = Bookmarks(queryFilters...).All(ctx, repo.db)
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     if len(repositoryModels) == 0 {
     err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
 
     tx, err := repo.db.BeginTx(ctx, nil)
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     for _, repoModel := range repositoryModels {
         err = repo.LoadEntityRelations(ctx, tx, repoModel)
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
     }
 
     err = tx.Commit()
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     records = make([]*domain.Bookmark, 0, len(repositoryModels))
@@ -1172,7 +1264,9 @@ func (repo *MssqlBookmarkRepository) GetWhere(ctx context.Context, domainColumnF
     for _, repoModel := range repositoryModels {
         domainModel, err = repo.BookmarkRepositoryToDomainModel(ctx, repoModel)
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         records = append(records, domainModel)
@@ -1192,14 +1286,18 @@ func (repo *MssqlBookmarkRepository) GetFirstWhere(ctx context.Context, domainCo
     var repositoryFilter any
     repositoryFilter, err = repo.BookmarkDomainToRepositoryFilter(ctx, domainColumnFilter)
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     repoFilter, ok := repositoryFilter.(*BookmarkFilter)
     if !ok {
         err =  fmt.Errorf("expected type *BookmarkFilter but got %T", repoFilter)
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
 
@@ -1213,23 +1311,31 @@ func (repo *MssqlBookmarkRepository) GetFirstWhere(ctx context.Context, domainCo
             err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
         }
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
 
     tx, err := repo.db.BeginTx(ctx, nil)
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     err = repo.LoadEntityRelations(ctx, tx, repositoryModel)
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     err = tx.Commit()
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     record , err =repo.BookmarkRepositoryToDomainModel(ctx, repositoryModel)
@@ -1241,29 +1347,39 @@ func (repo *MssqlBookmarkRepository) GetAll(ctx context.Context) (records []*dom
     var repositoryModels BookmarkSlice
     repositoryModels, err = Bookmarks().All(ctx, repo.db)
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
     if len(repositoryModels) == 0 {
         err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     tx, err := repo.db.BeginTx(ctx, nil)
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     for _, repoModel := range repositoryModels {
         err = repo.LoadEntityRelations(ctx, tx, repoModel)
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
     }
 
     err = tx.Commit()
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     records = make([]*domain.Bookmark, 0, len(repositoryModels))
@@ -1272,7 +1388,9 @@ func (repo *MssqlBookmarkRepository) GetAll(ctx context.Context) (records []*dom
     for _, repoModel := range repositoryModels {
         domainModel, err = repo.BookmarkRepositoryToDomainModel(ctx, repoModel)
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         records = append(records, domainModel)
@@ -1287,14 +1405,18 @@ func (repo *MssqlBookmarkRepository) GetFromIDs(ctx context.Context, IDs []int64
     var repositoryFilter any
     repositoryFilter, err = repo.BookmarkDomainToRepositoryFilter(ctx, filter)
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     repoFilter, ok := repositoryFilter.(*BookmarkFilter)
     if !ok {
         err = fmt.Errorf("expected type *BookmarkFilter but got %T", repoFilter)
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
 
@@ -1305,30 +1427,40 @@ func (repo *MssqlBookmarkRepository) GetFromIDs(ctx context.Context, IDs []int64
     var repositoryModels BookmarkSlice
     repositoryModels, err = Bookmarks(queryFilters...).All(ctx, repo.db)
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     if len(repositoryModels) == 0 {
     err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     tx, err := repo.db.BeginTx(ctx, nil)
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     for _, repoModel := range repositoryModels {
         err = repo.LoadEntityRelations(ctx, tx, repoModel)
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
     }
 
     err = tx.Commit()
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     records = make([]*domain.Bookmark, 0, len(repositoryModels))
@@ -1337,7 +1469,9 @@ func (repo *MssqlBookmarkRepository) GetFromIDs(ctx context.Context, IDs []int64
     for _, repoModel := range repositoryModels {
         domainModel, err = repo.BookmarkRepositoryToDomainModel(ctx, repoModel)
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         records = append(records, domainModel)
@@ -1353,7 +1487,9 @@ func (repo *MssqlBookmarkRepository) AddType(ctx context.Context, types []string
 
         err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     for _, type_ := range types {
@@ -1365,7 +1501,9 @@ func (repo *MssqlBookmarkRepository) AddType(ctx context.Context, types []string
                 err = helper.DuplicateInsertionError{Inner: err}
             }
 
-            return
+repo.Logger.Error(err)
+
+return
         }
     }
 
@@ -1378,7 +1516,9 @@ func (repo *MssqlBookmarkRepository) DeleteType(ctx context.Context, types []str
 
         err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     var numAffectedRecords int64
@@ -1387,7 +1527,9 @@ func (repo *MssqlBookmarkRepository) DeleteType(ctx context.Context, types []str
     if numAffectedRecords == 0 {
         err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
 	return
@@ -1401,7 +1543,9 @@ func (repo *MssqlBookmarkRepository) UpdateType(ctx context.Context, oldType str
             err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
         }
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     repositoryModel.BookmarkType = newType
@@ -1412,7 +1556,9 @@ func (repo *MssqlBookmarkRepository) UpdateType(ctx context.Context, oldType str
         if strings.Contains(err.Error(), "UNIQUE") {
             err = helper.DuplicateInsertionError{Inner: err}
 
-            return
+repo.Logger.Error(err)
+
+return
         }
     }
 
@@ -1428,7 +1574,9 @@ return err
         if !doesExist {
             err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
 
-            return
+repo.Logger.Error(err)
+
+return
         }
     }
 
@@ -1439,12 +1587,16 @@ func (repo *MssqlBookmarkRepository) GetAllTypes(ctx context.Context) (records [
     var repositoryModels []*BookmarkType
     repositoryModels, err = BookmarkTypes().All(ctx, repo.db)
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
     if len(repositoryModels) == 0 {
         err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
 
@@ -1520,7 +1672,9 @@ func (repo *MssqlBookmarkRepository) BookmarkDomainToRepositoryModel(ctx context
         var convertedTime null.Time
         convertedTime, err = repoCommon.OptionalTimeToNullTime(domainModel.DeletedAt)
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         repositoryModelConcrete.DeletedAt = convertedTime
@@ -1554,7 +1708,9 @@ func (repo *MssqlBookmarkRepository) BookmarkDomainToRepositoryModel(ctx context
             if err != nil {
                 err = repoCommon.ReferenceToNonExistentDependencyError{Inner: err}
 
-                return
+repo.Logger.Error(err)
+
+return
             }
 
             repositoryModelConcrete.R.Tags = append(repositoryModelConcrete.R.Tags, &Tag{Tag: repositoryTag.Tag, ID: repositoryTag.ID})
@@ -1604,7 +1760,9 @@ func (repo *MssqlBookmarkRepository) BookmarkDomainToRepositoryModelMinimal(ctx 
         var convertedTime null.Time
         convertedTime, err = repoCommon.OptionalTimeToNullTime(domainModel.DeletedAt)
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         repositoryModelConcrete.DeletedAt = convertedTime
@@ -1697,7 +1855,9 @@ func (repo *MssqlBookmarkRepository) BookmarkDomainToRepositoryModelTx(ctx conte
         var convertedTime null.Time
         convertedTime, err = repoCommon.OptionalTimeToNullTime(domainModel.DeletedAt)
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         repositoryModelConcrete.DeletedAt = convertedTime
@@ -1731,7 +1891,9 @@ func (repo *MssqlBookmarkRepository) BookmarkDomainToRepositoryModelTx(ctx conte
             if err != nil {
                 err = repoCommon.ReferenceToNonExistentDependencyError{Inner: err}
 
-                return
+repo.Logger.Error(err)
+
+return
             }
 
             repositoryModelConcrete.R.Tags = append(repositoryModelConcrete.R.Tags, &Tag{Tag: repositoryTag.Tag, ID: repositoryTag.ID})
@@ -1781,7 +1943,9 @@ func (repo *MssqlBookmarkRepository) BookmarkDomainToRepositoryModelMinimalTx(ct
         var convertedTime null.Time
         convertedTime, err = repoCommon.OptionalTimeToNullTime(domainModel.DeletedAt)
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         repositoryModelConcrete.DeletedAt = convertedTime
@@ -1876,7 +2040,9 @@ func (repo *MssqlBookmarkRepository) BookmarkDomainToRepositoryFilter(ctx contex
 
         convertedFilter, err = model.ConvertFilter[null.Time, optional.Optional[time.Time]](domainFilter.DeletedAt.Wrappee, repoCommon.OptionalTimeToNullTime)
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         repositoryFilterConcrete.DeletedAt.Set(convertedFilter)
@@ -1890,7 +2056,9 @@ func (repo *MssqlBookmarkRepository) BookmarkDomainToRepositoryFilter(ctx contex
 
         convertedFilter, err = model.ConvertFilter[null.String, optional.Optional[string]](domainFilter.Title.Wrappee, repoCommon.OptionalStringToNullString)
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         repositoryFilterConcrete.Title.Set(convertedFilter)
@@ -1904,7 +2072,9 @@ func (repo *MssqlBookmarkRepository) BookmarkDomainToRepositoryFilter(ctx contex
 
         convertedFilter, err = model.ConvertFilter[int64, bool](domainFilter.IsRead.Wrappee, repoCommon.BoolToInt)
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         repositoryFilterConcrete.IsRead.Set(convertedFilter)
@@ -1915,7 +2085,9 @@ func (repo *MssqlBookmarkRepository) BookmarkDomainToRepositoryFilter(ctx contex
 
         convertedFilter, err = model.ConvertFilter[int64, bool](domainFilter.IsCollection.Wrappee, repoCommon.BoolToInt)
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         repositoryFilterConcrete.IsCollection.Set(convertedFilter)
@@ -1930,7 +2102,9 @@ func (repo *MssqlBookmarkRepository) BookmarkDomainToRepositoryFilter(ctx contex
         converter := func (tagID int64) (*Tag, error) {return Tags(TagWhere.ID.EQ(tagID)).One(ctx, repo.db)}
         convertedFilter, err = model.ConvertFilter[*Tag, int64](domainFilter.TagIDs.Wrappee, converter)
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         repositoryFilterConcrete.Tags.Set(convertedFilter)
@@ -1951,7 +2125,9 @@ func (repo *MssqlBookmarkRepository) BookmarkDomainToRepositoryFilter(ctx contex
             return null.NewInt64(bookmarkType.ID, true), err
         })
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
 
 
@@ -1989,7 +2165,9 @@ func (repo *MssqlBookmarkRepository) BookmarkDomainToRepositoryUpdater(ctx conte
         var convertedTime null.Time
         convertedTime, err = repoCommon.OptionalTimeToNullTime(domainUpdater.DeletedAt.Wrappee.Operand)
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         repositoryUpdaterConcrete.DeletedAt.Set(model.UpdateOperation[null.Time]{Operator: domainUpdater.UpdatedAt.Wrappee.Operator, Operand: convertedTime})
@@ -2004,7 +2182,9 @@ func (repo *MssqlBookmarkRepository) BookmarkDomainToRepositoryUpdater(ctx conte
         var convertedUpdater null.String
         convertedUpdater, err = repoCommon.OptionalStringToNullString(domainUpdater.Title.Wrappee.Operand)
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         repositoryUpdaterConcrete.Title.Set(model.UpdateOperation[null.String]{Operator: domainUpdater.Title.Wrappee.Operator, Operand: convertedUpdater})
@@ -2017,7 +2197,9 @@ func (repo *MssqlBookmarkRepository) BookmarkDomainToRepositoryUpdater(ctx conte
         for _, tag := range domainUpdater.TagIDs.Wrappee.Operand {
             rawTag, err =  Tags(TagWhere.ID.EQ(tag)).One(ctx, repo.db)
             if err != nil {
-                return
+repo.Logger.Error(err)
+
+return
             }
 
             convertedUpdater = append(convertedUpdater, rawTag)
@@ -2034,7 +2216,9 @@ func (repo *MssqlBookmarkRepository) BookmarkDomainToRepositoryUpdater(ctx conte
         var convertedUpdater int64
         convertedUpdater, err = repoCommon.BoolToInt(domainUpdater.IsCollection.Wrappee.Operand)
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         repositoryUpdaterConcrete.IsCollection.Set(model.UpdateOperation[int64]{Operator: domainUpdater.IsCollection.Wrappee.Operator, Operand: convertedUpdater})
@@ -2044,7 +2228,9 @@ func (repo *MssqlBookmarkRepository) BookmarkDomainToRepositoryUpdater(ctx conte
         var convertedUpdater int64
         convertedUpdater, err = repoCommon.BoolToInt(domainUpdater.IsRead.Wrappee.Operand)
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         repositoryUpdaterConcrete.IsRead.Set(model.UpdateOperation[int64]{Operator: domainUpdater.IsRead.Wrappee.Operator, Operand: convertedUpdater})
@@ -2100,7 +2286,9 @@ func (repo *MssqlBookmarkRepository) LoadEntityRelations(ctx context.Context, tx
 
     err = repoModel.L.LoadTags(ctx, repo.db, true, repoModel, nil)
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     err = repoModel.L.LoadBookmarkType(ctx, repo.db, true, repoModel, nil)

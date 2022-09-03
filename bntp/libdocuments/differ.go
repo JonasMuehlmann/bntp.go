@@ -26,6 +26,8 @@ import (
 	"github.com/JonasMuehlmann/goaoi/functional"
 )
 
+// TODO: Add error logging
+
 func GetAddedLinks(old *domain.Document, new *domain.Document) (addedLinkIDs []int64, err error) {
 	predicate := func(oldLink int64) bool {
 		_, err := goaoi.FindIfSlice(new.LinkedDocumentIDs, functional.AreEqualPartial(oldLink))

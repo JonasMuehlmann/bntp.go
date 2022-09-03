@@ -321,7 +321,9 @@ func (repo *PsqlTagRepository) New(args any) (newRepo repoCommon.TagRepository, 
     if !ok {
         err = fmt.Errorf("expected type %T but got %T", PsqlTagRepositoryConstructorArgs{}, args)
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     repo.db = constructorArgs.DB
@@ -343,7 +345,9 @@ func (repo *PsqlTagRepository) Add(ctx context.Context, domainModels []*domain.T
 
         err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
 	err = goaoi.AnyOfSlice(domainModels, func (e *domain.Tag) bool {return e == nil || e.IsDefault()})
@@ -373,6 +377,8 @@ return err
 
     err = repo.ReplaceTx(ctx, domainModels, tx)
     if err != nil {
+        repo.Logger.Error(err)
+
         return err
     }
 
@@ -387,7 +393,9 @@ func (repo *PsqlTagRepository) AddMinimal(ctx context.Context, domainModels []*d
 
         err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
 	err = goaoi.AnyOfSlice(domainModels, func (e *domain.Tag) bool {return e == nil || e.IsDefault()})
@@ -402,7 +410,9 @@ func (repo *PsqlTagRepository) AddMinimal(ctx context.Context, domainModels []*d
     if tx == nil {
         tx, err = repo.db.BeginTx(ctx, nil)
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
         commitHere = true
     }
@@ -418,7 +428,9 @@ func (repo *PsqlTagRepository) AddMinimal(ctx context.Context, domainModels []*d
         if !ok {
             err = fmt.Errorf("expected type *Tag but got %T", repoModel)
 
-            return
+repo.Logger.Error(err)
+
+return
         }
 
 		err = repoModel.Insert(ctx, tx, boil.Infer())
@@ -445,7 +457,9 @@ func (repo *PsqlTagRepository) ReplaceTx(ctx context.Context, domainModels []*do
 
         err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
 	err = goaoi.AnyOfSlice(domainModels, func (e *domain.Tag) bool {return e == nil || e.IsDefault()})
@@ -460,7 +474,9 @@ func (repo *PsqlTagRepository) ReplaceTx(ctx context.Context, domainModels []*do
     if tx == nil {
         tx, err = repo.db.BeginTx(ctx, nil)
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         commitHere = true
@@ -477,7 +493,9 @@ func (repo *PsqlTagRepository) ReplaceTx(ctx context.Context, domainModels []*do
         if !ok {
             err = fmt.Errorf("expected type *Tag but got %T", repoModel)
 
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         var numAffectedRecords int64
@@ -501,7 +519,9 @@ func (repo *PsqlTagRepository) ReplaceTx(ctx context.Context, domainModels []*do
                 if !doesExist {
                     err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
 
-                    return
+repo.Logger.Error(err)
+
+return
                 }
             }
         }
@@ -527,7 +547,9 @@ func (repo *PsqlTagRepository) Replace(ctx context.Context, domainModels []*doma
 
         err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
 	err = goaoi.AnyOfSlice(domainModels, func (e *domain.Tag) bool {return e == nil || e.IsDefault()})
@@ -556,7 +578,9 @@ func (repo *PsqlTagRepository) Replace(ctx context.Context, domainModels []*doma
         if !ok {
             err = fmt.Errorf("expected type *Tag but got %T", repoModel)
 
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         var numAffectedRecords int64
@@ -582,7 +606,9 @@ return err
                 if !doesExist {
                     err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
 
-                    return
+repo.Logger.Error(err)
+
+return
                 }
             }
         }
@@ -607,7 +633,9 @@ func (repo *PsqlTagRepository) Upsert(ctx context.Context, domainModels []*domai
 
         err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
 	err = goaoi.AnyOfSlice(domainModels, func (e *domain.Tag) bool {return e == nil || e.IsDefault()})
@@ -636,7 +664,9 @@ func (repo *PsqlTagRepository) Upsert(ctx context.Context, domainModels []*domai
         if !ok {
             err = fmt.Errorf("expected type *Tag but got %T", repoModel)
 
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         
@@ -669,7 +699,9 @@ func (repo *PsqlTagRepository) Update(ctx context.Context, domainModels []*domai
 
         err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
 	err = goaoi.AnyOfSlice(domainModels, func (e *domain.Tag) bool {return e == nil || e.IsDefault()})
@@ -703,7 +735,9 @@ func (repo *PsqlTagRepository) Update(ctx context.Context, domainModels []*domai
     var repositoryUpdater any
     repositoryUpdater, err = repo.TagDomainToRepositoryUpdater(ctx, domainColumnUpdater)
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     var tx *sql.Tx
@@ -719,14 +753,18 @@ func (repo *PsqlTagRepository) Update(ctx context.Context, domainModels []*domai
         if !ok {
             err = fmt.Errorf("expected type *Tag but got %T", repoModel)
 
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         repoUpdater, ok := repositoryUpdater.(*TagUpdater)
         if !ok {
             err = fmt.Errorf("expected type *Tag but got %T", repoModel)
 
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         repoUpdater.ApplyToModel(repoModel)
@@ -736,13 +774,17 @@ func (repo *PsqlTagRepository) Update(ctx context.Context, domainModels []*domai
                 err = helper.DuplicateInsertionError{Inner: err}
             }
 
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         if numAffectedRecords == 0 {
             err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
 
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         err = repo.UpdateRelatedEntities(ctx,tx, repositoryModel.(*Tag))
@@ -785,20 +827,26 @@ func (repo *PsqlTagRepository) UpdateWhere(ctx context.Context, domainColumnFilt
     var repositoryFilter any
     repositoryFilter, err = repo.TagDomainToRepositoryFilter(ctx, domainColumnFilter)
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     var repositoryUpdater any
     repositoryUpdater, err = repo.TagDomainToRepositoryUpdater(ctx, domainColumnUpdater)
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     repoUpdater, ok := repositoryUpdater.(*TagUpdater)
     if !ok {
         err = fmt.Errorf("expected type *TagUpdater but got %T", repoUpdater)
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
 
@@ -806,7 +854,9 @@ func (repo *PsqlTagRepository) UpdateWhere(ctx context.Context, domainColumnFilt
     if !ok {
         err = fmt.Errorf("expected type *TagFilter but got %T", repoFilter)
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
 
@@ -821,7 +871,9 @@ func (repo *PsqlTagRepository) UpdateWhere(ctx context.Context, domainColumnFilt
     if len(modelsToUpdate) == 0 {
         err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     var tx *sql.Tx
@@ -839,12 +891,16 @@ func (repo *PsqlTagRepository) UpdateWhere(ctx context.Context, domainColumnFilt
                 err = helper.DuplicateInsertionError{Inner: err}
             }
 
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         err = repo.UpdateRelatedEntities(ctx,tx, repoModel)
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
 
     }
@@ -862,7 +918,9 @@ func (repo *PsqlTagRepository) Delete(ctx context.Context, domainModels []*domai
 
         err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
 	err = goaoi.AnyOfSlice(domainModels, func (e *domain.Tag) bool {return e == nil || e.IsDefault()})
@@ -893,7 +951,9 @@ func (repo *PsqlTagRepository) Delete(ctx context.Context, domainModels []*domai
         if !ok {
             err = fmt.Errorf("expected type *Tag but got %T", repoModel)
 
-            return
+repo.Logger.Error(err)
+
+return
         }
 
 		numAffectedRecords, err = repoModel.Delete(ctx, tx)
@@ -904,7 +964,9 @@ func (repo *PsqlTagRepository) Delete(ctx context.Context, domainModels []*domai
         if numAffectedRecords == 0 {
             err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
 
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         err = repo.UpdateRelatedEntities(ctx,tx, repositoryModel.(*Tag))
@@ -931,14 +993,18 @@ func (repo *PsqlTagRepository) DeleteWhere(ctx context.Context, domainColumnFilt
     var repositoryFilter any
     repositoryFilter, err = repo.TagDomainToRepositoryFilter(ctx, domainColumnFilter)
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     repoFilter, ok := repositoryFilter.(*TagFilter)
     if !ok {
         err = fmt.Errorf("expected type *TagFilter but got %T", repoFilter)
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
 
@@ -970,14 +1036,18 @@ func (repo *PsqlTagRepository) CountWhere(ctx context.Context, domainColumnFilte
     var repositoryFilter any
     repositoryFilter, err = repo.TagDomainToRepositoryFilter(ctx, domainColumnFilter)
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     repoFilter, ok := repositoryFilter.(*TagFilter)
     if !ok {
         err = fmt.Errorf("expected type *TagFilter but got %T", repoFilter)
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
 
@@ -1002,14 +1072,18 @@ func (repo *PsqlTagRepository) DoesExist(ctx context.Context, domainModel *domai
     var repositoryModel any
     repositoryModel, err = repo.TagDomainToRepositoryModel(ctx, domainModel)
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     repoModel, ok := repositoryModel.(*Tag)
     if !ok {
         err = fmt.Errorf("expected type *Tag but got %T", repoModel)
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
 
@@ -1027,14 +1101,18 @@ func (repo *PsqlTagRepository) DoesExistWhere(ctx context.Context, domainColumnF
     var repositoryFilter any
     repositoryFilter, err = repo.TagDomainToRepositoryFilter(ctx, domainColumnFilter)
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     repoFilter, ok := repositoryFilter.(*TagFilter)
     if !ok {
         err = fmt.Errorf("expected type *TagFilter but got %T", repoFilter)
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
 
@@ -1055,14 +1133,18 @@ func (repo *PsqlTagRepository) GetWhere(ctx context.Context, domainColumnFilter 
     var repositoryFilter any
     repositoryFilter, err = repo.TagDomainToRepositoryFilter(ctx, domainColumnFilter)
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     repoFilter, ok := repositoryFilter.(*TagFilter)
     if !ok {
         err = fmt.Errorf("expected type *TagFilter but got %T", repoFilter)
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
 
@@ -1073,31 +1155,41 @@ func (repo *PsqlTagRepository) GetWhere(ctx context.Context, domainColumnFilter 
     var repositoryModels TagSlice
     repositoryModels, err = Tags(queryFilters...).All(ctx, repo.db)
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     if len(repositoryModels) == 0 {
     err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
 
     tx, err := repo.db.BeginTx(ctx, nil)
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     for _, repoModel := range repositoryModels {
         err = repo.LoadEntityRelations(ctx, tx, repoModel)
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
     }
 
     err = tx.Commit()
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     records = make([]*domain.Tag, 0, len(repositoryModels))
@@ -1106,7 +1198,9 @@ func (repo *PsqlTagRepository) GetWhere(ctx context.Context, domainColumnFilter 
     for _, repoModel := range repositoryModels {
         domainModel, err = repo.TagRepositoryToDomainModel(ctx, repoModel)
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         records = append(records, domainModel)
@@ -1126,14 +1220,18 @@ func (repo *PsqlTagRepository) GetFirstWhere(ctx context.Context, domainColumnFi
     var repositoryFilter any
     repositoryFilter, err = repo.TagDomainToRepositoryFilter(ctx, domainColumnFilter)
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     repoFilter, ok := repositoryFilter.(*TagFilter)
     if !ok {
         err =  fmt.Errorf("expected type *TagFilter but got %T", repoFilter)
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
 
@@ -1147,23 +1245,31 @@ func (repo *PsqlTagRepository) GetFirstWhere(ctx context.Context, domainColumnFi
             err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
         }
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
 
     tx, err := repo.db.BeginTx(ctx, nil)
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     err = repo.LoadEntityRelations(ctx, tx, repositoryModel)
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     err = tx.Commit()
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     record , err =repo.TagRepositoryToDomainModel(ctx, repositoryModel)
@@ -1175,29 +1281,39 @@ func (repo *PsqlTagRepository) GetAll(ctx context.Context) (records []*domain.Ta
     var repositoryModels TagSlice
     repositoryModels, err = Tags().All(ctx, repo.db)
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
     if len(repositoryModels) == 0 {
         err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     tx, err := repo.db.BeginTx(ctx, nil)
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     for _, repoModel := range repositoryModels {
         err = repo.LoadEntityRelations(ctx, tx, repoModel)
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
     }
 
     err = tx.Commit()
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     records = make([]*domain.Tag, 0, len(repositoryModels))
@@ -1206,7 +1322,9 @@ func (repo *PsqlTagRepository) GetAll(ctx context.Context) (records []*domain.Ta
     for _, repoModel := range repositoryModels {
         domainModel, err = repo.TagRepositoryToDomainModel(ctx, repoModel)
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         records = append(records, domainModel)
@@ -1221,14 +1339,18 @@ func (repo *PsqlTagRepository) GetFromIDs(ctx context.Context, IDs []int64) (rec
     var repositoryFilter any
     repositoryFilter, err = repo.TagDomainToRepositoryFilter(ctx, filter)
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     repoFilter, ok := repositoryFilter.(*TagFilter)
     if !ok {
         err = fmt.Errorf("expected type *TagFilter but got %T", repoFilter)
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
 
@@ -1239,30 +1361,40 @@ func (repo *PsqlTagRepository) GetFromIDs(ctx context.Context, IDs []int64) (rec
     var repositoryModels TagSlice
     repositoryModels, err = Tags(queryFilters...).All(ctx, repo.db)
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     if len(repositoryModels) == 0 {
     err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     tx, err := repo.db.BeginTx(ctx, nil)
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     for _, repoModel := range repositoryModels {
         err = repo.LoadEntityRelations(ctx, tx, repoModel)
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
     }
 
     err = tx.Commit()
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     records = make([]*domain.Tag, 0, len(repositoryModels))
@@ -1271,7 +1403,9 @@ func (repo *PsqlTagRepository) GetFromIDs(ctx context.Context, IDs []int64) (rec
     for _, repoModel := range repositoryModels {
         domainModel, err = repo.TagRepositoryToDomainModel(ctx, repoModel)
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         records = append(records, domainModel)
@@ -1435,7 +1569,9 @@ if len(repositoryModelConcrete.Path) > 0 {
     for _, parentTagIDRaw := range pathIDs {
         parentTagID, err = strconv.ParseInt(parentTagIDRaw, 10, 64)
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         domainModel.ParentPathIDs = append(domainModel.ParentPathIDs, parentTagID)
@@ -1449,7 +1585,9 @@ if len(repositoryModelConcrete.Children) > 0 {
     for _, childTagIDRaw := range strings.Split(repositoryModelConcrete.Children, ";"){
         childTagID, err = strconv.ParseInt(childTagIDRaw, 10, 64)
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         domainModel.SubtagIDs = append(domainModel.SubtagIDs, childTagID)
@@ -1570,7 +1708,9 @@ if len(repositoryModelConcrete.Path) > 0 {
     for _, parentTagIDRaw := range pathIDs {
         parentTagID, err = strconv.ParseInt(parentTagIDRaw, 10, 64)
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         domainModel.ParentPathIDs = append(domainModel.ParentPathIDs, parentTagID)
@@ -1584,7 +1724,9 @@ if len(repositoryModelConcrete.Children) > 0 {
     for _, childTagIDRaw := range strings.Split(repositoryModelConcrete.Children, ";"){
         childTagID, err = strconv.ParseInt(childTagIDRaw, 10, 64)
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         domainModel.SubtagIDs = append(domainModel.SubtagIDs, childTagID)
@@ -1722,7 +1864,9 @@ func (repo *PsqlTagRepository) LoadEntityRelations(ctx context.Context, tx *sql.
 
     err = repoModel.L.LoadParentTagTag(ctx, repo.db, true, repoModel, nil)
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     err = repoModel.L.LoadParentTagTags(ctx, repo.db, true, repoModel, nil)

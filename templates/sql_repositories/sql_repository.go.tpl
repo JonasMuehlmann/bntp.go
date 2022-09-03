@@ -297,7 +297,9 @@ func (repo *{{$StructName}}) New(args any) (newRepo repoCommon.{{$EntityName}}Re
     if !ok {
         err = fmt.Errorf("expected type %T but got %T", {{$StructName}}ConstructorArgs{}, args)
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     repo.db = constructorArgs.DB
@@ -321,7 +323,9 @@ func (repo *{{$StructName}}) Add(ctx context.Context, domainModels []*domain.{{$
 
         err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
 	err = goaoi.AnyOfSlice(domainModels, func (e *domain.{{$EntityName}}) bool {return e == nil || e.IsDefault()})
@@ -367,7 +371,9 @@ func (repo *{{$StructName}}) AddMinimal(ctx context.Context, domainModels []*dom
 
         err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
 	err = goaoi.AnyOfSlice(domainModels, func (e *domain.{{$EntityName}}) bool {return e == nil || e.IsDefault()})
@@ -382,7 +388,9 @@ func (repo *{{$StructName}}) AddMinimal(ctx context.Context, domainModels []*dom
     if tx == nil {
         tx, err = repo.db.BeginTx(ctx, nil)
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
         commitHere = true
     }
@@ -398,7 +406,9 @@ func (repo *{{$StructName}}) AddMinimal(ctx context.Context, domainModels []*dom
         if !ok {
             err = fmt.Errorf("expected type *{{$EntityName}} but got %T", repoModel)
 
-            return
+repo.Logger.Error(err)
+
+return
         }
 
 		err = repoModel.Insert(ctx, tx, boil.Infer())
@@ -425,7 +435,9 @@ func (repo *{{$StructName}}) ReplaceTx(ctx context.Context, domainModels []*doma
 
         err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
 	err = goaoi.AnyOfSlice(domainModels, func (e *domain.{{$EntityName}}) bool {return e == nil || e.IsDefault()})
@@ -440,7 +452,9 @@ func (repo *{{$StructName}}) ReplaceTx(ctx context.Context, domainModels []*doma
     if tx == nil {
         tx, err = repo.db.BeginTx(ctx, nil)
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         commitHere = true
@@ -457,7 +471,9 @@ func (repo *{{$StructName}}) ReplaceTx(ctx context.Context, domainModels []*doma
         if !ok {
             err = fmt.Errorf("expected type *{{$EntityName}} but got %T", repoModel)
 
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         var numAffectedRecords int64
@@ -481,7 +497,9 @@ func (repo *{{$StructName}}) ReplaceTx(ctx context.Context, domainModels []*doma
                 if !doesExist {
                     err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
 
-                    return
+repo.Logger.Error(err)
+
+return
                 }
             }
         }
@@ -507,7 +525,9 @@ func (repo *{{$StructName}}) Replace(ctx context.Context, domainModels []*domain
 
         err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
 	err = goaoi.AnyOfSlice(domainModels, func (e *domain.{{$EntityName}}) bool {return e == nil || e.IsDefault()})
@@ -536,7 +556,9 @@ func (repo *{{$StructName}}) Replace(ctx context.Context, domainModels []*domain
         if !ok {
             err = fmt.Errorf("expected type *{{$EntityName}} but got %T", repoModel)
 
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         var numAffectedRecords int64
@@ -562,7 +584,9 @@ return err
                 if !doesExist {
                     err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
 
-                    return
+repo.Logger.Error(err)
+
+return
                 }
             }
         }
@@ -587,7 +611,9 @@ func (repo *{{$StructName}}) Upsert(ctx context.Context, domainModels []*domain.
 
         err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
 	err = goaoi.AnyOfSlice(domainModels, func (e *domain.{{$EntityName}}) bool {return e == nil || e.IsDefault()})
@@ -616,7 +642,9 @@ func (repo *{{$StructName}}) Upsert(ctx context.Context, domainModels []*domain.
         if !ok {
             err = fmt.Errorf("expected type *{{$EntityName}} but got %T", repoModel)
 
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         {{ if eq .DatabaseName "mssql" }}
@@ -651,7 +679,9 @@ func (repo *{{$StructName}}) Update(ctx context.Context, domainModels []*domain.
 
         err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
 	err = goaoi.AnyOfSlice(domainModels, func (e *domain.{{$EntityName}}) bool {return e == nil || e.IsDefault()})
@@ -685,7 +715,9 @@ func (repo *{{$StructName}}) Update(ctx context.Context, domainModels []*domain.
     var repositoryUpdater any
     repositoryUpdater, err = repo.{{$EntityName}}DomainToRepositoryUpdater(ctx, domainColumnUpdater)
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     var tx *sql.Tx
@@ -701,14 +733,18 @@ func (repo *{{$StructName}}) Update(ctx context.Context, domainModels []*domain.
         if !ok {
             err = fmt.Errorf("expected type *{{$EntityName}} but got %T", repoModel)
 
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         repoUpdater, ok := repositoryUpdater.(*{{$EntityName}}Updater)
         if !ok {
             err = fmt.Errorf("expected type *{{$EntityName}} but got %T", repoModel)
 
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         repoUpdater.ApplyToModel(repoModel)
@@ -718,13 +754,17 @@ func (repo *{{$StructName}}) Update(ctx context.Context, domainModels []*domain.
                 err = helper.DuplicateInsertionError{Inner: err}
             }
 
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         if numAffectedRecords == 0 {
             err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
 
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         err = repo.UpdateRelatedEntities(ctx,tx, repositoryModel.(*{{$EntityName}}))
@@ -767,20 +807,26 @@ func (repo *{{$StructName}}) UpdateWhere(ctx context.Context, domainColumnFilter
     var repositoryFilter any
     repositoryFilter, err = repo.{{$EntityName}}DomainToRepositoryFilter(ctx, domainColumnFilter)
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     var repositoryUpdater any
     repositoryUpdater, err = repo.{{$EntityName}}DomainToRepositoryUpdater(ctx, domainColumnUpdater)
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     repoUpdater, ok := repositoryUpdater.(*{{$EntityName}}Updater)
     if !ok {
         err = fmt.Errorf("expected type *{{$EntityName}}Updater but got %T", repoUpdater)
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
 
@@ -788,7 +834,9 @@ func (repo *{{$StructName}}) UpdateWhere(ctx context.Context, domainColumnFilter
     if !ok {
         err = fmt.Errorf("expected type *{{$EntityName}}Filter but got %T", repoFilter)
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
 
@@ -803,7 +851,9 @@ func (repo *{{$StructName}}) UpdateWhere(ctx context.Context, domainColumnFilter
     if len(modelsToUpdate) == 0 {
         err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     var tx *sql.Tx
@@ -821,12 +871,16 @@ func (repo *{{$StructName}}) UpdateWhere(ctx context.Context, domainColumnFilter
                 err = helper.DuplicateInsertionError{Inner: err}
             }
 
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         err = repo.UpdateRelatedEntities(ctx,tx, repoModel)
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
 
     }
@@ -844,7 +898,9 @@ func (repo *{{$StructName}}) Delete(ctx context.Context, domainModels []*domain.
 
         err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
 	err = goaoi.AnyOfSlice(domainModels, func (e *domain.{{$EntityName}}) bool {return e == nil || e.IsDefault()})
@@ -875,7 +931,9 @@ func (repo *{{$StructName}}) Delete(ctx context.Context, domainModels []*domain.
         if !ok {
             err = fmt.Errorf("expected type *{{$EntityName}} but got %T", repoModel)
 
-            return
+repo.Logger.Error(err)
+
+return
         }
 
 		numAffectedRecords, err = repoModel.Delete(ctx, tx)
@@ -886,7 +944,9 @@ func (repo *{{$StructName}}) Delete(ctx context.Context, domainModels []*domain.
         if numAffectedRecords == 0 {
             err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
 
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         err = repo.UpdateRelatedEntities(ctx,tx, repositoryModel.(*{{$EntityName}}))
@@ -913,14 +973,18 @@ func (repo *{{$StructName}}) DeleteWhere(ctx context.Context, domainColumnFilter
     var repositoryFilter any
     repositoryFilter, err = repo.{{$EntityName}}DomainToRepositoryFilter(ctx, domainColumnFilter)
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     repoFilter, ok := repositoryFilter.(*{{$EntityName}}Filter)
     if !ok {
         err = fmt.Errorf("expected type *{{$EntityName}}Filter but got %T", repoFilter)
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
 
@@ -952,14 +1016,18 @@ func (repo *{{$StructName}}) CountWhere(ctx context.Context, domainColumnFilter 
     var repositoryFilter any
     repositoryFilter, err = repo.{{$EntityName}}DomainToRepositoryFilter(ctx, domainColumnFilter)
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     repoFilter, ok := repositoryFilter.(*{{$EntityName}}Filter)
     if !ok {
         err = fmt.Errorf("expected type *{{$EntityName}}Filter but got %T", repoFilter)
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
 
@@ -984,14 +1052,18 @@ func (repo *{{$StructName}}) DoesExist(ctx context.Context, domainModel *domain.
     var repositoryModel any
     repositoryModel, err = repo.{{$EntityName}}DomainToRepositoryModel(ctx, domainModel)
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     repoModel, ok := repositoryModel.(*{{$EntityName}})
     if !ok {
         err = fmt.Errorf("expected type *{{$EntityName}} but got %T", repoModel)
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
 
@@ -1009,14 +1081,18 @@ func (repo *{{$StructName}}) DoesExistWhere(ctx context.Context, domainColumnFil
     var repositoryFilter any
     repositoryFilter, err = repo.{{$EntityName}}DomainToRepositoryFilter(ctx, domainColumnFilter)
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     repoFilter, ok := repositoryFilter.(*{{$EntityName}}Filter)
     if !ok {
         err = fmt.Errorf("expected type *{{$EntityName}}Filter but got %T", repoFilter)
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
 
@@ -1037,14 +1113,18 @@ func (repo *{{$StructName}}) GetWhere(ctx context.Context, domainColumnFilter *d
     var repositoryFilter any
     repositoryFilter, err = repo.{{$EntityName}}DomainToRepositoryFilter(ctx, domainColumnFilter)
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     repoFilter, ok := repositoryFilter.(*{{$EntityName}}Filter)
     if !ok {
         err = fmt.Errorf("expected type *{{$EntityName}}Filter but got %T", repoFilter)
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
 
@@ -1055,31 +1135,41 @@ func (repo *{{$StructName}}) GetWhere(ctx context.Context, domainColumnFilter *d
     var repositoryModels {{$EntityName}}Slice
     repositoryModels, err = {{$EntityName}}s(queryFilters...).All(ctx, repo.db)
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     if len(repositoryModels) == 0 {
     err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
 
     tx, err := repo.db.BeginTx(ctx, nil)
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     for _, repoModel := range repositoryModels {
         err = repo.LoadEntityRelations(ctx, tx, repoModel)
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
     }
 
     err = tx.Commit()
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     records = make([]*domain.{{$EntityName}}, 0, len(repositoryModels))
@@ -1088,7 +1178,9 @@ func (repo *{{$StructName}}) GetWhere(ctx context.Context, domainColumnFilter *d
     for _, repoModel := range repositoryModels {
         domainModel, err = repo.{{$EntityName}}RepositoryToDomainModel(ctx, repoModel)
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         records = append(records, domainModel)
@@ -1108,14 +1200,18 @@ func (repo *{{$StructName}}) GetFirstWhere(ctx context.Context, domainColumnFilt
     var repositoryFilter any
     repositoryFilter, err = repo.{{$EntityName}}DomainToRepositoryFilter(ctx, domainColumnFilter)
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     repoFilter, ok := repositoryFilter.(*{{$EntityName}}Filter)
     if !ok {
         err =  fmt.Errorf("expected type *{{$EntityName}}Filter but got %T", repoFilter)
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
 
@@ -1129,23 +1225,31 @@ func (repo *{{$StructName}}) GetFirstWhere(ctx context.Context, domainColumnFilt
             err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
         }
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
 
     tx, err := repo.db.BeginTx(ctx, nil)
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     err = repo.LoadEntityRelations(ctx, tx, repositoryModel)
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     err = tx.Commit()
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     record , err =repo.{{$EntityName}}RepositoryToDomainModel(ctx, repositoryModel)
@@ -1157,29 +1261,39 @@ func (repo *{{$StructName}}) GetAll(ctx context.Context) (records []*domain.{{$E
     var repositoryModels {{$EntityName}}Slice
     repositoryModels, err = {{$EntityName}}s().All(ctx, repo.db)
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
     if len(repositoryModels) == 0 {
         err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     tx, err := repo.db.BeginTx(ctx, nil)
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     for _, repoModel := range repositoryModels {
         err = repo.LoadEntityRelations(ctx, tx, repoModel)
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
     }
 
     err = tx.Commit()
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     records = make([]*domain.{{$EntityName}}, 0, len(repositoryModels))
@@ -1188,7 +1302,9 @@ func (repo *{{$StructName}}) GetAll(ctx context.Context) (records []*domain.{{$E
     for _, repoModel := range repositoryModels {
         domainModel, err = repo.{{$EntityName}}RepositoryToDomainModel(ctx, repoModel)
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         records = append(records, domainModel)
@@ -1203,14 +1319,18 @@ func (repo *{{$StructName}}) GetFromIDs(ctx context.Context, IDs []int64) (recor
     var repositoryFilter any
     repositoryFilter, err = repo.{{$EntityName}}DomainToRepositoryFilter(ctx, filter)
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     repoFilter, ok := repositoryFilter.(*{{$EntityName}}Filter)
     if !ok {
         err = fmt.Errorf("expected type *{{$EntityName}}Filter but got %T", repoFilter)
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
 
@@ -1221,30 +1341,40 @@ func (repo *{{$StructName}}) GetFromIDs(ctx context.Context, IDs []int64) (recor
     var repositoryModels {{$EntityName}}Slice
     repositoryModels, err = {{$EntityName}}s(queryFilters...).All(ctx, repo.db)
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     if len(repositoryModels) == 0 {
     err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     tx, err := repo.db.BeginTx(ctx, nil)
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     for _, repoModel := range repositoryModels {
         err = repo.LoadEntityRelations(ctx, tx, repoModel)
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
     }
 
     err = tx.Commit()
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     records = make([]*domain.{{$EntityName}}, 0, len(repositoryModels))
@@ -1253,7 +1383,9 @@ func (repo *{{$StructName}}) GetFromIDs(ctx context.Context, IDs []int64) (recor
     for _, repoModel := range repositoryModels {
         domainModel, err = repo.{{$EntityName}}RepositoryToDomainModel(ctx, repoModel)
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         records = append(records, domainModel)
@@ -1269,7 +1401,9 @@ func (repo *{{$StructName}}) AddType(ctx context.Context, types []string)  (err 
 
         err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     for _, type_ := range types {
@@ -1281,7 +1415,9 @@ func (repo *{{$StructName}}) AddType(ctx context.Context, types []string)  (err 
                 err = helper.DuplicateInsertionError{Inner: err}
             }
 
-            return
+repo.Logger.Error(err)
+
+return
         }
     }
 
@@ -1294,7 +1430,9 @@ func (repo *{{$StructName}}) DeleteType(ctx context.Context, types []string)  (e
 
         err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     var numAffectedRecords int64
@@ -1303,7 +1441,9 @@ func (repo *{{$StructName}}) DeleteType(ctx context.Context, types []string)  (e
     if numAffectedRecords == 0 {
         err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
 	return
@@ -1317,7 +1457,9 @@ func (repo *{{$StructName}}) UpdateType(ctx context.Context, oldType string, new
             err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
         }
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     repositoryModel.{{$EntityName}}Type = newType
@@ -1328,7 +1470,9 @@ func (repo *{{$StructName}}) UpdateType(ctx context.Context, oldType string, new
         if strings.Contains(err.Error(), "UNIQUE") {
             err = helper.DuplicateInsertionError{Inner: err}
 
-            return
+repo.Logger.Error(err)
+
+return
         }
     }
 
@@ -1344,7 +1488,9 @@ return err
         if !doesExist {
             err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
 
-            return
+repo.Logger.Error(err)
+
+return
         }
     }
 
@@ -1355,12 +1501,16 @@ func (repo *{{$StructName}}) GetAllTypes(ctx context.Context) (records []string,
     var repositoryModels []*{{$EntityName}}Type
     repositoryModels, err = {{$EntityName}}Types().All(ctx, repo.db)
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
     if len(repositoryModels) == 0 {
         err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
 
@@ -1444,7 +1594,9 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryModel(ctx context.
         var convertedTime null.Time
         convertedTime, err = repoCommon.OptionalTimeToNullTime(domainModel.DeletedAt)
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         repositoryModelConcrete.DeletedAt = convertedTime
@@ -1478,7 +1630,9 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryModel(ctx context.
             if err != nil {
                 err = repoCommon.ReferenceToNonExistentDependencyError{Inner: err}
 
-                return
+repo.Logger.Error(err)
+
+return
             }
 
             repositoryModelConcrete.R.Tags = append(repositoryModelConcrete.R.Tags, &Tag{{"{"}}Tag: repositoryTag.Tag, ID: repositoryTag.ID})
@@ -1536,7 +1690,9 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryModelMinimal(ctx c
         var convertedTime null.Time
         convertedTime, err = repoCommon.OptionalTimeToNullTime(domainModel.DeletedAt)
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         repositoryModelConcrete.DeletedAt = convertedTime
@@ -1587,12 +1743,16 @@ func (repo *{{$StructName}}) {{$EntityName}}RepositoryToDomainModel(ctx context.
     {{ if eq .DatabaseName "sqlite3"}}
     domainModel.CreatedAt, err = time.Parse(helper.DateFormat, repositoryModelConcrete.CreatedAt)
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     domainModel.UpdatedAt, err = time.Parse(helper.DateFormat, repositoryModelConcrete.UpdatedAt)
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     if repositoryModelConcrete.DeletedAt.Valid {
@@ -1600,7 +1760,9 @@ func (repo *{{$StructName}}) {{$EntityName}}RepositoryToDomainModel(ctx context.
 
         t, err = time.Parse(helper.DateFormat, repositoryModelConcrete.DeletedAt.String)
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         domainModel.DeletedAt.Set(t)
@@ -1655,7 +1817,9 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryModel(ctx context.
         var convertedTime null.Time
         convertedTime, err = repoCommon.OptionalTimeToNullTime(domainModel.DeletedAt)
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         repositoryModelConcrete.DeletedAt = convertedTime
@@ -1705,7 +1869,9 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryModel(ctx context.
         if err != nil {
             err = repoCommon.ReferenceToNonExistentDependencyError{Inner: err}
 
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         repositoryModelConcrete.R.Destination{{$EntityName}}s = append(repositoryModelConcrete.R.Destination{{$EntityName}}s, repository{{$EntityName}}Raw.(*{{$EntityName}}))
@@ -1716,7 +1882,9 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryModel(ctx context.
         if err != nil {
             err = repoCommon.ReferenceToNonExistentDependencyError{Inner: err}
 
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         repositoryModelConcrete.R.Source{{$EntityName}}s = append(repositoryModelConcrete.R.Source{{$EntityName}}s, repository{{$EntityName}}Raw.(*{{$EntityName}}))
@@ -1752,7 +1920,9 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryModelMinimal(ctx c
         var convertedTime null.Time
         convertedTime, err = repoCommon.OptionalTimeToNullTime(domainModel.DeletedAt)
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         repositoryModelConcrete.DeletedAt = convertedTime
@@ -1784,12 +1954,16 @@ func (repo *{{$StructName}}) {{$EntityName}}RepositoryToDomainModel(ctx context.
     {{ if eq .DatabaseName "sqlite3"}}
     domainModel.CreatedAt, err = time.Parse(helper.DateFormat, repositoryModelConcrete.CreatedAt)
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     domainModel.UpdatedAt, err = time.Parse(helper.DateFormat, repositoryModelConcrete.UpdatedAt)
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     var t time.Time
@@ -1797,7 +1971,9 @@ func (repo *{{$StructName}}) {{$EntityName}}RepositoryToDomainModel(ctx context.
     if repositoryModelConcrete.DeletedAt.Valid {
         t, err = time.Parse(helper.DateFormat, repositoryModelConcrete.DeletedAt.String)
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         domainModel.DeletedAt.Set(t)
@@ -1934,7 +2110,9 @@ if len(repositoryModelConcrete.Path) > 0 {
     for _, parent{{$EntityName}}IDRaw := range pathIDs {
         parent{{$EntityName}}ID, err = strconv.ParseInt(parent{{$EntityName}}IDRaw, 10, 64)
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         domainModel.ParentPathIDs = append(domainModel.ParentPathIDs, parent{{$EntityName}}ID)
@@ -1948,7 +2126,9 @@ if len(repositoryModelConcrete.Children) > 0 {
     for _, child{{$EntityName}}IDRaw := range strings.Split(repositoryModelConcrete.Children, ";"){
         child{{$EntityName}}ID, err = strconv.ParseInt(child{{$EntityName}}IDRaw, 10, 64)
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         domainModel.SubtagIDs = append(domainModel.SubtagIDs, child{{$EntityName}}ID)
@@ -1987,7 +2167,9 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryModelTx(ctx contex
         var convertedTime null.Time
         convertedTime, err = repoCommon.OptionalTimeToNullTime(domainModel.DeletedAt)
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         repositoryModelConcrete.DeletedAt = convertedTime
@@ -2021,7 +2203,9 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryModelTx(ctx contex
             if err != nil {
                 err = repoCommon.ReferenceToNonExistentDependencyError{Inner: err}
 
-                return
+repo.Logger.Error(err)
+
+return
             }
 
             repositoryModelConcrete.R.Tags = append(repositoryModelConcrete.R.Tags, &Tag{{"{"}}Tag: repositoryTag.Tag, ID: repositoryTag.ID})
@@ -2079,7 +2263,9 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryModelMinimalTx(ctx
         var convertedTime null.Time
         convertedTime, err = repoCommon.OptionalTimeToNullTime(domainModel.DeletedAt)
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         repositoryModelConcrete.DeletedAt = convertedTime
@@ -2130,12 +2316,16 @@ func (repo *{{$StructName}}) {{$EntityName}}RepositoryToDomainModelTx(ctx contex
     {{ if eq .DatabaseName "sqlite3"}}
     domainModel.CreatedAt, err = time.Parse(helper.DateFormat, repositoryModelConcrete.CreatedAt)
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     domainModel.UpdatedAt, err = time.Parse(helper.DateFormat, repositoryModelConcrete.UpdatedAt)
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     if repositoryModelConcrete.DeletedAt.Valid {
@@ -2143,7 +2333,9 @@ func (repo *{{$StructName}}) {{$EntityName}}RepositoryToDomainModelTx(ctx contex
 
         t, err = time.Parse(helper.DateFormat, repositoryModelConcrete.DeletedAt.String)
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         domainModel.DeletedAt.Set(t)
@@ -2198,7 +2390,9 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryModelTx(ctx contex
         var convertedTime null.Time
         convertedTime, err = repoCommon.OptionalTimeToNullTime(domainModel.DeletedAt)
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         repositoryModelConcrete.DeletedAt = convertedTime
@@ -2248,7 +2442,9 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryModelTx(ctx contex
         if err != nil {
             err = repoCommon.ReferenceToNonExistentDependencyError{Inner: err}
 
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         repositoryModelConcrete.R.Destination{{$EntityName}}s = append(repositoryModelConcrete.R.Destination{{$EntityName}}s, repository{{$EntityName}}Raw.(*{{$EntityName}}))
@@ -2259,7 +2455,9 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryModelTx(ctx contex
         if err != nil {
             err = repoCommon.ReferenceToNonExistentDependencyError{Inner: err}
 
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         repositoryModelConcrete.R.Source{{$EntityName}}s = append(repositoryModelConcrete.R.Source{{$EntityName}}s, repository{{$EntityName}}Raw.(*{{$EntityName}}))
@@ -2295,7 +2493,9 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryModelMinimalTx(ctx
         var convertedTime null.Time
         convertedTime, err = repoCommon.OptionalTimeToNullTime(domainModel.DeletedAt)
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         repositoryModelConcrete.DeletedAt = convertedTime
@@ -2327,12 +2527,16 @@ func (repo *{{$StructName}}) {{$EntityName}}RepositoryToDomainModelTx(ctx contex
     {{ if eq .DatabaseName "sqlite3"}}
     domainModel.CreatedAt, err = time.Parse(helper.DateFormat, repositoryModelConcrete.CreatedAt)
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     domainModel.UpdatedAt, err = time.Parse(helper.DateFormat, repositoryModelConcrete.UpdatedAt)
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     var t time.Time
@@ -2340,7 +2544,9 @@ func (repo *{{$StructName}}) {{$EntityName}}RepositoryToDomainModelTx(ctx contex
     if repositoryModelConcrete.DeletedAt.Valid {
         t, err = time.Parse(helper.DateFormat, repositoryModelConcrete.DeletedAt.String)
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         domainModel.DeletedAt.Set(t)
@@ -2477,7 +2683,9 @@ if len(repositoryModelConcrete.Path) > 0 {
     for _, parent{{$EntityName}}IDRaw := range pathIDs {
         parent{{$EntityName}}ID, err = strconv.ParseInt(parent{{$EntityName}}IDRaw, 10, 64)
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         domainModel.ParentPathIDs = append(domainModel.ParentPathIDs, parent{{$EntityName}}ID)
@@ -2491,7 +2699,9 @@ if len(repositoryModelConcrete.Children) > 0 {
     for _, child{{$EntityName}}IDRaw := range strings.Split(repositoryModelConcrete.Children, ";"){
         child{{$EntityName}}ID, err = strconv.ParseInt(child{{$EntityName}}IDRaw, 10, 64)
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         domainModel.SubtagIDs = append(domainModel.SubtagIDs, child{{$EntityName}}ID)
@@ -2521,7 +2731,9 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryFilter(ctx context
 
         convertedFilter, err = model.ConvertFilter[string, time.Time](domainFilter.CreatedAt.Wrappee, repoCommon.TimeToStr)
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         repositoryFilterConcrete.CreatedAt.Set(convertedFilter)
@@ -2531,7 +2743,9 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryFilter(ctx context
 
         convertedFilter, err = model.ConvertFilter[string, time.Time](domainFilter.UpdatedAt.Wrappee, repoCommon.TimeToStr)
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         repositoryFilterConcrete.UpdatedAt.Set(convertedFilter)
@@ -2541,7 +2755,9 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryFilter(ctx context
 
         convertedFilter, err = model.ConvertFilter[null.String, optional.Optional[time.Time]](domainFilter.DeletedAt.Wrappee, repoCommon.OptionalTimeToNullStr)
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         repositoryFilterConcrete.DeletedAt.Set(convertedFilter)
@@ -2555,7 +2771,9 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryFilter(ctx context
 
         convertedFilter, err = model.ConvertFilter[null.Time, optional.Optional[time.Time]](domainFilter.DeletedAt.Wrappee, repoCommon.OptionalTimeToNullTime)
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         repositoryFilterConcrete.DeletedAt.Set(convertedFilter)
@@ -2569,7 +2787,9 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryFilter(ctx context
 
         convertedFilter, err = model.ConvertFilter[null.String, optional.Optional[string]](domainFilter.Title.Wrappee, repoCommon.OptionalStringToNullString)
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         repositoryFilterConcrete.Title.Set(convertedFilter)
@@ -2583,7 +2803,9 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryFilter(ctx context
 
         convertedFilter, err = model.ConvertFilter[int64, bool](domainFilter.IsRead.Wrappee, repoCommon.BoolToInt)
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         repositoryFilterConcrete.IsRead.Set(convertedFilter)
@@ -2594,7 +2816,9 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryFilter(ctx context
 
         convertedFilter, err = model.ConvertFilter[int64, bool](domainFilter.IsCollection.Wrappee, repoCommon.BoolToInt)
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         repositoryFilterConcrete.IsCollection.Set(convertedFilter)
@@ -2609,7 +2833,9 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryFilter(ctx context
         converter := func (tagID int64) (*Tag, error) {return Tags(TagWhere.ID.EQ(tagID)).One(ctx, repo.db)}
         convertedFilter, err = model.ConvertFilter[*Tag, int64](domainFilter.TagIDs.Wrappee, converter)
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         repositoryFilterConcrete.Tags.Set(convertedFilter)
@@ -2630,7 +2856,9 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryFilter(ctx context
             return null.NewInt64(bookmarkType.ID, true), err
         })
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
 
 
@@ -2658,7 +2886,9 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryFilter(ctx context
 
         convertedFilter, err = model.ConvertFilter[string, time.Time](domainFilter.CreatedAt.Wrappee, repoCommon.TimeToStr)
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         repositoryFilterConcrete.CreatedAt.Set(convertedFilter)
@@ -2668,7 +2898,9 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryFilter(ctx context
 
         convertedFilter, err = model.ConvertFilter[string, time.Time](domainFilter.UpdatedAt.Wrappee, repoCommon.TimeToStr)
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         repositoryFilterConcrete.UpdatedAt.Set(convertedFilter)
@@ -2678,7 +2910,9 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryFilter(ctx context
 
         convertedFilter, err = model.ConvertFilter[null.String, optional.Optional[time.Time]](domainFilter.DeletedAt.Wrappee, repoCommon.OptionalTimeToNullStr)
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         repositoryFilterConcrete.DeletedAt.Set(convertedFilter)
@@ -2692,7 +2926,9 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryFilter(ctx context
 
         convertedFilter, err = model.ConvertFilter[null.Time, optional.Optional[time.Time]](domainFilter.DeletedAt.Wrappee, repoCommon.OptionalTimeToNullTime)
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         repositoryFilterConcrete.DeletedAt.Set(convertedFilter)
@@ -2706,7 +2942,9 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryFilter(ctx context
         converter := func (tagID int64) (*Tag, error) {return Tags(TagWhere.ID.EQ(tagID)).One(ctx, repo.db)}
         convertedFilter, err = model.ConvertFilter[*Tag, int64](domainFilter.TagIDs.Wrappee, converter)
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         repositoryFilterConcrete.Tags.Set(convertedFilter)
@@ -2727,7 +2965,9 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryFilter(ctx context
             return null.NewInt64(bookmarkType.ID, true), err
         })
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
 
 
@@ -2742,7 +2982,9 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryFilter(ctx context
         converter := func (documentID int64) (*Document, error) {return Documents(DocumentWhere.ID.EQ(documentID)).One(ctx, repo.db)}
         convertedFilter, err = model.ConvertFilter[*{{$EntityName}},int64](domainFilter.Linked{{$EntityName}}IDs.Wrappee, converter)
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         repositoryFilterConcrete.Source{{$EntityName}}s.Set(convertedFilter)
@@ -2753,7 +2995,9 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryFilter(ctx context
         converter := func (documentID int64) (*Document, error) {return Documents(DocumentWhere.ID.EQ(documentID)).One(ctx, repo.db)}
         convertedFilter, err = model.ConvertFilter[*{{$EntityName}},int64](domainFilter.Backlinked{{$EntityName}}sIDs.Wrappee, converter)
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         repositoryFilterConcrete.Destination{{$EntityName}}s.Set(convertedFilter)
@@ -2812,7 +3056,9 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryUpdater(ctx contex
         var convertedUpdater string
         convertedUpdater, err = repoCommon.TimeToStr(domainUpdater.CreatedAt.Wrappee.Operand)
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         repositoryUpdaterConcrete.CreatedAt.Set(model.UpdateOperation[string]{Operator: domainUpdater.CreatedAt.Wrappee.Operator, Operand: convertedUpdater})
@@ -2826,7 +3072,9 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryUpdater(ctx contex
         var convertedUpdater string
         convertedUpdater, err = repoCommon.TimeToStr(domainUpdater.UpdatedAt.Wrappee.Operand)
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         repositoryUpdaterConcrete.UpdatedAt.Set(model.UpdateOperation[string]{Operator: domainUpdater.UpdatedAt.Wrappee.Operator, Operand: convertedUpdater})
@@ -2840,7 +3088,9 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryUpdater(ctx contex
         var convertedUpdater null.String
         convertedUpdater, err = repoCommon.OptionalTimeToNullStr(domainUpdater.DeletedAt.Wrappee.Operand)
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         repositoryUpdaterConcrete.DeletedAt.Set(model.UpdateOperation[null.String]{Operator: domainUpdater.UpdatedAt.Wrappee.Operator, Operand: convertedUpdater})
@@ -2848,7 +3098,9 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryUpdater(ctx contex
         var convertedTime null.Time
         convertedTime, err = repoCommon.OptionalTimeToNullTime(domainUpdater.DeletedAt.Wrappee.Operand)
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         repositoryUpdaterConcrete.DeletedAt.Set(model.UpdateOperation[null.Time]{Operator: domainUpdater.UpdatedAt.Wrappee.Operator, Operand: convertedTime})
@@ -2863,7 +3115,9 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryUpdater(ctx contex
         var convertedUpdater null.String
         convertedUpdater, err = repoCommon.OptionalStringToNullString(domainUpdater.Title.Wrappee.Operand)
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         repositoryUpdaterConcrete.Title.Set(model.UpdateOperation[null.String]{Operator: domainUpdater.Title.Wrappee.Operator, Operand: convertedUpdater})
@@ -2876,7 +3130,9 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryUpdater(ctx contex
         for _, tag := range domainUpdater.TagIDs.Wrappee.Operand {
             rawTag, err =  Tags(TagWhere.ID.EQ(tag)).One(ctx, repo.db)
             if err != nil {
-                return
+repo.Logger.Error(err)
+
+return
             }
 
             convertedUpdater = append(convertedUpdater, rawTag)
@@ -2893,7 +3149,9 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryUpdater(ctx contex
         var convertedUpdater int64
         convertedUpdater, err = repoCommon.BoolToInt(domainUpdater.IsCollection.Wrappee.Operand)
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         repositoryUpdaterConcrete.IsCollection.Set(model.UpdateOperation[int64]{Operator: domainUpdater.IsCollection.Wrappee.Operator, Operand: convertedUpdater})
@@ -2903,7 +3161,9 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryUpdater(ctx contex
         var convertedUpdater int64
         convertedUpdater, err = repoCommon.BoolToInt(domainUpdater.IsRead.Wrappee.Operand)
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         repositoryUpdaterConcrete.IsRead.Set(model.UpdateOperation[int64]{Operator: domainUpdater.IsRead.Wrappee.Operator, Operand: convertedUpdater})
@@ -2941,7 +3201,9 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryUpdater(ctx contex
         var convertedUpdater string
         convertedUpdater, err = repoCommon.TimeToStr(domainUpdater.CreatedAt.Wrappee.Operand)
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         repositoryUpdaterConcrete.CreatedAt.Set(model.UpdateOperation[string]{Operator: domainUpdater.CreatedAt.Wrappee.Operator, Operand: convertedUpdater})
@@ -2955,7 +3217,9 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryUpdater(ctx contex
         var convertedUpdater string
         convertedUpdater, err = repoCommon.TimeToStr(domainUpdater.UpdatedAt.Wrappee.Operand)
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         repositoryUpdaterConcrete.UpdatedAt.Set(model.UpdateOperation[string]{Operator: domainUpdater.UpdatedAt.Wrappee.Operator, Operand: convertedUpdater})
@@ -2969,7 +3233,9 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryUpdater(ctx contex
         var convertedUpdater null.String
         convertedUpdater, err = repoCommon.OptionalTimeToNullStr(domainUpdater.DeletedAt.Wrappee.Operand)
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         repositoryUpdaterConcrete.DeletedAt.Set(model.UpdateOperation[null.String]{Operator: domainUpdater.UpdatedAt.Wrappee.Operator, Operand: convertedUpdater})
@@ -2977,7 +3243,9 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryUpdater(ctx contex
         var convertedTime null.Time
         convertedTime, err = repoCommon.OptionalTimeToNullTime(domainUpdater.DeletedAt.Wrappee.Operand)
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         repositoryUpdaterConcrete.DeletedAt.Set(model.UpdateOperation[null.Time]{Operator: domainUpdater.UpdatedAt.Wrappee.Operator, Operand: convertedTime})
@@ -2991,7 +3259,9 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryUpdater(ctx contex
         for _, tag := range domainUpdater.TagIDs.Wrappee.Operand {
             rawTag, err =  Tags(TagWhere.ID.EQ(tag)).One(ctx, repo.db)
             if err != nil {
-                return
+repo.Logger.Error(err)
+
+return
             }
 
             convertedUpdater = append(convertedUpdater, rawTag)
@@ -3007,7 +3277,9 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryUpdater(ctx contex
         for _, document := range domainUpdater.Linked{{$EntityName}}IDs.Wrappee.Operand {
             converted{{$EntityName}}Raw, err =  Documents(DocumentWhere.ID.EQ(document)).One(ctx, repo.db)
             if err != nil {
-                return
+repo.Logger.Error(err)
+
+return
             }
 
             convertedUpdater = append(convertedUpdater, converted{{$EntityName}}Raw)
@@ -3023,7 +3295,9 @@ func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryUpdater(ctx contex
         for _, document := range domainUpdater.Backlinked{{$EntityName}}sIDs.Wrappee.Operand {
             converted{{$EntityName}}Raw, err =  Documents(DocumentWhere.ID.EQ(document)).One(ctx, repo.db)
             if err != nil {
-                return
+repo.Logger.Error(err)
+
+return
             }
 
             convertedUpdater = append(convertedUpdater, converted{{$EntityName}}Raw.(*{{$EntityName}}))
@@ -3170,7 +3444,9 @@ func (repo *{{$StructName}}) LoadEntityRelations(ctx context.Context, tx *sql.Tx
 {{if eq $EntityName "Bookmark"}}
     err = repoModel.L.LoadTags(ctx, repo.db, true, repoModel, nil)
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     err = repoModel.L.LoadBookmarkType(ctx, repo.db, true, repoModel, nil)
@@ -3179,17 +3455,23 @@ func (repo *{{$StructName}}) LoadEntityRelations(ctx context.Context, tx *sql.Tx
 {{else if eq $EntityName "Document"}}
     err = repoModel.L.LoadDestinationDocuments(ctx, repo.db, true, repoModel, nil)
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     err = repoModel.L.LoadSourceDocuments(ctx, repo.db, true, repoModel, nil)
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     err = repoModel.L.LoadTags(ctx, repo.db, true, repoModel, nil)
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     err = repoModel.L.LoadDocumentType(ctx, repo.db, true, repoModel, nil)
@@ -3198,7 +3480,9 @@ func (repo *{{$StructName}}) LoadEntityRelations(ctx context.Context, tx *sql.Tx
 {{else if eq $EntityName "Tag"}}
     err = repoModel.L.LoadParentTagTag(ctx, repo.db, true, repoModel, nil)
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     err = repoModel.L.LoadParentTagTags(ctx, repo.db, true, repoModel, nil)

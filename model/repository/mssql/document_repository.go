@@ -346,7 +346,9 @@ func (repo *MssqlDocumentRepository) New(args any) (newRepo repoCommon.DocumentR
     if !ok {
         err = fmt.Errorf("expected type %T but got %T", MssqlDocumentRepositoryConstructorArgs{}, args)
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     repo.db = constructorArgs.DB
@@ -370,7 +372,9 @@ func (repo *MssqlDocumentRepository) Add(ctx context.Context, domainModels []*do
 
         err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
 	err = goaoi.AnyOfSlice(domainModels, func (e *domain.Document) bool {return e == nil || e.IsDefault()})
@@ -400,6 +404,8 @@ return err
 
     err = repo.ReplaceTx(ctx, domainModels, tx)
     if err != nil {
+        repo.Logger.Error(err)
+
         return err
     }
 
@@ -414,7 +420,9 @@ func (repo *MssqlDocumentRepository) AddMinimal(ctx context.Context, domainModel
 
         err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
 	err = goaoi.AnyOfSlice(domainModels, func (e *domain.Document) bool {return e == nil || e.IsDefault()})
@@ -429,7 +437,9 @@ func (repo *MssqlDocumentRepository) AddMinimal(ctx context.Context, domainModel
     if tx == nil {
         tx, err = repo.db.BeginTx(ctx, nil)
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
         commitHere = true
     }
@@ -445,7 +455,9 @@ func (repo *MssqlDocumentRepository) AddMinimal(ctx context.Context, domainModel
         if !ok {
             err = fmt.Errorf("expected type *Document but got %T", repoModel)
 
-            return
+repo.Logger.Error(err)
+
+return
         }
 
 		err = repoModel.Insert(ctx, tx, boil.Infer())
@@ -472,7 +484,9 @@ func (repo *MssqlDocumentRepository) ReplaceTx(ctx context.Context, domainModels
 
         err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
 	err = goaoi.AnyOfSlice(domainModels, func (e *domain.Document) bool {return e == nil || e.IsDefault()})
@@ -487,7 +501,9 @@ func (repo *MssqlDocumentRepository) ReplaceTx(ctx context.Context, domainModels
     if tx == nil {
         tx, err = repo.db.BeginTx(ctx, nil)
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         commitHere = true
@@ -504,7 +520,9 @@ func (repo *MssqlDocumentRepository) ReplaceTx(ctx context.Context, domainModels
         if !ok {
             err = fmt.Errorf("expected type *Document but got %T", repoModel)
 
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         var numAffectedRecords int64
@@ -528,7 +546,9 @@ func (repo *MssqlDocumentRepository) ReplaceTx(ctx context.Context, domainModels
                 if !doesExist {
                     err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
 
-                    return
+repo.Logger.Error(err)
+
+return
                 }
             }
         }
@@ -554,7 +574,9 @@ func (repo *MssqlDocumentRepository) Replace(ctx context.Context, domainModels [
 
         err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
 	err = goaoi.AnyOfSlice(domainModels, func (e *domain.Document) bool {return e == nil || e.IsDefault()})
@@ -583,7 +605,9 @@ func (repo *MssqlDocumentRepository) Replace(ctx context.Context, domainModels [
         if !ok {
             err = fmt.Errorf("expected type *Document but got %T", repoModel)
 
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         var numAffectedRecords int64
@@ -609,7 +633,9 @@ return err
                 if !doesExist {
                     err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
 
-                    return
+repo.Logger.Error(err)
+
+return
                 }
             }
         }
@@ -634,7 +660,9 @@ func (repo *MssqlDocumentRepository) Upsert(ctx context.Context, domainModels []
 
         err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
 	err = goaoi.AnyOfSlice(domainModels, func (e *domain.Document) bool {return e == nil || e.IsDefault()})
@@ -663,7 +691,9 @@ func (repo *MssqlDocumentRepository) Upsert(ctx context.Context, domainModels []
         if !ok {
             err = fmt.Errorf("expected type *Document but got %T", repoModel)
 
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         
@@ -696,7 +726,9 @@ func (repo *MssqlDocumentRepository) Update(ctx context.Context, domainModels []
 
         err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
 	err = goaoi.AnyOfSlice(domainModels, func (e *domain.Document) bool {return e == nil || e.IsDefault()})
@@ -730,7 +762,9 @@ func (repo *MssqlDocumentRepository) Update(ctx context.Context, domainModels []
     var repositoryUpdater any
     repositoryUpdater, err = repo.DocumentDomainToRepositoryUpdater(ctx, domainColumnUpdater)
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     var tx *sql.Tx
@@ -746,14 +780,18 @@ func (repo *MssqlDocumentRepository) Update(ctx context.Context, domainModels []
         if !ok {
             err = fmt.Errorf("expected type *Document but got %T", repoModel)
 
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         repoUpdater, ok := repositoryUpdater.(*DocumentUpdater)
         if !ok {
             err = fmt.Errorf("expected type *Document but got %T", repoModel)
 
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         repoUpdater.ApplyToModel(repoModel)
@@ -763,13 +801,17 @@ func (repo *MssqlDocumentRepository) Update(ctx context.Context, domainModels []
                 err = helper.DuplicateInsertionError{Inner: err}
             }
 
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         if numAffectedRecords == 0 {
             err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
 
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         err = repo.UpdateRelatedEntities(ctx,tx, repositoryModel.(*Document))
@@ -812,20 +854,26 @@ func (repo *MssqlDocumentRepository) UpdateWhere(ctx context.Context, domainColu
     var repositoryFilter any
     repositoryFilter, err = repo.DocumentDomainToRepositoryFilter(ctx, domainColumnFilter)
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     var repositoryUpdater any
     repositoryUpdater, err = repo.DocumentDomainToRepositoryUpdater(ctx, domainColumnUpdater)
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     repoUpdater, ok := repositoryUpdater.(*DocumentUpdater)
     if !ok {
         err = fmt.Errorf("expected type *DocumentUpdater but got %T", repoUpdater)
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
 
@@ -833,7 +881,9 @@ func (repo *MssqlDocumentRepository) UpdateWhere(ctx context.Context, domainColu
     if !ok {
         err = fmt.Errorf("expected type *DocumentFilter but got %T", repoFilter)
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
 
@@ -848,7 +898,9 @@ func (repo *MssqlDocumentRepository) UpdateWhere(ctx context.Context, domainColu
     if len(modelsToUpdate) == 0 {
         err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     var tx *sql.Tx
@@ -866,12 +918,16 @@ func (repo *MssqlDocumentRepository) UpdateWhere(ctx context.Context, domainColu
                 err = helper.DuplicateInsertionError{Inner: err}
             }
 
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         err = repo.UpdateRelatedEntities(ctx,tx, repoModel)
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
 
     }
@@ -889,7 +945,9 @@ func (repo *MssqlDocumentRepository) Delete(ctx context.Context, domainModels []
 
         err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
 	err = goaoi.AnyOfSlice(domainModels, func (e *domain.Document) bool {return e == nil || e.IsDefault()})
@@ -920,7 +978,9 @@ func (repo *MssqlDocumentRepository) Delete(ctx context.Context, domainModels []
         if !ok {
             err = fmt.Errorf("expected type *Document but got %T", repoModel)
 
-            return
+repo.Logger.Error(err)
+
+return
         }
 
 		numAffectedRecords, err = repoModel.Delete(ctx, tx)
@@ -931,7 +991,9 @@ func (repo *MssqlDocumentRepository) Delete(ctx context.Context, domainModels []
         if numAffectedRecords == 0 {
             err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
 
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         err = repo.UpdateRelatedEntities(ctx,tx, repositoryModel.(*Document))
@@ -958,14 +1020,18 @@ func (repo *MssqlDocumentRepository) DeleteWhere(ctx context.Context, domainColu
     var repositoryFilter any
     repositoryFilter, err = repo.DocumentDomainToRepositoryFilter(ctx, domainColumnFilter)
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     repoFilter, ok := repositoryFilter.(*DocumentFilter)
     if !ok {
         err = fmt.Errorf("expected type *DocumentFilter but got %T", repoFilter)
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
 
@@ -997,14 +1063,18 @@ func (repo *MssqlDocumentRepository) CountWhere(ctx context.Context, domainColum
     var repositoryFilter any
     repositoryFilter, err = repo.DocumentDomainToRepositoryFilter(ctx, domainColumnFilter)
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     repoFilter, ok := repositoryFilter.(*DocumentFilter)
     if !ok {
         err = fmt.Errorf("expected type *DocumentFilter but got %T", repoFilter)
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
 
@@ -1029,14 +1099,18 @@ func (repo *MssqlDocumentRepository) DoesExist(ctx context.Context, domainModel 
     var repositoryModel any
     repositoryModel, err = repo.DocumentDomainToRepositoryModel(ctx, domainModel)
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     repoModel, ok := repositoryModel.(*Document)
     if !ok {
         err = fmt.Errorf("expected type *Document but got %T", repoModel)
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
 
@@ -1054,14 +1128,18 @@ func (repo *MssqlDocumentRepository) DoesExistWhere(ctx context.Context, domainC
     var repositoryFilter any
     repositoryFilter, err = repo.DocumentDomainToRepositoryFilter(ctx, domainColumnFilter)
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     repoFilter, ok := repositoryFilter.(*DocumentFilter)
     if !ok {
         err = fmt.Errorf("expected type *DocumentFilter but got %T", repoFilter)
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
 
@@ -1082,14 +1160,18 @@ func (repo *MssqlDocumentRepository) GetWhere(ctx context.Context, domainColumnF
     var repositoryFilter any
     repositoryFilter, err = repo.DocumentDomainToRepositoryFilter(ctx, domainColumnFilter)
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     repoFilter, ok := repositoryFilter.(*DocumentFilter)
     if !ok {
         err = fmt.Errorf("expected type *DocumentFilter but got %T", repoFilter)
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
 
@@ -1100,31 +1182,41 @@ func (repo *MssqlDocumentRepository) GetWhere(ctx context.Context, domainColumnF
     var repositoryModels DocumentSlice
     repositoryModels, err = Documents(queryFilters...).All(ctx, repo.db)
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     if len(repositoryModels) == 0 {
     err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
 
     tx, err := repo.db.BeginTx(ctx, nil)
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     for _, repoModel := range repositoryModels {
         err = repo.LoadEntityRelations(ctx, tx, repoModel)
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
     }
 
     err = tx.Commit()
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     records = make([]*domain.Document, 0, len(repositoryModels))
@@ -1133,7 +1225,9 @@ func (repo *MssqlDocumentRepository) GetWhere(ctx context.Context, domainColumnF
     for _, repoModel := range repositoryModels {
         domainModel, err = repo.DocumentRepositoryToDomainModel(ctx, repoModel)
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         records = append(records, domainModel)
@@ -1153,14 +1247,18 @@ func (repo *MssqlDocumentRepository) GetFirstWhere(ctx context.Context, domainCo
     var repositoryFilter any
     repositoryFilter, err = repo.DocumentDomainToRepositoryFilter(ctx, domainColumnFilter)
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     repoFilter, ok := repositoryFilter.(*DocumentFilter)
     if !ok {
         err =  fmt.Errorf("expected type *DocumentFilter but got %T", repoFilter)
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
 
@@ -1174,23 +1272,31 @@ func (repo *MssqlDocumentRepository) GetFirstWhere(ctx context.Context, domainCo
             err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
         }
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
 
     tx, err := repo.db.BeginTx(ctx, nil)
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     err = repo.LoadEntityRelations(ctx, tx, repositoryModel)
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     err = tx.Commit()
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     record , err =repo.DocumentRepositoryToDomainModel(ctx, repositoryModel)
@@ -1202,29 +1308,39 @@ func (repo *MssqlDocumentRepository) GetAll(ctx context.Context) (records []*dom
     var repositoryModels DocumentSlice
     repositoryModels, err = Documents().All(ctx, repo.db)
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
     if len(repositoryModels) == 0 {
         err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     tx, err := repo.db.BeginTx(ctx, nil)
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     for _, repoModel := range repositoryModels {
         err = repo.LoadEntityRelations(ctx, tx, repoModel)
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
     }
 
     err = tx.Commit()
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     records = make([]*domain.Document, 0, len(repositoryModels))
@@ -1233,7 +1349,9 @@ func (repo *MssqlDocumentRepository) GetAll(ctx context.Context) (records []*dom
     for _, repoModel := range repositoryModels {
         domainModel, err = repo.DocumentRepositoryToDomainModel(ctx, repoModel)
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         records = append(records, domainModel)
@@ -1248,14 +1366,18 @@ func (repo *MssqlDocumentRepository) GetFromIDs(ctx context.Context, IDs []int64
     var repositoryFilter any
     repositoryFilter, err = repo.DocumentDomainToRepositoryFilter(ctx, filter)
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     repoFilter, ok := repositoryFilter.(*DocumentFilter)
     if !ok {
         err = fmt.Errorf("expected type *DocumentFilter but got %T", repoFilter)
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
 
@@ -1266,30 +1388,40 @@ func (repo *MssqlDocumentRepository) GetFromIDs(ctx context.Context, IDs []int64
     var repositoryModels DocumentSlice
     repositoryModels, err = Documents(queryFilters...).All(ctx, repo.db)
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     if len(repositoryModels) == 0 {
     err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     tx, err := repo.db.BeginTx(ctx, nil)
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     for _, repoModel := range repositoryModels {
         err = repo.LoadEntityRelations(ctx, tx, repoModel)
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
     }
 
     err = tx.Commit()
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     records = make([]*domain.Document, 0, len(repositoryModels))
@@ -1298,7 +1430,9 @@ func (repo *MssqlDocumentRepository) GetFromIDs(ctx context.Context, IDs []int64
     for _, repoModel := range repositoryModels {
         domainModel, err = repo.DocumentRepositoryToDomainModel(ctx, repoModel)
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         records = append(records, domainModel)
@@ -1314,7 +1448,9 @@ func (repo *MssqlDocumentRepository) AddType(ctx context.Context, types []string
 
         err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     for _, type_ := range types {
@@ -1326,7 +1462,9 @@ func (repo *MssqlDocumentRepository) AddType(ctx context.Context, types []string
                 err = helper.DuplicateInsertionError{Inner: err}
             }
 
-            return
+repo.Logger.Error(err)
+
+return
         }
     }
 
@@ -1339,7 +1477,9 @@ func (repo *MssqlDocumentRepository) DeleteType(ctx context.Context, types []str
 
         err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     var numAffectedRecords int64
@@ -1348,7 +1488,9 @@ func (repo *MssqlDocumentRepository) DeleteType(ctx context.Context, types []str
     if numAffectedRecords == 0 {
         err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
 	return
@@ -1362,7 +1504,9 @@ func (repo *MssqlDocumentRepository) UpdateType(ctx context.Context, oldType str
             err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
         }
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     repositoryModel.DocumentType = newType
@@ -1373,7 +1517,9 @@ func (repo *MssqlDocumentRepository) UpdateType(ctx context.Context, oldType str
         if strings.Contains(err.Error(), "UNIQUE") {
             err = helper.DuplicateInsertionError{Inner: err}
 
-            return
+repo.Logger.Error(err)
+
+return
         }
     }
 
@@ -1389,7 +1535,9 @@ return err
         if !doesExist {
             err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
 
-            return
+repo.Logger.Error(err)
+
+return
         }
     }
 
@@ -1400,12 +1548,16 @@ func (repo *MssqlDocumentRepository) GetAllTypes(ctx context.Context) (records [
     var repositoryModels []*DocumentType
     repositoryModels, err = DocumentTypes().All(ctx, repo.db)
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
     if len(repositoryModels) == 0 {
         err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
 
-        return
+repo.Logger.Error(err)
+
+return
     }
 
 
@@ -1482,7 +1634,9 @@ func (repo *MssqlDocumentRepository) DocumentDomainToRepositoryModel(ctx context
         var convertedTime null.Time
         convertedTime, err = repoCommon.OptionalTimeToNullTime(domainModel.DeletedAt)
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         repositoryModelConcrete.DeletedAt = convertedTime
@@ -1532,7 +1686,9 @@ func (repo *MssqlDocumentRepository) DocumentDomainToRepositoryModel(ctx context
         if err != nil {
             err = repoCommon.ReferenceToNonExistentDependencyError{Inner: err}
 
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         repositoryModelConcrete.R.DestinationDocuments = append(repositoryModelConcrete.R.DestinationDocuments, repositoryDocumentRaw.(*Document))
@@ -1543,7 +1699,9 @@ func (repo *MssqlDocumentRepository) DocumentDomainToRepositoryModel(ctx context
         if err != nil {
             err = repoCommon.ReferenceToNonExistentDependencyError{Inner: err}
 
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         repositoryModelConcrete.R.SourceDocuments = append(repositoryModelConcrete.R.SourceDocuments, repositoryDocumentRaw.(*Document))
@@ -1571,7 +1729,9 @@ func (repo *MssqlDocumentRepository) DocumentDomainToRepositoryModelMinimal(ctx 
         var convertedTime null.Time
         convertedTime, err = repoCommon.OptionalTimeToNullTime(domainModel.DeletedAt)
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         repositoryModelConcrete.DeletedAt = convertedTime
@@ -1647,7 +1807,9 @@ func (repo *MssqlDocumentRepository) DocumentDomainToRepositoryModelTx(ctx conte
         var convertedTime null.Time
         convertedTime, err = repoCommon.OptionalTimeToNullTime(domainModel.DeletedAt)
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         repositoryModelConcrete.DeletedAt = convertedTime
@@ -1697,7 +1859,9 @@ func (repo *MssqlDocumentRepository) DocumentDomainToRepositoryModelTx(ctx conte
         if err != nil {
             err = repoCommon.ReferenceToNonExistentDependencyError{Inner: err}
 
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         repositoryModelConcrete.R.DestinationDocuments = append(repositoryModelConcrete.R.DestinationDocuments, repositoryDocumentRaw.(*Document))
@@ -1708,7 +1872,9 @@ func (repo *MssqlDocumentRepository) DocumentDomainToRepositoryModelTx(ctx conte
         if err != nil {
             err = repoCommon.ReferenceToNonExistentDependencyError{Inner: err}
 
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         repositoryModelConcrete.R.SourceDocuments = append(repositoryModelConcrete.R.SourceDocuments, repositoryDocumentRaw.(*Document))
@@ -1736,7 +1902,9 @@ func (repo *MssqlDocumentRepository) DocumentDomainToRepositoryModelMinimalTx(ct
         var convertedTime null.Time
         convertedTime, err = repoCommon.OptionalTimeToNullTime(domainModel.DeletedAt)
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         repositoryModelConcrete.DeletedAt = convertedTime
@@ -1816,7 +1984,9 @@ func (repo *MssqlDocumentRepository) DocumentDomainToRepositoryFilter(ctx contex
 
         convertedFilter, err = model.ConvertFilter[null.Time, optional.Optional[time.Time]](domainFilter.DeletedAt.Wrappee, repoCommon.OptionalTimeToNullTime)
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         repositoryFilterConcrete.DeletedAt.Set(convertedFilter)
@@ -1830,7 +2000,9 @@ func (repo *MssqlDocumentRepository) DocumentDomainToRepositoryFilter(ctx contex
         converter := func (tagID int64) (*Tag, error) {return Tags(TagWhere.ID.EQ(tagID)).One(ctx, repo.db)}
         convertedFilter, err = model.ConvertFilter[*Tag, int64](domainFilter.TagIDs.Wrappee, converter)
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         repositoryFilterConcrete.Tags.Set(convertedFilter)
@@ -1851,7 +2023,9 @@ func (repo *MssqlDocumentRepository) DocumentDomainToRepositoryFilter(ctx contex
             return null.NewInt64(bookmarkType.ID, true), err
         })
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
 
 
@@ -1866,7 +2040,9 @@ func (repo *MssqlDocumentRepository) DocumentDomainToRepositoryFilter(ctx contex
         converter := func (documentID int64) (*Document, error) {return Documents(DocumentWhere.ID.EQ(documentID)).One(ctx, repo.db)}
         convertedFilter, err = model.ConvertFilter[*Document,int64](domainFilter.LinkedDocumentIDs.Wrappee, converter)
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         repositoryFilterConcrete.SourceDocuments.Set(convertedFilter)
@@ -1877,7 +2053,9 @@ func (repo *MssqlDocumentRepository) DocumentDomainToRepositoryFilter(ctx contex
         converter := func (documentID int64) (*Document, error) {return Documents(DocumentWhere.ID.EQ(documentID)).One(ctx, repo.db)}
         convertedFilter, err = model.ConvertFilter[*Document,int64](domainFilter.BacklinkedDocumentsIDs.Wrappee, converter)
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         repositoryFilterConcrete.DestinationDocuments.Set(convertedFilter)
@@ -1927,7 +2105,9 @@ func (repo *MssqlDocumentRepository) DocumentDomainToRepositoryUpdater(ctx conte
         var convertedTime null.Time
         convertedTime, err = repoCommon.OptionalTimeToNullTime(domainUpdater.DeletedAt.Wrappee.Operand)
         if err != nil {
-            return
+repo.Logger.Error(err)
+
+return
         }
 
         repositoryUpdaterConcrete.DeletedAt.Set(model.UpdateOperation[null.Time]{Operator: domainUpdater.UpdatedAt.Wrappee.Operator, Operand: convertedTime})
@@ -1941,7 +2121,9 @@ func (repo *MssqlDocumentRepository) DocumentDomainToRepositoryUpdater(ctx conte
         for _, tag := range domainUpdater.TagIDs.Wrappee.Operand {
             rawTag, err =  Tags(TagWhere.ID.EQ(tag)).One(ctx, repo.db)
             if err != nil {
-                return
+repo.Logger.Error(err)
+
+return
             }
 
             convertedUpdater = append(convertedUpdater, rawTag)
@@ -1957,7 +2139,9 @@ func (repo *MssqlDocumentRepository) DocumentDomainToRepositoryUpdater(ctx conte
         for _, document := range domainUpdater.LinkedDocumentIDs.Wrappee.Operand {
             convertedDocumentRaw, err =  Documents(DocumentWhere.ID.EQ(document)).One(ctx, repo.db)
             if err != nil {
-                return
+repo.Logger.Error(err)
+
+return
             }
 
             convertedUpdater = append(convertedUpdater, convertedDocumentRaw)
@@ -1973,7 +2157,9 @@ func (repo *MssqlDocumentRepository) DocumentDomainToRepositoryUpdater(ctx conte
         for _, document := range domainUpdater.BacklinkedDocumentsIDs.Wrappee.Operand {
             convertedDocumentRaw, err =  Documents(DocumentWhere.ID.EQ(document)).One(ctx, repo.db)
             if err != nil {
-                return
+repo.Logger.Error(err)
+
+return
             }
 
             convertedUpdater = append(convertedUpdater, convertedDocumentRaw.(*Document))
@@ -2046,17 +2232,23 @@ func (repo *MssqlDocumentRepository) LoadEntityRelations(ctx context.Context, tx
 
     err = repoModel.L.LoadDestinationDocuments(ctx, repo.db, true, repoModel, nil)
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     err = repoModel.L.LoadSourceDocuments(ctx, repo.db, true, repoModel, nil)
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     err = repoModel.L.LoadTags(ctx, repo.db, true, repoModel, nil)
     if err != nil {
-        return
+repo.Logger.Error(err)
+
+return
     }
 
     err = repoModel.L.LoadDocumentType(ctx, repo.db, true, repoModel, nil)

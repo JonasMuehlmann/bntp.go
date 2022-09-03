@@ -216,6 +216,8 @@ func (err EmptyEntitiesListError) As(target any) bool {
 	}
 }
 
+// TODO: Add error logging
+
 // TODO: Implement context handling.
 func AddTags(ctx context.Context, content string, tags []string) (newContent string, err error) {
 	if len(tags) == 0 {
