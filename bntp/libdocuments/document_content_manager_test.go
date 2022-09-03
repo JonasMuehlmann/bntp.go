@@ -39,63 +39,63 @@ import (
 )
 
 // FIX: This tests the repository
-// func TestDocumentContentManagerAdd(t *testing.T) {
-// 	tests := []struct {
-// 		err          error
-// 		errorMatcher testCommon.OutputValidator
-// 		name         string
-// 		pathContents []tuple.T2[string, string]
-// 	}{
-// 		{
-// 			name:         "empty args",
-// 			pathContents: nil,
-// 			err:          helper.IneffectiveOperationError{},
-// 		},
-// 		{
-// 			name:         "zero value args",
-// 			pathContents: []tuple.T2[string, string]{},
-// 			err:          helper.IneffectiveOperationError{},
-// 		},
-// 		{
-// 			name:         "good minimal args",
-// 			pathContents: []tuple.T2[string, string]{{V1: "path1", V2: "content1"}, {V1: "path2", V2: "content2"}},
-// 		},
-// 		{
-// 			name:         "add duplicate",
-// 			pathContents: []tuple.T2[string, string]{{V1: "path1", V2: "content1"}, {V1: "path1", V2: "content1"}},
-// 			err:          helper.DuplicateInsertionError{},
-// 		},
-// 	}
+func TestDocumentContentManagerAdd(t *testing.T) {
+	tests := []struct {
+		err          error
+		errorMatcher testCommon.OutputValidator
+		name         string
+		pathContents []tuple.T2[string, string]
+	}{
+		{
+			name:         "empty args",
+			pathContents: nil,
+			err:          helper.IneffectiveOperationError{},
+		},
+		{
+			name:         "zero value args",
+			pathContents: []tuple.T2[string, string]{},
+			err:          helper.IneffectiveOperationError{},
+		},
+		{
+			name:         "good minimal args",
+			pathContents: []tuple.T2[string, string]{{V1: "path1", V2: "content1"}, {V1: "path2", V2: "content2"}},
+		},
+		{
+			name:         "add duplicate",
+			pathContents: []tuple.T2[string, string]{{V1: "path1", V2: "content1"}, {V1: "path1", V2: "content1"}},
+			err:          helper.DuplicateInsertionError{},
+		},
+	}
 
-// 	for _, test := range tests {
-// 		test := test
-// 		t.Run(test.name, func(t *testing.T) {
-// 			t.Parallel()
-// 			defer testCommon.HandlePanic(t, test.name)
+	for _, test := range tests {
+		test := test
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+			defer testCommon.HandlePanic(t, test.name)
 
-// 			fs := afero.NewMemMapFs()
+			fs := afero.NewMemMapFs()
 
-// 			repoConcrete := &fsRepo.FSDocumentContentRepository{}
-// 			repoAbstract, err := repoConcrete.New(fsRepo.FSDocumentContentRepositoryConstructorArgs{Fs: fs, Logger: logrus.StandardLogger()})
-// 			assert.NoError(t, err, test.name+", assert repository creation")
+			repoConcrete := &fsRepo.FSDocumentContentRepository{}
+			repoAbstract, err := repoConcrete.New(fsRepo.FSDocumentContentRepositoryConstructorArgs{Fs: fs, Logger: logrus.StandardLogger()})
+			assert.NoError(t, err, test.name+", assert repository creation")
 
-// 			repoConcrete = repoAbstract.(*fsRepo.FSDocumentContentRepository)
+			repoConcrete = repoAbstract.(*fsRepo.FSDocumentContentRepository)
 
-// 			manager, err := libdocuments.NewDocumentContentManager(repoConcrete.Logger, &bntp.Hooks[string]{}, repoConcrete)
-// 			assert.NoError(t, err, test.name+", assert manager creation")
+			manager, err := libdocuments.NewDocumentContentManager(repoConcrete.Logger, &bntp.Hooks[string]{}, repoConcrete)
+			assert.NoError(t, err, test.name+", assert manager creation")
 
-// 			err = manager.Add(context.Background(), test.pathContents)
+			err = manager.Add(context.Background(), test.pathContents)
 
-// 			if test.err != nil {
-// 				assert.ErrorIs(t, err, test.err, test.name+", assert test error matches expected")
-// 			} else if test.errorMatcher != nil {
-// 				test.errorMatcher(t, err.Error(), test.name+", assert error string matches")
-// 			} else {
-// 				assert.NoError(t, err, test.name+", assert test does not error unexpectedly")
-// 			}
-// 		})
-// 	}
-// }
+			if test.err != nil {
+				assert.ErrorIs(t, err, test.err, test.name+", assert test error matches expected")
+			} else if test.errorMatcher != nil {
+				test.errorMatcher(t, err.Error(), test.name+", assert error string matches")
+			} else {
+				assert.NoError(t, err, test.name+", assert test does not error unexpectedly")
+			}
+		})
+	}
+}
 
 func TestDocumentContentManagerUpdateDocumentContentsFromNewModels(t *testing.T) {
 	tests := []struct {

@@ -652,7 +652,7 @@ func (m *DocumentContentManager) UpdateDocumentContentsFromNewModels(ctx context
 		return err
 	}
 	err = m.RemoveLinks(context.Background(), removedPathLinks)
-	if err != nil && !errors.Is(err, helper.EmptyInputError{}) {
+	if err != nil && !errors.Is(err, helper.EmptyInputError{}) && !errors.Is(err, EmptyEntitiesListError{}) {
 		return err
 	}
 
@@ -662,17 +662,17 @@ func (m *DocumentContentManager) UpdateDocumentContentsFromNewModels(ctx context
 	}
 
 	err = m.RemoveBackLinks(context.Background(), removedPathBacklinks)
+	if err != nil && !errors.Is(err, helper.EmptyInputError{}) && !errors.Is(err, EmptyEntitiesListError{}) {
+		return err
+	}
+
+	err = m.AddTags(context.Background(), addedPathTags)
 	if err != nil && !errors.Is(err, helper.EmptyInputError{}) {
 		return err
 	}
 
-	err = m.AddBackLinks(context.Background(), addedPathTags)
-	if err != nil && !errors.Is(err, helper.EmptyInputError{}) {
-		return err
-	}
-
-	err = m.RemoveBackLinks(context.Background(), removedPathTags)
-	if err != nil && !errors.Is(err, helper.EmptyInputError{}) {
+	err = m.RemoveTags(context.Background(), removedPathTags)
+	if err != nil && !errors.Is(err, helper.EmptyInputError{}) && !errors.Is(err, EmptyEntitiesListError{}) {
 		return err
 	}
 
@@ -826,7 +826,7 @@ func (m *DocumentContentManager) handleClearLinks(ctx context.Context, documents
 		removedPathLinks = append(removedPathLinks, tuple.T2[string, []string]{oldDocument.Path, removedLinks})
 	}
 	err = m.RemoveLinks(ctx, removedPathLinks)
-	if err != nil {
+	if err != nil && !errors.Is(err, EmptyEntitiesListError{}) {
 		return err
 	}
 	return nil
@@ -862,7 +862,7 @@ func (m *DocumentContentManager) handleClearBacklinks(ctx context.Context, docum
 		removedPathBacklinks = append(removedPathBacklinks, tuple.T2[string, []string]{oldDocument.Path, removedBacklinks})
 	}
 	err = m.RemoveBackLinks(ctx, removedPathBacklinks)
-	if err != nil {
+	if err != nil && !errors.Is(err, EmptyEntitiesListError{}) {
 		return err
 	}
 	return nil
@@ -898,7 +898,7 @@ func (m *DocumentContentManager) handleClearTags(ctx context.Context, tags []int
 		removedPathTags = append(removedPathTags, tuple.T2[string, []string]{oldDocument.Path, removedBacklinks})
 	}
 	err = m.RemoveTags(ctx, removedPathTags)
-	if err != nil {
+	if err != nil && !errors.Is(err, EmptyEntitiesListError{}) {
 		return err
 	}
 	return nil

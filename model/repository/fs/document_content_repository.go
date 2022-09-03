@@ -23,6 +23,7 @@ package repository
 import (
 	"context"
 	"fmt"
+	"os"
 
 	"github.com/JonasMuehlmann/bntp.go/internal/helper"
 	commonRepo "github.com/JonasMuehlmann/bntp.go/model/repository"
@@ -80,7 +81,7 @@ func (repo *FSDocumentContentRepository) Add(ctx context.Context, pathContents [
 			return err
 		}
 
-		return nil
+		return file.Close()
 	}
 
 	return goaoi.ForeachSlice(pathContents, transformer)
@@ -102,7 +103,7 @@ func (repo *FSDocumentContentRepository) Update(ctx context.Context, pathContent
 	}
 
 	transformer := func(pathChange tuple.T2[string, string]) error {
-		file, err := repo.fs.Open(pathChange.V1)
+		file, err := repo.fs.OpenFile(pathChange.V1, os.O_WRONLY, 0o644)
 		if err != nil {
 			return err
 		}
@@ -112,7 +113,7 @@ func (repo *FSDocumentContentRepository) Update(ctx context.Context, pathContent
 			return err
 		}
 
-		return err
+		return file.Close()
 	}
 
 	return goaoi.ForeachSlice(pathContents, transformer)
