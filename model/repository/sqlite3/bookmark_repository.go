@@ -420,24 +420,34 @@ func (repo *Sqlite3BookmarkRepository) Add(ctx context.Context, domainModels []*
 		return
 	}
 
-    err = repo.AddMinimal(ctx, domainModels)
+    var tx *sql.Tx
+
+    tx, err = repo.db.BeginTx(ctx, nil)
     if err != nil {
         repo.Logger.Error(err)
 
 return err
     }
 
-    err = repo.Replace(ctx, domainModels)
+
+    err = repo.AddMinimal(ctx, domainModels, tx)
     if err != nil {
         repo.Logger.Error(err)
 
 return err
     }
+
+    err = repo.ReplaceTx(ctx, domainModels, tx)
+    if err != nil {
+        return err
+    }
+
+    tx.Commit()
 
     return
 }
 
-func (repo *Sqlite3BookmarkRepository) AddMinimal(ctx context.Context, domainModels []*domain.Bookmark)  (err error){
+func (repo *Sqlite3BookmarkRepository) AddMinimal(ctx context.Context, domainModels []*domain.Bookmark, tx *sql.Tx)  (err error){
     if len(domainModels) == 0 {
         repo.Logger.Debug(helper.LogMessageEmptyInput)
 
@@ -454,15 +464,17 @@ func (repo *Sqlite3BookmarkRepository) AddMinimal(ctx context.Context, domainMod
 		return
 	}
 
+    var commitHere bool
+    if tx == nil {
+        tx, err = repo.db.BeginTx(ctx, nil)
+        if err != nil {
+            return
+        }
+        commitHere = true
+    }
+
     var repositoryModels []any
-    repositoryModels, err = goaoi.TransformCopySlice(domainModels, repo.GetBookmarkDomainToRepositoryModelMinimal(ctx))
-	if err != nil {
-		return
-	}
-
-    var tx *sql.Tx
-
-	tx, err = repo.db.BeginTx(ctx, nil)
+    repositoryModels, err = goaoi.TransformCopySlice(domainModels, repo.GetBookmarkDomainToRepositoryModelMinimalTx(ctx, tx))
 	if err != nil {
 		return
 	}
@@ -485,7 +497,91 @@ func (repo *Sqlite3BookmarkRepository) AddMinimal(ctx context.Context, domainMod
 		}
 	}
 
-	tx.Commit()
+    if commitHere {
+        tx.Commit()
+    }
+
+    return
+}
+
+func (repo *Sqlite3BookmarkRepository) ReplaceTx(ctx context.Context, domainModels []*domain.Bookmark, tx *sql.Tx)  (err error){
+    
+    if len(domainModels) == 0 {
+        repo.Logger.Debug(helper.LogMessageEmptyInput)
+
+        err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
+
+        return
+    }
+
+	err = goaoi.AnyOfSlice(domainModels, func (e *domain.Bookmark) bool {return e == nil || e.IsDefault()})
+	if err == nil{
+		err = helper.NilInputError{}
+		repo.Logger.Error(err)
+
+		return
+	}
+
+    var commitHere bool
+    if tx == nil {
+        tx, err = repo.db.BeginTx(ctx, nil)
+        if err != nil {
+            return
+        }
+
+        commitHere = true
+    }
+
+    var repositoryModels []any
+    repositoryModels, err = goaoi.TransformCopySlice(domainModels, repo.GetBookmarkDomainToRepositoryModelTx(ctx, tx))
+	if err != nil {
+		return
+	}
+
+	for _, repositoryModel := range repositoryModels {
+        repoModel, ok := repositoryModel.(*Bookmark)
+        if !ok {
+            err = fmt.Errorf("expected type *Bookmark but got %T", repoModel)
+
+            return
+        }
+
+        var numAffectedRecords int64
+		numAffectedRecords, err = repoModel.Update(ctx, tx, boil.Infer())
+		if err != nil {
+            if strings.Contains(err.Error(), "UNIQUE") {
+                err = helper.DuplicateInsertionError{Inner: err}
+            }
+
+			return
+		}
+
+        if numAffectedRecords == 0 {
+            var doesExist bool
+            for _, repositoryBookmark := range repositoryModels {
+                doesExist, err = Bookmarks(BookmarkWhere.ID.EQ(repositoryBookmark.(*Bookmark).ID)).Exists(ctx, tx)
+                if err != nil {
+                    return err
+                }
+
+                if !doesExist {
+                    err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
+
+                    return
+                }
+            }
+        }
+
+        err = repo.UpdateRelatedEntities(ctx,tx, repositoryModel.(*Bookmark))
+        if err != nil {
+            return err
+        }
+
+	}
+
+    if commitHere {
+    tx.Commit()
+    }
 
     return
 }
@@ -570,6 +666,7 @@ return err
 
     return
 }
+
 func (repo *Sqlite3BookmarkRepository) Upsert(ctx context.Context, domainModels []*domain.Bookmark)  (err error){
     if len(domainModels) == 0 {
         repo.Logger.Debug(helper.LogMessageEmptyInput)
@@ -1383,6 +1480,25 @@ func (repo *Sqlite3BookmarkRepository) GetBookmarkDomainToRepositoryModelMinimal
     }
 }
 
+func (repo *Sqlite3BookmarkRepository) GetBookmarkDomainToRepositoryModelTx(ctx context.Context, tx *sql.Tx) func(domainModel *domain.Bookmark) (repositoryModel any, err error) {
+    return func(domainModel *domain.Bookmark) (repositoryModel any, err error) {
+        return repo.BookmarkDomainToRepositoryModelTx(ctx, tx, domainModel)
+    }
+}
+
+func (repo *Sqlite3BookmarkRepository) GetBookmarkRepositoryToDomainModelTx(ctx context.Context, tx *sql.Tx) func(repositoryModel any) (domainModel *domain.Bookmark, err error) {
+    return func(repositoryModel any) (domainModel *domain.Bookmark, err error) {
+
+        return repo.BookmarkRepositoryToDomainModelTx(ctx, tx,repositoryModel)
+    }
+}
+
+func (repo *Sqlite3BookmarkRepository) GetBookmarkDomainToRepositoryModelMinimalTx(ctx context.Context, tx *sql.Tx) func(domainModel *domain.Bookmark) (repositoryModel any, err error) {
+    return func(domainModel *domain.Bookmark) (repositoryModel any, err error) {
+        return repo.BookmarkDomainToRepositoryModelMinimalTx(ctx, tx, domainModel)
+    }
+}
+
 //******************************************************************//
 //                          Model Converter                         //
 //******************************************************************//
@@ -1563,6 +1679,188 @@ func (repo *Sqlite3BookmarkRepository) BookmarkRepositoryToDomainModel(ctx conte
 
     return
 }
+
+
+
+
+
+func (repo *Sqlite3BookmarkRepository) BookmarkDomainToRepositoryModelTx(ctx context.Context, tx *sql.Tx, domainModel *domain.Bookmark) ( repositoryModel any, err error)  {
+    repositoryModelConcrete := new(Bookmark)
+    repositoryModelConcrete.R = repositoryModelConcrete.R.NewStruct()
+
+    repositoryModelConcrete.URL = domainModel.URL
+    repositoryModelConcrete.ID = domainModel.ID
+
+
+    //**********************    Set Timestamps    **********************//
+    
+    repositoryModelConcrete.CreatedAt = domainModel.CreatedAt.Format(helper.DateFormat)
+    repositoryModelConcrete.UpdatedAt = domainModel.UpdatedAt.Format(helper.DateFormat)
+
+    if domainModel.DeletedAt.HasValue {
+        repositoryModelConcrete.DeletedAt.Valid = true
+        repositoryModelConcrete.DeletedAt.String = domainModel.DeletedAt.Wrappee.Format(helper.DateFormat)
+    }
+    
+
+
+    //*************************    Set Title    ************************//
+    if domainModel.Title.HasValue {
+        repositoryModelConcrete.Title.Valid = true
+        repositoryModelConcrete.Title.String = domainModel.Title.Wrappee
+    }
+
+
+
+    //******************    Set IsRead/IsCollection    *****************//
+    if domainModel.IsRead {
+        repositoryModelConcrete.IsRead = 1
+    }
+
+    if domainModel.IsCollection {
+        repositoryModelConcrete.IsCollection = 1
+    }
+
+    //*************************    Set Tags    *************************//
+    var repositoryTag *Tag
+
+    if domainModel.TagIDs != nil {
+        for _,  domainTagID := range domainModel.TagIDs {
+            repositoryTag, err = Tags(TagWhere.ID.EQ(domainTagID)).One(ctx, tx)
+            if err != nil {
+                err = repoCommon.ReferenceToNonExistentDependencyError{Inner: err}
+
+                return
+            }
+
+            repositoryModelConcrete.R.Tags = append(repositoryModelConcrete.R.Tags, &Tag{Tag: repositoryTag.Tag, ID: repositoryTag.ID})
+        }
+    }
+
+
+    //*************************    Set Type    *************************//
+	if domainModel.BookmarkType.HasValue {
+        var repositoryBookmarkType *BookmarkType
+
+        repositoryModelConcrete.R.BookmarkType = &BookmarkType{BookmarkType: domainModel.BookmarkType.Wrappee}
+		repositoryBookmarkType, err = BookmarkTypes(BookmarkTypeWhere.BookmarkType.EQ(domainModel.BookmarkType.Wrappee)).One(ctx, tx)
+		if err != nil {
+            err = repoCommon.ReferenceToNonExistentDependencyError{Inner: err}
+
+			return
+		}
+
+        if repositoryBookmarkType != nil {
+            repositoryModelConcrete.BookmarkTypeID = null.NewInt64(repositoryBookmarkType.ID, true)
+            repositoryModelConcrete.R.BookmarkType.ID = repositoryBookmarkType.ID
+        } else {
+            repositoryModelConcrete.R.BookmarkType = nil
+        }
+	}
+
+    repositoryModel = repositoryModelConcrete
+
+    return
+}
+
+func (repo *Sqlite3BookmarkRepository) BookmarkDomainToRepositoryModelMinimalTx(ctx context.Context, tx *sql.Tx, domainModel *domain.Bookmark) ( repositoryModel any, err error)  {
+    repositoryModelConcrete := new(Bookmark)
+    repositoryModelConcrete.R = repositoryModelConcrete.R.NewStruct()
+
+    repositoryModelConcrete.URL = domainModel.URL
+    repositoryModelConcrete.ID = domainModel.ID
+
+
+    //**********************    Set Timestamps    **********************//
+    
+    repositoryModelConcrete.CreatedAt = domainModel.CreatedAt.Format(helper.DateFormat)
+    repositoryModelConcrete.UpdatedAt = domainModel.UpdatedAt.Format(helper.DateFormat)
+
+    if domainModel.DeletedAt.HasValue {
+        repositoryModelConcrete.DeletedAt.Valid = true
+        repositoryModelConcrete.DeletedAt.String = domainModel.DeletedAt.Wrappee.Format(helper.DateFormat)
+    }
+    
+
+
+    //*************************    Set Title    ************************//
+    if domainModel.Title.HasValue {
+        repositoryModelConcrete.Title.Valid = true
+        repositoryModelConcrete.Title.String = domainModel.Title.Wrappee
+    }
+
+
+
+    //******************    Set IsRead/IsCollection    *****************//
+    if domainModel.IsRead {
+        repositoryModelConcrete.IsRead = 1
+    }
+
+    if domainModel.IsCollection {
+        repositoryModelConcrete.IsCollection = 1
+    }
+
+    repositoryModel = repositoryModelConcrete
+
+    return
+}
+
+func (repo *Sqlite3BookmarkRepository) BookmarkRepositoryToDomainModelTx(ctx context.Context, tx *sql.Tx, repositoryModel any) (domainModel *domain.Bookmark, err error) {
+    domainModel = new(domain.Bookmark)
+
+    repositoryModelConcrete := repositoryModel.(*Bookmark)
+
+    domainModel.URL = repositoryModelConcrete.URL
+    domainModel.ID = repositoryModelConcrete.ID
+    
+
+    if repositoryModelConcrete.R == nil {
+        repositoryModelConcrete.R = repositoryModelConcrete.R.NewStruct()
+    }
+
+    if repositoryModelConcrete.R.BookmarkType != nil {
+        domainModel.BookmarkType = optional.Make(repositoryModelConcrete.R.BookmarkType.BookmarkType)
+    }
+
+    //**********************    Set Timestamps    **********************//
+    
+    domainModel.CreatedAt, err = time.Parse(helper.DateFormat, repositoryModelConcrete.CreatedAt)
+    if err != nil {
+        return
+    }
+
+    domainModel.UpdatedAt, err = time.Parse(helper.DateFormat, repositoryModelConcrete.UpdatedAt)
+    if err != nil {
+        return
+    }
+
+    if repositoryModelConcrete.DeletedAt.Valid {
+        var t time.Time
+
+        t, err = time.Parse(helper.DateFormat, repositoryModelConcrete.DeletedAt.String)
+        if err != nil {
+            return
+        }
+
+        domainModel.DeletedAt.Set(t)
+    }
+    
+
+    //*************************    Set Title    ************************//
+    if repositoryModelConcrete.Title.Valid {
+        domainModel.Title.Set(repositoryModelConcrete.Title.String)
+    }
+
+    //******************    Set IsRead/IsCollection    *****************//
+    domainModel.IsRead = repositoryModelConcrete.IsRead > 0
+    domainModel.IsCollection = repositoryModelConcrete.IsCollection > 0
+
+    //*************************    Set Tags    *************************//
+    domainModel.TagIDs, _ = goaoi.TransformCopySliceUnsafe(repositoryModelConcrete.R.Tags, func (t *Tag) int64 {return t.ID;})
+
+    return
+}
+
 
 
 

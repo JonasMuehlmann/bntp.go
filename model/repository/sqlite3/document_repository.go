@@ -381,24 +381,34 @@ func (repo *Sqlite3DocumentRepository) Add(ctx context.Context, domainModels []*
 		return
 	}
 
-    err = repo.AddMinimal(ctx, domainModels)
+    var tx *sql.Tx
+
+    tx, err = repo.db.BeginTx(ctx, nil)
     if err != nil {
         repo.Logger.Error(err)
 
 return err
     }
 
-    err = repo.Replace(ctx, domainModels)
+
+    err = repo.AddMinimal(ctx, domainModels, tx)
     if err != nil {
         repo.Logger.Error(err)
 
 return err
     }
+
+    err = repo.ReplaceTx(ctx, domainModels, tx)
+    if err != nil {
+        return err
+    }
+
+    tx.Commit()
 
     return
 }
 
-func (repo *Sqlite3DocumentRepository) AddMinimal(ctx context.Context, domainModels []*domain.Document)  (err error){
+func (repo *Sqlite3DocumentRepository) AddMinimal(ctx context.Context, domainModels []*domain.Document, tx *sql.Tx)  (err error){
     if len(domainModels) == 0 {
         repo.Logger.Debug(helper.LogMessageEmptyInput)
 
@@ -415,15 +425,17 @@ func (repo *Sqlite3DocumentRepository) AddMinimal(ctx context.Context, domainMod
 		return
 	}
 
+    var commitHere bool
+    if tx == nil {
+        tx, err = repo.db.BeginTx(ctx, nil)
+        if err != nil {
+            return
+        }
+        commitHere = true
+    }
+
     var repositoryModels []any
-    repositoryModels, err = goaoi.TransformCopySlice(domainModels, repo.GetDocumentDomainToRepositoryModelMinimal(ctx))
-	if err != nil {
-		return
-	}
-
-    var tx *sql.Tx
-
-	tx, err = repo.db.BeginTx(ctx, nil)
+    repositoryModels, err = goaoi.TransformCopySlice(domainModels, repo.GetDocumentDomainToRepositoryModelMinimalTx(ctx, tx))
 	if err != nil {
 		return
 	}
@@ -446,7 +458,91 @@ func (repo *Sqlite3DocumentRepository) AddMinimal(ctx context.Context, domainMod
 		}
 	}
 
-	tx.Commit()
+    if commitHere {
+        tx.Commit()
+    }
+
+    return
+}
+
+func (repo *Sqlite3DocumentRepository) ReplaceTx(ctx context.Context, domainModels []*domain.Document, tx *sql.Tx)  (err error){
+    
+    if len(domainModels) == 0 {
+        repo.Logger.Debug(helper.LogMessageEmptyInput)
+
+        err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
+
+        return
+    }
+
+	err = goaoi.AnyOfSlice(domainModels, func (e *domain.Document) bool {return e == nil || e.IsDefault()})
+	if err == nil{
+		err = helper.NilInputError{}
+		repo.Logger.Error(err)
+
+		return
+	}
+
+    var commitHere bool
+    if tx == nil {
+        tx, err = repo.db.BeginTx(ctx, nil)
+        if err != nil {
+            return
+        }
+
+        commitHere = true
+    }
+
+    var repositoryModels []any
+    repositoryModels, err = goaoi.TransformCopySlice(domainModels, repo.GetDocumentDomainToRepositoryModelTx(ctx, tx))
+	if err != nil {
+		return
+	}
+
+	for _, repositoryModel := range repositoryModels {
+        repoModel, ok := repositoryModel.(*Document)
+        if !ok {
+            err = fmt.Errorf("expected type *Document but got %T", repoModel)
+
+            return
+        }
+
+        var numAffectedRecords int64
+		numAffectedRecords, err = repoModel.Update(ctx, tx, boil.Infer())
+		if err != nil {
+            if strings.Contains(err.Error(), "UNIQUE") {
+                err = helper.DuplicateInsertionError{Inner: err}
+            }
+
+			return
+		}
+
+        if numAffectedRecords == 0 {
+            var doesExist bool
+            for _, repositoryDocument := range repositoryModels {
+                doesExist, err = Documents(DocumentWhere.ID.EQ(repositoryDocument.(*Document).ID)).Exists(ctx, tx)
+                if err != nil {
+                    return err
+                }
+
+                if !doesExist {
+                    err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
+
+                    return
+                }
+            }
+        }
+
+        err = repo.UpdateRelatedEntities(ctx,tx, repositoryModel.(*Document))
+        if err != nil {
+            return err
+        }
+
+	}
+
+    if commitHere {
+    tx.Commit()
+    }
 
     return
 }
@@ -531,6 +627,7 @@ return err
 
     return
 }
+
 func (repo *Sqlite3DocumentRepository) Upsert(ctx context.Context, domainModels []*domain.Document)  (err error){
     if len(domainModels) == 0 {
         repo.Logger.Debug(helper.LogMessageEmptyInput)
@@ -1344,6 +1441,25 @@ func (repo *Sqlite3DocumentRepository) GetDocumentDomainToRepositoryModelMinimal
     }
 }
 
+func (repo *Sqlite3DocumentRepository) GetDocumentDomainToRepositoryModelTx(ctx context.Context, tx *sql.Tx) func(domainModel *domain.Document) (repositoryModel any, err error) {
+    return func(domainModel *domain.Document) (repositoryModel any, err error) {
+        return repo.DocumentDomainToRepositoryModelTx(ctx, tx, domainModel)
+    }
+}
+
+func (repo *Sqlite3DocumentRepository) GetDocumentRepositoryToDomainModelTx(ctx context.Context, tx *sql.Tx) func(repositoryModel any) (domainModel *domain.Document, err error) {
+    return func(repositoryModel any) (domainModel *domain.Document, err error) {
+
+        return repo.DocumentRepositoryToDomainModelTx(ctx, tx,repositoryModel)
+    }
+}
+
+func (repo *Sqlite3DocumentRepository) GetDocumentDomainToRepositoryModelMinimalTx(ctx context.Context, tx *sql.Tx) func(domainModel *domain.Document) (repositoryModel any, err error) {
+    return func(domainModel *domain.Document) (repositoryModel any, err error) {
+        return repo.DocumentDomainToRepositoryModelMinimalTx(ctx, tx, domainModel)
+    }
+}
+
 //******************************************************************//
 //                          Model Converter                         //
 //******************************************************************//
@@ -1513,6 +1629,176 @@ func (repo *Sqlite3DocumentRepository) DocumentRepositoryToDomainModel(ctx conte
 
     return
 }
+
+
+
+
+
+func (repo *Sqlite3DocumentRepository) DocumentDomainToRepositoryModelTx(ctx context.Context, tx *sql.Tx, domainModel *domain.Document) (repositoryModel any, err error)  {
+    repositoryModelConcrete := new(Document)
+    repositoryModelConcrete.R = repositoryModelConcrete.R.NewStruct()
+
+    repositoryModelConcrete.Path = domainModel.Path
+    repositoryModelConcrete.ID = domainModel.ID
+
+
+    //**********************    Set Timestamps    **********************//
+    
+    repositoryModelConcrete.CreatedAt = domainModel.CreatedAt.Format(helper.DateFormat)
+    repositoryModelConcrete.UpdatedAt = domainModel.UpdatedAt.Format(helper.DateFormat)
+
+    if domainModel.DeletedAt.HasValue {
+        repositoryModelConcrete.DeletedAt.Valid = true
+        repositoryModelConcrete.DeletedAt.String = domainModel.DeletedAt.Wrappee.Format(helper.DateFormat)
+    }
+    
+
+    //*************************    Set Tags    *************************//
+    var repositoryTag *Tag
+
+	for _, modelTagID := range domainModel.TagIDs {
+		repositoryTag, err = Tags(TagWhere.ID.EQ(modelTagID)).One(ctx, tx)
+		if err != nil {
+            err = repoCommon.ReferenceToNonExistentDependencyError{Inner: err}
+
+			return
+		}
+
+		repositoryModelConcrete.R.Tags  = append(repositoryModelConcrete.R.Tags,repositoryTag)
+	}
+
+    //*************************    Set Type    *************************//
+    var repositoryDocumentType *DocumentType
+
+	if domainModel.DocumentType.HasValue {
+        repositoryModelConcrete.R.DocumentType = &DocumentType{DocumentType: domainModel.DocumentType.Wrappee}
+		repositoryDocumentType, err = DocumentTypes(DocumentTypeWhere.DocumentType.EQ(domainModel.DocumentType.Wrappee)).One(ctx, tx)
+		if err != nil {
+            err = repoCommon.ReferenceToNonExistentDependencyError{Inner: err}
+
+			return
+		}
+
+        if repositoryDocumentType != nil {
+            repositoryModelConcrete.DocumentTypeID = null.NewInt64(repositoryDocumentType.ID, true)
+            repositoryModelConcrete.R.DocumentType.ID = repositoryDocumentType.ID
+        } else {
+            repositoryModelConcrete.R.DocumentType = nil
+        }
+	}
+
+
+    //**************    Set linked/backlinked documents    *************//
+    var repositoryDocumentRaw any
+
+    for _ , link := range domainModel.LinkedDocumentIDs {
+        repositoryDocumentRaw, err = Documents(DocumentWhere.ID.EQ(link)).One(ctx, tx)
+        if err != nil {
+            err = repoCommon.ReferenceToNonExistentDependencyError{Inner: err}
+
+            return
+        }
+
+        repositoryModelConcrete.R.DestinationDocuments = append(repositoryModelConcrete.R.DestinationDocuments, repositoryDocumentRaw.(*Document))
+    }
+
+    for _ , backlink := range domainModel.BacklinkedDocumentsIDs {
+        repositoryDocumentRaw, err = Documents(DocumentWhere.ID.EQ(backlink)).One(ctx, tx)
+        if err != nil {
+            err = repoCommon.ReferenceToNonExistentDependencyError{Inner: err}
+
+            return
+        }
+
+        repositoryModelConcrete.R.SourceDocuments = append(repositoryModelConcrete.R.SourceDocuments, repositoryDocumentRaw.(*Document))
+    }
+
+    repositoryModel = repositoryModelConcrete
+
+    return
+}
+
+func (repo *Sqlite3DocumentRepository) DocumentDomainToRepositoryModelMinimalTx(ctx context.Context, tx *sql.Tx, domainModel *domain.Document) (repositoryModel any, err error)  {
+    repositoryModelConcrete := new(Document)
+    repositoryModelConcrete.R = repositoryModelConcrete.R.NewStruct()
+
+    repositoryModelConcrete.Path = domainModel.Path
+    repositoryModelConcrete.ID = domainModel.ID
+
+
+    //**********************    Set Timestamps    **********************//
+    
+    repositoryModelConcrete.CreatedAt = domainModel.CreatedAt.Format(helper.DateFormat)
+    repositoryModelConcrete.UpdatedAt = domainModel.UpdatedAt.Format(helper.DateFormat)
+
+    if domainModel.DeletedAt.HasValue {
+        repositoryModelConcrete.DeletedAt.Valid = true
+        repositoryModelConcrete.DeletedAt.String = domainModel.DeletedAt.Wrappee.Format(helper.DateFormat)
+    }
+    
+
+    repositoryModel = repositoryModelConcrete
+
+    return
+}
+
+func (repo *Sqlite3DocumentRepository) DocumentRepositoryToDomainModelTx(ctx context.Context, tx *sql.Tx, repositoryModel any) (domainModel *domain.Document, err error) {
+    domainModel = new(domain.Document)
+
+    repositoryModelConcrete := repositoryModel.(*Document)
+
+    domainModel.Path = repositoryModelConcrete.Path
+    domainModel.ID = repositoryModelConcrete.ID
+
+    if repositoryModelConcrete.R == nil {
+        repositoryModelConcrete.R = repositoryModelConcrete.R.NewStruct()
+    }
+
+    if repositoryModelConcrete.R.DocumentType != nil {
+        domainModel.DocumentType = optional.Make(repositoryModelConcrete.R.DocumentType.DocumentType)
+    }
+
+    //**********************    Set Timestamps    **********************//
+    
+    domainModel.CreatedAt, err = time.Parse(helper.DateFormat, repositoryModelConcrete.CreatedAt)
+    if err != nil {
+        return
+    }
+
+    domainModel.UpdatedAt, err = time.Parse(helper.DateFormat, repositoryModelConcrete.UpdatedAt)
+    if err != nil {
+        return
+    }
+
+    var t time.Time
+
+    if repositoryModelConcrete.DeletedAt.Valid {
+        t, err = time.Parse(helper.DateFormat, repositoryModelConcrete.DeletedAt.String)
+        if err != nil {
+            return
+        }
+
+        domainModel.DeletedAt.Set(t)
+    }
+    
+
+    //*************************    Set Tags    *************************//
+    if len(repositoryModelConcrete.R.Tags) > 0 {
+        domainModel.TagIDs, _ = goaoi.TransformCopySliceUnsafe(repositoryModelConcrete.R.Tags, func (t *Tag) int64 {return t.ID;})
+    }
+
+    //**************    Set linked/backlinked documents    *************//
+
+    if len(repositoryModelConcrete.R.DestinationDocuments) > 0 {
+        domainModel.LinkedDocumentIDs, _ = goaoi.TransformCopySliceUnsafe(repositoryModelConcrete.R.DestinationDocuments, func (d *Document) int64 {return d.ID;})
+    }
+    if len(repositoryModelConcrete.R.SourceDocuments) > 0 {
+        domainModel.BacklinkedDocumentsIDs, _ = goaoi.TransformCopySliceUnsafe(repositoryModelConcrete.R.SourceDocuments, func (d *Document) int64 {return d.ID;})
+    }
+
+    return
+}
+
 
 
 //******************************************************************//

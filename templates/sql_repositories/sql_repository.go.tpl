@@ -332,24 +332,36 @@ func (repo *{{$StructName}}) Add(ctx context.Context, domainModels []*domain.{{$
 		return
 	}
 
-    err = repo.AddMinimal(ctx, domainModels)
+    var tx *sql.Tx
+
+    tx, err = repo.db.BeginTx(ctx, nil)
     if err != nil {
         repo.Logger.Error(err)
 
 return err
     }
 
-    err = repo.Replace(ctx, domainModels)
+
+    err = repo.AddMinimal(ctx, domainModels, tx)
     if err != nil {
         repo.Logger.Error(err)
 
 return err
     }
+
+    err = repo.ReplaceTx(ctx, domainModels, tx)
+    if err != nil {
+        repo.Logger.Error(err)
+
+        return err
+    }
+
+    tx.Commit()
 
     return
 }
 
-func (repo *{{$StructName}}) AddMinimal(ctx context.Context, domainModels []*domain.{{$EntityName}})  (err error){
+func (repo *{{$StructName}}) AddMinimal(ctx context.Context, domainModels []*domain.{{$EntityName}}, tx *sql.Tx)  (err error){
     if len(domainModels) == 0 {
         repo.Logger.Debug(helper.LogMessageEmptyInput)
 
@@ -366,15 +378,17 @@ func (repo *{{$StructName}}) AddMinimal(ctx context.Context, domainModels []*dom
 		return
 	}
 
+    var commitHere bool
+    if tx == nil {
+        tx, err = repo.db.BeginTx(ctx, nil)
+        if err != nil {
+            return
+        }
+        commitHere = true
+    }
+
     var repositoryModels []any
-    repositoryModels, err = goaoi.TransformCopySlice(domainModels, repo.Get{{$EntityName}}DomainToRepositoryModelMinimal(ctx))
-	if err != nil {
-		return
-	}
-
-    var tx *sql.Tx
-
-	tx, err = repo.db.BeginTx(ctx, nil)
+    repositoryModels, err = goaoi.TransformCopySlice(domainModels, repo.Get{{$EntityName}}DomainToRepositoryModelMinimalTx(ctx, tx))
 	if err != nil {
 		return
 	}
@@ -397,7 +411,91 @@ func (repo *{{$StructName}}) AddMinimal(ctx context.Context, domainModels []*dom
 		}
 	}
 
-	tx.Commit()
+    if commitHere {
+        tx.Commit()
+    }
+
+    return
+}
+
+func (repo *{{$StructName}}) ReplaceTx(ctx context.Context, domainModels []*domain.{{$EntityName}}, tx *sql.Tx)  (err error){
+    {{/* TODO: Handle empty inputs and input containing/being nil values */}}
+    if len(domainModels) == 0 {
+        repo.Logger.Debug(helper.LogMessageEmptyInput)
+
+        err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
+
+        return
+    }
+
+	err = goaoi.AnyOfSlice(domainModels, func (e *domain.{{$EntityName}}) bool {return e == nil || e.IsDefault()})
+	if err == nil{
+		err = helper.NilInputError{}
+		repo.Logger.Error(err)
+
+		return
+	}
+
+    var commitHere bool
+    if tx == nil {
+        tx, err = repo.db.BeginTx(ctx, nil)
+        if err != nil {
+            return
+        }
+
+        commitHere = true
+    }
+
+    var repositoryModels []any
+    repositoryModels, err = goaoi.TransformCopySlice(domainModels, repo.Get{{$EntityName}}DomainToRepositoryModelTx(ctx, tx))
+	if err != nil {
+		return
+	}
+
+	for _, repositoryModel := range repositoryModels {
+        repoModel, ok := repositoryModel.(*{{$EntityName}})
+        if !ok {
+            err = fmt.Errorf("expected type *{{$EntityName}} but got %T", repoModel)
+
+            return
+        }
+
+        var numAffectedRecords int64
+		numAffectedRecords, err = repoModel.Update(ctx, tx, boil.Infer())
+		if err != nil {
+            if strings.Contains(err.Error(), "UNIQUE") {
+                err = helper.DuplicateInsertionError{Inner: err}
+            }
+
+			return
+		}
+
+        if numAffectedRecords == 0 {
+            var doesExist bool
+            for _, repository{{$EntityName}} := range repositoryModels {
+                doesExist, err = {{$EntityName}}s({{$EntityName}}Where.ID.EQ(repository{{$EntityName}}.(*{{$EntityName}}).ID)).Exists(ctx, tx)
+                if err != nil {
+                    return err
+                }
+
+                if !doesExist {
+                    err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
+
+                    return
+                }
+            }
+        }
+
+        err = repo.UpdateRelatedEntities(ctx,tx, repositoryModel.(*{{$EntityName}}))
+        if err != nil {
+            return err
+        }
+
+	}
+
+    if commitHere {
+    tx.Commit()
+    }
 
     return
 }
@@ -482,6 +580,7 @@ return err
 
     return
 }
+
 func (repo *{{$StructName}}) Upsert(ctx context.Context, domainModels []*domain.{{$EntityName}})  (err error){
     if len(domainModels) == 0 {
         repo.Logger.Debug(helper.LogMessageEmptyInput)
@@ -1297,6 +1396,25 @@ func (repo *{{$StructName}}) Get{{$EntityName}}DomainToRepositoryModelMinimal(ct
     }
 }
 
+func (repo *{{$StructName}}) Get{{$EntityName}}DomainToRepositoryModelTx(ctx context.Context, tx *sql.Tx) func(domainModel *domain.{{$EntityName}}) (repositoryModel any, err error) {
+    return func(domainModel *domain.{{$EntityName}}) (repositoryModel any, err error) {
+        return repo.{{$EntityName}}DomainToRepositoryModelTx(ctx, tx, domainModel)
+    }
+}
+
+func (repo *{{$StructName}}) Get{{$EntityName}}RepositoryToDomainModelTx(ctx context.Context, tx *sql.Tx) func(repositoryModel any) (domainModel *domain.{{$EntityName}}, err error) {
+    return func(repositoryModel any) (domainModel *domain.{{$EntityName}}, err error) {
+
+        return repo.{{$EntityName}}RepositoryToDomainModelTx(ctx, tx,repositoryModel)
+    }
+}
+
+func (repo *{{$StructName}}) Get{{$EntityName}}DomainToRepositoryModelMinimalTx(ctx context.Context, tx *sql.Tx) func(domainModel *domain.{{$EntityName}}) (repositoryModel any, err error) {
+    return func(domainModel *domain.{{$EntityName}}) (repositoryModel any, err error) {
+        return repo.{{$EntityName}}DomainToRepositoryModelMinimalTx(ctx, tx, domainModel)
+    }
+}
+
 //******************************************************************//
 //                          Model Converter                         //
 //******************************************************************//
@@ -1842,6 +1960,550 @@ if len(repositoryModelConcrete.Children) > 0 {
     return
 }
 {{end}}
+
+{{if eq $EntityName "Bookmark"}}
+func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryModelTx(ctx context.Context, tx *sql.Tx, domainModel *domain.{{$EntityName}}) ( repositoryModel any, err error)  {
+    repositoryModelConcrete := new({{$EntityName}})
+    repositoryModelConcrete.R = repositoryModelConcrete.R.NewStruct()
+
+    repositoryModelConcrete.URL = domainModel.URL
+    repositoryModelConcrete.ID = domainModel.ID
+
+
+    //**********************    Set Timestamps    **********************//
+    {{ if eq .DatabaseName "sqlite3"}}
+    repositoryModelConcrete.CreatedAt = domainModel.CreatedAt.Format(helper.DateFormat)
+    repositoryModelConcrete.UpdatedAt = domainModel.UpdatedAt.Format(helper.DateFormat)
+
+    if domainModel.DeletedAt.HasValue {
+        repositoryModelConcrete.DeletedAt.Valid = true
+        repositoryModelConcrete.DeletedAt.String = domainModel.DeletedAt.Wrappee.Format(helper.DateFormat)
+    }
+    {{else}}
+    repositoryModelConcrete.CreatedAt = domainModel.CreatedAt
+    repositoryModelConcrete.UpdatedAt = domainModel.UpdatedAt
+
+    if domainModel.DeletedAt.HasValue {
+        var convertedTime null.Time
+        convertedTime, err = repoCommon.OptionalTimeToNullTime(domainModel.DeletedAt)
+        if err != nil {
+            return
+        }
+
+        repositoryModelConcrete.DeletedAt = convertedTime
+    }
+    {{end}}
+
+
+    //*************************    Set Title    ************************//
+    if domainModel.Title.HasValue {
+        repositoryModelConcrete.Title.Valid = true
+        repositoryModelConcrete.Title.String = domainModel.Title.Wrappee
+    }
+
+
+
+    //******************    Set IsRead/IsCollection    *****************//
+    if domainModel.IsRead {
+        repositoryModelConcrete.IsRead = 1
+    }
+
+    if domainModel.IsCollection {
+        repositoryModelConcrete.IsCollection = 1
+    }
+
+    //*************************    Set Tags    *************************//
+    var repositoryTag *Tag
+
+    if domainModel.TagIDs != nil {
+        for _,  domainTagID := range domainModel.TagIDs {
+            repositoryTag, err = Tags(TagWhere.ID.EQ(domainTagID)).One(ctx, tx)
+            if err != nil {
+                err = repoCommon.ReferenceToNonExistentDependencyError{Inner: err}
+
+                return
+            }
+
+            repositoryModelConcrete.R.Tags = append(repositoryModelConcrete.R.Tags, &Tag{{"{"}}Tag: repositoryTag.Tag, ID: repositoryTag.ID})
+        }
+    }
+
+
+    //*************************    Set Type    *************************//
+	if domainModel.{{$EntityName}}Type.HasValue {
+        var repository{{$EntityName}}Type *{{$EntityName}}Type
+
+        repositoryModelConcrete.R.{{$EntityName}}Type = &{{$EntityName}}Type{{"{"}}{{$EntityName}}Type: domainModel.{{$EntityName}}Type.Wrappee}
+		repository{{$EntityName}}Type, err = {{$EntityName}}Types({{$EntityName}}TypeWhere.{{$EntityName}}Type.EQ(domainModel.{{$EntityName}}Type.Wrappee)).One(ctx, tx)
+		if err != nil {
+            err = repoCommon.ReferenceToNonExistentDependencyError{Inner: err}
+
+			return
+		}
+
+        if repository{{$EntityName}}Type != nil {
+            repositoryModelConcrete.{{$EntityName}}TypeID = null.NewInt64(repository{{$EntityName}}Type.ID, true)
+            repositoryModelConcrete.R.{{$EntityName}}Type.ID = repository{{$EntityName}}Type.ID
+        } else {
+            repositoryModelConcrete.R.{{$EntityName}}Type = nil
+        }
+	}
+
+    repositoryModel = repositoryModelConcrete
+
+    return
+}
+
+func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryModelMinimalTx(ctx context.Context, tx *sql.Tx, domainModel *domain.{{$EntityName}}) ( repositoryModel any, err error)  {
+    repositoryModelConcrete := new({{$EntityName}})
+    repositoryModelConcrete.R = repositoryModelConcrete.R.NewStruct()
+
+    repositoryModelConcrete.URL = domainModel.URL
+    repositoryModelConcrete.ID = domainModel.ID
+
+
+    //**********************    Set Timestamps    **********************//
+    {{ if eq .DatabaseName "sqlite3"}}
+    repositoryModelConcrete.CreatedAt = domainModel.CreatedAt.Format(helper.DateFormat)
+    repositoryModelConcrete.UpdatedAt = domainModel.UpdatedAt.Format(helper.DateFormat)
+
+    if domainModel.DeletedAt.HasValue {
+        repositoryModelConcrete.DeletedAt.Valid = true
+        repositoryModelConcrete.DeletedAt.String = domainModel.DeletedAt.Wrappee.Format(helper.DateFormat)
+    }
+    {{else}}
+    repositoryModelConcrete.CreatedAt = domainModel.CreatedAt
+    repositoryModelConcrete.UpdatedAt = domainModel.UpdatedAt
+
+    if domainModel.DeletedAt.HasValue {
+        var convertedTime null.Time
+        convertedTime, err = repoCommon.OptionalTimeToNullTime(domainModel.DeletedAt)
+        if err != nil {
+            return
+        }
+
+        repositoryModelConcrete.DeletedAt = convertedTime
+    }
+    {{end}}
+
+
+    //*************************    Set Title    ************************//
+    if domainModel.Title.HasValue {
+        repositoryModelConcrete.Title.Valid = true
+        repositoryModelConcrete.Title.String = domainModel.Title.Wrappee
+    }
+
+
+
+    //******************    Set IsRead/IsCollection    *****************//
+    if domainModel.IsRead {
+        repositoryModelConcrete.IsRead = 1
+    }
+
+    if domainModel.IsCollection {
+        repositoryModelConcrete.IsCollection = 1
+    }
+
+    repositoryModel = repositoryModelConcrete
+
+    return
+}
+
+func (repo *{{$StructName}}) {{$EntityName}}RepositoryToDomainModelTx(ctx context.Context, tx *sql.Tx, repositoryModel any) (domainModel *domain.{{$EntityName}}, err error) {
+    domainModel = new(domain.{{$EntityName}})
+
+    repositoryModelConcrete := repositoryModel.(*{{$EntityName}})
+
+    domainModel.URL = repositoryModelConcrete.URL
+    domainModel.ID = repositoryModelConcrete.ID
+    {{/* TODO: Handle slices being nil and containing nil values */}}
+
+    if repositoryModelConcrete.R == nil {
+        repositoryModelConcrete.R = repositoryModelConcrete.R.NewStruct()
+    }
+
+    if repositoryModelConcrete.R.{{$EntityName}}Type != nil {
+        domainModel.{{$EntityName}}Type = optional.Make(repositoryModelConcrete.R.{{$EntityName}}Type.{{$EntityName}}Type)
+    }
+
+    //**********************    Set Timestamps    **********************//
+    {{ if eq .DatabaseName "sqlite3"}}
+    domainModel.CreatedAt, err = time.Parse(helper.DateFormat, repositoryModelConcrete.CreatedAt)
+    if err != nil {
+        return
+    }
+
+    domainModel.UpdatedAt, err = time.Parse(helper.DateFormat, repositoryModelConcrete.UpdatedAt)
+    if err != nil {
+        return
+    }
+
+    if repositoryModelConcrete.DeletedAt.Valid {
+        var t time.Time
+
+        t, err = time.Parse(helper.DateFormat, repositoryModelConcrete.DeletedAt.String)
+        if err != nil {
+            return
+        }
+
+        domainModel.DeletedAt.Set(t)
+    }
+    {{else}}
+    domainModel.CreatedAt = repositoryModelConcrete.CreatedAt
+    domainModel.UpdatedAt = repositoryModelConcrete.UpdatedAt
+
+    if repositoryModelConcrete.DeletedAt.Valid {
+        domainModel.DeletedAt.Set(repositoryModelConcrete.DeletedAt.Time)
+    }
+    {{end}}
+
+    //*************************    Set Title    ************************//
+    if repositoryModelConcrete.Title.Valid {
+        domainModel.Title.Set(repositoryModelConcrete.Title.String)
+    }
+
+    //******************    Set IsRead/IsCollection    *****************//
+    domainModel.IsRead = repositoryModelConcrete.IsRead > 0
+    domainModel.IsCollection = repositoryModelConcrete.IsCollection > 0
+
+    //*************************    Set Tags    *************************//
+    domainModel.TagIDs, _ = goaoi.TransformCopySliceUnsafe(repositoryModelConcrete.R.Tags, func (t *Tag) int64 {return t.ID;})
+
+    return
+}
+{{end}}
+{{if eq $EntityName "Document"}}
+func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryModelTx(ctx context.Context, tx *sql.Tx, domainModel *domain.{{$EntityName}}) (repositoryModel any, err error)  {
+    repositoryModelConcrete := new({{$EntityName}})
+    repositoryModelConcrete.R = repositoryModelConcrete.R.NewStruct()
+
+    repositoryModelConcrete.Path = domainModel.Path
+    repositoryModelConcrete.ID = domainModel.ID
+
+
+    //**********************    Set Timestamps    **********************//
+    {{ if eq .DatabaseName "sqlite3"}}
+    repositoryModelConcrete.CreatedAt = domainModel.CreatedAt.Format(helper.DateFormat)
+    repositoryModelConcrete.UpdatedAt = domainModel.UpdatedAt.Format(helper.DateFormat)
+
+    if domainModel.DeletedAt.HasValue {
+        repositoryModelConcrete.DeletedAt.Valid = true
+        repositoryModelConcrete.DeletedAt.String = domainModel.DeletedAt.Wrappee.Format(helper.DateFormat)
+    }
+    {{else}}
+    repositoryModelConcrete.CreatedAt = domainModel.CreatedAt
+    repositoryModelConcrete.UpdatedAt = domainModel.UpdatedAt
+
+    if domainModel.DeletedAt.HasValue {
+        var convertedTime null.Time
+        convertedTime, err = repoCommon.OptionalTimeToNullTime(domainModel.DeletedAt)
+        if err != nil {
+            return
+        }
+
+        repositoryModelConcrete.DeletedAt = convertedTime
+    }
+    {{end}}
+
+    //*************************    Set Tags    *************************//
+    var repositoryTag *Tag
+
+	for _, modelTagID := range domainModel.TagIDs {
+		repositoryTag, err = Tags(TagWhere.ID.EQ(modelTagID)).One(ctx, tx)
+		if err != nil {
+            err = repoCommon.ReferenceToNonExistentDependencyError{Inner: err}
+
+			return
+		}
+
+		repositoryModelConcrete.R.Tags  = append(repositoryModelConcrete.R.Tags,repositoryTag)
+	}
+
+    //*************************    Set Type    *************************//
+    var repository{{$EntityName}}Type *{{$EntityName}}Type
+
+	if domainModel.{{$EntityName}}Type.HasValue {
+        repositoryModelConcrete.R.{{$EntityName}}Type = &{{$EntityName}}Type{{"{"}}{{$EntityName}}Type: domainModel.{{$EntityName}}Type.Wrappee}
+		repository{{$EntityName}}Type, err = {{$EntityName}}Types({{$EntityName}}TypeWhere.{{$EntityName}}Type.EQ(domainModel.{{$EntityName}}Type.Wrappee)).One(ctx, tx)
+		if err != nil {
+            err = repoCommon.ReferenceToNonExistentDependencyError{Inner: err}
+
+			return
+		}
+
+        if repository{{$EntityName}}Type != nil {
+            repositoryModelConcrete.{{$EntityName}}TypeID = null.NewInt64(repository{{$EntityName}}Type.ID, true)
+            repositoryModelConcrete.R.{{$EntityName}}Type.ID = repository{{$EntityName}}Type.ID
+        } else {
+            repositoryModelConcrete.R.{{$EntityName}}Type = nil
+        }
+	}
+
+
+    //**************    Set linked/backlinked documents    *************//
+    var repository{{$EntityName}}Raw any
+
+    for _ , link := range domainModel.Linked{{$EntityName}}IDs {
+        repository{{$EntityName}}Raw, err = Documents(DocumentWhere.ID.EQ(link)).One(ctx, tx)
+        if err != nil {
+            err = repoCommon.ReferenceToNonExistentDependencyError{Inner: err}
+
+            return
+        }
+
+        repositoryModelConcrete.R.Destination{{$EntityName}}s = append(repositoryModelConcrete.R.Destination{{$EntityName}}s, repository{{$EntityName}}Raw.(*{{$EntityName}}))
+    }
+
+    for _ , backlink := range domainModel.Backlinked{{$EntityName}}sIDs {
+        repository{{$EntityName}}Raw, err = Documents(DocumentWhere.ID.EQ(backlink)).One(ctx, tx)
+        if err != nil {
+            err = repoCommon.ReferenceToNonExistentDependencyError{Inner: err}
+
+            return
+        }
+
+        repositoryModelConcrete.R.Source{{$EntityName}}s = append(repositoryModelConcrete.R.Source{{$EntityName}}s, repository{{$EntityName}}Raw.(*{{$EntityName}}))
+    }
+
+    repositoryModel = repositoryModelConcrete
+
+    return
+}
+
+func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryModelMinimalTx(ctx context.Context, tx *sql.Tx, domainModel *domain.{{$EntityName}}) (repositoryModel any, err error)  {
+    repositoryModelConcrete := new({{$EntityName}})
+    repositoryModelConcrete.R = repositoryModelConcrete.R.NewStruct()
+
+    repositoryModelConcrete.Path = domainModel.Path
+    repositoryModelConcrete.ID = domainModel.ID
+
+
+    //**********************    Set Timestamps    **********************//
+    {{ if eq .DatabaseName "sqlite3"}}
+    repositoryModelConcrete.CreatedAt = domainModel.CreatedAt.Format(helper.DateFormat)
+    repositoryModelConcrete.UpdatedAt = domainModel.UpdatedAt.Format(helper.DateFormat)
+
+    if domainModel.DeletedAt.HasValue {
+        repositoryModelConcrete.DeletedAt.Valid = true
+        repositoryModelConcrete.DeletedAt.String = domainModel.DeletedAt.Wrappee.Format(helper.DateFormat)
+    }
+    {{else}}
+    repositoryModelConcrete.CreatedAt = domainModel.CreatedAt
+    repositoryModelConcrete.UpdatedAt = domainModel.UpdatedAt
+
+    if domainModel.DeletedAt.HasValue {
+        var convertedTime null.Time
+        convertedTime, err = repoCommon.OptionalTimeToNullTime(domainModel.DeletedAt)
+        if err != nil {
+            return
+        }
+
+        repositoryModelConcrete.DeletedAt = convertedTime
+    }
+    {{end}}
+
+    repositoryModel = repositoryModelConcrete
+
+    return
+}
+
+func (repo *{{$StructName}}) {{$EntityName}}RepositoryToDomainModelTx(ctx context.Context, tx *sql.Tx, repositoryModel any) (domainModel *domain.{{$EntityName}}, err error) {
+    domainModel = new(domain.{{$EntityName}})
+
+    repositoryModelConcrete := repositoryModel.(*{{$EntityName}})
+
+    domainModel.Path = repositoryModelConcrete.Path
+    domainModel.ID = repositoryModelConcrete.ID
+
+    if repositoryModelConcrete.R == nil {
+        repositoryModelConcrete.R = repositoryModelConcrete.R.NewStruct()
+    }
+
+    if repositoryModelConcrete.R.{{$EntityName}}Type != nil {
+        domainModel.{{$EntityName}}Type = optional.Make(repositoryModelConcrete.R.{{$EntityName}}Type.{{$EntityName}}Type)
+    }
+
+    //**********************    Set Timestamps    **********************//
+    {{ if eq .DatabaseName "sqlite3"}}
+    domainModel.CreatedAt, err = time.Parse(helper.DateFormat, repositoryModelConcrete.CreatedAt)
+    if err != nil {
+        return
+    }
+
+    domainModel.UpdatedAt, err = time.Parse(helper.DateFormat, repositoryModelConcrete.UpdatedAt)
+    if err != nil {
+        return
+    }
+
+    var t time.Time
+
+    if repositoryModelConcrete.DeletedAt.Valid {
+        t, err = time.Parse(helper.DateFormat, repositoryModelConcrete.DeletedAt.String)
+        if err != nil {
+            return
+        }
+
+        domainModel.DeletedAt.Set(t)
+    }
+    {{else}}
+    domainModel.CreatedAt = repositoryModelConcrete.CreatedAt
+    domainModel.UpdatedAt = repositoryModelConcrete.UpdatedAt
+
+    if repositoryModelConcrete.DeletedAt.Valid {
+        domainModel.DeletedAt.Set(repositoryModelConcrete.DeletedAt.Time)
+    }
+    {{end}}
+
+    //*************************    Set Tags    *************************//
+    if len(repositoryModelConcrete.R.Tags) > 0 {
+        domainModel.TagIDs, _ = goaoi.TransformCopySliceUnsafe(repositoryModelConcrete.R.Tags, func (t *Tag) int64 {return t.ID;})
+    }
+
+    //**************    Set linked/backlinked documents    *************//
+
+    if len(repositoryModelConcrete.R.DestinationDocuments) > 0 {
+        domainModel.Linked{{$EntityName}}IDs, _ = goaoi.TransformCopySliceUnsafe(repositoryModelConcrete.R.DestinationDocuments, func (d *Document) int64 {return d.ID;})
+    }
+    if len(repositoryModelConcrete.R.SourceDocuments) > 0 {
+        domainModel.Backlinked{{$EntityName}}sIDs, _ = goaoi.TransformCopySliceUnsafe(repositoryModelConcrete.R.SourceDocuments, func (d *Document) int64 {return d.ID;})
+    }
+
+    return
+}
+{{end}}
+{{if eq $EntityName "Tag"}}
+func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryModelTx(ctx context.Context, tx *sql.Tx, domainModel *domain.{{$EntityName}}) (repositoryModel any, err error)  {
+
+    repositoryModelConcrete := new({{$EntityName}})
+    repositoryModelConcrete.R = repositoryModelConcrete.R.NewStruct()
+
+    repositoryModelConcrete.ID = domainModel.ID
+    repositoryModelConcrete.{{$EntityName}} = domainModel.{{$EntityName}}
+
+
+//***********************    Set Parent{{$EntityName}}    **********************//
+   	if len(domainModel.ParentPathIDs) > 0 {
+		var repositoryParentTag *Tag
+
+		domainParentTagID := domainModel.ParentPathIDs[len(domainModel.ParentPathIDs)-1]
+		repositoryParentTag, err = Tags(TagWhere.ID.EQ(domainParentTagID)).One(ctx, tx)
+		if err != nil {
+			err = repoCommon.ReferenceToNonExistentDependencyError{Inner: err}
+
+			return
+		}
+
+		repositoryModelConcrete.ParentTag = null.NewInt64(repositoryParentTag.ID, true)
+		repositoryModelConcrete.R.ParentTagTag =repositoryParentTag
+	}
+//*************************    Set Path    *************************//
+	if len(domainModel.ParentPathIDs) > 0 {
+		var repositoryParentTag *Tag
+		for _, tagID := range domainModel.ParentPathIDs[:len(domainModel.ParentPathIDs)] {
+			repositoryParentTag, err = Tags(TagWhere.ID.EQ(tagID)).One(ctx, tx)
+			if err != nil {
+				err = repoCommon.ReferenceToNonExistentDependencyError{Inner: err}
+
+				return
+			}
+			repositoryModelConcrete.Path += strconv.FormatInt(repositoryParentTag.ID, 10) + ";"
+
+			repositoryModelConcrete.R.ParentTagTags = append(repositoryModelConcrete.R.ParentTagTags, repositoryParentTag)
+		}
+	}
+
+	repositoryModelConcrete.Path += strconv.FormatInt(domainModel.ID, 10)
+//************************    Set Children  ************************//
+	if len(domainModel.SubtagIDs) > 0 {
+		var repositoryChildTag *Tag
+		for _, tagID := range domainModel.SubtagIDs[:len(domainModel.SubtagIDs)-1] {
+			repositoryChildTag, err = Tags(TagWhere.ID.EQ(tagID)).One(ctx, tx)
+			if err != nil {
+				err = repoCommon.ReferenceToNonExistentDependencyError{Inner: err}
+
+				return
+			}
+
+			repositoryModelConcrete.Children += strconv.FormatInt(repositoryChildTag.ID, 10) + ";"
+		}
+		lastChildID := domainModel.SubtagIDs[len(domainModel.SubtagIDs)-1]
+		repositoryChildTag, err = Tags(TagWhere.ID.EQ(lastChildID)).One(ctx, tx)
+		if err != nil {
+			err = repoCommon.ReferenceToNonExistentDependencyError{Inner: err}
+
+			return
+		}
+        repositoryModelConcrete.Children += strconv.FormatInt(repositoryChildTag.ID, 10)
+    }
+
+
+
+    repositoryModel = repositoryModelConcrete
+
+    return
+}
+
+func (repo *{{$StructName}}) {{$EntityName}}DomainToRepositoryModelMinimalTx(ctx context.Context, tx *sql.Tx, domainModel *domain.{{$EntityName}}) (repositoryModel any, err error)  {
+
+    repositoryModelConcrete := new({{$EntityName}})
+    repositoryModelConcrete.R = repositoryModelConcrete.R.NewStruct()
+
+    repositoryModelConcrete.ID = domainModel.ID
+    repositoryModelConcrete.{{$EntityName}} = domainModel.{{$EntityName}}
+
+	repositoryModelConcrete.Path = strconv.FormatInt(domainModel.ID, 10)
+
+
+    repositoryModel = repositoryModelConcrete
+
+    return
+}
+
+// TODO: These functions should be context aware
+func (repo *{{$StructName}}) {{$EntityName}}RepositoryToDomainModelTx(ctx context.Context, tx *sql.Tx, repositoryModel any) (domainModel *domain.{{$EntityName}}, err error) {
+    domainModel = new(domain.{{$EntityName}})
+
+    repositoryModelConcrete := repositoryModel.(*{{$EntityName}})
+
+    domainModel.ID = repositoryModelConcrete.ID
+    domainModel.{{$EntityName}} = repositoryModelConcrete.{{$EntityName}}
+
+//***********************    Set ParentPath    **********************//
+var parent{{$EntityName}}ID int64
+
+if len(repositoryModelConcrete.Path) > 0 {
+    pathIDs :=strings.Split(repositoryModelConcrete.Path, ";")
+    pathIDs = pathIDs[:len(pathIDs) -1]
+    for _, parent{{$EntityName}}IDRaw := range pathIDs {
+        parent{{$EntityName}}ID, err = strconv.ParseInt(parent{{$EntityName}}IDRaw, 10, 64)
+        if err != nil {
+            return
+        }
+
+        domainModel.ParentPathIDs = append(domainModel.ParentPathIDs, parent{{$EntityName}}ID)
+    }
+}
+
+//************************    Set Subtags ************************//
+var child{{$EntityName}}ID int64
+
+if len(repositoryModelConcrete.Children) > 0 {
+    for _, child{{$EntityName}}IDRaw := range strings.Split(repositoryModelConcrete.Children, ";"){
+        child{{$EntityName}}ID, err = strconv.ParseInt(child{{$EntityName}}IDRaw, 10, 64)
+        if err != nil {
+            return
+        }
+
+        domainModel.SubtagIDs = append(domainModel.SubtagIDs, child{{$EntityName}}ID)
+    }
+}
+
+    repositoryModel = repositoryModelConcrete
+
+    return
+}
+{{end}}
+
 //******************************************************************//
 //                         Filter Converter                         //
 //******************************************************************//
@@ -2487,6 +3149,7 @@ return err
     parentTagTag := repositoryModel.R.ParentTagTag
 
     if parentTagTag != nil {
+
         if len(parentTagTag.Children) == 0 {
         parentTagTag.Children = strconv.FormatInt(repositoryModel.ID, 10)
         }  else {

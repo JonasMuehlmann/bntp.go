@@ -2080,6 +2080,12 @@ func TestSQLDocumentRepositoryDocumentModelConverter(t *testing.T) {
 		ID:  1,
 	}
 
+	err = repo.GetTagRepository().Add(context.Background(), []*domain.Tag{tag})
+	assert.NoError(t, err)
+
+	err = repo.AddType(context.Background(), []string{original.DocumentType.Wrappee})
+	assert.NoError(t, err)
+
 	documents := []*domain.Document{refOut, refIn, original}
 
 	err = repo.GetTagRepository().Add(context.Background(), []*domain.Tag{tag})

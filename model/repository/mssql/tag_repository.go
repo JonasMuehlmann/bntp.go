@@ -354,24 +354,34 @@ func (repo *MssqlTagRepository) Add(ctx context.Context, domainModels []*domain.
 		return
 	}
 
-    err = repo.AddMinimal(ctx, domainModels)
+    var tx *sql.Tx
+
+    tx, err = repo.db.BeginTx(ctx, nil)
     if err != nil {
         repo.Logger.Error(err)
 
 return err
     }
 
-    err = repo.Replace(ctx, domainModels)
+
+    err = repo.AddMinimal(ctx, domainModels, tx)
     if err != nil {
         repo.Logger.Error(err)
 
 return err
     }
+
+    err = repo.ReplaceTx(ctx, domainModels, tx)
+    if err != nil {
+        return err
+    }
+
+    tx.Commit()
 
     return
 }
 
-func (repo *MssqlTagRepository) AddMinimal(ctx context.Context, domainModels []*domain.Tag)  (err error){
+func (repo *MssqlTagRepository) AddMinimal(ctx context.Context, domainModels []*domain.Tag, tx *sql.Tx)  (err error){
     if len(domainModels) == 0 {
         repo.Logger.Debug(helper.LogMessageEmptyInput)
 
@@ -388,15 +398,17 @@ func (repo *MssqlTagRepository) AddMinimal(ctx context.Context, domainModels []*
 		return
 	}
 
+    var commitHere bool
+    if tx == nil {
+        tx, err = repo.db.BeginTx(ctx, nil)
+        if err != nil {
+            return
+        }
+        commitHere = true
+    }
+
     var repositoryModels []any
-    repositoryModels, err = goaoi.TransformCopySlice(domainModels, repo.GetTagDomainToRepositoryModelMinimal(ctx))
-	if err != nil {
-		return
-	}
-
-    var tx *sql.Tx
-
-	tx, err = repo.db.BeginTx(ctx, nil)
+    repositoryModels, err = goaoi.TransformCopySlice(domainModels, repo.GetTagDomainToRepositoryModelMinimalTx(ctx, tx))
 	if err != nil {
 		return
 	}
@@ -419,7 +431,91 @@ func (repo *MssqlTagRepository) AddMinimal(ctx context.Context, domainModels []*
 		}
 	}
 
-	tx.Commit()
+    if commitHere {
+        tx.Commit()
+    }
+
+    return
+}
+
+func (repo *MssqlTagRepository) ReplaceTx(ctx context.Context, domainModels []*domain.Tag, tx *sql.Tx)  (err error){
+    
+    if len(domainModels) == 0 {
+        repo.Logger.Debug(helper.LogMessageEmptyInput)
+
+        err = helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
+
+        return
+    }
+
+	err = goaoi.AnyOfSlice(domainModels, func (e *domain.Tag) bool {return e == nil || e.IsDefault()})
+	if err == nil{
+		err = helper.NilInputError{}
+		repo.Logger.Error(err)
+
+		return
+	}
+
+    var commitHere bool
+    if tx == nil {
+        tx, err = repo.db.BeginTx(ctx, nil)
+        if err != nil {
+            return
+        }
+
+        commitHere = true
+    }
+
+    var repositoryModels []any
+    repositoryModels, err = goaoi.TransformCopySlice(domainModels, repo.GetTagDomainToRepositoryModelTx(ctx, tx))
+	if err != nil {
+		return
+	}
+
+	for _, repositoryModel := range repositoryModels {
+        repoModel, ok := repositoryModel.(*Tag)
+        if !ok {
+            err = fmt.Errorf("expected type *Tag but got %T", repoModel)
+
+            return
+        }
+
+        var numAffectedRecords int64
+		numAffectedRecords, err = repoModel.Update(ctx, tx, boil.Infer())
+		if err != nil {
+            if strings.Contains(err.Error(), "UNIQUE") {
+                err = helper.DuplicateInsertionError{Inner: err}
+            }
+
+			return
+		}
+
+        if numAffectedRecords == 0 {
+            var doesExist bool
+            for _, repositoryTag := range repositoryModels {
+                doesExist, err = Tags(TagWhere.ID.EQ(repositoryTag.(*Tag).ID)).Exists(ctx, tx)
+                if err != nil {
+                    return err
+                }
+
+                if !doesExist {
+                    err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
+
+                    return
+                }
+            }
+        }
+
+        err = repo.UpdateRelatedEntities(ctx,tx, repositoryModel.(*Tag))
+        if err != nil {
+            return err
+        }
+
+	}
+
+    if commitHere {
+    tx.Commit()
+    }
 
     return
 }
@@ -504,6 +600,7 @@ return err
 
     return
 }
+
 func (repo *MssqlTagRepository) Upsert(ctx context.Context, domainModels []*domain.Tag)  (err error){
     if len(domainModels) == 0 {
         repo.Logger.Debug(helper.LogMessageEmptyInput)
@@ -1208,6 +1305,25 @@ func (repo *MssqlTagRepository) GetTagDomainToRepositoryModelMinimal(ctx context
     }
 }
 
+func (repo *MssqlTagRepository) GetTagDomainToRepositoryModelTx(ctx context.Context, tx *sql.Tx) func(domainModel *domain.Tag) (repositoryModel any, err error) {
+    return func(domainModel *domain.Tag) (repositoryModel any, err error) {
+        return repo.TagDomainToRepositoryModelTx(ctx, tx, domainModel)
+    }
+}
+
+func (repo *MssqlTagRepository) GetTagRepositoryToDomainModelTx(ctx context.Context, tx *sql.Tx) func(repositoryModel any) (domainModel *domain.Tag, err error) {
+    return func(repositoryModel any) (domainModel *domain.Tag, err error) {
+
+        return repo.TagRepositoryToDomainModelTx(ctx, tx,repositoryModel)
+    }
+}
+
+func (repo *MssqlTagRepository) GetTagDomainToRepositoryModelMinimalTx(ctx context.Context, tx *sql.Tx) func(domainModel *domain.Tag) (repositoryModel any, err error) {
+    return func(domainModel *domain.Tag) (repositoryModel any, err error) {
+        return repo.TagDomainToRepositoryModelMinimalTx(ctx, tx, domainModel)
+    }
+}
+
 //******************************************************************//
 //                          Model Converter                         //
 //******************************************************************//
@@ -1345,6 +1461,142 @@ if len(repositoryModelConcrete.Children) > 0 {
     return
 }
 
+
+
+
+
+func (repo *MssqlTagRepository) TagDomainToRepositoryModelTx(ctx context.Context, tx *sql.Tx, domainModel *domain.Tag) (repositoryModel any, err error)  {
+
+    repositoryModelConcrete := new(Tag)
+    repositoryModelConcrete.R = repositoryModelConcrete.R.NewStruct()
+
+    repositoryModelConcrete.ID = domainModel.ID
+    repositoryModelConcrete.Tag = domainModel.Tag
+
+
+//***********************    Set ParentTag    **********************//
+   	if len(domainModel.ParentPathIDs) > 0 {
+		var repositoryParentTag *Tag
+
+		domainParentTagID := domainModel.ParentPathIDs[len(domainModel.ParentPathIDs)-1]
+		repositoryParentTag, err = Tags(TagWhere.ID.EQ(domainParentTagID)).One(ctx, tx)
+		if err != nil {
+			err = repoCommon.ReferenceToNonExistentDependencyError{Inner: err}
+
+			return
+		}
+
+		repositoryModelConcrete.ParentTag = null.NewInt64(repositoryParentTag.ID, true)
+		repositoryModelConcrete.R.ParentTagTag =repositoryParentTag
+	}
+//*************************    Set Path    *************************//
+	if len(domainModel.ParentPathIDs) > 0 {
+		var repositoryParentTag *Tag
+		for _, tagID := range domainModel.ParentPathIDs[:len(domainModel.ParentPathIDs)] {
+			repositoryParentTag, err = Tags(TagWhere.ID.EQ(tagID)).One(ctx, tx)
+			if err != nil {
+				err = repoCommon.ReferenceToNonExistentDependencyError{Inner: err}
+
+				return
+			}
+			repositoryModelConcrete.Path += strconv.FormatInt(repositoryParentTag.ID, 10) + ";"
+
+			repositoryModelConcrete.R.ParentTagTags = append(repositoryModelConcrete.R.ParentTagTags, repositoryParentTag)
+		}
+	}
+
+	repositoryModelConcrete.Path += strconv.FormatInt(domainModel.ID, 10)
+//************************    Set Children  ************************//
+	if len(domainModel.SubtagIDs) > 0 {
+		var repositoryChildTag *Tag
+		for _, tagID := range domainModel.SubtagIDs[:len(domainModel.SubtagIDs)-1] {
+			repositoryChildTag, err = Tags(TagWhere.ID.EQ(tagID)).One(ctx, tx)
+			if err != nil {
+				err = repoCommon.ReferenceToNonExistentDependencyError{Inner: err}
+
+				return
+			}
+
+			repositoryModelConcrete.Children += strconv.FormatInt(repositoryChildTag.ID, 10) + ";"
+		}
+		lastChildID := domainModel.SubtagIDs[len(domainModel.SubtagIDs)-1]
+		repositoryChildTag, err = Tags(TagWhere.ID.EQ(lastChildID)).One(ctx, tx)
+		if err != nil {
+			err = repoCommon.ReferenceToNonExistentDependencyError{Inner: err}
+
+			return
+		}
+        repositoryModelConcrete.Children += strconv.FormatInt(repositoryChildTag.ID, 10)
+    }
+
+
+
+    repositoryModel = repositoryModelConcrete
+
+    return
+}
+
+func (repo *MssqlTagRepository) TagDomainToRepositoryModelMinimalTx(ctx context.Context, tx *sql.Tx, domainModel *domain.Tag) (repositoryModel any, err error)  {
+
+    repositoryModelConcrete := new(Tag)
+    repositoryModelConcrete.R = repositoryModelConcrete.R.NewStruct()
+
+    repositoryModelConcrete.ID = domainModel.ID
+    repositoryModelConcrete.Tag = domainModel.Tag
+
+	repositoryModelConcrete.Path = strconv.FormatInt(domainModel.ID, 10)
+
+
+    repositoryModel = repositoryModelConcrete
+
+    return
+}
+
+// TODO: These functions should be context aware
+func (repo *MssqlTagRepository) TagRepositoryToDomainModelTx(ctx context.Context, tx *sql.Tx, repositoryModel any) (domainModel *domain.Tag, err error) {
+    domainModel = new(domain.Tag)
+
+    repositoryModelConcrete := repositoryModel.(*Tag)
+
+    domainModel.ID = repositoryModelConcrete.ID
+    domainModel.Tag = repositoryModelConcrete.Tag
+
+//***********************    Set ParentPath    **********************//
+var parentTagID int64
+
+if len(repositoryModelConcrete.Path) > 0 {
+    pathIDs :=strings.Split(repositoryModelConcrete.Path, ";")
+    pathIDs = pathIDs[:len(pathIDs) -1]
+    for _, parentTagIDRaw := range pathIDs {
+        parentTagID, err = strconv.ParseInt(parentTagIDRaw, 10, 64)
+        if err != nil {
+            return
+        }
+
+        domainModel.ParentPathIDs = append(domainModel.ParentPathIDs, parentTagID)
+    }
+}
+
+//************************    Set Subtags ************************//
+var childTagID int64
+
+if len(repositoryModelConcrete.Children) > 0 {
+    for _, childTagIDRaw := range strings.Split(repositoryModelConcrete.Children, ";"){
+        childTagID, err = strconv.ParseInt(childTagIDRaw, 10, 64)
+        if err != nil {
+            return
+        }
+
+        domainModel.SubtagIDs = append(domainModel.SubtagIDs, childTagID)
+    }
+}
+
+    repositoryModel = repositoryModelConcrete
+
+    return
+}
+
+
 //******************************************************************//
 //                         Filter Converter                         //
 //******************************************************************//
@@ -1449,6 +1701,7 @@ func (repo *MssqlTagRepository) UpdateRelatedEntities(ctx context.Context, tx *s
     parentTagTag := repositoryModel.R.ParentTagTag
 
     if parentTagTag != nil {
+
         if len(parentTagTag.Children) == 0 {
         parentTagTag.Children = strconv.FormatInt(repositoryModel.ID, 10)
         }  else {
