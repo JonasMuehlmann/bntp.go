@@ -67,9 +67,11 @@ type BackendConfig struct {
 
 // ******************************************************************//
 //                        Repository configs                         //
-// ******************************************************************//.
+// ******************************************************************//
+
 type BookmarkRepositoryConfig struct {
-	DB DBConfig `name:"db" mapstructure:"db" validate:"required"`
+	DB            DBConfig             `name:"db" mapstructure:"db" validate:"required"`
+	TagRepository TagsRepositoryConfig `name:"tag_repository" mapstructure:"tag_repository" validate:"required"`
 }
 
 type TagsRepositoryConfig struct {
@@ -77,7 +79,8 @@ type TagsRepositoryConfig struct {
 }
 
 type DocumentRepositoryConfig struct {
-	DB DBConfig `name:"db" mapstructure:"db" validate:"required"`
+	DB            DBConfig             `name:"db" mapstructure:"db" validate:"required"`
+	TagRepository TagsRepositoryConfig `name:"tag_repository" mapstructure:"tag_repository" validate:"required"`
 }
 
 type DocumentContentRepositoryConfig struct {
@@ -90,7 +93,8 @@ type HooksConfig struct {
 
 // ******************************************************************//
 //                          Manager configs                          //
-// ******************************************************************//.
+// ******************************************************************//
+
 type BookmarkManagerConfig struct {
 	Hooks              HooksConfig              `name:"hooks" mapstructure:"hooks"`
 	BookmarkRepository BookmarkRepositoryConfig `name:"bookmark_repository" mapstructure:"bookmark_repository" validate:"required,bookmark_repository"`
@@ -174,8 +178,9 @@ func init() {
 }
 
 // ******************************************************************//
-//                         Custom validators                        //
-// ******************************************************************//.
+//                          Custom validators                        //
+// ******************************************************************//
+
 func validateLogLevel(field validator.FieldLevel) bool {
 	_, err := logrus.ParseLevel(field.Field().String())
 

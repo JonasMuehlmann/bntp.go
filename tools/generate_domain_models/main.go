@@ -30,10 +30,10 @@ import (
 )
 
 type Tag struct {
-	ID         int64  `json:"id" toml:"id" yaml:"id"`
-	ParentPath []*Tag `json:"parentPath" toml:"parentPath" yaml:"parentPath"`
-	Tag        string `json:"tag" toml:"tag" yaml:"tag"`
-	Subtags    []*Tag `json:"subtags" toml:"subtags" yaml:"subtags"`
+	ID            int64   `json:"id" toml:"id" yaml:"id"`
+	ParentPathIDs []int64 `json:"parentPathIDs" toml:"parentPathIDs" yaml:"parentPathIDs"`
+	Tag           string  `json:"tag" toml:"tag" yaml:"tag"`
+	SubtagIDs     []int64 `json:"subtagsIDs" toml:"subtagsIDs" yaml:"subtagsIDs"`
 }
 
 type Bookmark struct {
@@ -42,7 +42,7 @@ type Bookmark struct {
 	DeletedAt    optional.Optional[time.Time] `json:"deleted_at,omitempty" toml:"deleted_at" yaml:"deleted_at,omitempty"`
 	URL          string                       `json:"url" toml:"url" yaml:"url"`
 	Title        optional.Optional[string]    `json:"title,omitempty" toml:"title" yaml:"title,omitempty"`
-	Tags         []*Tag                       `json:"tags" toml:"tags" yaml:"tags"`
+	TagIDs       []int64                      `json:"tagIDs" toml:"tagIDs" yaml:"tagIDs"`
 	ID           int64                        `json:"id" toml:"id" yaml:"id"`
 	IsCollection bool                         `json:"is_collection,omitempty" toml:"is_collection" yaml:"is_collection,omitempty"`
 	IsRead       bool                         `json:"is_read,omitempty" toml:"is_read" yaml:"is_read,omitempty"`
@@ -50,15 +50,15 @@ type Bookmark struct {
 }
 
 type Document struct {
-	CreatedAt           time.Time                    `json:"created_at" toml:"created_at" yaml:"created_at"`
-	UpdatedAt           time.Time                    `json:"updated_at" toml:"updated_at" yaml:"updated_at"`
-	DeletedAt           optional.Optional[time.Time] `json:"deleted_at,omitempty" toml:"deleted_at" yaml:"deleted_at,omitempty"`
-	Path                string                       `json:"path" toml:"path" yaml:"path"`
-	DocumentType        optional.Optional[string]    `json:"document_type" toml:"document_type" yaml:"document_type"`
-	Tags                []*Tag                       `json:"Tags" toml:"Tags" yaml:"Tags"`
-	LinkedDocuments     []*Document                  `json:"linked_documents" toml:"linked_documents" yaml:"linked_documents"`
-	BacklinkedDocuments []*Document                  `json:"backlinked_documents" toml:"backlinked_documents" yaml:"backlinked_documents"`
-	ID                  int64                        `json:"id" toml:"id" yaml:"id"`
+	CreatedAt              time.Time                    `json:"created_at" toml:"created_at" yaml:"created_at"`
+	UpdatedAt              time.Time                    `json:"updated_at" toml:"updated_at" yaml:"updated_at"`
+	DeletedAt              optional.Optional[time.Time] `json:"deleted_at,omitempty" toml:"deleted_at" yaml:"deleted_at,omitempty"`
+	Path                   string                       `json:"path" toml:"path" yaml:"path"`
+	DocumentType           optional.Optional[string]    `json:"document_type" toml:"document_type" yaml:"document_type"`
+	TagIDs                 []int64                      `json:"tagIDs" toml:"tagIDs" yaml:"tagIDs"`
+	LinkedDocumentIDs      []int64                      `json:"linked_documentIDs" toml:"linked_documentIDs" yaml:"linked_documentIDs"`
+	BacklinkedDocumentsIDs []int64                      `json:"backlinked_documentIDs" toml:"backlinked_documentIDs" yaml:"backlinked_documentIDs"`
+	ID                     int64                        `json:"id" toml:"id" yaml:"id"`
 }
 
 var entities = []any{Document{}, Tag{}, Bookmark{}}

@@ -74,6 +74,52 @@ func main() {
 			log.Fatal(err)
 		}
 	}
+
+	// out, _ := json.Marshal(model.CompoundOperand[string]{})
+	// fmt.Println(string(out))
+
+	// out, _ = json.Marshal(model.ListOperand[string]{})
+	// fmt.Println(string(out))
+
+	// out, _ = json.Marshal(model.RangeOperand[string]{})
+	// fmt.Println(string(out))
+
+	// out, _ = json.Marshal(model.ScalarOperand[string]{})
+	// fmt.Println(string(out))
+
+	// out, _ = json.Marshal(model.FilterOperation[string]{})
+	// fmt.Println(string(out))
+
+	// out, _ = json.Marshal(model.UpdateOperation[string]{})
+	// fmt.Println(string(out))
+
+	// out, _ = json.Marshal(domain.Bookmark{})
+	// fmt.Println(string(out))
+
+	// out, _ = json.Marshal(domain.BookmarkFilter{})
+	// fmt.Println(string(out))
+
+	// out, _ = json.Marshal(domain.BookmarkUpdater{})
+	// fmt.Println(string(out))
+
+	// out, _ = json.Marshal(domain.Document{})
+	// fmt.Println(string(out))
+
+	// out, _ = json.Marshal(domain.DocumentFilter{})
+	// fmt.Println(string(out))
+
+	// out, _ = json.Marshal(domain.DocumentUpdater{})
+	// fmt.Println(string(out))
+
+	// out, _ = json.Marshal(domain.Tag{})
+	// fmt.Println(string(out))
+
+	// out, _ = json.Marshal(domain.TagFilter{})
+	// fmt.Println(string(out))
+
+	// out, _ = json.Marshal(domain.TagUpdater{})
+	// fmt.Println(string(out))
+
 }
 
 func ToMysql(mainSchema string) string {

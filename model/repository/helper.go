@@ -22,7 +22,8 @@ package repository
 
 import (
 	"context"
-	"database/sql"
+	"fmt"
+	"reflect"
 	"time"
 
 	"github.com/JonasMuehlmann/bntp.go/internal/helper"
@@ -100,8 +101,61 @@ func IntToBool(i int64) (bool, error) {
 	return i > 0, nil
 }
 
-func MakeDomainToRepositoryEntityConverter[TIn any, TOut any](ctx context.Context, db *sql.DB, converter func(ctx context.Context, db *sql.DB, entity *TIn) (*TOut, error)) func(entity *TIn) (*TOut, error) {
+func MakeDomainToRepositoryEntityConverter[TIn any, TOut any](ctx context.Context, converter func(ctx context.Context, entity *TIn) (*TOut, error)) func(entity *TIn) (*TOut, error) {
 	return func(entity *TIn) (*TOut, error) {
-		return converter(ctx, db, entity)
+		return converter(ctx, entity)
 	}
+}
+
+func MakeDomainToRepositoryEntityConverterGeneric[TIn any, TOut any](ctx context.Context, converter func(ctx context.Context, entity *TIn) (any, error)) func(entity *TIn) (*TOut, error) {
+	return func(entity *TIn) (*TOut, error) {
+		entityRaw, err := converter(ctx, entity)
+		if err != nil {
+			return nil, err
+		}
+
+		entityConcrete, ok := entityRaw.(*TOut)
+		if !ok {
+			var wantedZeroVal *TOut
+			return nil, fmt.Errorf("expected type %T but got %T", wantedZeroVal, entityConcrete)
+		}
+
+		return entityConcrete, nil
+	}
+}
+
+//******************************************************************//
+//               ReferenceToNonExistentDependencyError              //
+//******************************************************************//
+
+type ReferenceToNonExistentDependencyError struct {
+	Inner error
+}
+
+func (err ReferenceToNonExistentDependencyError) Error() string {
+	return fmt.Sprintf("Error when writing data with reference to non-existent dependency: %v", err.Inner)
+}
+
+func (err ReferenceToNonExistentDependencyError) Unwrap() error {
+	return err.Inner
+}
+
+func (err ReferenceToNonExistentDependencyError) Is(other error) bool {
+	switch other.(type) {
+	case ReferenceToNonExistentDependencyError:
+		return true
+	default:
+		return false
+	}
+}
+
+func (err ReferenceToNonExistentDependencyError) As(target any) bool {
+	switch target.(type) {
+	case ReferenceToNonExistentDependencyError:
+		reflect.Indirect(reflect.ValueOf(target)).Set(reflect.ValueOf(err))
+		return true
+	default:
+		return false
+	}
+
 }

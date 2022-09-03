@@ -22,73 +22,90 @@ package cmd
 
 import (
 	"context"
-	"os"
+	"fmt"
+	"strings"
 
+	"github.com/JonasMuehlmann/bntp.go/internal/helper"
 	"github.com/spf13/cobra"
 )
 
-var bookmarkTypeCmd = &cobra.Command{
-	Use:   "type",
-	Short: "Manage types of bntp bookmarks",
-	Long:  `A longer description`,
-	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) == 0 {
-			cmd.Help()
-			os.Exit(0)
-		}
-	},
-}
+func WithBookmarkTypeCommand() CliOption {
+	return func(cli *Cli) {
+		cli.BookmarkTypeCmd = &cobra.Command{
+			Use:   "type",
+			Short: "Manage types of bntp bookmarks",
+			Long:  `A longer description`,
+			RunE: func(cmd *cobra.Command, args []string) error {
+				if len(args) == 0 {
+					return helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
+				}
 
-var bookmarkTypeAddCmd = &cobra.Command{
-	Use:   "add TYPE...",
-	Short: "Add bntp bookmark types",
-	Long:  `A longer description`,
-	Args:  cobra.ArbitraryArgs,
-	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) == 0 {
-			cmd.Help()
-			os.Exit(0)
+				return nil
+			},
 		}
 
-		err := BNTPBackend.BookmarkManager.AddType(context.Background(), args)
-		if err != nil {
-			panic(err)
-		}
-	},
-}
+		cli.BookmarkTypeAddCmd = &cobra.Command{
+			Use:   "add TYPE...",
+			Short: "Add bntp bookmark types",
+			Long:  `A longer description`,
+			Args:  cobra.ArbitraryArgs,
+			RunE: func(cmd *cobra.Command, args []string) error {
+				if len(args) == 0 {
+					return helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
+				}
 
-var bookmarkTypeEditCmd = &cobra.Command{
-	Use:   "edit OLD_NAME NEW_NAME",
-	Short: "Change a bntp bookmark type",
-	Long:  `A longer description`,
-	Args:  cobra.ExactArgs(2),
-	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) == 0 {
-			cmd.Help()
-			os.Exit(0)
+				err := cli.BNTPBackend.BookmarkManager.AddType(context.Background(), args)
+
+				return err
+			},
 		}
 
-		err := BNTPBackend.BookmarkManager.UpdateType(context.Background(), args[0], args[1])
-		if err != nil {
-			panic(err)
-		}
-	},
-}
+		cli.BookmarkTypeEditCmd = &cobra.Command{
+			Use:   "edit OLD_NAME NEW_NAME",
+			Short: "Change a bntp bookmark type",
+			Long:  `A longer description`,
+			Args:  cobra.ExactArgs(2),
+			RunE: func(cmd *cobra.Command, args []string) error {
+				err := cli.BNTPBackend.BookmarkManager.UpdateType(context.Background(), args[0], args[1])
 
-var bookmarkTypeRemoveCmd = &cobra.Command{
-	Use:   "remove TYPE...",
-	Short: "Remove bntp bookmark types",
-	Long:  `A longer description`,
-	Args:  cobra.ArbitraryArgs,
-	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) == 0 {
-			cmd.Help()
-			os.Exit(0)
+				return err
+			},
 		}
 
-		err := BNTPBackend.BookmarkManager.DeleteType(context.Background(), args)
-		if err != nil {
-			panic(err)
+		cli.BookmarkTypeRemoveCmd = &cobra.Command{
+			Use:   "remove TYPE...",
+			Short: "Remove bntp bookmark types",
+			Long:  `A longer description`,
+			Args:  cobra.ArbitraryArgs,
+			RunE: func(cmd *cobra.Command, args []string) error {
+				if len(args) == 0 {
+					return helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
+				}
+
+				err := cli.BNTPBackend.BookmarkManager.DeleteType(context.Background(), args)
+
+				return err
+			},
 		}
-	},
+
+		cli.BookmarkTypeListCmd = &cobra.Command{
+			Use:   "list",
+			Short: "List bntp bookmark types",
+			Long:  `A longer description`,
+			Args:  cobra.NoArgs,
+			RunE: func(cmd *cobra.Command, args []string) error {
+				types, err := cli.BNTPBackend.BookmarkManager.GetAllTypes(context.Background())
+
+				fmt.Fprintln(cli.RootCmd.OutOrStdout(), strings.Join(types, "\n"))
+
+				return err
+			},
+		}
+
+		cli.BookmarkCmd.AddCommand(cli.BookmarkTypeCmd)
+		cli.BookmarkTypeCmd.AddCommand(cli.BookmarkTypeAddCmd)
+		cli.BookmarkTypeCmd.AddCommand(cli.BookmarkTypeEditCmd)
+		cli.BookmarkTypeCmd.AddCommand(cli.BookmarkTypeRemoveCmd)
+		cli.BookmarkTypeCmd.AddCommand(cli.BookmarkTypeListCmd)
+	}
 }

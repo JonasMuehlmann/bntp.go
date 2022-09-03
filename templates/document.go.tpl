@@ -39,6 +39,22 @@ type {{.StructName}} struct {
     {{end}}
 }
 
+
+func (t *{{.StructName}}) IsDefault() bool {
+    {{range $field := .StructFields -}}
+    {{ if eq "[" (slice .FieldType 0 1) }}
+    if t.{{.FieldName}} != nil {
+    {{ else }}
+    var {{.FieldName}}Zero {{.FieldType}}
+    if t.{{.FieldName}} != {{.FieldName}}Zero {
+    {{ end }}
+        return false
+    }
+    {{end}}
+
+    return true
+}
+
 type {{.StructName}}Field string
 
 var {{.StructName}}Fields = struct {
@@ -51,16 +67,48 @@ var {{.StructName}}Fields = struct {
     {{end}}
 }
 
+{{range $field := .StructFields -}}
+func (document *{{$StructName}}) Get{{.FieldName}}() {{.FieldType}} {
+        return document.{{.FieldName}}
+}
+{{end}}
+{{range $field := .StructFields -}}
+func (document *{{$StructName}}) Get{{.FieldName}}Ref() *{{.FieldType}} {
+        return &document.{{.FieldName}}
+}
+{{end}}
+
 type {{.StructName}}Filter struct {
     {{range $field := .StructFields -}}
-    {{.FieldName}} optional.Optional[model.FilterOperation[{{Unslice (UnaliasSQLBoilerSlice .FieldType)}}]]
+    {{.FieldName}} optional.Optional[model.FilterOperation[{{Unslice (UnaliasSQLBoilerSlice .FieldType)}}]]`json:"{{LowercaseBeginning .FieldName}},omitempty" toml:"{{LowercaseBeginning .FieldName}},omitempty" yaml:"{{LowercaseBeginning .FieldName}},omitempty"`
     {{end}}
 }
 
+func (filter *{{.StructName}}Filter) IsDefault() bool {
+    {{range $field := .StructFields -}}
+    if filter.{{.FieldName}}.HasValue {
+        return false
+    }
+    {{end}}
+
+    return true
+}
+
+
 type {{$.StructName}}Updater struct {
     {{range $field := .StructFields -}}
-    {{.FieldName}} optional.Optional[model.UpdateOperation[{{.FieldType}}]]
+    {{.FieldName}} optional.Optional[model.UpdateOperation[{{.FieldType}}]]`json:"{{LowercaseBeginning .FieldName}},omitempty" toml:"{{LowercaseBeginning .FieldName}},omitempty" yaml:"{{LowercaseBeginning .FieldName}},omitempty"`
     {{end}}
+}
+
+func (updater *{{.StructName}}Updater) IsDefault() bool {
+    {{range $field := .StructFields -}}
+    if updater.{{.FieldName}}.HasValue {
+        return false
+    }
+    {{end}}
+
+    return true
 }
 
 const (
@@ -68,10 +116,11 @@ const (
     {{.StructName}}FilterDeleted = "{{.StructName}}FilterDeleted"
 )
 
+// FIX: This operating on int64s instead of the slice is nonsense, right?
 var Predefined{{.StructName}}Filters = map[string]{{.StructName}}Filter {
-    {{.StructName}}FilterUntagged: {Tags: optional.Make(model.FilterOperation[*Tag]{
-        Operand: model.ScalarOperand[*Tag]{
-            Operand: nil,
+    {{.StructName}}FilterUntagged: {TagIDs: optional.Make(model.FilterOperation[int64]{
+        Operand: model.ScalarOperand[int64]{
+            Operand: -1,
         },
         Operator: model.FilterEqual,
     })},

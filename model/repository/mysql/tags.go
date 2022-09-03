@@ -645,7 +645,7 @@ func (o TagSlice) UpdateAll(ctx context.Context, exec boil.ContextExecutor, cols
 
 var mySQLTagUniqueColumns = []string{
 	"id",
-	"tag",
+	"path",
 }
 
 // Upsert attempts an insert using an executor, and does an update or ignore on conflict.

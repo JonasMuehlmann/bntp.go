@@ -30,63 +30,239 @@ import (
 )
 
 type Document struct {
-	CreatedAt           time.Time                    `json:"created_at" toml:"created_at" yaml:"created_at"`
-	UpdatedAt           time.Time                    `json:"updated_at" toml:"updated_at" yaml:"updated_at"`
-	DeletedAt           optional.Optional[time.Time] `json:"deleted_at,omitempty" toml:"deleted_at" yaml:"deleted_at,omitempty"`
-	Path                string                       `json:"path" toml:"path" yaml:"path"`
-	DocumentType        optional.Optional[string]    `json:"document_type" toml:"document_type" yaml:"document_type"`
-	Tags                []*Tag                       `json:"Tags" toml:"Tags" yaml:"Tags"`
-	LinkedDocuments     []*Document                  `json:"linked_documents" toml:"linked_documents" yaml:"linked_documents"`
-	BacklinkedDocuments []*Document                  `json:"backlinked_documents" toml:"backlinked_documents" yaml:"backlinked_documents"`
-	ID                  int64                        `json:"id" toml:"id" yaml:"id"`
+	CreatedAt              time.Time                    `json:"created_at" toml:"created_at" yaml:"created_at"`
+	UpdatedAt              time.Time                    `json:"updated_at" toml:"updated_at" yaml:"updated_at"`
+	DeletedAt              optional.Optional[time.Time] `json:"deleted_at,omitempty" toml:"deleted_at" yaml:"deleted_at,omitempty"`
+	Path                   string                       `json:"path" toml:"path" yaml:"path"`
+	DocumentType           optional.Optional[string]    `json:"document_type" toml:"document_type" yaml:"document_type"`
+	TagIDs                 []int64                      `json:"tagIDs" toml:"tagIDs" yaml:"tagIDs"`
+	LinkedDocumentIDs      []int64                      `json:"linked_documentIDs" toml:"linked_documentIDs" yaml:"linked_documentIDs"`
+	BacklinkedDocumentsIDs []int64                      `json:"backlinked_documentIDs" toml:"backlinked_documentIDs" yaml:"backlinked_documentIDs"`
+	ID                     int64                        `json:"id" toml:"id" yaml:"id"`
+}
+
+func (t *Document) IsDefault() bool {
+
+	var CreatedAtZero time.Time
+	if t.CreatedAt != CreatedAtZero {
+
+		return false
+	}
+
+	var UpdatedAtZero time.Time
+	if t.UpdatedAt != UpdatedAtZero {
+
+		return false
+	}
+
+	var DeletedAtZero optional.Optional[time.Time]
+	if t.DeletedAt != DeletedAtZero {
+
+		return false
+	}
+
+	var PathZero string
+	if t.Path != PathZero {
+
+		return false
+	}
+
+	var DocumentTypeZero optional.Optional[string]
+	if t.DocumentType != DocumentTypeZero {
+
+		return false
+	}
+
+	if t.TagIDs != nil {
+
+		return false
+	}
+
+	if t.LinkedDocumentIDs != nil {
+
+		return false
+	}
+
+	if t.BacklinkedDocumentsIDs != nil {
+
+		return false
+	}
+
+	var IDZero int64
+	if t.ID != IDZero {
+
+		return false
+	}
+
+	return true
 }
 
 type DocumentField string
 
 var DocumentFields = struct {
-	CreatedAt           DocumentField
-	UpdatedAt           DocumentField
-	DeletedAt           DocumentField
-	Path                DocumentField
-	DocumentType        DocumentField
-	Tags                DocumentField
-	LinkedDocuments     DocumentField
-	BacklinkedDocuments DocumentField
-	ID                  DocumentField
+	CreatedAt              DocumentField
+	UpdatedAt              DocumentField
+	DeletedAt              DocumentField
+	Path                   DocumentField
+	DocumentType           DocumentField
+	TagIDs                 DocumentField
+	LinkedDocumentIDs      DocumentField
+	BacklinkedDocumentsIDs DocumentField
+	ID                     DocumentField
 }{
-	CreatedAt:           "created_at",
-	UpdatedAt:           "updated_at",
-	DeletedAt:           "deleted_at",
-	Path:                "path",
-	DocumentType:        "document_type",
-	Tags:                "Tags",
-	LinkedDocuments:     "linked_documents",
-	BacklinkedDocuments: "backlinked_documents",
-	ID:                  "id",
+	CreatedAt:              "created_at",
+	UpdatedAt:              "updated_at",
+	DeletedAt:              "deleted_at",
+	Path:                   "path",
+	DocumentType:           "document_type",
+	TagIDs:                 "tagIDs",
+	LinkedDocumentIDs:      "linked_documentIDs",
+	BacklinkedDocumentsIDs: "backlinked_documentIDs",
+	ID:                     "id",
+}
+
+func (document *Document) GetCreatedAt() time.Time {
+	return document.CreatedAt
+}
+func (document *Document) GetUpdatedAt() time.Time {
+	return document.UpdatedAt
+}
+func (document *Document) GetDeletedAt() optional.Optional[time.Time] {
+	return document.DeletedAt
+}
+func (document *Document) GetPath() string {
+	return document.Path
+}
+func (document *Document) GetDocumentType() optional.Optional[string] {
+	return document.DocumentType
+}
+func (document *Document) GetTagIDs() []int64 {
+	return document.TagIDs
+}
+func (document *Document) GetLinkedDocumentIDs() []int64 {
+	return document.LinkedDocumentIDs
+}
+func (document *Document) GetBacklinkedDocumentsIDs() []int64 {
+	return document.BacklinkedDocumentsIDs
+}
+func (document *Document) GetID() int64 {
+	return document.ID
+}
+
+func (document *Document) GetCreatedAtRef() *time.Time {
+	return &document.CreatedAt
+}
+func (document *Document) GetUpdatedAtRef() *time.Time {
+	return &document.UpdatedAt
+}
+func (document *Document) GetDeletedAtRef() *optional.Optional[time.Time] {
+	return &document.DeletedAt
+}
+func (document *Document) GetPathRef() *string {
+	return &document.Path
+}
+func (document *Document) GetDocumentTypeRef() *optional.Optional[string] {
+	return &document.DocumentType
+}
+func (document *Document) GetTagIDsRef() *[]int64 {
+	return &document.TagIDs
+}
+func (document *Document) GetLinkedDocumentIDsRef() *[]int64 {
+	return &document.LinkedDocumentIDs
+}
+func (document *Document) GetBacklinkedDocumentsIDsRef() *[]int64 {
+	return &document.BacklinkedDocumentsIDs
+}
+func (document *Document) GetIDRef() *int64 {
+	return &document.ID
 }
 
 type DocumentFilter struct {
-	CreatedAt           optional.Optional[model.FilterOperation[time.Time]]
-	UpdatedAt           optional.Optional[model.FilterOperation[time.Time]]
-	DeletedAt           optional.Optional[model.FilterOperation[optional.Optional[time.Time]]]
-	Path                optional.Optional[model.FilterOperation[string]]
-	DocumentType        optional.Optional[model.FilterOperation[optional.Optional[string]]]
-	Tags                optional.Optional[model.FilterOperation[*Tag]]
-	LinkedDocuments     optional.Optional[model.FilterOperation[*Document]]
-	BacklinkedDocuments optional.Optional[model.FilterOperation[*Document]]
-	ID                  optional.Optional[model.FilterOperation[int64]]
+	CreatedAt              optional.Optional[model.FilterOperation[time.Time]]                    `json:"createdAt,omitempty" toml:"createdAt,omitempty" yaml:"createdAt,omitempty"`
+	UpdatedAt              optional.Optional[model.FilterOperation[time.Time]]                    `json:"updatedAt,omitempty" toml:"updatedAt,omitempty" yaml:"updatedAt,omitempty"`
+	DeletedAt              optional.Optional[model.FilterOperation[optional.Optional[time.Time]]] `json:"deletedAt,omitempty" toml:"deletedAt,omitempty" yaml:"deletedAt,omitempty"`
+	Path                   optional.Optional[model.FilterOperation[string]]                       `json:"path,omitempty" toml:"path,omitempty" yaml:"path,omitempty"`
+	DocumentType           optional.Optional[model.FilterOperation[optional.Optional[string]]]    `json:"documentType,omitempty" toml:"documentType,omitempty" yaml:"documentType,omitempty"`
+	TagIDs                 optional.Optional[model.FilterOperation[int64]]                        `json:"tagIDs,omitempty" toml:"tagIDs,omitempty" yaml:"tagIDs,omitempty"`
+	LinkedDocumentIDs      optional.Optional[model.FilterOperation[int64]]                        `json:"linkedDocumentIDs,omitempty" toml:"linkedDocumentIDs,omitempty" yaml:"linkedDocumentIDs,omitempty"`
+	BacklinkedDocumentsIDs optional.Optional[model.FilterOperation[int64]]                        `json:"backlinkedDocumentsIDs,omitempty" toml:"backlinkedDocumentsIDs,omitempty" yaml:"backlinkedDocumentsIDs,omitempty"`
+	ID                     optional.Optional[model.FilterOperation[int64]]                        `json:"id,omitempty" toml:"id,omitempty" yaml:"id,omitempty"`
+}
+
+func (filter *DocumentFilter) IsDefault() bool {
+	if filter.CreatedAt.HasValue {
+		return false
+	}
+	if filter.UpdatedAt.HasValue {
+		return false
+	}
+	if filter.DeletedAt.HasValue {
+		return false
+	}
+	if filter.Path.HasValue {
+		return false
+	}
+	if filter.DocumentType.HasValue {
+		return false
+	}
+	if filter.TagIDs.HasValue {
+		return false
+	}
+	if filter.LinkedDocumentIDs.HasValue {
+		return false
+	}
+	if filter.BacklinkedDocumentsIDs.HasValue {
+		return false
+	}
+	if filter.ID.HasValue {
+		return false
+	}
+
+	return true
 }
 
 type DocumentUpdater struct {
-	CreatedAt           optional.Optional[model.UpdateOperation[time.Time]]
-	UpdatedAt           optional.Optional[model.UpdateOperation[time.Time]]
-	DeletedAt           optional.Optional[model.UpdateOperation[optional.Optional[time.Time]]]
-	Path                optional.Optional[model.UpdateOperation[string]]
-	DocumentType        optional.Optional[model.UpdateOperation[optional.Optional[string]]]
-	Tags                optional.Optional[model.UpdateOperation[[]*Tag]]
-	LinkedDocuments     optional.Optional[model.UpdateOperation[[]*Document]]
-	BacklinkedDocuments optional.Optional[model.UpdateOperation[[]*Document]]
-	ID                  optional.Optional[model.UpdateOperation[int64]]
+	CreatedAt              optional.Optional[model.UpdateOperation[time.Time]]                    `json:"createdAt,omitempty" toml:"createdAt,omitempty" yaml:"createdAt,omitempty"`
+	UpdatedAt              optional.Optional[model.UpdateOperation[time.Time]]                    `json:"updatedAt,omitempty" toml:"updatedAt,omitempty" yaml:"updatedAt,omitempty"`
+	DeletedAt              optional.Optional[model.UpdateOperation[optional.Optional[time.Time]]] `json:"deletedAt,omitempty" toml:"deletedAt,omitempty" yaml:"deletedAt,omitempty"`
+	Path                   optional.Optional[model.UpdateOperation[string]]                       `json:"path,omitempty" toml:"path,omitempty" yaml:"path,omitempty"`
+	DocumentType           optional.Optional[model.UpdateOperation[optional.Optional[string]]]    `json:"documentType,omitempty" toml:"documentType,omitempty" yaml:"documentType,omitempty"`
+	TagIDs                 optional.Optional[model.UpdateOperation[[]int64]]                      `json:"tagIDs,omitempty" toml:"tagIDs,omitempty" yaml:"tagIDs,omitempty"`
+	LinkedDocumentIDs      optional.Optional[model.UpdateOperation[[]int64]]                      `json:"linkedDocumentIDs,omitempty" toml:"linkedDocumentIDs,omitempty" yaml:"linkedDocumentIDs,omitempty"`
+	BacklinkedDocumentsIDs optional.Optional[model.UpdateOperation[[]int64]]                      `json:"backlinkedDocumentsIDs,omitempty" toml:"backlinkedDocumentsIDs,omitempty" yaml:"backlinkedDocumentsIDs,omitempty"`
+	ID                     optional.Optional[model.UpdateOperation[int64]]                        `json:"id,omitempty" toml:"id,omitempty" yaml:"id,omitempty"`
+}
+
+func (updater *DocumentUpdater) IsDefault() bool {
+	if updater.CreatedAt.HasValue {
+		return false
+	}
+	if updater.UpdatedAt.HasValue {
+		return false
+	}
+	if updater.DeletedAt.HasValue {
+		return false
+	}
+	if updater.Path.HasValue {
+		return false
+	}
+	if updater.DocumentType.HasValue {
+		return false
+	}
+	if updater.TagIDs.HasValue {
+		return false
+	}
+	if updater.LinkedDocumentIDs.HasValue {
+		return false
+	}
+	if updater.BacklinkedDocumentsIDs.HasValue {
+		return false
+	}
+	if updater.ID.HasValue {
+		return false
+	}
+
+	return true
 }
 
 const (
@@ -94,10 +270,11 @@ const (
 	DocumentFilterDeleted  = "DocumentFilterDeleted"
 )
 
+// FIX: This operating on int64s instead of the slice is nonsense, right?
 var PredefinedDocumentFilters = map[string]DocumentFilter{
-	DocumentFilterUntagged: {Tags: optional.Make(model.FilterOperation[*Tag]{
-		Operand: model.ScalarOperand[*Tag]{
-			Operand: nil,
+	DocumentFilterUntagged: {TagIDs: optional.Make(model.FilterOperation[int64]{
+		Operand: model.ScalarOperand[int64]{
+			Operand: -1,
 		},
 		Operator: model.FilterEqual,
 	})},

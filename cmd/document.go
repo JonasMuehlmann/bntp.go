@@ -23,415 +23,398 @@ package cmd
 import (
 	"context"
 	"fmt"
-	"os"
 
+	"github.com/JonasMuehlmann/bntp.go/internal/helper"
 	"github.com/JonasMuehlmann/bntp.go/model/domain"
 	"github.com/spf13/cobra"
 	"golang.org/x/exp/slices"
 )
 
-var documentCmd = &cobra.Command{
-	Use:   "document",
-	Short: "Manage bntp documents",
-	Long:  `A longer description`,
-	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) == 0 {
-			cmd.Help()
-			os.Exit(0)
-		}
-	},
-}
-
-var documentAddCmd = &cobra.Command{
-	Use:   "add MODEL...",
-	Short: "Add bntp documents",
-	Long:  `A longer description`,
-	Args:  cobra.ArbitraryArgs,
-	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) == 0 {
-			cmd.Help()
-			os.Exit(0)
-		}
-
-		documents := make([]*domain.Document, 0, len(args))
-
-		for i, documentOut := range documents {
-			err := BNTPBackend.Unmarshallers[Format].Unmarshall(documentOut, args[i])
-			if err != nil {
-				panic(err)
-			}
-		}
-
-		// NOTE: Should we also try to add an empty document?
-		err := BNTPBackend.DocumentManager.Add(context.Background(), documents)
-		if err != nil {
-			panic(err)
-		}
-	},
-}
-
-var documentReplaceCmd = &cobra.Command{
-	Use:   "replace MODEL...",
-	Short: "Replace a bntp document with an updated version",
-	Long:  `A longer description`,
-	Args:  cobra.ArbitraryArgs,
-	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) == 0 {
-			cmd.Help()
-			os.Exit(0)
-		}
-
-		documents := make([]*domain.Document, 0, len(args))
-
-		for i, documentOut := range documents {
-			err := BNTPBackend.Unmarshallers[Format].Unmarshall(documentOut, args[i])
-			if err != nil {
-				panic(err)
-			}
-		}
-
-		err := BNTPBackend.DocumentManager.Replace(context.Background(), documents)
-		if err != nil {
-			panic(err)
-		}
-
-		err = BNTPBackend.DocumentContentManager.UpdateDocumentContentsFromNewModels(context.Background(), documents, &BNTPBackend.DocumentManager)
-		if err != nil {
-			panic(err)
-		}
-	},
-}
-
-var documentUpsertCmd = &cobra.Command{
-	Use:   "upsert MODEL...",
-	Short: "Add or replace a bntp document",
-	Long:  `A longer description`,
-	Args:  cobra.ArbitraryArgs,
-	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) == 0 {
-			cmd.Help()
-			os.Exit(0)
-		}
-
-		documents := make([]*domain.Document, 0, len(args))
-
-		for i, documentOut := range documents {
-			err := BNTPBackend.Unmarshallers[Format].Unmarshall(documentOut, args[i])
-			if err != nil {
-				panic(err)
-			}
-		}
-
-		err := BNTPBackend.DocumentManager.Upsert(context.Background(), documents)
-		if err != nil {
-			panic(err)
-		}
-
-		err = BNTPBackend.DocumentContentManager.UpdateDocumentContentsFromNewModels(context.Background(), documents, &BNTPBackend.DocumentManager)
-		if err != nil {
-			panic(err)
-		}
-	},
-}
-
-var documentEditCmd = &cobra.Command{
-	Use:   "edit MODEL...",
-	Short: "Edit a bntp document",
-	Long:  `A longer description`,
-	Args:  cobra.ArbitraryArgs,
-	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) == 0 {
-			cmd.Help()
-			os.Exit(0)
-		}
-
-		var err error
-		var filter *domain.DocumentFilter
-		var updater *domain.DocumentUpdater
-		var numAffectedRecords int64
-
-		documents := make([]*domain.Document, 0, len(args))
-
-		for i, documentOut := range documents {
-			err := BNTPBackend.Unmarshallers[Format].Unmarshall(documentOut, args[i])
-			if err != nil {
-				panic(err)
-			}
-		}
-
-		err = BNTPBackend.Unmarshallers[Format].Unmarshall(updater, UpdaterRaw)
-		if err != nil {
-			panic(err)
-		}
-		if FilterRaw == "" {
-			err := BNTPBackend.DocumentManager.Update(context.Background(), documents, updater)
-			if err != nil {
-				panic(err)
-			}
-
-			numAffectedRecords = int64(len(args))
-
-			err = BNTPBackend.DocumentContentManager.UpdateDocumentContentsFromFilterAndUpdater(context.Background(), filter, updater, &BNTPBackend.DocumentManager)
-			if err != nil {
-				panic(err)
-			}
-		} else {
-			err = BNTPBackend.Unmarshallers[Format].Unmarshall(filter, FilterRaw)
-			if err != nil {
-				panic(err)
-			}
-
-			numAffectedRecords, err = BNTPBackend.DocumentManager.UpdateWhere(context.Background(), filter, updater)
-			if err != nil {
-				panic(err)
-			}
-
-			err = BNTPBackend.DocumentContentManager.UpdateDocumentContentsFromNewModels(context.Background(), documents, &BNTPBackend.DocumentManager)
-			if err != nil {
-				panic(err)
-			}
-		}
-
-		fmt.Println(numAffectedRecords)
-	},
-}
-var documentListCmd = &cobra.Command{
-	Use:   "list",
-	Short: "List bntp documents",
-	Long:  `A longer description`,
-	Args:  cobra.NoArgs,
-	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) == 0 {
-			cmd.Help()
-			os.Exit(0)
-		}
-
-		var documents []*domain.Document
-		var filter *domain.DocumentFilter
-		var output string
-		var err error
-
-		if FilterRaw == "" {
-			documents, err = BNTPBackend.DocumentManager.GetAll(context.Background())
-			if err != nil {
-				panic(err)
-			}
-		} else {
-			err = BNTPBackend.Unmarshallers[Format].Unmarshall(filter, FilterRaw)
-			if err != nil {
-				panic(err)
-			}
-
-			documents, err = BNTPBackend.DocumentManager.GetWhere(context.Background(), filter)
-			if err != nil {
-				panic(err)
-			}
-		}
-
-		output, err = BNTPBackend.Marshallers[Format].Marshall(documents)
-		if err != nil {
-			panic(err)
-		}
-
-		fmt.Println(output)
-	},
-}
-
-var documentRemoveCmd = &cobra.Command{
-	Use:   "remove [MODEL...]",
-	Short: "Remove a bntp document",
-	Long:  `A longer description`,
-	Args:  cobra.ArbitraryArgs,
-	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) == 0 {
-			cmd.Help()
-			os.Exit(0)
-		}
-
-		var filter *domain.DocumentFilter
-		var err error
-		var numAffectedRecords int64
-
-		if FilterRaw == "" {
-			documents := make([]*domain.Document, 0, len(args))
-
-			for i, documentOut := range documents {
-				err := BNTPBackend.Unmarshallers[Format].Unmarshall(documentOut, args[i])
-				if err != nil {
-					panic(err)
+func WithDocumentCommand() CliOption {
+	return func(cli *Cli) {
+		cli.DocumentCmd = &cobra.Command{
+			Use:   "document",
+			Short: "Manage bntp documents",
+			Long:  `A longer description`,
+			RunE: func(cmd *cobra.Command, args []string) error {
+				if len(args) == 0 {
+					return helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
 				}
-			}
 
-			err = BNTPBackend.DocumentManager.Delete(context.Background(), documents)
-			if err != nil {
-				panic(err)
-			}
+				return nil
+			},
+		}
 
-			numAffectedRecords = int64(len(args))
-		} else {
-			err = BNTPBackend.Unmarshallers[Format].Unmarshall(filter, FilterRaw)
-			if err != nil {
-				panic(err)
-			}
+		cli.DocumentAddCmd = &cobra.Command{
+			Use:   "add MODEL...",
+			Short: "Add a bntp document",
+			Long:  `A longer description`,
+			Args:  cobra.ArbitraryArgs,
+			RunE: func(cmd *cobra.Command, args []string) error {
+				if len(args) == 0 {
+					return helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
+				}
 
-			numAffectedRecords, err = BNTPBackend.DocumentManager.DeleteWhere(context.Background(), filter)
-			if err != nil {
-				panic(err)
+				documents, err := UnmarshalEntities[domain.Document](cli, args, cli.InFormat)
+				if err != nil {
+					return err
+				}
+
+				err = cli.BNTPBackend.DocumentManager.Add(context.Background(), documents)
+				if err != nil {
+					return err
+				}
+
+				return nil
+			},
+		}
+
+		cli.DocumentReplaceCmd = &cobra.Command{
+			Use:   "replace MODEL...",
+			Short: "Replace a bntp document with an updated version",
+			Long:  `A longer description`,
+			Args:  cobra.ArbitraryArgs,
+			RunE: func(cmd *cobra.Command, args []string) error {
+				if len(args) == 0 {
+					return helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
+				}
+
+				documents, err := UnmarshalEntities[domain.Document](cli, args, cli.InFormat)
+				if err != nil {
+					return err
+				}
+
+				err = cli.BNTPBackend.DocumentManager.Replace(context.Background(), documents)
+				if err != nil {
+					return err
+				}
+
+				return nil
+			},
+		}
+
+		cli.DocumentUpsertCmd = &cobra.Command{
+			Use:   "upsert MODEL...",
+			Short: "Add or replace a bntp document",
+			Long:  `A longer description`,
+			Args:  cobra.ArbitraryArgs,
+			RunE: func(cmd *cobra.Command, args []string) error {
+				if len(args) == 0 {
+					return helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
+				}
+
+				documents, err := UnmarshalEntities[domain.Document](cli, args, cli.InFormat)
+				if err != nil {
+					return err
+				}
+
+				err = cli.BNTPBackend.DocumentManager.Upsert(context.Background(), documents)
+				if err != nil {
+					return err
+				}
+
+				return nil
+			},
+		}
+
+		cli.DocumentEditCmd = &cobra.Command{
+			Use:   "edit MODEL...",
+			Short: "Edit a bntp document",
+			Long:  `A longer description`,
+			Args:  cobra.ArbitraryArgs,
+			RunE: func(cmd *cobra.Command, args []string) error {
+				if len(args) == 0 && cli.FilterRaw == "" {
+					return helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
+				}
+				if len(args) > 0 && cli.FilterRaw != "" {
+					return ConflictingPositionalArgsAndFlagError{Flag: "filter"}
+				}
+
+				var err error
+				filter := &domain.DocumentFilter{}
+				updater := &domain.DocumentUpdater{}
+				var numAffectedRecordsRaw int64
+
+				err = cli.BNTPBackend.Unmarshallers[cli.InFormat].Unmarshall(updater, cli.UpdaterRaw)
+				if err != nil {
+					return EntityMarshallingError{Inner: err}
+				}
+				if cli.FilterRaw == "" {
+					documents, err := UnmarshalEntities[domain.Document](cli, args, cli.InFormat)
+					if err != nil {
+						return err
+					}
+					err = cli.BNTPBackend.DocumentManager.Update(context.Background(), documents, updater)
+					if err != nil {
+						return err
+					}
+
+					numAffectedRecordsRaw = int64(len(args))
+				} else {
+					err = cli.BNTPBackend.Unmarshallers[cli.InFormat].Unmarshall(filter, cli.FilterRaw)
+					if err != nil {
+						return EntityMarshallingError{Inner: err}
+					}
+
+					numAffectedRecordsRaw, err = cli.BNTPBackend.DocumentManager.UpdateWhere(context.Background(), filter, updater)
+					if err != nil {
+						return err
+					}
+				}
+
+				numAffectedRecords, err := cli.BNTPBackend.Marshallers[cli.InFormat].Marshall(NumAffectedRecords{numAffectedRecordsRaw})
+				if err != nil {
+					return EntityMarshallingError{Inner: err}
+				}
+
+				fmt.Fprintln(cli.RootCmd.OutOrStdout(), numAffectedRecords)
+
+				return nil
+			},
+		}
+
+		cli.DocumentListCmd = &cobra.Command{
+			Use:   "list",
+			Short: "List bntp documents",
+			Long:  `A longer description`,
+			Args:  cobra.NoArgs,
+			RunE: func(cmd *cobra.Command, args []string) error {
+				var documents []*domain.Document
+				filter := &domain.DocumentFilter{}
+				var output string
+				var err error
+
+				if cli.FilterRaw == "" {
+					documents, err = cli.BNTPBackend.DocumentManager.GetAll(context.Background())
+					if err != nil {
+						return err
+					}
+				} else {
+					err = cli.BNTPBackend.Unmarshallers[cli.InFormat].Unmarshall(filter, cli.FilterRaw)
+					if err != nil {
+						return EntityMarshallingError{Inner: err}
+					}
+
+					documents, err = cli.BNTPBackend.DocumentManager.GetWhere(context.Background(), filter)
+					if err != nil {
+						return err
+					}
+				}
+
+				output, err = cli.BNTPBackend.Marshallers[cli.OutFormat].Marshall(documents)
+				if err != nil {
+					return EntityMarshallingError{Inner: err}
+				}
+
+				fmt.Fprintln(cli.RootCmd.OutOrStdout(), output)
+
+				return nil
+			},
+		}
+
+		cli.DocumentRemoveCmd = &cobra.Command{
+			Use:   "remove [MODEL...]",
+			Short: "Remove a bntp document",
+			Long:  `A longer description`,
+			Args:  cobra.ArbitraryArgs,
+			RunE: func(cmd *cobra.Command, args []string) error {
+				if len(args) == 0 && cli.FilterRaw == "" {
+					return helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
+				}
+				if len(args) > 0 && cli.FilterRaw != "" {
+					return ConflictingPositionalArgsAndFlagError{Flag: "filter"}
+				}
+
+				filter := &domain.DocumentFilter{}
+				var err error
+				var numAffectedRecordsRaw int64
+
+				if cli.FilterRaw == "" {
+					documents, err := UnmarshalEntities[domain.Document](cli, args, cli.InFormat)
+					if err != nil {
+						return err
+					}
+
+					err = cli.BNTPBackend.DocumentManager.Delete(context.Background(), documents)
+					if err != nil {
+						return err
+					}
+
+					numAffectedRecordsRaw = int64(len(args))
+				} else {
+					err = cli.BNTPBackend.Unmarshallers[cli.InFormat].Unmarshall(filter, cli.FilterRaw)
+					if err != nil {
+						return EntityMarshallingError{Inner: err}
+					}
+
+					numAffectedRecordsRaw, err = cli.BNTPBackend.DocumentManager.DeleteWhere(context.Background(), filter)
+					if err != nil {
+						return err
+					}
+				}
+
+				numAffectedRecords, err := cli.BNTPBackend.Marshallers[cli.InFormat].Marshall(NumAffectedRecords{numAffectedRecordsRaw})
+				if err != nil {
+					return EntityMarshallingError{Inner: err}
+				}
+
+				fmt.Fprintln(cli.RootCmd.OutOrStdout(), numAffectedRecords)
+
+				return nil
+			},
+		}
+
+		cli.DocumentFindCmd = &cobra.Command{
+			Use:   "find-first",
+			Short: "Find the first document matching a filter",
+			Long:  `A longer description`,
+			Args:  cobra.NoArgs,
+			RunE: func(cmd *cobra.Command, args []string) error {
+				filter := &domain.DocumentFilter{}
+				var err error
+				var result *domain.Document
+				var output string
+
+				err = cli.BNTPBackend.Unmarshallers[cli.InFormat].Unmarshall(filter, cli.FilterRaw)
+				if err != nil {
+					return EntityMarshallingError{Inner: err}
+				}
+
+				result, err = cli.BNTPBackend.DocumentManager.GetFirstWhere(context.Background(), filter)
+				if err != nil {
+					return err
+				}
+
+				output, err = cli.BNTPBackend.Marshallers[cli.OutFormat].Marshall(result)
+				if err != nil {
+					return EntityMarshallingError{Inner: err}
+				}
+
+				fmt.Fprintln(cli.RootCmd.OutOrStdout(), output)
+
+				return nil
+			},
+		}
+		cli.DocumentCountCmd = &cobra.Command{
+			Use:   "count",
+			Short: "Manage bntp documents",
+			Long:  `A longer description`,
+			Args:  cobra.NoArgs,
+			RunE: func(cmd *cobra.Command, args []string) error {
+				filter := &domain.DocumentFilter{}
+				var countRaw int64
+				var err error
+
+				if cli.FilterRaw == "" {
+					countRaw, err = cli.BNTPBackend.DocumentManager.CountAll(context.Background())
+					if err != nil {
+						return err
+					}
+				} else {
+					err = cli.BNTPBackend.Unmarshallers[cli.InFormat].Unmarshall(filter, cli.FilterRaw)
+					if err != nil {
+						return EntityMarshallingError{Inner: err}
+					}
+
+					countRaw, err = cli.BNTPBackend.DocumentManager.CountWhere(context.Background(), filter)
+					if err != nil {
+						return err
+					}
+				}
+
+				count, err := cli.BNTPBackend.Marshallers[cli.OutFormat].Marshall(Count{countRaw})
+				if err != nil {
+					return EntityMarshallingError{Inner: err}
+				}
+
+				fmt.Fprintln(cli.RootCmd.OutOrStdout(), count)
+
+				return nil
+			},
+		}
+		cli.DocumentDoesExistCmd = &cobra.Command{
+			Use:   "does-exist [MODEL]",
+			Short: "Manage bntp documents",
+			Long:  `A longer description`,
+			Args:  cobra.RangeArgs(0, 1),
+			RunE: func(cmd *cobra.Command, args []string) error {
+				if len(args) == 0 && cli.FilterRaw == "" {
+					return helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
+				}
+				if len(args) > 0 && cli.FilterRaw != "" {
+					return ConflictingPositionalArgsAndFlagError{Flag: "filter"}
+				}
+
+				filter := &domain.DocumentFilter{}
+				var err error
+				document := &domain.Document{}
+				var doesExistRaw bool
+
+				if cli.FilterRaw == "" {
+					err = cli.BNTPBackend.Unmarshallers[cli.InFormat].Unmarshall(document, args[0])
+					if err != nil {
+						return EntityMarshallingError{Inner: err}
+					}
+
+					doesExistRaw, err = cli.BNTPBackend.DocumentManager.DoesExist(context.Background(), document)
+					if err != nil {
+						return err
+					}
+				} else {
+					err = cli.BNTPBackend.Unmarshallers[cli.InFormat].Unmarshall(filter, cli.FilterRaw)
+					if err != nil {
+						return EntityMarshallingError{Inner: err}
+					}
+
+					doesExistRaw, err = cli.BNTPBackend.DocumentManager.DoesExistWhere(context.Background(), filter)
+					if err != nil {
+						return err
+					}
+				}
+
+				doesExist, err := cli.BNTPBackend.Marshallers[cli.OutFormat].Marshall(DoesExist{doesExistRaw})
+				if err != nil {
+					return EntityMarshallingError{Inner: err}
+				}
+
+				fmt.Fprintln(cli.RootCmd.OutOrStdout(), doesExist)
+
+				return nil
+			},
+		}
+
+		cli.RootCmd.AddCommand(cli.DocumentCmd)
+
+		cli.DocumentCmd.AddCommand(cli.DocumentListCmd)
+		cli.DocumentCmd.AddCommand(cli.DocumentReplaceCmd)
+		cli.DocumentCmd.AddCommand(cli.DocumentEditCmd)
+		cli.DocumentCmd.AddCommand(cli.DocumentAddCmd)
+		cli.DocumentCmd.AddCommand(cli.DocumentRemoveCmd)
+		cli.DocumentCmd.AddCommand(cli.DocumentCountCmd)
+		cli.DocumentCmd.AddCommand(cli.DocumentDoesExistCmd)
+		cli.DocumentCmd.AddCommand(cli.DocumentFindCmd)
+		cli.DocumentCmd.AddCommand(cli.DocumentUpsertCmd)
+
+		for _, subcommand := range cli.DocumentCmd.Commands() {
+			if slices.Contains([]*cobra.Command{cli.DocumentAddCmd, cli.DocumentListCmd, cli.DocumentRemoveCmd, cli.DocumentFindCmd, cli.DocumentDoesExistCmd}, subcommand) {
+				subcommand.PersistentFlags().StringVar(&cli.InFormat, "out-format", "json", "The serialization format to use for reading input")
+				subcommand.PersistentFlags().StringVar(&cli.OutFormat, "in-format", "json", "The serialization format to use for writing output")
 			}
 		}
 
-		fmt.Println(numAffectedRecords)
-	},
-}
-
-var documentFindCmd = &cobra.Command{
-	Use:   "find-first",
-	Short: "Find the first document matching a filter",
-	Long:  `A longer description`,
-	Args:  cobra.NoArgs,
-	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) == 0 {
-			cmd.Help()
-			os.Exit(0)
-		}
-
-		var filter *domain.DocumentFilter
-		var err error
-		var result *domain.Document
-		var output string
-
-		err = BNTPBackend.Unmarshallers[Format].Unmarshall(filter, FilterRaw)
-		if err != nil {
-			panic(err)
-		}
-
-		result, err = BNTPBackend.DocumentManager.GetFirstWhere(context.Background(), filter)
-		if err != nil {
-			panic(err)
-		}
-
-		output, err = BNTPBackend.Marshallers[Format].Marshall(result)
-		if err != nil {
-			panic(err)
-		}
-
-		fmt.Println(output)
-	},
-}
-var documentCountCmd = &cobra.Command{
-	Use:   "count",
-	Short: "Manage bntp documents",
-	Long:  `A longer description`,
-	Args:  cobra.NoArgs,
-	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) == 0 {
-			cmd.Help()
-			os.Exit(0)
-		}
-
-		var filter *domain.DocumentFilter
-		var count int64
-		var err error
-
-		if FilterRaw == "" {
-			count, err = BNTPBackend.DocumentManager.CountAll(context.Background())
-			if err != nil {
-				panic(err)
-			}
-		} else {
-			err = BNTPBackend.Unmarshallers[Format].Unmarshall(filter, FilterRaw)
-			if err != nil {
-				panic(err)
-			}
-
-			count, err = BNTPBackend.DocumentManager.CountWhere(context.Background(), filter)
-			if err != nil {
-				panic(err)
+		for _, subcommand := range cli.DocumentCmd.Commands() {
+			if slices.Contains([]*cobra.Command{cli.DocumentEditCmd, cli.DocumentListCmd, cli.DocumentRemoveCmd, cli.DocumentFindCmd, cli.DocumentCountCmd, cli.DocumentDoesExistCmd}, subcommand) {
+				subcommand.PersistentFlags().StringVar(&cli.FilterRaw, "filter", "", "The filter to use for processing entities")
 			}
 		}
 
-		fmt.Println(count)
-	},
-}
-var documentDoesExistCmd = &cobra.Command{
-	Use:   "does-exist [MODEL]",
-	Short: "Manage bntp documents",
-	Long:  `A longer description`,
-	Args:  cobra.RangeArgs(0, 1),
-	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) == 0 {
-			cmd.Help()
-			os.Exit(0)
-		}
-
-		var filter *domain.DocumentFilter
-		var err error
-		var document *domain.Document
-		var doesExist bool
-
-		if FilterRaw == "" {
-			err = BNTPBackend.Unmarshallers[Format].Unmarshall(document, args[0])
-			if err != nil {
-				panic(err)
-			}
-
-			doesExist, err = BNTPBackend.DocumentManager.DoesExist(context.Background(), document)
-			if err != nil {
-				panic(err)
-			}
-		} else {
-			err = BNTPBackend.Unmarshallers[Format].Unmarshall(filter, FilterRaw)
-			if err != nil {
-				panic(err)
-			}
-
-			doesExist, err = BNTPBackend.DocumentManager.DoesExistWhere(context.Background(), filter)
-			if err != nil {
-				panic(err)
+		for _, subcommand := range cli.DocumentCmd.Commands() {
+			if slices.Contains([]*cobra.Command{cli.DocumentEditCmd}, subcommand) {
+				subcommand.PersistentFlags().StringVar(&cli.UpdaterRaw, "updater", "", "The updater to use for processing entities")
 			}
 		}
 
-		fmt.Println(doesExist)
-	},
-}
-
-func init() {
-	RootCmd.AddCommand(documentCmd)
-
-	documentCmd.AddCommand(documentAddCmd)
-	documentCmd.AddCommand(documentEditCmd)
-	documentCmd.AddCommand(documentListCmd)
-	documentCmd.AddCommand(documentRemoveCmd)
-	documentCmd.AddCommand(documentCountCmd)
-	documentCmd.AddCommand(documentDoesExistCmd)
-	documentCmd.AddCommand(documentFindCmd)
-	documentCmd.AddCommand(documentUpsertCmd)
-
-	documentFindCmd.MarkFlagRequired("filter")
-	documentEditCmd.MarkFlagRequired("updater")
-
-	documentCmd.AddCommand(documentTypeCmd)
-	documentTypeCmd.AddCommand(documentTypeAddCmd)
-	documentTypeCmd.AddCommand(documentTypeEditCmd)
-	documentTypeCmd.AddCommand(documentTypeRemoveCmd)
-
-	for _, subcommand := range documentCmd.Commands() {
-		if slices.Contains([]*cobra.Command{documentAddCmd, documentListCmd, documentRemoveCmd}, subcommand) {
-			subcommand.PersistentFlags().StringVar(&Format, "format", "json", "The serialization format to use for i/o")
-		}
+		cli.DocumentFindCmd.MarkPersistentFlagRequired("filter")
+		cli.DocumentEditCmd.MarkPersistentFlagRequired("updater")
 	}
-
-	for _, subcommand := range documentCmd.Commands() {
-		if slices.Contains([]*cobra.Command{documentEditCmd, documentListCmd, documentRemoveCmd}, subcommand) {
-			subcommand.PersistentFlags().StringVar(&FilterRaw, "filter", "", "The filter to use for processing entities")
-		}
-	}
-
-	for _, subcommand := range documentCmd.Commands() {
-		if slices.Contains([]*cobra.Command{documentEditCmd}, subcommand) {
-			subcommand.PersistentFlags().StringVar(&FilterRaw, "updater", "", "The updater to use for processing entities")
-		}
-	}
-
-	// TODO: Add flag to not update document content, because they already were added through an editor
 }

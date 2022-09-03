@@ -32,6 +32,7 @@ type Backend struct {
 	TagManager             libtags.TagManager
 	DocumentManager        libdocuments.DocumentManager
 	DocumentContentManager libdocuments.DocumentContentManager
-	Marshallers            map[string]marshallers.Marshaller
-	Unmarshallers          map[string]marshallers.Unmarshaller
+	// Viper                  *viper.Viper
+	Marshallers   map[string]marshallers.Marshaller
+	Unmarshallers map[string]marshallers.Unmarshaller
 }

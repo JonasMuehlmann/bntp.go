@@ -23,7 +23,8 @@
 package repository
 
 import (
-    "context"
+	"context"
+
 	"github.com/JonasMuehlmann/bntp.go/model/domain"
 )
 
@@ -33,20 +34,29 @@ type DocumentRepository interface {
 	Add(ctx context.Context, domainModels []*domain.Document) error
 	Replace(ctx context.Context, domainModels []*domain.Document) error
 	Upsert(ctx context.Context, domainModels []*domain.Document) error
-	Update(ctx context.Context, domainModels []*domain.Document, columnUpdaters *domain.DocumentUpdater) error
-	UpdateWhere(ctx context.Context, columnFilter *domain.DocumentFilter, columnUpdaters *domain.DocumentUpdater) (numAffectedRecords int64, err error)
+	Update(ctx context.Context, domainModels []*domain.Document, domainUpdaters *domain.DocumentUpdater) error
+	UpdateWhere(ctx context.Context, domainFilter *domain.DocumentFilter, domainUpdaters *domain.DocumentUpdater) (numAffectedRecords int64, err error)
 	Delete(ctx context.Context, domainModels []*domain.Document) error
-	DeleteWhere(ctx context.Context, columnFilter *domain.DocumentFilter) (numAffectedRecords int64, err error)
-	CountWhere(ctx context.Context, columnFilter *domain.DocumentFilter) (numRecords int64, err error)
+	DeleteWhere(ctx context.Context, domainFilter *domain.DocumentFilter) (numAffectedRecords int64, err error)
+	CountWhere(ctx context.Context, domainFilter *domain.DocumentFilter) (numRecords int64, err error)
 	CountAll(ctx context.Context) (numRecords int64, err error)
 	DoesExist(ctx context.Context, domainModel *domain.Document) (doesExist bool, err error)
-	DoesExistWhere(ctx context.Context, columnFilter *domain.DocumentFilter) (doesExist bool, err error)
-	GetWhere(ctx context.Context, columnFilter *domain.DocumentFilter) (records []*domain.Document, err error)
-	GetFirstWhere(ctx context.Context, columnFilter *domain.DocumentFilter) (record *domain.Document, err error)
+	DoesExistWhere(ctx context.Context, domainFilter *domain.DocumentFilter) (doesExist bool, err error)
+	GetWhere(ctx context.Context, domainFilter *domain.DocumentFilter) (records []*domain.Document, err error)
+	GetFirstWhere(ctx context.Context, domainFilter *domain.DocumentFilter) (record *domain.Document, err error)
 	GetAll(ctx context.Context) (records []*domain.Document, err error)
-    
-    AddType(ctx context.Context, types  []string) error
-    DeleteType(ctx context.Context, types  []string) error
-    UpdateType(ctx context.Context, oldType string, newType string) error
-    
+	GetFromIDs(ctx context.Context, ids []int64) (records []*domain.Document, err error)
+
+	AddType(ctx context.Context, types []string) error
+	DeleteType(ctx context.Context, types []string) error
+	UpdateType(ctx context.Context, oldType string, newType string) error
+	GetAllTypes(ctx context.Context) ([]string, error)
+
+	GetTagRepository() TagRepository
+
+	DocumentRepositoryToDomainModel(ctx context.Context, repositoryModel any) (domainModel *domain.Document, err error)
+	DocumentDomainToRepositoryModel(ctx context.Context, domainModel *domain.Document) (repositoryModel any, err error)
+
+	DocumentDomainToRepositoryFilter(ctx context.Context, domainFilter *domain.DocumentFilter) (repositoryFilter any, err error)
+	DocumentDomainToRepositoryUpdater(ctx context.Context, domainUpdater *domain.DocumentUpdater) (repositoryUpdater any, err error)
 }

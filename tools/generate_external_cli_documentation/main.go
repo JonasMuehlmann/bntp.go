@@ -26,7 +26,7 @@ import (
 )
 
 func main() {
-	err := doc.GenMarkdownTree(cmd.RootCmd, "docs/cli_help")
+	err := doc.GenMarkdownTree(cmd.NewCli().RootCmd, "docs/cli_help")
 	if err != nil {
 		panic(err)
 	}

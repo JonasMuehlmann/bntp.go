@@ -22,73 +22,80 @@ package cmd
 
 import (
 	"fmt"
-	"log"
-	"os"
 
-	"github.com/JonasMuehlmann/bntp.go/internal/config"
+	"github.com/JonasMuehlmann/bntp.go/internal/helper"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
 
-var configCmd = &cobra.Command{
-	Use:   "config",
-	Short: "Manage bntp configuration",
-	Long:  `A longer description`,
-	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) == 0 {
-			cmd.Help()
-			os.Exit(0)
-		}
-	},
-}
-var configPathsCmd = &cobra.Command{
-	Use:   "paths",
-	Short: "List the search paths for config files",
-	Long:  `A longer description`,
-	Run: func(cmd *cobra.Command, args []string) {
-		for _, extension := range config.ConfigSearchPaths {
-			fmt.Println(extension)
-		}
-	},
-}
+func WithConfigCommand() CliOption {
+	return func(cli *Cli) {
 
-var configExtensionsCmd = &cobra.Command{
-	Use:   "extensions",
-	Short: "List the allowed extensions for config files",
-	Long:  `A longer description`,
-	Run: func(cmd *cobra.Command, args []string) {
-		for _, extension := range viper.SupportedExts {
-			fmt.Println(extension)
+		cli.ConfigCmd = &cobra.Command{
+			Use:   "config",
+			Short: "Manage bntp configuration",
+			Long:  `A longer description`,
+			RunE: func(cmd *cobra.Command, args []string) error {
+				if len(args) == 0 {
+					return helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
+				}
+
+				return nil
+			},
 		}
-	},
-}
+		cli.ConfigPathsCmd = &cobra.Command{
+			Use:   "paths",
+			Short: "List the search paths for config files",
+			Long:  `A longer description`,
+			RunE: func(cmd *cobra.Command, args []string) error {
+				for _, extension := range cli.ConfigManager.ConfigSearchPaths {
+					fmt.Fprintln(cli.RootCmd.OutOrStdout(), extension)
+				}
 
-var configBaseNameCmd = &cobra.Command{
-	Use:   "base-name",
-	Short: "Show the base name expected for config files",
-	Long:  `A longer description`,
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println(config.ConfigFileBaseName)
-	},
-}
-
-var exportConfigCmd = &cobra.Command{
-	Use:   "export FILE",
-	Short: "Export the current config state",
-	Long:  `A longer description`,
-	Args:  cobra.ExactArgs(1),
-	Run: func(cmd *cobra.Command, args []string) {
-		err := viper.WriteConfigAs(args[0])
-		if err != nil {
-			log.Fatal(err)
+				return nil
+			},
 		}
-	},
-}
 
-func init() {
-	RootCmd.AddCommand(configCmd)
-	configCmd.AddCommand(configPathsCmd)
-	configCmd.AddCommand(configExtensionsCmd)
-	configCmd.AddCommand(configBaseNameCmd)
-	configCmd.AddCommand(exportConfigCmd)
+		cli.ConfigExtensionsCmd = &cobra.Command{
+			Use:   "extensions",
+			Short: "List the allowed extensions for config files",
+			Long:  `A longer description`,
+			RunE: func(cmd *cobra.Command, args []string) error {
+				for _, extension := range viper.SupportedExts {
+					fmt.Fprintln(cli.RootCmd.OutOrStdout(), extension)
+				}
+
+				return nil
+			},
+		}
+
+		cli.configBaseNameCmd = &cobra.Command{
+			Use:   "base-name",
+			Short: "Show the base name expected for config files",
+			Long:  `A longer description`,
+			RunE: func(cmd *cobra.Command, args []string) error {
+				fmt.Fprintln(cli.RootCmd.OutOrStdout(), cli.ConfigManager.ConfigFileBaseName)
+
+				return nil
+			},
+		}
+
+		cli.exportConfigCmd = &cobra.Command{
+			Use:   "export FILE",
+			Short: "Export the current config state",
+			Long:  `A longer description`,
+			Args:  cobra.ExactArgs(1),
+			RunE: func(cmd *cobra.Command, args []string) error {
+				err := cli.ConfigManager.Viper.WriteConfigAs(args[0])
+
+				return err
+			},
+		}
+
+		cli.RootCmd.AddCommand(cli.ConfigCmd)
+		cli.ConfigCmd.AddCommand(cli.ConfigPathsCmd)
+		cli.ConfigCmd.AddCommand(cli.ConfigExtensionsCmd)
+		cli.ConfigCmd.AddCommand(cli.configBaseNameCmd)
+		cli.ConfigCmd.AddCommand(cli.exportConfigCmd)
+	}
 }

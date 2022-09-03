@@ -36,11 +36,75 @@ type Bookmark struct {
 	DeletedAt    optional.Optional[time.Time] `json:"deleted_at,omitempty" toml:"deleted_at" yaml:"deleted_at,omitempty"`
 	URL          string                       `json:"url" toml:"url" yaml:"url"`
 	Title        optional.Optional[string]    `json:"title,omitempty" toml:"title" yaml:"title,omitempty"`
-	Tags         []*Tag                       `json:"tags" toml:"tags" yaml:"tags"`
+	TagIDs       []int64                      `json:"tagIDs" toml:"tagIDs" yaml:"tagIDs"`
 	BookmarkType optional.Optional[string]    `json:"bookmark_type,omitempty" toml:"bookmark_type" yaml:"bookmark_type,omitempty"`
 	ID           int64                        `json:"id" toml:"id" yaml:"id"`
 	IsCollection bool                         `json:"is_collection,omitempty" toml:"is_collection" yaml:"is_collection,omitempty"`
 	IsRead       bool                         `json:"is_read,omitempty" toml:"is_read" yaml:"is_read,omitempty"`
+}
+
+func (t *Bookmark) IsDefault() bool {
+
+	var CreatedAtZero time.Time
+	if t.CreatedAt != CreatedAtZero {
+
+		return false
+	}
+
+	var UpdatedAtZero time.Time
+	if t.UpdatedAt != UpdatedAtZero {
+
+		return false
+	}
+
+	var DeletedAtZero optional.Optional[time.Time]
+	if t.DeletedAt != DeletedAtZero {
+
+		return false
+	}
+
+	var URLZero string
+	if t.URL != URLZero {
+
+		return false
+	}
+
+	var TitleZero optional.Optional[string]
+	if t.Title != TitleZero {
+
+		return false
+	}
+
+	if t.TagIDs != nil {
+
+		return false
+	}
+
+	var IDZero int64
+	if t.ID != IDZero {
+
+		return false
+	}
+
+	var IsCollectionZero bool
+	if t.IsCollection != IsCollectionZero {
+
+		return false
+	}
+
+	var IsReadZero bool
+	if t.IsRead != IsReadZero {
+
+		return false
+	}
+
+	var BookmarkTypeZero optional.Optional[string]
+	if t.BookmarkType != BookmarkTypeZero {
+
+		return false
+	}
+
+	return true
 }
 
 type BookmarkField string
@@ -51,7 +115,7 @@ var BookmarkFieldsList = []BookmarkField{
 	BookmarkField("DeletedAt"),
 	BookmarkField("URL"),
 	BookmarkField("Title"),
-	BookmarkField("Tags"),
+	BookmarkField("TagIDs"),
 	BookmarkField("ID"),
 	BookmarkField("IsCollection"),
 	BookmarkField("IsRead"),
@@ -64,7 +128,7 @@ var BookmarkFields = struct {
 	DeletedAt    BookmarkField
 	URL          BookmarkField
 	Title        BookmarkField
-	Tags         BookmarkField
+	TagIDs       BookmarkField
 	ID           BookmarkField
 	IsCollection BookmarkField
 	IsRead       BookmarkField
@@ -75,37 +139,178 @@ var BookmarkFields = struct {
 	DeletedAt:    "deleted_at",
 	URL:          "url",
 	Title:        "title",
-	Tags:         "tags",
+	TagIDs:       "tagIDs",
 	ID:           "id",
 	IsCollection: "is_collection",
 	IsRead:       "is_read",
 	BookmarkType: "bookmark_type",
 }
 
+func (bookmark *Bookmark) GetCreatedAt() time.Time {
+	return bookmark.CreatedAt
+}
+func (bookmark *Bookmark) GetUpdatedAt() time.Time {
+	return bookmark.UpdatedAt
+}
+func (bookmark *Bookmark) GetDeletedAt() optional.Optional[time.Time] {
+	return bookmark.DeletedAt
+}
+func (bookmark *Bookmark) GetURL() string {
+	return bookmark.URL
+}
+func (bookmark *Bookmark) GetTitle() optional.Optional[string] {
+	return bookmark.Title
+}
+func (bookmark *Bookmark) GetTagIDs() []int64 {
+	return bookmark.TagIDs
+}
+func (bookmark *Bookmark) GetID() int64 {
+	return bookmark.ID
+}
+func (bookmark *Bookmark) GetIsCollection() bool {
+	return bookmark.IsCollection
+}
+func (bookmark *Bookmark) GetIsRead() bool {
+	return bookmark.IsRead
+}
+func (bookmark *Bookmark) GetBookmarkType() optional.Optional[string] {
+	return bookmark.BookmarkType
+}
+
+func (bookmark *Bookmark) GetCreatedAtRef() *time.Time {
+	return &bookmark.CreatedAt
+}
+func (bookmark *Bookmark) GetUpdatedAtRef() *time.Time {
+	return &bookmark.UpdatedAt
+}
+func (bookmark *Bookmark) GetDeletedAtRef() *optional.Optional[time.Time] {
+	return &bookmark.DeletedAt
+}
+func (bookmark *Bookmark) GetURLRef() *string {
+	return &bookmark.URL
+}
+func (bookmark *Bookmark) GetTitleRef() *optional.Optional[string] {
+	return &bookmark.Title
+}
+func (bookmark *Bookmark) GetTagIDsRef() *[]int64 {
+	return &bookmark.TagIDs
+}
+func (bookmark *Bookmark) GetIDRef() *int64 {
+	return &bookmark.ID
+}
+func (bookmark *Bookmark) GetIsCollectionRef() *bool {
+	return &bookmark.IsCollection
+}
+func (bookmark *Bookmark) GetIsReadRef() *bool {
+	return &bookmark.IsRead
+}
+func (bookmark *Bookmark) GetBookmarkTypeRef() *optional.Optional[string] {
+	return &bookmark.BookmarkType
+}
+
 type BookmarkFilter struct {
-	CreatedAt    optional.Optional[model.FilterOperation[time.Time]]
-	UpdatedAt    optional.Optional[model.FilterOperation[time.Time]]
-	DeletedAt    optional.Optional[model.FilterOperation[optional.Optional[time.Time]]]
-	URL          optional.Optional[model.FilterOperation[string]]
-	Title        optional.Optional[model.FilterOperation[optional.Optional[string]]]
-	Tags         optional.Optional[model.FilterOperation[*Tag]]
-	ID           optional.Optional[model.FilterOperation[int64]]
-	IsCollection optional.Optional[model.FilterOperation[bool]]
-	IsRead       optional.Optional[model.FilterOperation[bool]]
-	BookmarkType optional.Optional[model.FilterOperation[optional.Optional[string]]]
+	CreatedAt optional.Optional[model.FilterOperation[time.Time]] `json:"createdAt,omitempty" toml:"createdAt,omitempty" yaml:"createdAt,omitempty"`
+
+	UpdatedAt optional.Optional[model.FilterOperation[time.Time]] `json:"updatedAt,omitempty" toml:"updatedAt,omitempty" yaml:"updatedAt,omitempty"`
+
+	DeletedAt optional.Optional[model.FilterOperation[optional.Optional[time.Time]]] `json:"deletedAt,omitempty" toml:"deletedAt,omitempty" yaml:"deletedAt,omitempty"`
+
+	URL optional.Optional[model.FilterOperation[string]] `json:"uRL,omitempty" toml:"uRL,omitempty" yaml:"uRL,omitempty"`
+
+	Title optional.Optional[model.FilterOperation[optional.Optional[string]]] `json:"title,omitempty" toml:"title,omitempty" yaml:"title,omitempty"`
+
+	TagIDs optional.Optional[model.FilterOperation[int64]] `json:"tagIDs,omitempty" toml:"tagIDs,omitempty" yaml:"tagIDs,omitempty"`
+
+	ID optional.Optional[model.FilterOperation[int64]] `json:"id,omitempty" toml:"id,omitempty" yaml:"id,omitempty"`
+
+	IsCollection optional.Optional[model.FilterOperation[bool]] `json:"isCollection,omitempty" toml:"isCollection,omitempty" yaml:"isCollection,omitempty"`
+
+	IsRead optional.Optional[model.FilterOperation[bool]] `json:"isRead,omitempty" toml:"isRead,omitempty" yaml:"isRead,omitempty"`
+
+	BookmarkType optional.Optional[model.FilterOperation[optional.Optional[string]]] `json:"bookmarkType,omitempty" toml:"bookmarkType,omitempty" yaml:"bookmarkType,omitempty"`
+}
+
+func (filter *BookmarkFilter) IsDefault() bool {
+	if filter.CreatedAt.HasValue {
+		return false
+	}
+	if filter.UpdatedAt.HasValue {
+		return false
+	}
+	if filter.DeletedAt.HasValue {
+		return false
+	}
+	if filter.URL.HasValue {
+		return false
+	}
+	if filter.Title.HasValue {
+		return false
+	}
+	if filter.TagIDs.HasValue {
+		return false
+	}
+	if filter.ID.HasValue {
+		return false
+	}
+	if filter.IsCollection.HasValue {
+		return false
+	}
+	if filter.IsRead.HasValue {
+		return false
+	}
+	if filter.BookmarkType.HasValue {
+		return false
+	}
+
+	return true
 }
 
 type BookmarkUpdater struct {
-	CreatedAt    optional.Optional[model.UpdateOperation[time.Time]]
-	UpdatedAt    optional.Optional[model.UpdateOperation[time.Time]]
-	DeletedAt    optional.Optional[model.UpdateOperation[optional.Optional[time.Time]]]
-	URL          optional.Optional[model.UpdateOperation[string]]
-	Title        optional.Optional[model.UpdateOperation[optional.Optional[string]]]
-	Tags         optional.Optional[model.UpdateOperation[[]*Tag]]
-	BookmarkType optional.Optional[model.UpdateOperation[optional.Optional[string]]]
-	ID           optional.Optional[model.UpdateOperation[int64]]
-	IsCollection optional.Optional[model.UpdateOperation[bool]]
-	IsRead       optional.Optional[model.UpdateOperation[bool]]
+	CreatedAt    optional.Optional[model.UpdateOperation[time.Time]]                    `json:"createdAt,omitempty" toml:"createdAt,omitempty" yaml:"createdAt,omitempty"`
+	UpdatedAt    optional.Optional[model.UpdateOperation[time.Time]]                    `json:"updatedAt,omitempty" toml:"updatedAt,omitempty" yaml:"updatedAt,omitempty"`
+	DeletedAt    optional.Optional[model.UpdateOperation[optional.Optional[time.Time]]] `json:"deletedAt,omitempty" toml:"deletedAt,omitempty" yaml:"deletedAt,omitempty"`
+	URL          optional.Optional[model.UpdateOperation[string]]                       `json:"uRL,omitempty" toml:"uRL,omitempty" yaml:"uRL,omitempty"`
+	Title        optional.Optional[model.UpdateOperation[optional.Optional[string]]]    `json:"title,omitempty" toml:"title,omitempty" yaml:"title,omitempty"`
+	TagIDs       optional.Optional[model.UpdateOperation[[]int64]]                      `json:"tagIDs,omitempty" toml:"tagIDs,omitempty" yaml:"tagIDs,omitempty"`
+	BookmarkType optional.Optional[model.UpdateOperation[optional.Optional[string]]]    `json:"bookmarkType,omitempty" toml:"bookmarkType,omitempty" yaml:"bookmarkType,omitempty"`
+	ID           optional.Optional[model.UpdateOperation[int64]]                        `json:"id,omitempty" toml:"id,omitempty" yaml:"id,omitempty"`
+	IsCollection optional.Optional[model.UpdateOperation[bool]]                         `json:"isCollection,omitempty" toml:"isCollection,omitempty" yaml:"isCollection,omitempty"`
+	IsRead       optional.Optional[model.UpdateOperation[bool]]                         `json:"isRead,omitempty" toml:"isRead,omitempty" yaml:"isRead,omitempty"`
+}
+
+func (updater *BookmarkUpdater) IsDefault() bool {
+	if updater.CreatedAt.HasValue {
+		return false
+	}
+	if updater.UpdatedAt.HasValue {
+		return false
+	}
+	if updater.DeletedAt.HasValue {
+		return false
+	}
+	if updater.URL.HasValue {
+		return false
+	}
+	if updater.Title.HasValue {
+		return false
+	}
+	if updater.TagIDs.HasValue {
+		return false
+	}
+	if updater.ID.HasValue {
+		return false
+	}
+	if updater.IsCollection.HasValue {
+		return false
+	}
+	if updater.IsRead.HasValue {
+		return false
+	}
+	if updater.BookmarkType.HasValue {
+		return false
+	}
+
+	return true
 }
 
 const (
@@ -122,12 +327,14 @@ var PredefinedBookmarkFilters = map[string]BookmarkFilter{
 		},
 		Operator: model.FilterEqual,
 	})},
-	BookmarkFilterUntagged: {Tags: optional.Make(model.FilterOperation[*Tag]{
-		Operand: model.ScalarOperand[*Tag]{
-			Operand: nil,
+	// FIX: This operating on int64s instead of the slice is nonsense, right?
+	BookmarkFilterUntagged: {TagIDs: optional.Make(model.FilterOperation[int64]{
+		Operand: model.ScalarOperand[int64]{
+			Operand: -1,
 		},
 		Operator: model.FilterEqual,
 	})},
+	// FIX: This operating on int64s instead of the slice is nonsense, right?
 	BookmarkFilterInboxed: {
 		Title: optional.Make(model.FilterOperation[optional.Optional[string]]{
 			Operand: model.ScalarOperand[optional.Optional[string]]{
@@ -135,9 +342,9 @@ var PredefinedBookmarkFilters = map[string]BookmarkFilter{
 			},
 			Operator: model.FilterEqual,
 		}),
-		Tags: optional.Make(model.FilterOperation[*Tag]{
-			Operand: model.ScalarOperand[*Tag]{
-				Operand: nil,
+		TagIDs: optional.Make(model.FilterOperation[int64]{
+			Operand: model.ScalarOperand[int64]{
+				Operand: -1,
 			},
 			Operator: model.FilterEqual,
 		})},

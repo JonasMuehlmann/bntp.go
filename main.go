@@ -1,20 +1,26 @@
 package main
 
-//go:generate go run ./tools/schema_converter
-//go:generate go run ./tools/generate_external_cli_documentation
-//go:generate go run ./tools/generate_domain_models
-//go:generate go run ./tools/generate_repository_interfaces
-//go:generate go run ./tools/generate_sql_repositories
-//go:generate go run ./tools/generate_sql_repository_filter_converters
-//go:generate go run ./tools/generate_sql_repository_model_converters
-//go:generate go run ./tools/generate_sql_repository_updater_converters
-
 import (
-	"github.com/JonasMuehlmann/bntp.go/bntp/backend"
+	"reflect"
+
 	"github.com/JonasMuehlmann/bntp.go/cmd"
 )
 
 func main() {
-	backend := new(backend.Backend)
-	cmd.Execute(backend)
+	cli := cmd.NewCli(cmd.WithAll())
+
+	err := cli.Execute()
+	if err != nil {
+		cli.StdErr.Write([]byte("ENDLOG\n"))
+
+		errMessage := map[string]any{"errorType": reflect.TypeOf(err).Name(), "error": err}
+
+		errSerialized, err := cli.BNTPBackend.Marshallers[cli.OutFormat].Marshall(errMessage)
+		if err != nil {
+			cli.Logger.Error(err)
+			cli.StdErr.Write([]byte(err.Error()))
+		}
+
+		cli.StdErr.Write([]byte(errSerialized))
+	}
 }

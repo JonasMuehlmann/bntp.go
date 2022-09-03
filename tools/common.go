@@ -24,13 +24,23 @@ import (
 	"reflect"
 	"strings"
 	"text/template"
+
+	"github.com/stoewer/go-strcase"
 )
 
 func UppercaseBeginning(str string) string {
+	if len(str) > 1 && str[:2] == "id" || str[:2] == "iD" {
+		return strings.ToUpper(str[:2]) + str[2:]
+	}
+
 	return strings.ToUpper(str[:1]) + str[1:]
 }
 
 func LowercaseBeginning(str string) string {
+	if len(str) > 1 && str[:2] == "ID" || str[:2] == "Id" {
+		return strings.ToLower(str[:2]) + str[2:]
+	}
+
 	return strings.ToLower(str[:1]) + str[1:]
 }
 
@@ -96,4 +106,8 @@ var FullFuncMap = template.FuncMap{
 	"Pluralize":             Pluralize,
 	"Unslice":               Unslice,
 	"UnaliasSQLBoilerSlice": UnaliasSQLBoilerSlice,
+	"SnakeCase":             strcase.SnakeCase,
+	"CamelCase":             strcase.LowerCamelCase,
+	"PascalCase":            strcase.UpperCamelCase,
+	"KebabCase":             strcase.KebabCase,
 }

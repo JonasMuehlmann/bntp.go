@@ -22,73 +22,94 @@ package cmd
 
 import (
 	"context"
-	"os"
+	"fmt"
+	"strings"
 
+	"github.com/JonasMuehlmann/bntp.go/internal/helper"
 	"github.com/spf13/cobra"
 )
 
-var documentTypeCmd = &cobra.Command{
-	Use:   "type",
-	Short: "Manage types of bntp documents",
-	Long:  `A longer description`,
-	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) == 0 {
-			cmd.Help()
-			os.Exit(0)
-		}
-	},
-}
+func WithDocumentTypeCommand() CliOption {
+	return func(cli *Cli) {
+		cli.DocumentTypeCmd = &cobra.Command{
+			Use:   "type",
+			Short: "Manage types of bntp documents",
+			Long:  `A longer description`,
+			RunE: func(cmd *cobra.Command, args []string) error {
+				if len(args) == 0 {
+					return helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
+				}
 
-var documentTypeAddCmd = &cobra.Command{
-	Use:   "add TYPE...",
-	Short: "Add new bntp document types",
-	Long:  `A longer description`,
-	Args:  cobra.ArbitraryArgs,
-	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) == 0 {
-			cmd.Help()
-			os.Exit(0)
+				return nil
+			},
 		}
 
-		err := BNTPBackend.DocumentManager.AddType(context.Background(), args)
-		if err != nil {
-			panic(err)
-		}
-	},
-}
+		cli.DocumentTypeAddCmd = &cobra.Command{
+			Use:   "add TYPE...",
+			Short: "Add new bntp document types",
+			Long:  `A longer description`,
+			Args:  cobra.ArbitraryArgs,
+			RunE: func(cmd *cobra.Command, args []string) error {
+				if len(args) == 0 {
+					return helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
+				}
 
-var documentTypeEditCmd = &cobra.Command{
-	Use:   "edit OLD_NAME NEW_NAME",
-	Short: "Change a bntp document type",
-	Long:  `A longer description`,
-	Args:  cobra.ExactArgs(2),
-	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) == 0 {
-			cmd.Help()
-			os.Exit(0)
+				err := cli.BNTPBackend.DocumentManager.AddType(context.Background(), args)
+
+				return err
+			},
 		}
 
-		err := BNTPBackend.DocumentManager.UpdateType(context.Background(), args[0], args[1])
-		if err != nil {
-			panic(err)
-		}
-	},
-}
+		cli.DocumentTypeEditCmd = &cobra.Command{
+			Use:   "edit OLD_NAME NEW_NAME",
+			Short: "Change a bntp document type",
+			Long:  `A longer description`,
+			Args:  cobra.ExactArgs(2),
+			RunE: func(cmd *cobra.Command, args []string) error {
+				if len(args) == 0 {
+					return helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
+				}
 
-var documentTypeRemoveCmd = &cobra.Command{
-	Use:   "remove TYPE...",
-	Short: "Remove bntp document types",
-	Long:  `A longer description`,
-	Args:  cobra.ArbitraryArgs,
-	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) == 0 {
-			cmd.Help()
-			os.Exit(0)
+				err := cli.BNTPBackend.DocumentManager.UpdateType(context.Background(), args[0], args[1])
+
+				return err
+			},
 		}
 
-		err := BNTPBackend.DocumentManager.DeleteType(context.Background(), args)
-		if err != nil {
-			panic(err)
+		cli.DocumentTypeRemoveCmd = &cobra.Command{
+			Use:   "remove TYPE...",
+			Short: "Remove bntp document types",
+			Long:  `A longer description`,
+			Args:  cobra.ArbitraryArgs,
+			RunE: func(cmd *cobra.Command, args []string) error {
+				if len(args) == 0 {
+					return helper.IneffectiveOperationError{Inner: helper.EmptyInputError{}}
+				}
+
+				err := cli.BNTPBackend.DocumentManager.DeleteType(context.Background(), args)
+
+				return err
+			},
 		}
-	},
+
+		cli.DocumentTypeListCmd = &cobra.Command{
+			Use:   "list",
+			Short: "List bntp document types",
+			Long:  `A longer description`,
+			Args:  cobra.NoArgs,
+			RunE: func(cmd *cobra.Command, args []string) error {
+				types, err := cli.BNTPBackend.DocumentManager.GetAllTypes(context.Background())
+
+				fmt.Fprintln(cli.RootCmd.OutOrStdout(), strings.Join(types, "\n"))
+
+				return err
+			},
+		}
+
+		cli.DocumentCmd.AddCommand(cli.DocumentTypeCmd)
+		cli.DocumentTypeCmd.AddCommand(cli.DocumentTypeAddCmd)
+		cli.DocumentTypeCmd.AddCommand(cli.DocumentTypeEditCmd)
+		cli.DocumentTypeCmd.AddCommand(cli.DocumentTypeRemoveCmd)
+		cli.DocumentTypeCmd.AddCommand(cli.DocumentTypeListCmd)
+	}
 }
