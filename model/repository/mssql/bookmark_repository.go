@@ -1322,6 +1322,23 @@ func (repo *MssqlBookmarkRepository) UpdateType(ctx context.Context, oldType str
     return
 }
 
+func (repo *MssqlBookmarkRepository) GetAllTypes(ctx context.Context) (records []string, err error) {
+    var repositoryModels []*BookmarkType
+    repositoryModels, err = BookmarkTypes().All(ctx, repo.db)
+    if err != nil {
+        return
+    }
+    if len(repositoryModels) == 0 {
+        err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
+
+        return
+    }
+
+
+    return goaoi.TransformCopySliceUnsafe(repositoryModels, func(m *BookmarkType) string {return m.BookmarkType})
+}
+
+
 func (repo *MssqlBookmarkRepository) GetTagRepository() repoCommon.TagRepository {
     return repo.tagRepository
 }

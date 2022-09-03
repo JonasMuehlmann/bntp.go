@@ -22,6 +22,8 @@ package cmd
 
 import (
 	"context"
+	"fmt"
+	"strings"
 
 	"github.com/JonasMuehlmann/bntp.go/internal/helper"
 	"github.com/spf13/cobra"
@@ -86,9 +88,24 @@ func WithBookmarkTypeCommand() CliOption {
 			},
 		}
 
+		cli.BookmarkTypeListCmd = &cobra.Command{
+			Use:   "list",
+			Short: "List bntp bookmark types",
+			Long:  `A longer description`,
+			Args:  cobra.NoArgs,
+			RunE: func(cmd *cobra.Command, args []string) error {
+				types, err := cli.BNTPBackend.BookmarkManager.GetAllTypes(context.Background())
+
+				fmt.Fprintln(cli.RootCmd.OutOrStdout(), strings.Join(types, "\n"))
+
+				return err
+			},
+		}
+
 		cli.BookmarkCmd.AddCommand(cli.BookmarkTypeCmd)
 		cli.BookmarkTypeCmd.AddCommand(cli.BookmarkTypeAddCmd)
 		cli.BookmarkTypeCmd.AddCommand(cli.BookmarkTypeEditCmd)
 		cli.BookmarkTypeCmd.AddCommand(cli.BookmarkTypeRemoveCmd)
+		cli.BookmarkTypeCmd.AddCommand(cli.BookmarkTypeListCmd)
 	}
 }

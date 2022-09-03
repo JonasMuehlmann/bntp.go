@@ -205,6 +205,7 @@ type Cli struct {
 	BookmarkTypeCmd       *cobra.Command
 	BookmarkTypeEditCmd   *cobra.Command
 	BookmarkTypeRemoveCmd *cobra.Command
+	BookmarkTypeListCmd   *cobra.Command
 	BookmarkUpsertCmd     *cobra.Command
 	configBaseNameCmd     *cobra.Command
 	ConfigCmd             *cobra.Command
@@ -223,6 +224,7 @@ type Cli struct {
 	DocumentTypeCmd       *cobra.Command
 	DocumentTypeEditCmd   *cobra.Command
 	DocumentTypeRemoveCmd *cobra.Command
+	DocumentTypeListCmd   *cobra.Command
 	DocumentUpsertCmd     *cobra.Command
 	exportConfigCmd       *cobra.Command
 	RootCmd               *cobra.Command

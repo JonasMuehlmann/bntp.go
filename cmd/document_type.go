@@ -22,6 +22,8 @@ package cmd
 
 import (
 	"context"
+	"fmt"
+	"strings"
 
 	"github.com/JonasMuehlmann/bntp.go/internal/helper"
 	"github.com/spf13/cobra"
@@ -90,9 +92,24 @@ func WithDocumentTypeCommand() CliOption {
 			},
 		}
 
+		cli.DocumentTypeListCmd = &cobra.Command{
+			Use:   "list",
+			Short: "List bntp document types",
+			Long:  `A longer description`,
+			Args:  cobra.NoArgs,
+			RunE: func(cmd *cobra.Command, args []string) error {
+				types, err := cli.BNTPBackend.DocumentManager.GetAllTypes(context.Background())
+
+				fmt.Fprintln(cli.RootCmd.OutOrStdout(), strings.Join(types, "\n"))
+
+				return err
+			},
+		}
+
 		cli.DocumentCmd.AddCommand(cli.DocumentTypeCmd)
 		cli.DocumentTypeCmd.AddCommand(cli.DocumentTypeAddCmd)
 		cli.DocumentTypeCmd.AddCommand(cli.DocumentTypeEditCmd)
 		cli.DocumentTypeCmd.AddCommand(cli.DocumentTypeRemoveCmd)
+		cli.DocumentTypeCmd.AddCommand(cli.DocumentTypeListCmd)
 	}
 }

@@ -1283,6 +1283,23 @@ func (repo *PsqlDocumentRepository) UpdateType(ctx context.Context, oldType stri
     return
 }
 
+func (repo *PsqlDocumentRepository) GetAllTypes(ctx context.Context) (records []string, err error) {
+    var repositoryModels []*DocumentType
+    repositoryModels, err = DocumentTypes().All(ctx, repo.db)
+    if err != nil {
+        return
+    }
+    if len(repositoryModels) == 0 {
+        err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
+
+        return
+    }
+
+
+    return goaoi.TransformCopySliceUnsafe(repositoryModels, func(m *DocumentType) string {return m.DocumentType})
+}
+
+
 func (repo *PsqlDocumentRepository) GetTagRepository() repoCommon.TagRepository {
     return repo.tagRepository
 }

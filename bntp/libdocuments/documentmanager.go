@@ -477,6 +477,33 @@ func (m *DocumentManager) UpdateType(ctx context.Context, oldType string, newTyp
 
 	return err
 }
+
+func (m *DocumentManager) GetAllTypes(ctx context.Context) ([]string, error) {
+	documents := []*domain.Document{}
+
+	hookErr := goaoi.ForeachSlice(documents, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.BeforeAnyHook|bntp.BeforeUpdateHook))
+	if hookErr != nil && !errors.Is(hookErr, goaoi.EmptyIterableError{}) {
+		hookErr = bntp.HookExecutionError{Inner: hookErr}
+		m.Logger.Error(hookErr)
+
+	}
+
+	types, err := m.Repository.GetAllTypes(ctx)
+	if err != nil {
+		m.Logger.Error(err)
+
+	}
+
+	hookErr = goaoi.ForeachSlice(documents, m.Hooks.PartiallySpecializeExecuteHooks(ctx, bntp.AfterAnyHook|bntp.AfterUpdateHook))
+	if hookErr != nil && !errors.Is(hookErr, goaoi.EmptyIterableError{}) {
+		hookErr = bntp.HookExecutionError{Inner: hookErr}
+		m.Logger.Error(hookErr)
+
+	}
+
+	return types, err
+}
+
 func (m *DocumentManager) GetFromIDs(ctx context.Context, ids []int64) (records []*domain.Document, err error) {
 	tags := []*domain.Document{}
 

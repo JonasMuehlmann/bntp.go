@@ -49,6 +49,7 @@ type DocumentRepository interface {
     AddType(ctx context.Context, types  []string) error
     DeleteType(ctx context.Context, types  []string) error
     UpdateType(ctx context.Context, oldType string, newType string) error
+    GetAllTypes(ctx context.Context) ([]string, error)
 
     GetTagRepository() TagRepository
     

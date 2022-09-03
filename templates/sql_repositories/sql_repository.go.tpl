@@ -1236,6 +1236,23 @@ func (repo *{{$StructName}}) UpdateType(ctx context.Context, oldType string, new
     return
 }
 
+func (repo *{{$StructName}}) GetAllTypes(ctx context.Context) (records []string, err error) {
+    var repositoryModels []*{{$EntityName}}Type
+    repositoryModels, err = {{$EntityName}}Types().All(ctx, repo.db)
+    if err != nil {
+        return
+    }
+    if len(repositoryModels) == 0 {
+        err = helper.IneffectiveOperationError{Inner: helper.NonExistentPrimaryDataError{}}
+
+        return
+    }
+
+
+    return goaoi.TransformCopySliceUnsafe(repositoryModels, func(m *{{$EntityName}}Type) string {return m.{{$EntityName}}Type})
+}
+
+
 func (repo *{{$StructName}}) GetTagRepository() repoCommon.TagRepository {
     return repo.tagRepository
 }
