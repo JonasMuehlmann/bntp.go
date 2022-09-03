@@ -1005,7 +1005,7 @@ func (repo *Sqlite3DocumentRepository) GetWhere(ctx context.Context, domainColum
     }
 
     for _, repoModel := range repositoryModels {
-        repo.LoadEntityRelations(ctx, tx, repoModel)
+        err = repo.LoadEntityRelations(ctx, tx, repoModel)
         if err != nil {
             return
         }
@@ -1072,7 +1072,7 @@ func (repo *Sqlite3DocumentRepository) GetFirstWhere(ctx context.Context, domain
         return
     }
 
-    repo.LoadEntityRelations(ctx, tx, repositoryModel)
+    err = repo.LoadEntityRelations(ctx, tx, repositoryModel)
     if err != nil {
         return
     }
@@ -1105,7 +1105,7 @@ func (repo *Sqlite3DocumentRepository) GetAll(ctx context.Context) (records []*d
     }
 
     for _, repoModel := range repositoryModels {
-        repo.LoadEntityRelations(ctx, tx, repoModel)
+        err = repo.LoadEntityRelations(ctx, tx, repoModel)
         if err != nil {
             return
         }
@@ -1170,7 +1170,7 @@ func (repo *Sqlite3DocumentRepository) GetFromIDs(ctx context.Context, IDs []int
     }
 
     for _, repoModel := range repositoryModels {
-        repo.LoadEntityRelations(ctx, tx, repoModel)
+        err = repo.LoadEntityRelations(ctx, tx, repoModel)
         if err != nil {
             return
         }
@@ -1715,64 +1715,31 @@ func (repo *Sqlite3DocumentRepository) DocumentDomainToRepositoryUpdater(ctx con
 func (repo *Sqlite3DocumentRepository) UpdateRelatedEntities(ctx context.Context, tx *sql.Tx, repositoryModel *Document) error  {
 	var err error
 
-
 	if repositoryModel.R == nil {
 		return nil
 	}
+
+
 
 	err = repositoryModel.SetSourceDocuments(ctx, tx, false, repositoryModel.R.SourceDocuments...)
 	if err != nil {
 		return err
 	}
-	for _, linkedDocument := range repositoryModel.R.SourceDocuments {
-
-        
-		err =linkedDocument.Upsert(ctx, tx, true, []string{}, boil.Infer(), boil.Infer())
-        
-		if err != nil {
-			return err
-		}
-	}
-
 
 	err = repositoryModel.SetDestinationDocuments(ctx, tx, false, repositoryModel.R.DestinationDocuments...)
 	if err != nil {
 		return err
-	}
-	for _, backlinkedDocument := range repositoryModel.R.DestinationDocuments {
-        
-		err =backlinkedDocument.Upsert(ctx, tx, true, []string{}, boil.Infer(), boil.Infer())
-        
-		if err != nil {
-			return err
-		}
 	}
 
 	err = repositoryModel.SetTags(ctx, tx, false, repositoryModel.R.Tags...)
 	if err != nil {
 		return err
 	}
-	for _, tag := range repositoryModel.R.Tags {
-        
-		err = tag.Upsert(ctx, tx, true, []string{}, boil.Infer(), boil.Infer())
-        
-		if err != nil {
-			return err
-		}
-	}
 
     if repositoryModel.R.DocumentType != nil {
         err = repositoryModel.SetDocumentType(ctx, tx, false, repositoryModel.R.DocumentType)
         if err != nil {
             return err
-        }
-        if repositoryModel.R.DocumentType != nil {
-            
-            err =repositoryModel.R.DocumentType.Upsert(ctx, tx, true, []string{}, boil.Infer(), boil.Infer())
-            
-            if err != nil {
-                return err
-            }
         }
     }
 

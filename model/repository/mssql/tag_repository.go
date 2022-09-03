@@ -978,7 +978,7 @@ func (repo *MssqlTagRepository) GetWhere(ctx context.Context, domainColumnFilter
     }
 
     for _, repoModel := range repositoryModels {
-        repo.LoadEntityRelations(ctx, tx, repoModel)
+        err = repo.LoadEntityRelations(ctx, tx, repoModel)
         if err != nil {
             return
         }
@@ -1045,7 +1045,7 @@ func (repo *MssqlTagRepository) GetFirstWhere(ctx context.Context, domainColumnF
         return
     }
 
-    repo.LoadEntityRelations(ctx, tx, repositoryModel)
+    err = repo.LoadEntityRelations(ctx, tx, repositoryModel)
     if err != nil {
         return
     }
@@ -1078,7 +1078,7 @@ func (repo *MssqlTagRepository) GetAll(ctx context.Context) (records []*domain.T
     }
 
     for _, repoModel := range repositoryModels {
-        repo.LoadEntityRelations(ctx, tx, repoModel)
+        err = repo.LoadEntityRelations(ctx, tx, repoModel)
         if err != nil {
             return
         }
@@ -1143,7 +1143,7 @@ func (repo *MssqlTagRepository) GetFromIDs(ctx context.Context, IDs []int64) (re
     }
 
     for _, repoModel := range repositoryModels {
-        repo.LoadEntityRelations(ctx, tx, repoModel)
+        err = repo.LoadEntityRelations(ctx, tx, repoModel)
         if err != nil {
             return
         }
@@ -1427,6 +1427,10 @@ func (repo *MssqlTagRepository) TagDomainToRepositoryUpdater(ctx context.Context
 func (repo *MssqlTagRepository) UpdateRelatedEntities(ctx context.Context, tx *sql.Tx, repositoryModel *Tag) error  {
 	var err error
 
+	if repositoryModel.R == nil {
+		return nil
+	}
+
 
     parentTagTag := repositoryModel.R.ParentTagTag
 
@@ -1436,10 +1440,6 @@ func (repo *MssqlTagRepository) UpdateRelatedEntities(ctx context.Context, tx *s
         }  else {
         parentTagTag.Children += ";" + strconv.FormatInt(repositoryModel.ID, 10)
         }
-
-        
-        err =parentTagTag.Upsert(ctx, tx, boil.Infer(), boil.Infer())
-        
     }
 
     return err

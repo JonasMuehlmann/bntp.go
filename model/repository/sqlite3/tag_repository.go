@@ -978,7 +978,7 @@ func (repo *Sqlite3TagRepository) GetWhere(ctx context.Context, domainColumnFilt
     }
 
     for _, repoModel := range repositoryModels {
-        repo.LoadEntityRelations(ctx, tx, repoModel)
+        err = repo.LoadEntityRelations(ctx, tx, repoModel)
         if err != nil {
             return
         }
@@ -1045,7 +1045,7 @@ func (repo *Sqlite3TagRepository) GetFirstWhere(ctx context.Context, domainColum
         return
     }
 
-    repo.LoadEntityRelations(ctx, tx, repositoryModel)
+    err = repo.LoadEntityRelations(ctx, tx, repositoryModel)
     if err != nil {
         return
     }
@@ -1078,7 +1078,7 @@ func (repo *Sqlite3TagRepository) GetAll(ctx context.Context) (records []*domain
     }
 
     for _, repoModel := range repositoryModels {
-        repo.LoadEntityRelations(ctx, tx, repoModel)
+        err = repo.LoadEntityRelations(ctx, tx, repoModel)
         if err != nil {
             return
         }
@@ -1143,7 +1143,7 @@ func (repo *Sqlite3TagRepository) GetFromIDs(ctx context.Context, IDs []int64) (
     }
 
     for _, repoModel := range repositoryModels {
-        repo.LoadEntityRelations(ctx, tx, repoModel)
+        err = repo.LoadEntityRelations(ctx, tx, repoModel)
         if err != nil {
             return
         }
@@ -1427,6 +1427,10 @@ func (repo *Sqlite3TagRepository) TagDomainToRepositoryUpdater(ctx context.Conte
 func (repo *Sqlite3TagRepository) UpdateRelatedEntities(ctx context.Context, tx *sql.Tx, repositoryModel *Tag) error  {
 	var err error
 
+	if repositoryModel.R == nil {
+		return nil
+	}
+
 
     parentTagTag := repositoryModel.R.ParentTagTag
 
@@ -1436,10 +1440,6 @@ func (repo *Sqlite3TagRepository) UpdateRelatedEntities(ctx context.Context, tx 
         }  else {
         parentTagTag.Children += ";" + strconv.FormatInt(repositoryModel.ID, 10)
         }
-
-        
-        err =parentTagTag.Upsert(ctx, tx, true, []string{}, boil.Infer(), boil.Infer())
-        
     }
 
     return err

@@ -1044,7 +1044,7 @@ func (repo *MssqlBookmarkRepository) GetWhere(ctx context.Context, domainColumnF
     }
 
     for _, repoModel := range repositoryModels {
-        repo.LoadEntityRelations(ctx, tx, repoModel)
+        err = repo.LoadEntityRelations(ctx, tx, repoModel)
         if err != nil {
             return
         }
@@ -1111,7 +1111,7 @@ func (repo *MssqlBookmarkRepository) GetFirstWhere(ctx context.Context, domainCo
         return
     }
 
-    repo.LoadEntityRelations(ctx, tx, repositoryModel)
+    err = repo.LoadEntityRelations(ctx, tx, repositoryModel)
     if err != nil {
         return
     }
@@ -1144,7 +1144,7 @@ func (repo *MssqlBookmarkRepository) GetAll(ctx context.Context) (records []*dom
     }
 
     for _, repoModel := range repositoryModels {
-        repo.LoadEntityRelations(ctx, tx, repoModel)
+        err = repo.LoadEntityRelations(ctx, tx, repoModel)
         if err != nil {
             return
         }
@@ -1209,7 +1209,7 @@ func (repo *MssqlBookmarkRepository) GetFromIDs(ctx context.Context, IDs []int64
     }
 
     for _, repoModel := range repositoryModels {
-        repo.LoadEntityRelations(ctx, tx, repoModel)
+        err = repo.LoadEntityRelations(ctx, tx, repoModel)
         if err != nil {
             return
         }
@@ -1740,37 +1740,19 @@ func (repo *MssqlBookmarkRepository) BookmarkDomainToRepositoryUpdater(ctx conte
 func (repo *MssqlBookmarkRepository) UpdateRelatedEntities(ctx context.Context, tx *sql.Tx, repositoryModel *Bookmark) error  {
 	var err error
 
+	if repositoryModel.R == nil {
+		return nil
+	}
+
 
 	err = repositoryModel.SetTags(ctx, tx, false, repositoryModel.R.Tags...)
 	if err != nil {
 		return err
 	}
-	for _, tag := range repositoryModel.R.Tags {
-
-        
-		err = tag.Upsert(ctx, tx, boil.Infer(), boil.Infer())
-        
-		if err != nil {
-			return err
-		}
-	}
-
     if repositoryModel.R.BookmarkType != nil {
         err = repositoryModel.SetBookmarkType(ctx, tx, false, repositoryModel.R.BookmarkType)
         if err != nil {
             return err
-        }
-        if repositoryModel.R.BookmarkType != nil {
-            
-            err =repositoryModel.R.BookmarkType.Upsert(ctx, tx, boil.Infer(), boil.Infer())
-            
-
-        
-		err =repositoryModel.Upsert(ctx, tx, boil.Infer(), boil.Infer())
-        
-            if err != nil {
-                return err
-            }
         }
     }
 
