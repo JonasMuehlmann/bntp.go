@@ -485,6 +485,8 @@ func (m *DocumentContentManager) UpdateDocumentContentsFromNewModels(ctx context
 	doesExistPredicate := func(d *domain.Document) (bool, error) { return documentManager.DoesExist(ctx, d) }
 	doExistRaw, err := goaoi.TransformCopySlice(newDocuments, doesExistPredicate)
 	if err != nil {
+		m.Logger.Error(err)
+
 		return err
 	}
 
@@ -505,11 +507,15 @@ func (m *DocumentContentManager) UpdateDocumentContentsFromNewModels(ctx context
 
 		oldDocument, err := documentManager.GetFirstWhere(ctx, filter)
 		if err != nil {
+			m.Logger.Error(err)
+
 			return err
 		}
 
 		addedLinkIDs, err := GetAddedLinks(oldDocument, newDocument)
 		if err != nil && !errors.Is(err, goaoi.EmptyIterableError{}) {
+			m.Logger.Error(err)
+
 			return err
 		}
 
@@ -520,11 +526,15 @@ func (m *DocumentContentManager) UpdateDocumentContentsFromNewModels(ctx context
 					Operand:  model.ListOperand[int64]{addedLinkIDs}}),
 			})
 			if err != nil {
+				m.Logger.Error(err)
+
 				return err
 			}
 
 			addedLinks, err := goaoi.TransformCopySliceUnsafe(addedLinkDocuments, (*domain.Document).GetPath)
 			if err != nil && !errors.Is(err, goaoi.EmptyIterableError{}) {
+				m.Logger.Error(err)
+
 				return err
 			}
 
@@ -533,6 +543,8 @@ func (m *DocumentContentManager) UpdateDocumentContentsFromNewModels(ctx context
 
 		removedLinkIDs, err := GetRemovedLinks(oldDocument, newDocument)
 		if err != nil && !errors.Is(err, goaoi.EmptyIterableError{}) {
+			m.Logger.Error(err)
+
 			return err
 		}
 
@@ -543,11 +555,15 @@ func (m *DocumentContentManager) UpdateDocumentContentsFromNewModels(ctx context
 					Operand:  model.ListOperand[int64]{removedLinkIDs}}),
 			})
 			if err != nil {
+				m.Logger.Error(err)
+
 				return err
 			}
 
 			removedLinks, err := goaoi.TransformCopySliceUnsafe(removedLinkDocuments, (*domain.Document).GetPath)
 			if err != nil && !errors.Is(err, goaoi.EmptyIterableError{}) {
+				m.Logger.Error(err)
+
 				return err
 			}
 
@@ -556,6 +572,8 @@ func (m *DocumentContentManager) UpdateDocumentContentsFromNewModels(ctx context
 
 		addedBacklinkIDs, err := GetAddedBacklinks(oldDocument, newDocument)
 		if err != nil && !errors.Is(err, goaoi.EmptyIterableError{}) {
+			m.Logger.Error(err)
+
 			return err
 		}
 
@@ -566,11 +584,15 @@ func (m *DocumentContentManager) UpdateDocumentContentsFromNewModels(ctx context
 					Operand:  model.ListOperand[int64]{addedBacklinkIDs}}),
 			})
 			if err != nil {
+				m.Logger.Error(err)
+
 				return err
 			}
 
 			addedBacklinks, err := goaoi.TransformCopySliceUnsafe(addedBacklinkDocuments, (*domain.Document).GetPath)
 			if err != nil && !errors.Is(err, goaoi.EmptyIterableError{}) {
+				m.Logger.Error(err)
+
 				return err
 			}
 
@@ -579,6 +601,8 @@ func (m *DocumentContentManager) UpdateDocumentContentsFromNewModels(ctx context
 
 		removedBacklinkIDs, err := GetRemovedBacklinks(oldDocument, newDocument)
 		if err != nil && !errors.Is(err, goaoi.EmptyIterableError{}) {
+			m.Logger.Error(err)
+
 			return err
 		}
 
@@ -589,11 +613,15 @@ func (m *DocumentContentManager) UpdateDocumentContentsFromNewModels(ctx context
 					Operand:  model.ListOperand[int64]{removedBacklinkIDs}}),
 			})
 			if err != nil {
+				m.Logger.Error(err)
+
 				return err
 			}
 
 			removedBacklinks, err := goaoi.TransformCopySliceUnsafe(removedBacklinkDocuments, (*domain.Document).GetPath)
 			if err != nil && !errors.Is(err, goaoi.EmptyIterableError{}) {
+				m.Logger.Error(err)
+
 				return err
 			}
 
@@ -602,6 +630,8 @@ func (m *DocumentContentManager) UpdateDocumentContentsFromNewModels(ctx context
 
 		addedTagIDs, err := GetAddedTags(oldDocument, newDocument)
 		if err != nil && !errors.Is(err, goaoi.EmptyIterableError{}) {
+			m.Logger.Error(err)
+
 			return err
 		}
 
@@ -612,11 +642,15 @@ func (m *DocumentContentManager) UpdateDocumentContentsFromNewModels(ctx context
 					Operand:  model.ListOperand[int64]{addedTagIDs}}),
 			})
 			if err != nil {
+				m.Logger.Error(err)
+
 				return err
 			}
 
 			addedTags, err := goaoi.TransformCopySliceUnsafe(addedTagTags, (*domain.Tag).GetTag)
 			if err != nil && !errors.Is(err, goaoi.EmptyIterableError{}) {
+				m.Logger.Error(err)
+
 				return err
 			}
 
@@ -625,6 +659,8 @@ func (m *DocumentContentManager) UpdateDocumentContentsFromNewModels(ctx context
 
 		removedTagIDs, err := GetRemovedTags(oldDocument, newDocument)
 		if err != nil && !errors.Is(err, goaoi.EmptyIterableError{}) {
+			m.Logger.Error(err)
+
 			return err
 		}
 
@@ -635,11 +671,15 @@ func (m *DocumentContentManager) UpdateDocumentContentsFromNewModels(ctx context
 					Operand:  model.ListOperand[int64]{removedTagIDs}}),
 			})
 			if err != nil {
+				m.Logger.Error(err)
+
 				return err
 			}
 
 			removedTags, err := goaoi.TransformCopySliceUnsafe(removedTagTags, (*domain.Tag).GetTag)
 			if err != nil && !errors.Is(err, goaoi.EmptyIterableError{}) {
+				m.Logger.Error(err)
+
 				return err
 			}
 
@@ -649,30 +689,42 @@ func (m *DocumentContentManager) UpdateDocumentContentsFromNewModels(ctx context
 
 	err = m.AddLinks(context.Background(), addedPathLinks)
 	if err != nil && !errors.Is(err, helper.EmptyInputError{}) {
+		m.Logger.Error(err)
+
 		return err
 	}
 	err = m.RemoveLinks(context.Background(), removedPathLinks)
 	if err != nil && !errors.Is(err, helper.EmptyInputError{}) && !errors.Is(err, EmptyEntitiesListError{}) {
+		m.Logger.Error(err)
+
 		return err
 	}
 
 	err = m.AddBackLinks(context.Background(), addedPathBacklinks)
 	if err != nil && !errors.Is(err, helper.EmptyInputError{}) {
+		m.Logger.Error(err)
+
 		return err
 	}
 
 	err = m.RemoveBackLinks(context.Background(), removedPathBacklinks)
 	if err != nil && !errors.Is(err, helper.EmptyInputError{}) && !errors.Is(err, EmptyEntitiesListError{}) {
+		m.Logger.Error(err)
+
 		return err
 	}
 
 	err = m.AddTags(context.Background(), addedPathTags)
 	if err != nil && !errors.Is(err, helper.EmptyInputError{}) {
+		m.Logger.Error(err)
+
 		return err
 	}
 
 	err = m.RemoveTags(context.Background(), removedPathTags)
 	if err != nil && !errors.Is(err, helper.EmptyInputError{}) && !errors.Is(err, EmptyEntitiesListError{}) {
+		m.Logger.Error(err)
+
 		return err
 	}
 
@@ -711,6 +763,8 @@ func (m *DocumentContentManager) UpdateDocumentContentsFromFilterAndUpdater(ctx 
 
 			addedLinks, err := goaoi.TransformCopySliceUnsafe(updater.LinkedDocumentIDs.Wrappee.Operand, linksExtractorFromID)
 			if err != nil {
+				m.Logger.Error(err)
+
 				return err
 			}
 
@@ -720,20 +774,28 @@ func (m *DocumentContentManager) UpdateDocumentContentsFromFilterAndUpdater(ctx 
 
 			err = m.AddLinks(context.Background(), addedPathLinks)
 			if err != nil {
+				m.Logger.Error(err)
+
 				return err
 			}
 		case model.UpdateClear:
 			err := m.handleClearLinks(ctx, updater.LinkedDocumentIDs.Wrappee.Operand, linksExtractorFromID, oldDocuments)
 			if err != nil {
+				m.Logger.Error(err)
+
 				return err
 			}
 		case model.UpdateSet:
 			err := m.handleClearLinks(ctx, updater.LinkedDocumentIDs.Wrappee.Operand, linksExtractorFromID, oldDocuments)
 			if err != nil {
+				m.Logger.Error(err)
+
 				return err
 			}
 			err = m.handleSetLinks(ctx, updater.LinkedDocumentIDs.Wrappee.Operand, linksExtractorFromID, oldDocuments)
 			if err != nil {
+				m.Logger.Error(err)
+
 				return err
 			}
 		}
@@ -746,6 +808,8 @@ func (m *DocumentContentManager) UpdateDocumentContentsFromFilterAndUpdater(ctx 
 
 			addedBacklinks, err := goaoi.TransformCopySliceUnsafe(updater.BacklinkedDocumentsIDs.Wrappee.Operand, linksExtractorFromID)
 			if err != nil {
+				m.Logger.Error(err)
+
 				return err
 			}
 
@@ -755,20 +819,28 @@ func (m *DocumentContentManager) UpdateDocumentContentsFromFilterAndUpdater(ctx 
 
 			err = m.AddBackLinks(context.Background(), addedPathBacklinks)
 			if err != nil {
+				m.Logger.Error(err)
+
 				return err
 			}
 		case model.UpdateClear:
 			err := m.handleClearBacklinks(ctx, updater.BacklinkedDocumentsIDs.Wrappee.Operand, linksExtractorFromID, oldDocuments)
 			if err != nil {
+				m.Logger.Error(err)
+
 				return err
 			}
 		case model.UpdateSet:
 			err := m.handleClearBacklinks(ctx, updater.BacklinkedDocumentsIDs.Wrappee.Operand, linksExtractorFromID, oldDocuments)
 			if err != nil {
+				m.Logger.Error(err)
+
 				return err
 			}
 			err = m.handlePushBacklinks(ctx, updater.BacklinkedDocumentsIDs.Wrappee.Operand, linksExtractorFromID, oldDocuments)
 			if err != nil {
+				m.Logger.Error(err)
+
 				return err
 			}
 		}
@@ -781,6 +853,8 @@ func (m *DocumentContentManager) UpdateDocumentContentsFromFilterAndUpdater(ctx 
 
 			addedTags, err := goaoi.TransformCopySliceUnsafe(updater.TagIDs.Wrappee.Operand, tagsExtractorFromID)
 			if err != nil {
+				m.Logger.Error(err)
+
 				return err
 			}
 
@@ -790,20 +864,28 @@ func (m *DocumentContentManager) UpdateDocumentContentsFromFilterAndUpdater(ctx 
 
 			err = m.AddTags(context.Background(), addedPathTags)
 			if err != nil {
+				m.Logger.Error(err)
+
 				return err
 			}
 		case model.UpdateClear:
 			err := m.handleClearTags(ctx, updater.TagIDs.Wrappee.Operand, tagsExtractorFromID, oldDocuments)
 			if err != nil {
+				m.Logger.Error(err)
+
 				return err
 			}
 		case model.UpdateSet:
 			err := m.handleClearTags(ctx, updater.TagIDs.Wrappee.Operand, tagsExtractorFromID, oldDocuments)
 			if err != nil {
+				m.Logger.Error(err)
+
 				return err
 			}
 			err = m.handleSetTags(ctx, updater.TagIDs.Wrappee.Operand, tagsExtractorFromID, oldDocuments)
 			if err != nil {
+				m.Logger.Error(err)
+
 				return err
 			}
 		}
@@ -819,6 +901,8 @@ func (m *DocumentContentManager) handleClearLinks(ctx context.Context, documents
 
 	removedLinks, err := goaoi.TransformCopySliceUnsafe(documents, linksExtractor)
 	if err != nil {
+		m.Logger.Error(err)
+
 		return err
 	}
 
@@ -827,6 +911,8 @@ func (m *DocumentContentManager) handleClearLinks(ctx context.Context, documents
 	}
 	err = m.RemoveLinks(ctx, removedPathLinks)
 	if err != nil && !errors.Is(err, EmptyEntitiesListError{}) {
+		m.Logger.Error(err)
+
 		return err
 	}
 	return nil
@@ -837,6 +923,8 @@ func (m *DocumentContentManager) handleSetLinks(ctx context.Context, documents [
 
 	addedLinks, err := goaoi.TransformCopySliceUnsafe(documents, linksExtractor)
 	if err != nil {
+		m.Logger.Error(err)
+
 		return err
 	}
 
@@ -845,6 +933,8 @@ func (m *DocumentContentManager) handleSetLinks(ctx context.Context, documents [
 	}
 	err = m.AddLinks(ctx, addedPathLinks)
 	if err != nil {
+		m.Logger.Error(err)
+
 		return err
 	}
 	return nil
@@ -855,6 +945,8 @@ func (m *DocumentContentManager) handleClearBacklinks(ctx context.Context, docum
 
 	removedBacklinks, err := goaoi.TransformCopySliceUnsafe(documents, linksExtractor)
 	if err != nil {
+		m.Logger.Error(err)
+
 		return err
 	}
 
@@ -863,6 +955,8 @@ func (m *DocumentContentManager) handleClearBacklinks(ctx context.Context, docum
 	}
 	err = m.RemoveBackLinks(ctx, removedPathBacklinks)
 	if err != nil && !errors.Is(err, EmptyEntitiesListError{}) {
+		m.Logger.Error(err)
+
 		return err
 	}
 	return nil
@@ -873,6 +967,8 @@ func (m *DocumentContentManager) handlePushBacklinks(ctx context.Context, docume
 
 	addedBacklinks, err := goaoi.TransformCopySliceUnsafe(documents, linksExtractor)
 	if err != nil {
+		m.Logger.Error(err)
+
 		return err
 	}
 
@@ -881,6 +977,8 @@ func (m *DocumentContentManager) handlePushBacklinks(ctx context.Context, docume
 	}
 	err = m.AddBackLinks(ctx, addedPathBacklinks)
 	if err != nil {
+		m.Logger.Error(err)
+
 		return err
 	}
 	return nil
@@ -891,6 +989,8 @@ func (m *DocumentContentManager) handleClearTags(ctx context.Context, tags []int
 
 	removedBacklinks, err := goaoi.TransformCopySliceUnsafe(tags, tagsExtractor)
 	if err != nil {
+		m.Logger.Error(err)
+
 		return err
 	}
 
@@ -899,6 +999,8 @@ func (m *DocumentContentManager) handleClearTags(ctx context.Context, tags []int
 	}
 	err = m.RemoveTags(ctx, removedPathTags)
 	if err != nil && !errors.Is(err, EmptyEntitiesListError{}) {
+		m.Logger.Error(err)
+
 		return err
 	}
 	return nil
@@ -909,6 +1011,8 @@ func (m *DocumentContentManager) handleSetTags(ctx context.Context, tags []int64
 
 	addedBacklinks, err := goaoi.TransformCopySliceUnsafe(tags, tagsExtractor)
 	if err != nil {
+		m.Logger.Error(err)
+
 		return err
 	}
 
@@ -917,6 +1021,8 @@ func (m *DocumentContentManager) handleSetTags(ctx context.Context, tags []int64
 	}
 	err = m.AddTags(ctx, addedPathTags)
 	if err != nil {
+		m.Logger.Error(err)
+
 		return err
 	}
 	return nil
