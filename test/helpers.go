@@ -62,6 +62,44 @@ func GetDB() (*sql.DB, error) {
 	return db, nil
 }
 
+func GetPhysicalDB() (*sql.DB, error) {
+	// Connect to new temporary database
+	// db, err := sql.Open("sqlite3", ":memory:?_foreign_keys=1")
+	// db, err := sql.Open("sqlite3", "file::memory:?_foreign_keys=1")
+	db, err := sql.Open("sqlite3", "file:"+uuid.NewString()+"?_foreign_keys=1")
+	if err != nil {
+		return nil, err
+	}
+	// db.SetMaxIdleConns(1)
+	// db.SetMaxOpenConns(1)
+
+	cwd, err := os.Getwd()
+	if err != nil {
+		return nil, err
+	}
+
+	parentDirs := strings.Split(cwd, string(os.PathSeparator))
+
+	iProjectRoot, err := goaoi.FindIfSlice(parentDirs, functional.AreEqualPartial("bntp.go"))
+	if err != nil {
+		return nil, err
+	}
+
+	schemaFilePath := string(os.PathSeparator) + filepath.Join(filepath.Join(parentDirs[:iProjectRoot+1]...), "schema", "bntp_sqlite.sql")
+
+	sqlSchema, err := ioutil.ReadFile(schemaFilePath)
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = db.Exec(string(sqlSchema))
+	if err != nil {
+		return nil, err
+	}
+
+	return db, nil
+}
+
 func CreateTestTempFile(filename string) (*os.File, error) {
 	err := os.MkdirAll(TestDataTempDir, os.ModeDir|os.ModePerm)
 	if err != nil {
