@@ -23,9 +23,11 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/JonasMuehlmann/bntp.go/internal/helper"
 	"github.com/JonasMuehlmann/bntp.go/model/domain"
+	"github.com/JonasMuehlmann/goaoi"
 	"github.com/spf13/cobra"
 	"golang.org/x/exp/slices"
 )
@@ -201,9 +203,21 @@ func WithDocumentCommand() CliOption {
 					}
 				}
 
-				output, err = cli.BNTPBackend.Marshallers[cli.OutFormat].Marshall(documents)
-				if err != nil {
-					return EntityMarshallingError{Inner: err}
+				if cli.PathFormat {
+					var paths []string
+
+					paths, err = goaoi.TransformCopySliceUnsafe(documents, (*domain.Document).GetPath)
+					if err != nil {
+						return err
+					}
+
+					output = strings.Join(paths, "\n")
+				} else {
+
+					output, err = cli.BNTPBackend.Marshallers[cli.OutFormat].Marshall(documents)
+					if err != nil {
+						return EntityMarshallingError{Inner: err}
+					}
 				}
 
 				fmt.Fprintln(cli.RootCmd.OutOrStdout(), output)
@@ -285,9 +299,14 @@ func WithDocumentCommand() CliOption {
 					return err
 				}
 
-				output, err = cli.BNTPBackend.Marshallers[cli.OutFormat].Marshall(result)
-				if err != nil {
-					return EntityMarshallingError{Inner: err}
+				if cli.PathFormat {
+					output = result.GetPath()
+				} else {
+
+					output, err = cli.BNTPBackend.Marshallers[cli.OutFormat].Marshall(result)
+					if err != nil {
+						return EntityMarshallingError{Inner: err}
+					}
 				}
 
 				fmt.Fprintln(cli.RootCmd.OutOrStdout(), output)
@@ -416,5 +435,12 @@ func WithDocumentCommand() CliOption {
 
 		cli.DocumentFindCmd.MarkPersistentFlagRequired("filter")
 		cli.DocumentEditCmd.MarkPersistentFlagRequired("updater")
+
+		for _, subcommand := range cli.DocumentCmd.Commands() {
+			if slices.Contains([]*cobra.Command{cli.DocumentListCmd, cli.DocumentFindCmd}, subcommand) {
+				subcommand.PersistentFlags().BoolVar(&cli.PathFormat, "path-format", false, "Whetever to list documents in path format instead of --format format")
+			}
+		}
+
 	}
 }
