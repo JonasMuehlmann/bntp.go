@@ -42,6 +42,7 @@ import (
     "github.com/volatiletech/sqlboiler/v4/boil"
     "github.com/volatiletech/sqlboiler/v4/queries"
     "github.com/volatiletech/sqlboiler/v4/queries/qm"
+    "github.com/volatiletech/sqlboiler/v4/queries/qmhelper"
     log "github.com/sirupsen/logrus"
 	"github.com/stoewer/go-strcase"
     "strings"
@@ -154,6 +155,84 @@ func (s queryModSlice{{$EntityName}}) Apply(q *queries.Query) {
     qm.Apply(q, s...)
 }
 
+func IsUnsetOptional{{$EntityName}}(o any) bool {
+    switch t:= o.(type) {
+        case null.JSON:
+            return !t.Valid
+        case null.Bytes:
+            return !t.Valid
+        case null.String:
+            return !t.Valid
+        case null.Byte:
+            return !t.Valid
+        case null.Float32:
+            return !t.Valid
+        case null.Float64:
+            return !t.Valid
+        case null.Int:
+            return !t.Valid
+        case null.Int8:
+            return !t.Valid
+        case null.Int16:
+            return !t.Valid
+        case null.Int32:
+            return !t.Valid
+        case null.Int64:
+            return !t.Valid
+        case null.Uint:
+            return !t.Valid
+        case null.Uint8:
+            return !t.Valid
+        case null.Uint16:
+            return !t.Valid
+        case null.Uint32:
+            return !t.Valid
+        case null.Uint64:
+            return !t.Valid
+    default:
+        return false
+    }
+}
+
+func TryUnwrapOptional{{$EntityName}}(o any) any {
+    switch t:= o.(type) {
+        case null.JSON:
+            return t.JSON
+        case null.Bytes:
+            return t.Bytes
+        case null.String:
+            return t.String
+        case null.Byte:
+            return t.Byte
+        case null.Float32:
+            return t.Float32
+        case null.Float64:
+            return t.Float64
+        case null.Int:
+            return t.Int
+        case null.Int8:
+            return t.Int8
+        case null.Int16:
+            return t.Int16
+        case null.Int32:
+            return t.Int32
+        case null.Int64:
+            return t.Int64
+        case null.Uint:
+            return t.Uint
+        case null.Uint8:
+            return t.Uint8
+        case null.Uint16:
+            return t.Uint16
+        case null.Uint32:
+            return t.Uint32
+        case null.Uint64:
+            return t.Uint64
+    default:
+        panic("Unhandleded optional type")
+    }
+}
+
 func buildQueryModFilter{{$EntityName}}[T any](filterField {{$EntityName}}Field, filterOperation model.FilterOperation[T]) queryModSlice{{$EntityName}} {
     var newQueryMod queryModSlice{{$EntityName}}
 
@@ -166,42 +245,50 @@ func buildQueryModFilter{{$EntityName}}[T any](filterField {{$EntityName}}Field,
             panic("expected a scalar operand for FilterEqual operator")
         }
 
-        newQueryMod = append(newQueryMod, qm.Where(strcase.SnakeCase(string(filterField))+" = ?", filterOperand.Operand))
+        if IsUnsetOptional{{$EntityName}}(filterOperand.Operand) {
+            newQueryMod = append(newQueryMod, qmhelper.WhereIsNull(strcase.SnakeCase(string(filterField))))
+        } else {
+            newQueryMod = append(newQueryMod, qm.Where(strcase.SnakeCase(string(filterField))+" = ?", TryUnwrapOptional{{$EntityName}}(filterOperand.Operand)))
+        }
     case model.FilterNEqual:
         filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[T])
         if !ok {
             panic("expected a scalar operand for FilterNEqual operator")
         }
 
-        newQueryMod = append(newQueryMod, qm.Where(strcase.SnakeCase(string(filterField))+" != ?", filterOperand.Operand))
+        if IsUnsetOptional{{$EntityName}}(filterOperand.Operand) {
+            newQueryMod = append(newQueryMod, qmhelper.WhereIsNotNull(strcase.SnakeCase(string(filterField))))
+        } else {
+            newQueryMod = append(newQueryMod, qm.Where(strcase.SnakeCase(string(filterField))+" != ?", TryUnwrapOptional{{$EntityName}}(filterOperand.Operand)))
+        }
     case model.FilterGreaterThan:
         filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[T])
         if !ok {
             panic("expected a scalar operand for FilterGreaterThan operator")
         }
 
-        newQueryMod = append(newQueryMod, qm.Where(strcase.SnakeCase(string(filterField))+" > ?", filterOperand.Operand))
+        newQueryMod = append(newQueryMod, qm.Where(strcase.SnakeCase(string(filterField))+" > ?", TryUnwrapOptional{{$EntityName}}(filterOperand.Operand)))
     case model.FilterGreaterThanEqual:
         filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[T])
         if !ok {
             panic("expected a scalar operand for FilterGreaterThanEqual operator")
         }
 
-        newQueryMod = append(newQueryMod, qm.Where(strcase.SnakeCase(string(filterField))+" >= ?", filterOperand.Operand))
+        newQueryMod = append(newQueryMod, qm.Where(strcase.SnakeCase(string(filterField))+" >= ?", TryUnwrapOptional{{$EntityName}}(filterOperand.Operand)))
     case model.FilterLessThan:
         filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[T])
         if !ok {
             panic("expected a scalar operand for FilterLessThan operator")
         }
 
-        newQueryMod = append(newQueryMod, qm.Where(strcase.SnakeCase(string(filterField))+" < ?", filterOperand.Operand))
+        newQueryMod = append(newQueryMod, qm.Where(strcase.SnakeCase(string(filterField))+" < ?", TryUnwrapOptional{{$EntityName}}(filterOperand.Operand)))
     case model.FilterLessThanEqual:
         filterOperand, ok := filterOperation.Operand.(model.ScalarOperand[T])
         if !ok {
             panic("expected a scalar operand for FilterLessThanEqual operator")
         }
 
-        newQueryMod = append(newQueryMod, qm.Where(strcase.SnakeCase(string(filterField))+" <= ?", filterOperand.Operand))
+        newQueryMod = append(newQueryMod, qm.Where(strcase.SnakeCase(string(filterField))+" <= ?", TryUnwrapOptional{{$EntityName}}(filterOperand.Operand)))
     case model.FilterIn:
         filterOperand, ok := filterOperation.Operand.(model.ListOperand[T])
         if !ok {

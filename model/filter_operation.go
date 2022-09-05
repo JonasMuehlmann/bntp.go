@@ -27,6 +27,8 @@ import (
 
 type FilterOperator int
 
+// TODO: Implement FilterContains and FilterNotContains
+// TODO: Implement FilterEmpty and FilterNotEmpty
 const (
 	FilterEqual FilterOperator = iota + 1
 	FilterNEqual
