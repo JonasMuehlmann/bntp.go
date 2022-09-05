@@ -113,7 +113,7 @@ const (
     {{.StructName}}FilterRoot = "{{.StructName}}FilterRoot"
 )
 
-var Predefined{{.StructName}}Filters = map[string]{{.StructName}}Filter {
+var Predefined{{.StructName}}Filters = map[string]*{{.StructName}}Filter {
     // FIX: This operating on int64s instead of the slice is nonsense, right?
     {{.StructName}}FilterLeaf: {ParentPathIDs: optional.Make(model.FilterOperation[int64]{
         Operand: model.ScalarOperand[int64]{

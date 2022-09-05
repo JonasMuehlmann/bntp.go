@@ -125,7 +125,7 @@ const (
     {{.StructName}}FilterDeleted = "{{.StructName}}FilterDeleted"
 )
 
-var Predefined{{.StructName}}Filters = map[string]{{.StructName}}Filter {
+var Predefined{{.StructName}}Filters = map[string]*{{.StructName}}Filter {
     {{.StructName}}FilterUntitled: {Title: optional.Make(model.FilterOperation[optional.Optional[string]]{
         Operand: model.ScalarOperand[optional.Optional[string]]{
             Operand: optional.Optional[string]{},

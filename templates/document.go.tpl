@@ -117,7 +117,7 @@ const (
 )
 
 // FIX: This operating on int64s instead of the slice is nonsense, right?
-var Predefined{{.StructName}}Filters = map[string]{{.StructName}}Filter {
+var Predefined{{.StructName}}Filters = map[string]*{{.StructName}}Filter {
     {{.StructName}}FilterUntagged: {TagIDs: optional.Make(model.FilterOperation[int64]{
         Operand: model.ScalarOperand[int64]{
             Operand: -1,

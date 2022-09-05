@@ -26,6 +26,9 @@ import (
 
 	"github.com/JonasMuehlmann/bntp.go/internal/helper"
 	"github.com/JonasMuehlmann/bntp.go/model/domain"
+	"github.com/JonasMuehlmann/datastructures.go/maps/hashmap"
+	"github.com/JonasMuehlmann/goaoi"
+	"github.com/JonasMuehlmann/goaoi/functional"
 	"github.com/spf13/cobra"
 	"golang.org/x/exp/slices"
 )
@@ -151,9 +154,15 @@ func WithBookmarkCommand() CliOption {
 
 					numAffectedRecordsRaw = int64(len(args))
 				} else {
-					err = cli.BNTPBackend.Unmarshallers[cli.InFormat].Unmarshall(filter, cli.FilterRaw)
-					if err != nil {
-						return EntityMarshallingError{Inner: err}
+					tmp := hashmap.NewFromMap(domain.PredefinedBookmarkFilters)
+
+					if _, err := goaoi.FindIfSlice(tmp.GetKeys(), functional.AreEqualPartial(cli.FilterRaw)); err == nil {
+						filter = domain.PredefinedBookmarkFilters[cli.FilterRaw]
+					} else {
+						err = cli.BNTPBackend.Unmarshallers[cli.InFormat].Unmarshall(filter, cli.FilterRaw)
+						if err != nil {
+							return EntityMarshallingError{Inner: err}
+						}
 					}
 
 					numAffectedRecordsRaw, err = cli.BNTPBackend.BookmarkManager.UpdateWhere(context.Background(), filter, updater)
@@ -190,9 +199,15 @@ func WithBookmarkCommand() CliOption {
 						return err
 					}
 				} else {
-					err = cli.BNTPBackend.Unmarshallers[cli.InFormat].Unmarshall(filter, cli.FilterRaw)
-					if err != nil {
-						return EntityMarshallingError{Inner: err}
+					tmp := hashmap.NewFromMap(domain.PredefinedBookmarkFilters)
+
+					if _, err := goaoi.FindIfSlice(tmp.GetKeys(), functional.AreEqualPartial(cli.FilterRaw)); err == nil {
+						filter = domain.PredefinedBookmarkFilters[cli.FilterRaw]
+					} else {
+						err = cli.BNTPBackend.Unmarshallers[cli.InFormat].Unmarshall(filter, cli.FilterRaw)
+						if err != nil {
+							return EntityMarshallingError{Inner: err}
+						}
 					}
 
 					bookmarks, err = cli.BNTPBackend.BookmarkManager.GetWhere(context.Background(), filter)
@@ -242,9 +257,15 @@ func WithBookmarkCommand() CliOption {
 
 					numAffectedRecordsRaw = int64(len(args))
 				} else {
-					err = cli.BNTPBackend.Unmarshallers[cli.InFormat].Unmarshall(filter, cli.FilterRaw)
-					if err != nil {
-						return EntityMarshallingError{Inner: err}
+					tmp := hashmap.NewFromMap(domain.PredefinedBookmarkFilters)
+
+					if _, err := goaoi.FindIfSlice(tmp.GetKeys(), functional.AreEqualPartial(cli.FilterRaw)); err == nil {
+						filter = domain.PredefinedBookmarkFilters[cli.FilterRaw]
+					} else {
+						err = cli.BNTPBackend.Unmarshallers[cli.InFormat].Unmarshall(filter, cli.FilterRaw)
+						if err != nil {
+							return EntityMarshallingError{Inner: err}
+						}
 					}
 
 					numAffectedRecordsRaw, err = cli.BNTPBackend.BookmarkManager.DeleteWhere(context.Background(), filter)
@@ -275,9 +296,15 @@ func WithBookmarkCommand() CliOption {
 				var result *domain.Bookmark
 				var output string
 
-				err = cli.BNTPBackend.Unmarshallers[cli.InFormat].Unmarshall(filter, cli.FilterRaw)
-				if err != nil {
-					return EntityMarshallingError{Inner: err}
+				tmp := hashmap.NewFromMap(domain.PredefinedBookmarkFilters)
+
+				if _, err := goaoi.FindIfSlice(tmp.GetKeys(), functional.AreEqualPartial(cli.FilterRaw)); err == nil {
+					filter = domain.PredefinedBookmarkFilters[cli.FilterRaw]
+				} else {
+					err = cli.BNTPBackend.Unmarshallers[cli.InFormat].Unmarshall(filter, cli.FilterRaw)
+					if err != nil {
+						return EntityMarshallingError{Inner: err}
+					}
 				}
 
 				result, err = cli.BNTPBackend.BookmarkManager.GetFirstWhere(context.Background(), filter)
@@ -311,9 +338,16 @@ func WithBookmarkCommand() CliOption {
 						return err
 					}
 				} else {
-					err = cli.BNTPBackend.Unmarshallers[cli.InFormat].Unmarshall(filter, cli.FilterRaw)
-					if err != nil {
-						return EntityMarshallingError{Inner: err}
+
+					tmp := hashmap.NewFromMap(domain.PredefinedBookmarkFilters)
+
+					if _, err := goaoi.FindIfSlice(tmp.GetKeys(), functional.AreEqualPartial(cli.FilterRaw)); err == nil {
+						filter = domain.PredefinedBookmarkFilters[cli.FilterRaw]
+					} else {
+						err = cli.BNTPBackend.Unmarshallers[cli.InFormat].Unmarshall(filter, cli.FilterRaw)
+						if err != nil {
+							return EntityMarshallingError{Inner: err}
+						}
 					}
 
 					countRaw, err = cli.BNTPBackend.BookmarkManager.CountWhere(context.Background(), filter)
@@ -361,9 +395,16 @@ func WithBookmarkCommand() CliOption {
 						return err
 					}
 				} else {
-					err = cli.BNTPBackend.Unmarshallers[cli.InFormat].Unmarshall(filter, cli.FilterRaw)
-					if err != nil {
-						return EntityMarshallingError{Inner: err}
+
+					tmp := hashmap.NewFromMap(domain.PredefinedBookmarkFilters)
+
+					if _, err := goaoi.FindIfSlice(tmp.GetKeys(), functional.AreEqualPartial(cli.FilterRaw)); err == nil {
+						filter = domain.PredefinedBookmarkFilters[cli.FilterRaw]
+					} else {
+						err = cli.BNTPBackend.Unmarshallers[cli.InFormat].Unmarshall(filter, cli.FilterRaw)
+						if err != nil {
+							return EntityMarshallingError{Inner: err}
+						}
 					}
 
 					doesExistRaw, err = cli.BNTPBackend.BookmarkManager.DoesExistWhere(context.Background(), filter)
