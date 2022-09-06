@@ -88,7 +88,8 @@ func TestCmdDocumentAdd(t *testing.T) {
 			outputBuffer := testCommon.NewBufferString("")
 			errorBuffer := testCommon.NewBufferString("")
 			fs := afero.NewMemMapFs()
-			cli := cmd.NewCli(cmd.WithStdErrOverride(errorBuffer), cmd.WithDbOverride(db), cmd.WithFsOverride(fs), cmd.WithAll())
+			cli, err := cmd.NewCli(cmd.WithStdErrOverride(errorBuffer), cmd.WithDbOverride(db), cmd.WithFsOverride(fs), cmd.WithAll())
+			assert.NoError(t, err, test.name+", assert cli creation")
 			cli.RootCmd.SetOut(outputBuffer)
 
 			err = afero.WriteFile(fs, "foo", []byte(getDocumentSkeleton()), 0644)
@@ -202,7 +203,8 @@ func TestCmdDocumentReplace(t *testing.T) {
 			outputBuffer := testCommon.NewBufferString("")
 			errorBuffer := testCommon.NewBufferString("")
 			fs := afero.NewMemMapFs()
-			cli := cmd.NewCli(cmd.WithStdErrOverride(errorBuffer), cmd.WithDbOverride(db), cmd.WithFsOverride(fs), cmd.WithAll())
+			cli, err := cmd.NewCli(cmd.WithStdErrOverride(errorBuffer), cmd.WithDbOverride(db), cmd.WithFsOverride(fs), cmd.WithAll())
+			assert.NoError(t, err, test.name+", assert cli creation")
 			cli.RootCmd.SetOut(outputBuffer)
 
 			cli.RootCmd.SetArgs(test.args)
@@ -313,7 +315,8 @@ func TestCmdDocumentUpsert(t *testing.T) {
 			outputBuffer := testCommon.NewBufferString("")
 			errorBuffer := testCommon.NewBufferString("")
 			fs := afero.NewMemMapFs()
-			cli := cmd.NewCli(cmd.WithStdErrOverride(errorBuffer), cmd.WithDbOverride(db), cmd.WithFsOverride(fs), cmd.WithAll())
+			cli, err := cmd.NewCli(cmd.WithStdErrOverride(errorBuffer), cmd.WithDbOverride(db), cmd.WithFsOverride(fs), cmd.WithAll())
+			assert.NoError(t, err, test.name+", assert cli creation")
 			cli.RootCmd.SetOut(outputBuffer)
 
 			cli.RootCmd.SetArgs(test.args)
@@ -508,7 +511,8 @@ func TestCmdDocumentEdit(t *testing.T) {
 			outputBuffer := testCommon.NewBufferString("")
 			errorBuffer := testCommon.NewBufferString("")
 			fs := afero.NewMemMapFs()
-			cli := cmd.NewCli(cmd.WithStdErrOverride(errorBuffer), cmd.WithDbOverride(db), cmd.WithFsOverride(fs), cmd.WithAll())
+			cli, err := cmd.NewCli(cmd.WithStdErrOverride(errorBuffer), cmd.WithDbOverride(db), cmd.WithFsOverride(fs), cmd.WithAll())
+			assert.NoError(t, err, test.name+", assert cli creation")
 			cli.RootCmd.SetOut(outputBuffer)
 
 			cli.RootCmd.SetArgs(test.args)
@@ -623,7 +627,8 @@ func TestCmdDocumentList(t *testing.T) {
 			outputBuffer := testCommon.NewBufferString("")
 			errorBuffer := testCommon.NewBufferString("")
 			fs := afero.NewMemMapFs()
-			cli := cmd.NewCli(cmd.WithStdErrOverride(errorBuffer), cmd.WithDbOverride(db), cmd.WithFsOverride(fs), cmd.WithAll())
+			cli, err := cmd.NewCli(cmd.WithStdErrOverride(errorBuffer), cmd.WithDbOverride(db), cmd.WithFsOverride(fs), cmd.WithAll())
+			assert.NoError(t, err, test.name+", assert cli creation")
 			cli.RootCmd.SetOut(outputBuffer)
 
 			cli.RootCmd.SetArgs(test.args)
@@ -766,7 +771,8 @@ func TestCmdDocumentRemove(t *testing.T) {
 			outputBuffer := testCommon.NewBufferString("")
 			errorBuffer := testCommon.NewBufferString("")
 			fs := afero.NewMemMapFs()
-			cli := cmd.NewCli(cmd.WithStdErrOverride(errorBuffer), cmd.WithDbOverride(db), cmd.WithFsOverride(fs), cmd.WithAll())
+			cli, err := cmd.NewCli(cmd.WithStdErrOverride(errorBuffer), cmd.WithDbOverride(db), cmd.WithFsOverride(fs), cmd.WithAll())
+			assert.NoError(t, err, test.name+", assert cli creation")
 			cli.RootCmd.SetOut(outputBuffer)
 
 			cli.RootCmd.SetArgs(test.args)
@@ -862,7 +868,8 @@ func TestCmdDocumentFind(t *testing.T) {
 			outputBuffer := testCommon.NewBufferString("")
 			errorBuffer := testCommon.NewBufferString("")
 			fs := afero.NewMemMapFs()
-			cli := cmd.NewCli(cmd.WithStdErrOverride(errorBuffer), cmd.WithDbOverride(db), cmd.WithFsOverride(fs), cmd.WithAll())
+			cli, err := cmd.NewCli(cmd.WithStdErrOverride(errorBuffer), cmd.WithDbOverride(db), cmd.WithFsOverride(fs), cmd.WithAll())
+			assert.NoError(t, err, test.name+", assert cli creation")
 			cli.RootCmd.SetOut(outputBuffer)
 
 			cli.RootCmd.SetArgs(test.args)
@@ -973,7 +980,8 @@ func TestCmdDocumentCount(t *testing.T) {
 			outputBuffer := testCommon.NewBufferString("")
 			errorBuffer := testCommon.NewBufferString("")
 			fs := afero.NewMemMapFs()
-			cli := cmd.NewCli(cmd.WithStdErrOverride(errorBuffer), cmd.WithDbOverride(db), cmd.WithFsOverride(fs), cmd.WithAll())
+			cli, err := cmd.NewCli(cmd.WithStdErrOverride(errorBuffer), cmd.WithDbOverride(db), cmd.WithFsOverride(fs), cmd.WithAll())
+			assert.NoError(t, err, test.name+", assert cli creation")
 			cli.RootCmd.SetOut(outputBuffer)
 
 			cli.RootCmd.SetArgs(test.args)
@@ -1111,7 +1119,8 @@ func TestCmdDocumentDoesExist(t *testing.T) {
 			outputBuffer := testCommon.NewBufferString("")
 			errorBuffer := testCommon.NewBufferString("")
 			fs := afero.NewMemMapFs()
-			cli := cmd.NewCli(cmd.WithStdErrOverride(errorBuffer), cmd.WithDbOverride(db), cmd.WithFsOverride(fs), cmd.WithAll())
+			cli, err := cmd.NewCli(cmd.WithStdErrOverride(errorBuffer), cmd.WithDbOverride(db), cmd.WithFsOverride(fs), cmd.WithAll())
+			assert.NoError(t, err, test.name+", assert cli creation")
 			cli.RootCmd.SetOut(outputBuffer)
 
 			cli.RootCmd.SetArgs(test.args)

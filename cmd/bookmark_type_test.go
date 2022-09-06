@@ -72,7 +72,8 @@ func TestCmdBookmarkTypeAdd(t *testing.T) {
 			outputBuffer := testCommon.NewBufferString("")
 			errorBuffer := testCommon.NewBufferString("")
 			fs := afero.NewMemMapFs()
-			cli := cmd.NewCli(cmd.WithStdErrOverride(errorBuffer), cmd.WithDbOverride(db), cmd.WithFsOverride(fs), cmd.WithAll())
+			cli, err := cmd.NewCli(cmd.WithStdErrOverride(errorBuffer), cmd.WithDbOverride(db), cmd.WithFsOverride(fs), cmd.WithAll())
+			assert.NoError(t, err, test.name+", assert cli creation")
 			cli.RootCmd.SetOut(outputBuffer)
 
 			cli.RootCmd.SetArgs(test.args)
@@ -192,7 +193,8 @@ func TestCmdBookmarkTypeEdit(t *testing.T) {
 			outputBuffer := testCommon.NewBufferString("")
 			errorBuffer := testCommon.NewBufferString("")
 			fs := afero.NewMemMapFs()
-			cli := cmd.NewCli(cmd.WithStdErrOverride(errorBuffer), cmd.WithDbOverride(db), cmd.WithFsOverride(fs), cmd.WithAll())
+			cli, err := cmd.NewCli(cmd.WithStdErrOverride(errorBuffer), cmd.WithDbOverride(db), cmd.WithFsOverride(fs), cmd.WithAll())
+			assert.NoError(t, err, test.name+", assert cli creation")
 			cli.RootCmd.SetOut(outputBuffer)
 
 			cli.RootCmd.SetArgs(test.args)
@@ -286,7 +288,8 @@ func TestCmdBookmarkTypeRemove(t *testing.T) {
 			outputBuffer := testCommon.NewBufferString("")
 			errorBuffer := testCommon.NewBufferString("")
 			fs := afero.NewMemMapFs()
-			cli := cmd.NewCli(cmd.WithStdErrOverride(errorBuffer), cmd.WithDbOverride(db), cmd.WithFsOverride(fs), cmd.WithAll())
+			cli, err := cmd.NewCli(cmd.WithStdErrOverride(errorBuffer), cmd.WithDbOverride(db), cmd.WithFsOverride(fs), cmd.WithAll())
+			assert.NoError(t, err, test.name+", assert cli creation")
 			cli.RootCmd.SetOut(outputBuffer)
 
 			cli.RootCmd.SetArgs(test.args)

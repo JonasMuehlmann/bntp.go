@@ -85,7 +85,8 @@ func TestCmdTagAdd(t *testing.T) {
 			outputBuffer := testCommon.NewBufferString("")
 			errorBuffer := testCommon.NewBufferString("")
 			fs := afero.NewMemMapFs()
-			cli := cmd.NewCli(cmd.WithStdErrOverride(errorBuffer), cmd.WithDbOverride(db), cmd.WithFsOverride(fs), cmd.WithAll())
+			cli, err := cmd.NewCli(cmd.WithStdErrOverride(errorBuffer), cmd.WithDbOverride(db), cmd.WithFsOverride(fs), cmd.WithAll())
+			assert.NoError(t, err, test.name+", assert cli creation")
 			cli.RootCmd.SetOut(outputBuffer)
 
 			cli.RootCmd.SetArgs(test.args)
@@ -194,7 +195,8 @@ func TestCmdTagReplace(t *testing.T) {
 			outputBuffer := testCommon.NewBufferString("")
 			errorBuffer := testCommon.NewBufferString("")
 			fs := afero.NewMemMapFs()
-			cli := cmd.NewCli(cmd.WithStdErrOverride(errorBuffer), cmd.WithDbOverride(db), cmd.WithFsOverride(fs), cmd.WithAll())
+			cli, err := cmd.NewCli(cmd.WithStdErrOverride(errorBuffer), cmd.WithDbOverride(db), cmd.WithFsOverride(fs), cmd.WithAll())
+			assert.NoError(t, err, test.name+", assert cli creation")
 			cli.RootCmd.SetOut(outputBuffer)
 
 			cli.RootCmd.SetArgs(test.args)
@@ -308,7 +310,8 @@ func TestCmdTagUpsert(t *testing.T) {
 			outputBuffer := testCommon.NewBufferString("")
 			errorBuffer := testCommon.NewBufferString("")
 			fs := afero.NewMemMapFs()
-			cli := cmd.NewCli(cmd.WithStdErrOverride(errorBuffer), cmd.WithDbOverride(db), cmd.WithFsOverride(fs), cmd.WithAll())
+			cli, err := cmd.NewCli(cmd.WithStdErrOverride(errorBuffer), cmd.WithDbOverride(db), cmd.WithFsOverride(fs), cmd.WithAll())
+			assert.NoError(t, err, test.name+", assert cli creation")
 			cli.RootCmd.SetOut(outputBuffer)
 
 			cli.RootCmd.SetArgs(test.args)
@@ -505,7 +508,8 @@ func TestCmdTagEdit(t *testing.T) {
 			outputBuffer := testCommon.NewBufferString("")
 			errorBuffer := testCommon.NewBufferString("")
 			fs := afero.NewMemMapFs()
-			cli := cmd.NewCli(cmd.WithStdErrOverride(errorBuffer), cmd.WithDbOverride(db), cmd.WithFsOverride(fs), cmd.WithAll())
+			cli, err := cmd.NewCli(cmd.WithStdErrOverride(errorBuffer), cmd.WithDbOverride(db), cmd.WithFsOverride(fs), cmd.WithAll())
+			assert.NoError(t, err, test.name+", assert cli creation")
 			cli.RootCmd.SetOut(outputBuffer)
 
 			cli.RootCmd.SetArgs(test.args)
@@ -596,7 +600,8 @@ func TestCmdTagExport(t *testing.T) {
 			outputBuffer := testCommon.NewBufferString("")
 			errorBuffer := testCommon.NewBufferString("")
 			fs := afero.NewMemMapFs()
-			cli := cmd.NewCli(cmd.WithStdErrOverride(errorBuffer), cmd.WithDbOverride(db), cmd.WithFsOverride(fs), cmd.WithAll())
+			cli, err := cmd.NewCli(cmd.WithStdErrOverride(errorBuffer), cmd.WithDbOverride(db), cmd.WithFsOverride(fs), cmd.WithAll())
+			assert.NoError(t, err, test.name+", assert cli creation")
 			cli.RootCmd.SetOut(outputBuffer)
 
 			cli.RootCmd.SetArgs(test.args)
@@ -697,7 +702,8 @@ func TestCmdTagImport(t *testing.T) {
 			outputBuffer := testCommon.NewBufferString("")
 			errorBuffer := testCommon.NewBufferString("")
 			fs := afero.NewMemMapFs()
-			cli := cmd.NewCli(cmd.WithStdErrOverride(errorBuffer), cmd.WithDbOverride(db), cmd.WithFsOverride(fs), cmd.WithAll())
+			cli, err := cmd.NewCli(cmd.WithStdErrOverride(errorBuffer), cmd.WithDbOverride(db), cmd.WithFsOverride(fs), cmd.WithAll())
+			assert.NoError(t, err, test.name+", assert cli creation")
 			cli.RootCmd.SetOut(outputBuffer)
 
 			cli.RootCmd.SetArgs(test.args)
@@ -812,7 +818,8 @@ func TestCmdTagList(t *testing.T) {
 			outputBuffer := testCommon.NewBufferString("")
 			errorBuffer := testCommon.NewBufferString("")
 			fs := afero.NewMemMapFs()
-			cli := cmd.NewCli(cmd.WithStdErrOverride(errorBuffer), cmd.WithDbOverride(db), cmd.WithFsOverride(fs), cmd.WithAll())
+			cli, err := cmd.NewCli(cmd.WithStdErrOverride(errorBuffer), cmd.WithDbOverride(db), cmd.WithFsOverride(fs), cmd.WithAll())
+			assert.NoError(t, err, test.name+", assert cli creation")
 			cli.RootCmd.SetOut(outputBuffer)
 
 			cli.RootCmd.SetArgs(test.args)
@@ -957,7 +964,8 @@ func TestCmdTagRemove(t *testing.T) {
 			outputBuffer := testCommon.NewBufferString("")
 			errorBuffer := testCommon.NewBufferString("")
 			fs := afero.NewMemMapFs()
-			cli := cmd.NewCli(cmd.WithStdErrOverride(errorBuffer), cmd.WithDbOverride(db), cmd.WithFsOverride(fs), cmd.WithAll())
+			cli, err := cmd.NewCli(cmd.WithStdErrOverride(errorBuffer), cmd.WithDbOverride(db), cmd.WithFsOverride(fs), cmd.WithAll())
+			assert.NoError(t, err, test.name+", assert cli creation")
 			cli.RootCmd.SetOut(outputBuffer)
 
 			cli.RootCmd.SetArgs(test.args)
@@ -1054,7 +1062,8 @@ func TestCmdTagFind(t *testing.T) {
 			outputBuffer := testCommon.NewBufferString("")
 			errorBuffer := testCommon.NewBufferString("")
 			fs := afero.NewMemMapFs()
-			cli := cmd.NewCli(cmd.WithStdErrOverride(errorBuffer), cmd.WithDbOverride(db), cmd.WithFsOverride(fs), cmd.WithAll())
+			cli, err := cmd.NewCli(cmd.WithStdErrOverride(errorBuffer), cmd.WithDbOverride(db), cmd.WithFsOverride(fs), cmd.WithAll())
+			assert.NoError(t, err, test.name+", assert cli creation")
 			cli.RootCmd.SetOut(outputBuffer)
 
 			cli.RootCmd.SetArgs(test.args)
@@ -1169,7 +1178,8 @@ func TestCmdTagCount(t *testing.T) {
 			outputBuffer := testCommon.NewBufferString("")
 			errorBuffer := testCommon.NewBufferString("")
 			fs := afero.NewMemMapFs()
-			cli := cmd.NewCli(cmd.WithStdErrOverride(errorBuffer), cmd.WithDbOverride(db), cmd.WithFsOverride(fs), cmd.WithAll())
+			cli, err := cmd.NewCli(cmd.WithStdErrOverride(errorBuffer), cmd.WithDbOverride(db), cmd.WithFsOverride(fs), cmd.WithAll())
+			assert.NoError(t, err, test.name+", assert cli creation")
 			cli.RootCmd.SetOut(outputBuffer)
 
 			cli.RootCmd.SetArgs(test.args)
@@ -1310,7 +1320,8 @@ func TestCmdTagDoesExist(t *testing.T) {
 			outputBuffer := testCommon.NewBufferString("")
 			errorBuffer := testCommon.NewBufferString("")
 			fs := afero.NewMemMapFs()
-			cli := cmd.NewCli(cmd.WithStdErrOverride(errorBuffer), cmd.WithDbOverride(db), cmd.WithFsOverride(fs), cmd.WithAll())
+			cli, err := cmd.NewCli(cmd.WithStdErrOverride(errorBuffer), cmd.WithDbOverride(db), cmd.WithFsOverride(fs), cmd.WithAll())
+			assert.NoError(t, err, test.name+", assert cli creation")
 			cli.RootCmd.SetOut(outputBuffer)
 
 			cli.RootCmd.SetArgs(test.args)
