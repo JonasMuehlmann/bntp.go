@@ -94,10 +94,41 @@ func WithConfigCommand() CliOption {
 			},
 		}
 
+		cli.ConfigGetSchemaCmd = &cobra.Command{
+			Use:   "get-schema-path",
+			Short: "get the path to a database schema to set up an instance of the specified database",
+			Long:  `A longer description`,
+			Args:  cobra.ExactArgs(1),
+			RunE: func(cmd *cobra.Command, args []string) error {
+				fmt.Fprintln(cli.RootCmd.OutOrStdout(), cli.BNTPBackend.DBProviderSchemas[args[0]])
+
+				return nil
+			},
+		}
+
+		cli.ConfigGetDBProvidersCmd = &cobra.Command{
+			Use:   "get-db-providers",
+			Short: "get a list of supported database providers",
+			Long:  `A longer description`,
+			Args:  cobra.NoArgs,
+			RunE: func(cmd *cobra.Command, args []string) error {
+				keys := hashmap.NewFromMap(cli.BNTPBackend.DBProviderSchemas).GetKeys()
+
+				output := strings.Join(keys, "\n")
+				fmt.Fprintln(cli.RootCmd.OutOrStdout(), output)
+
+				return nil
+			},
+		}
+
 		cli.RootCmd.AddCommand(cli.ConfigCmd)
 		cli.ConfigCmd.AddCommand(cli.ConfigPathsCmd)
 		cli.ConfigCmd.AddCommand(cli.ConfigExtensionsCmd)
 		cli.ConfigCmd.AddCommand(cli.configBaseNameCmd)
 		cli.ConfigCmd.AddCommand(cli.exportConfigCmd)
+		cli.ConfigCmd.AddCommand(cli.ConfigGetSchemaCmd)
+		cli.ConfigCmd.AddCommand(cli.ConfigGetDBProvidersCmd)
+
+		return
 	}
 }

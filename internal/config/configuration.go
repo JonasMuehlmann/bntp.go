@@ -434,7 +434,42 @@ func (m *ConfigManager) NewBackendFromConfig() (newBackend *backend.Backend, err
 	newBackend.Marshallers["csv"] = new(marshallers.CsvMarshaller)
 	newBackend.Unmarshallers["csv"] = new(marshallers.CsvUnmarshaller)
 
-	return newBackend
+	cwd, err := os.Getwd()
+	if err != nil {
+		return
+	}
+
+	parentDirs := strings.Split(cwd, string(os.PathSeparator))
+
+	iProjectRoot, err := goaoi.FindIfSlice(parentDirs, functional.AreEqualPartial("bntp.go"))
+	if err != nil {
+		return
+	}
+
+	schemaDirPath := string(os.PathSeparator) + filepath.Join(filepath.Join(parentDirs[:iProjectRoot+1]...), "schema")
+
+	schemaFiles, err := os.ReadDir(schemaDirPath)
+	if err != nil {
+		return
+	}
+
+	newBackend.DBProviderSchemas = make(map[string]string)
+
+	for _, schemaFile := range schemaFiles {
+		schemaFileName := schemaFile.Name()
+		if schemaFile.Type().IsDir() || strings.Contains(schemaFileName, "test") {
+			continue
+		}
+
+		providerName := strings.Split(schemaFileName, "_")[1]
+		providerName = strings.Split(providerName, ".")[0]
+
+		newBackend.DBProviderSchemas[providerName] = filepath.Join(schemaDirPath, schemaFileName)
+	}
+
+	// newBackend.DBProviderSchemas["sqlite"] = os.ReadFile()
+
+	return
 }
 
 //******************************************************************//

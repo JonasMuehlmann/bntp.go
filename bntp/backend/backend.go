@@ -33,6 +33,7 @@ type Backend struct {
 	DocumentManager        libdocuments.DocumentManager
 	DocumentContentManager libdocuments.DocumentContentManager
 	// Viper                  *viper.Viper
-	Marshallers   map[string]marshallers.Marshaller
-	Unmarshallers map[string]marshallers.Unmarshaller
+	Marshallers       map[string]marshallers.Marshaller
+	Unmarshallers     map[string]marshallers.Unmarshaller
+	DBProviderSchemas map[string]string
 }
