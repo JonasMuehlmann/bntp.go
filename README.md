@@ -28,7 +28,7 @@ bntp.go bookmark list
 # Should complain about non-existent data
 ```
 Documentation available at https://pkg.go.dev/github.com/JonasMuehlmann/bntp.go.
-The CLI is documented at docs/cli_help/bntp.go.md
+The CLI has [its own documentation](docs/cli_help/bntp.go.md)
 
 # Why?
 
