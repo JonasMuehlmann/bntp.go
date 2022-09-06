@@ -139,7 +139,7 @@ var (
 	tagColumnsWithoutDefault = []string{"id", "tag", "path", "children"}
 	tagColumnsWithDefault    = []string{"parent_tag"}
 	tagPrimaryKeyColumns     = []string{"id"}
-	tagGeneratedColumns      =[]string{}
+	tagGeneratedColumns      = []string{}
 )
 
 type (
