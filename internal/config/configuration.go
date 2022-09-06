@@ -77,6 +77,14 @@ type ConfigManager struct {
 func NewConfigManager(stderr io.Writer, dbOverride *sql.DB, fsOverride afero.Fs) *ConfigManager {
 	m := &ConfigManager{Viper: viper.New(), ConfigFileBaseName: "bntp"}
 
+	var fs afero.Fs
+	if m.FSOverride != nil {
+		fs = m.FSOverride
+	} else {
+		// TODO: Extend config to allow creating custom fs
+		fs = afero.NewOsFs()
+	}
+
 	userConfigDir, err := os.UserConfigDir()
 	if err != nil {
 		panic(err)
@@ -88,6 +96,18 @@ func NewConfigManager(stderr io.Writer, dbOverride *sql.DB, fsOverride afero.Fs)
 	}
 
 	m.ConfigDir = path.Join(userConfigDir, "bntp")
+
+	doesConfigDirExist, err := afero.Exists(fs, m.ConfigDir)
+	if err != nil {
+		panic(err)
+	}
+
+	if !doesConfigDirExist {
+		err = fs.MkdirAll(m.ConfigDir, 0o744)
+		if err != nil {
+			panic(err)
+		}
+	}
 
 	m.ConfigSearchPaths = append(m.ConfigSearchPaths, m.ConfigDir)
 	m.ConfigSearchPaths = append(m.ConfigSearchPaths, cwd)
@@ -122,14 +142,6 @@ func NewConfigManager(stderr io.Writer, dbOverride *sql.DB, fsOverride afero.Fs)
 	}
 
 	logFile := m.Viper.GetString(LogFile)
-
-	var fs afero.Fs
-	if m.FSOverride != nil {
-		fs = m.FSOverride
-	} else {
-		// TODO: Extend config to allow creating custom fs
-		fs = afero.NewOsFs()
-	}
 
 	doesLogFileExist, err := afero.Exists(fs, logFile)
 	if err != nil {
