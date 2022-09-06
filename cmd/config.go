@@ -22,14 +22,16 @@ package cmd
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/JonasMuehlmann/bntp.go/internal/helper"
+	"github.com/JonasMuehlmann/datastructures.go/maps/hashmap"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
 
 func WithConfigCommand() CliOption {
-	return func(cli *Cli) {
+	return func(cli *Cli) (err error) {
 
 		cli.ConfigCmd = &cobra.Command{
 			Use:   "config",

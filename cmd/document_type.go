@@ -30,7 +30,7 @@ import (
 )
 
 func WithDocumentTypeCommand() CliOption {
-	return func(cli *Cli) {
+	return func(cli *Cli) (err error) {
 		cli.DocumentTypeCmd = &cobra.Command{
 			Use:   "type",
 			Short: "Manage types of bntp documents",
@@ -111,5 +111,7 @@ func WithDocumentTypeCommand() CliOption {
 		cli.DocumentTypeCmd.AddCommand(cli.DocumentTypeEditCmd)
 		cli.DocumentTypeCmd.AddCommand(cli.DocumentTypeRemoveCmd)
 		cli.DocumentTypeCmd.AddCommand(cli.DocumentTypeListCmd)
+
+		return
 	}
 }

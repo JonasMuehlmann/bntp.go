@@ -30,7 +30,7 @@ import (
 )
 
 func WithBookmarkTypeCommand() CliOption {
-	return func(cli *Cli) {
+	return func(cli *Cli) (err error) {
 		cli.BookmarkTypeCmd = &cobra.Command{
 			Use:   "type",
 			Short: "Manage types of bntp bookmarks",
@@ -107,5 +107,7 @@ func WithBookmarkTypeCommand() CliOption {
 		cli.BookmarkTypeCmd.AddCommand(cli.BookmarkTypeEditCmd)
 		cli.BookmarkTypeCmd.AddCommand(cli.BookmarkTypeRemoveCmd)
 		cli.BookmarkTypeCmd.AddCommand(cli.BookmarkTypeListCmd)
+
+		return
 	}
 }

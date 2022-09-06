@@ -35,7 +35,7 @@ import (
 )
 
 func WithDocumentCommand() CliOption {
-	return func(cli *Cli) {
+	return func(cli *Cli) (err error) {
 		cli.DocumentCmd = &cobra.Command{
 			Use:   "document",
 			Short: "Manage bntp documents",
@@ -482,5 +482,6 @@ func WithDocumentCommand() CliOption {
 			}
 		}
 
+		return
 	}
 }

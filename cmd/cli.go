@@ -32,6 +32,7 @@ import (
 	"github.com/JonasMuehlmann/bntp.go/bntp/backend"
 	"github.com/JonasMuehlmann/bntp.go/internal/config"
 	"github.com/JonasMuehlmann/bntp.go/internal/helper"
+	"github.com/hashicorp/go-multierror"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
@@ -39,53 +40,97 @@ import (
 	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
-type CliOption func(*Cli)
+type CliOption func(*Cli) error
 
 func WithAll() CliOption {
-	return func(cli *Cli) {
-		WithBookmarkCommand()(cli)
-		WithBookmarkTypeCommand()(cli)
-		WithDocumentCommand()(cli)
-		WithDocumentTypeCommand()(cli)
-		WithTagCommand()(cli)
-		WithConfigCommand()(cli)
-		WithConfigManager()(cli)
-		WithBNTPBackend()(cli)
+	return func(cli *Cli) (err error) {
+		var multiErr error
+		err = WithBookmarkCommand()(cli)
+		if err != nil {
+			multierror.Append(multiErr, err)
+		}
+
+		err = WithBookmarkTypeCommand()(cli)
+		if err != nil {
+			multierror.Append(multiErr, err)
+		}
+
+		err = WithDocumentCommand()(cli)
+		if err != nil {
+			multierror.Append(multiErr, err)
+		}
+
+		err = WithDocumentTypeCommand()(cli)
+		if err != nil {
+			multierror.Append(multiErr, err)
+		}
+
+		err = WithTagCommand()(cli)
+		if err != nil {
+			multierror.Append(multiErr, err)
+		}
+
+		err = WithConfigCommand()(cli)
+		if err != nil {
+			multierror.Append(multiErr, err)
+		}
+
+		err = WithConfigManager()(cli)
+		if err != nil {
+			multierror.Append(multiErr, err)
+		}
+
+		err = WithBNTPBackend()(cli)
+		if err != nil {
+			multierror.Append(multiErr, err)
+		}
+
+		return
 	}
 }
 
 func WithBNTPBackend() CliOption {
-	return func(cli *Cli) {
-		cli.BNTPBackend = cli.ConfigManager.NewBackendFromConfig()
+	return func(cli *Cli) (err error) {
+		cli.BNTPBackend, err = cli.ConfigManager.NewBackendFromConfig()
+
+		return
 	}
 }
 
 func WithConfigManager() CliOption {
-	return func(cli *Cli) {
-		cli.ConfigManager = config.NewConfigManager(cli.StdErr, cli.DBOverride, cli.FsOverride)
+	return func(cli *Cli) (err error) {
+		cli.ConfigManager, err = config.NewConfigManager(cli.StdErr, cli.DBOverride, cli.FsOverride)
+
+		return
 	}
 }
 
 func WithStdErrOverride(stderrToUse io.Writer) CliOption {
-	return func(cli *Cli) {
+	return func(cli *Cli) (err error) {
 		cli.StdErr = stderrToUse
+
+		return
 	}
 }
 
 func WithDbOverride(dbToUse *sql.DB) CliOption {
-	return func(cli *Cli) {
+	return func(cli *Cli) (err error) {
 		cli.DBOverride = dbToUse
+
+		return
 	}
 }
 
 func WithFsOverride(fsToUse afero.Fs) CliOption {
-	return func(cli *Cli) {
+	return func(cli *Cli) (err error) {
 		cli.FsOverride = fsToUse
 		cli.Fs = fsToUse
+
+		return
 	}
 }
-func NewCli(options ...CliOption) *Cli {
-	cli := &Cli{
+func NewCli(options ...CliOption) (cli *Cli, err error) {
+	cli = &Cli{
 		StdErr: os.Stderr,
 		Fs:     afero.NewOsFs(),
 	}
@@ -146,15 +191,15 @@ func NewCli(options ...CliOption) *Cli {
 	)
 
 	for _, setting := range []string{config.ConsoleLogLevel, config.FileLogLevel} {
-		err := cli.ConfigManager.Viper.BindPFlag(setting, cli.RootCmd.PersistentFlags().Lookup(strcase.KebabCase(setting)))
+		err = cli.ConfigManager.Viper.BindPFlag(setting, cli.RootCmd.PersistentFlags().Lookup(strcase.KebabCase(setting)))
 		if err != nil {
-			panic(err)
+			return
 		}
 	}
 
 	cli.Logger = cli.ConfigManager.Logger
 
-	return cli
+	return cli, nil
 }
 
 func (cli *Cli) Execute() error {
@@ -192,54 +237,56 @@ type Cli struct {
 	FsOverride    afero.Fs
 	Fs            afero.Fs
 
-	BookmarkAddCmd        *cobra.Command
-	BookmarkCmd           *cobra.Command
-	BookmarkCountCmd      *cobra.Command
-	BookmarkDoesExistCmd  *cobra.Command
-	BookmarkEditCmd       *cobra.Command
-	BookmarkFindCmd       *cobra.Command
-	BookmarkListCmd       *cobra.Command
-	BookmarkRemoveCmd     *cobra.Command
-	BookmarkReplaceCmd    *cobra.Command
-	BookmarkTypeAddCmd    *cobra.Command
-	BookmarkTypeCmd       *cobra.Command
-	BookmarkTypeEditCmd   *cobra.Command
-	BookmarkTypeRemoveCmd *cobra.Command
-	BookmarkTypeListCmd   *cobra.Command
-	BookmarkUpsertCmd     *cobra.Command
-	configBaseNameCmd     *cobra.Command
-	ConfigCmd             *cobra.Command
-	ConfigExtensionsCmd   *cobra.Command
-	ConfigPathsCmd        *cobra.Command
-	DocumentAddCmd        *cobra.Command
-	DocumentCmd           *cobra.Command
-	DocumentCountCmd      *cobra.Command
-	DocumentDoesExistCmd  *cobra.Command
-	DocumentEditCmd       *cobra.Command
-	DocumentFindCmd       *cobra.Command
-	DocumentListCmd       *cobra.Command
-	DocumentRemoveCmd     *cobra.Command
-	DocumentReplaceCmd    *cobra.Command
-	DocumentTypeAddCmd    *cobra.Command
-	DocumentTypeCmd       *cobra.Command
-	DocumentTypeEditCmd   *cobra.Command
-	DocumentTypeRemoveCmd *cobra.Command
-	DocumentTypeListCmd   *cobra.Command
-	DocumentUpsertCmd     *cobra.Command
-	exportConfigCmd       *cobra.Command
-	RootCmd               *cobra.Command
-	TagAddCmd             *cobra.Command
-	TagAmbiguousCmd       *cobra.Command
-	TagCmd                *cobra.Command
-	TagCountCmd           *cobra.Command
-	TagDoesExistCmd       *cobra.Command
-	TagEditCmd            *cobra.Command
-	TagExportCmd          *cobra.Command
-	TagFindCmd            *cobra.Command
-	TagImportCmd          *cobra.Command
-	TagListCmd            *cobra.Command
-	TagRemoveCmd          *cobra.Command
-	TagReplaceCmd         *cobra.Command
-	TagShortCmd           *cobra.Command
-	TagUpsertCmd          *cobra.Command
+	BookmarkAddCmd          *cobra.Command
+	BookmarkCmd             *cobra.Command
+	BookmarkCountCmd        *cobra.Command
+	BookmarkDoesExistCmd    *cobra.Command
+	BookmarkEditCmd         *cobra.Command
+	BookmarkFindCmd         *cobra.Command
+	BookmarkListCmd         *cobra.Command
+	BookmarkRemoveCmd       *cobra.Command
+	BookmarkReplaceCmd      *cobra.Command
+	BookmarkTypeAddCmd      *cobra.Command
+	BookmarkTypeCmd         *cobra.Command
+	BookmarkTypeEditCmd     *cobra.Command
+	BookmarkTypeRemoveCmd   *cobra.Command
+	BookmarkTypeListCmd     *cobra.Command
+	BookmarkUpsertCmd       *cobra.Command
+	configBaseNameCmd       *cobra.Command
+	ConfigCmd               *cobra.Command
+	ConfigExtensionsCmd     *cobra.Command
+	ConfigPathsCmd          *cobra.Command
+	ConfigGetSchemaCmd      *cobra.Command
+	ConfigGetDBProvidersCmd *cobra.Command
+	DocumentAddCmd          *cobra.Command
+	DocumentCmd             *cobra.Command
+	DocumentCountCmd        *cobra.Command
+	DocumentDoesExistCmd    *cobra.Command
+	DocumentEditCmd         *cobra.Command
+	DocumentFindCmd         *cobra.Command
+	DocumentListCmd         *cobra.Command
+	DocumentRemoveCmd       *cobra.Command
+	DocumentReplaceCmd      *cobra.Command
+	DocumentTypeAddCmd      *cobra.Command
+	DocumentTypeCmd         *cobra.Command
+	DocumentTypeEditCmd     *cobra.Command
+	DocumentTypeRemoveCmd   *cobra.Command
+	DocumentTypeListCmd     *cobra.Command
+	DocumentUpsertCmd       *cobra.Command
+	exportConfigCmd         *cobra.Command
+	RootCmd                 *cobra.Command
+	TagAddCmd               *cobra.Command
+	TagAmbiguousCmd         *cobra.Command
+	TagCmd                  *cobra.Command
+	TagCountCmd             *cobra.Command
+	TagDoesExistCmd         *cobra.Command
+	TagEditCmd              *cobra.Command
+	TagExportCmd            *cobra.Command
+	TagFindCmd              *cobra.Command
+	TagImportCmd            *cobra.Command
+	TagListCmd              *cobra.Command
+	TagRemoveCmd            *cobra.Command
+	TagReplaceCmd           *cobra.Command
+	TagShortCmd             *cobra.Command
+	TagUpsertCmd            *cobra.Command
 }

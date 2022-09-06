@@ -36,7 +36,7 @@ import (
 )
 
 func WithTagCommand() CliOption {
-	return func(cli *Cli) {
+	return func(cli *Cli) (err error) {
 		cli.TagCmd = &cobra.Command{
 			Use:   "tag",
 			Short: "Manage tags available for bntp entities",
@@ -591,5 +591,6 @@ func WithTagCommand() CliOption {
 			}
 		}
 
+		return
 	}
 }

@@ -3,6 +3,8 @@ module github.com/JonasMuehlmann/bntp.go
 go 1.18
 
 require (
+	github.com/JonasMuehlmann/datastructures.go v0.23.0
+	github.com/JonasMuehlmann/drop-return-values.go v1.0.0
 	github.com/JonasMuehlmann/goaoi v1.7.0
 	github.com/barweiss/go-tuple v1.0.2
 	github.com/friendsofgo/errors v0.9.2
@@ -10,6 +12,7 @@ require (
 	github.com/go-playground/validator/v10 v10.10.1
 	github.com/gocarina/gocsv v0.0.0-20220310154401-d4df709ca055
 	github.com/google/uuid v1.3.0
+	github.com/hashicorp/go-multierror v1.1.1
 	github.com/mattn/go-sqlite3 v1.14.12
 	github.com/mitchellh/mapstructure v1.4.3
 	github.com/rclone/rclone v1.58.1
@@ -35,8 +38,6 @@ require (
 	github.com/Azure/go-autorest/logger v0.2.1 // indirect
 	github.com/Azure/go-autorest/tracing v0.6.0 // indirect
 	github.com/Azure/go-ntlmssp v0.0.0-20200615164410-66371956d46c // indirect
-	github.com/JonasMuehlmann/datastructures.go v0.23.0 // indirect
-	github.com/JonasMuehlmann/drop-return-values.go v1.0.0 // indirect
 	github.com/Max-Sum/base32768 v0.0.0-20191205131208-7937843c71d5 // indirect
 	github.com/Microsoft/go-winio v0.5.1 // indirect
 	github.com/StackExchange/wmi v1.2.1 // indirect
@@ -64,6 +65,7 @@ require (
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/googleapis/gax-go/v2 v2.3.0 // indirect
+	github.com/hashicorp/errwrap v1.0.0 // indirect
 	github.com/hashicorp/go-uuid v1.0.2 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/iguanesolutions/go-systemd/v5 v5.1.0 // indirect

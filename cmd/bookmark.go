@@ -34,7 +34,7 @@ import (
 )
 
 func WithBookmarkCommand() CliOption {
-	return func(cli *Cli) {
+	return func(cli *Cli) (err error) {
 		cli.BookmarkCmd = &cobra.Command{
 			Use:   "bookmark",
 			Short: "Manage bntp bookmarks",
@@ -457,5 +457,7 @@ func WithBookmarkCommand() CliOption {
 
 		cli.BookmarkFindCmd.MarkPersistentFlagRequired("filter")
 		cli.BookmarkEditCmd.MarkPersistentFlagRequired("updater")
+
+		return
 	}
 }
