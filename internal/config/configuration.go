@@ -72,6 +72,8 @@ type ConfigManager struct {
 
 	PassedConfigPath   string
 	ConfigDir          string
+	CacheDir           string
+	TempDir            string
 	ConfigFileBaseName string
 	ConfigSearchPaths  []string
 }
@@ -98,7 +100,39 @@ func NewConfigManager(stderr io.Writer, dbOverride *sql.DB, fsOverride afero.Fs)
 		return
 	}
 
+	userCacheDir, err := os.UserCacheDir()
+	if err != nil {
+		return
+	}
+
+	tempDir := os.TempDir()
+	m.TempDir = path.Join(tempDir, "bntp")
+	m.CacheDir = path.Join(userCacheDir, "bntp")
 	m.ConfigDir = path.Join(userConfigDir, "bntp")
+
+	doesTempDirExist, err := afero.Exists(fs, m.TempDir)
+	if err != nil {
+		return
+	}
+
+	if !doesTempDirExist {
+		err = fs.MkdirAll(m.TempDir, 0o744)
+		if err != nil {
+			return
+		}
+	}
+
+	doesCacheDirExist, err := afero.Exists(fs, m.CacheDir)
+	if err != nil {
+		return
+	}
+
+	if !doesCacheDirExist {
+		err = fs.MkdirAll(m.CacheDir, 0o744)
+		if err != nil {
+			return
+		}
+	}
 
 	doesConfigDirExist, err := afero.Exists(fs, m.ConfigDir)
 	if err != nil {
@@ -235,7 +269,7 @@ func (m *ConfigManager) GetDefaultSettings() map[string]any {
 	}
 
 	return map[string]any{
-		LogFile:         path.Join(m.ConfigDir, "bntp.log"),
+		LogFile:         path.Join(m.CacheDir, "bntp.log"),
 		ConsoleLogLevel: log.ErrorLevel.String(),
 		FileLogLevel:    log.InfoLevel.String(),
 		DB:              m.GetDefaultDBConfig(),
