@@ -229,7 +229,7 @@ func TryUnwrapOptional{{$EntityName}}(o any) any {
         case null.Uint64:
             return t.Uint64
     default:
-        panic("Unhandleded optional type")
+        return o
     }
 }
 
