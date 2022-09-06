@@ -285,7 +285,7 @@ func NewDefaultLogger(logFile string, consoleLogLevel log.Level, fileLogLevel lo
 		CallerPrettyfier: callerPrettyfier,
 	}
 
-	logFileHandle, err := os.OpenFile(logFile, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0o755)
+	logFileHandle, err := os.OpenFile(logFile, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0o644)
 	if err != nil {
 		panic("Failed to set up file logger with path " + logFile)
 	}

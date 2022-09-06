@@ -121,6 +121,28 @@ func NewConfigManager(stderr io.Writer, dbOverride *sql.DB, fsOverride afero.Fs)
 		m.addPendingLogMessage(log.PanicLevel, "Error reading config: %v", err)
 	}
 
+	logFile := m.Viper.GetString(LogFile)
+
+	var fs afero.Fs
+	if m.FSOverride != nil {
+		fs = m.FSOverride
+	} else {
+		// TODO: Extend config to allow creating custom fs
+		fs = afero.NewOsFs()
+	}
+
+	doesLogFileExist, err := afero.Exists(fs, logFile)
+	if err != nil {
+		panic(err)
+	}
+
+	if !doesLogFileExist {
+		err = afero.WriteFile(fs, logFile, []byte("foo"), 0o644)
+		if err != nil {
+			panic(err)
+		}
+	}
+
 	//*********************    Validate settings    ********************//
 	var config Config
 
@@ -146,8 +168,7 @@ func NewConfigManager(stderr io.Writer, dbOverride *sql.DB, fsOverride afero.Fs)
 		fileLogLevel, _ = log.ParseLevel(m.Viper.GetString(FileLogLevel))
 	}
 	// ******************** Log pending messages ********************* //
-
-	m.Logger = helper.NewDefaultLogger(m.Viper.GetString(LogFile), consoleLogLevel, fileLogLevel, stderr)
+	m.Logger = helper.NewDefaultLogger(logFile, consoleLogLevel, fileLogLevel, stderr)
 
 	for _, message := range m.PendingLogMessage {
 		m.Logger.Log(message.Level, message.Msg)
