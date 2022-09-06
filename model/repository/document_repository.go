@@ -23,7 +23,8 @@
 package repository
 
 import (
-    "context"
+	"context"
+
 	"github.com/JonasMuehlmann/bntp.go/model/domain"
 )
 
@@ -45,18 +46,17 @@ type DocumentRepository interface {
 	GetFirstWhere(ctx context.Context, domainFilter *domain.DocumentFilter) (record *domain.Document, err error)
 	GetAll(ctx context.Context) (records []*domain.Document, err error)
 	GetFromIDs(ctx context.Context, ids []int64) (records []*domain.Document, err error)
-    
-    AddType(ctx context.Context, types  []string) error
-    DeleteType(ctx context.Context, types  []string) error
-    UpdateType(ctx context.Context, oldType string, newType string) error
-    GetAllTypes(ctx context.Context) ([]string, error)
 
-    GetTagRepository() TagRepository
-    
+	AddType(ctx context.Context, types []string) error
+	DeleteType(ctx context.Context, types []string) error
+	UpdateType(ctx context.Context, oldType string, newType string) error
+	GetAllTypes(ctx context.Context) ([]string, error)
 
-    DocumentRepositoryToDomainModel(ctx context.Context, repositoryModel any) (domainModel *domain.Document, err error)
-    DocumentDomainToRepositoryModel(ctx context.Context, domainModel *domain.Document) (repositoryModel any, err error)
+	GetTagRepository() TagRepository
 
-    DocumentDomainToRepositoryFilter(ctx context.Context, domainFilter *domain.DocumentFilter) (repositoryFilter any, err error)
-    DocumentDomainToRepositoryUpdater(ctx context.Context, domainUpdater *domain.DocumentUpdater) (repositoryUpdater any, err error)
+	DocumentRepositoryToDomainModel(ctx context.Context, repositoryModel any) (domainModel *domain.Document, err error)
+	DocumentDomainToRepositoryModel(ctx context.Context, domainModel *domain.Document) (repositoryModel any, err error)
+
+	DocumentDomainToRepositoryFilter(ctx context.Context, domainFilter *domain.DocumentFilter) (repositoryFilter any, err error)
+	DocumentDomainToRepositoryUpdater(ctx context.Context, domainUpdater *domain.DocumentUpdater) (repositoryUpdater any, err error)
 }
