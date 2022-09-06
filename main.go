@@ -29,5 +29,6 @@ func main() {
 		}
 
 		cli.StdErr.Write([]byte(errSerialized))
+		os.Exit(1)
 	}
 }
