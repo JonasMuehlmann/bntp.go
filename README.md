@@ -4,14 +4,31 @@
 Libraries and CLIs for my personal all-in-one productivity system including components like bookmarks, notes, todos, projects, etc. 
 
 Neovim integration available at https://github.com/JonasMuehlmann/bntp.nvim
+
 Suggestions and ideas are welcome.
 
-## Installation
+## Installation and setup
 
-```go get github.com/JonasMuehlmann/bntp.go```
+`go get github.com/JonasMuehlmann/bntp.go`
 
+```bash
+# Determine OS-specific user configuration directories (e.g. ~/.config/bntp)
+bntp.go config paths
+
+# Set up a database (e.g. sqlite)
+sqlite3 ~/.config/bntp/bntp_db.sql < bntp.go config get-schema sqlite
+
+# Test your installation
+bntp.go bookmark add '{"id": 1, "url": "example.com"}'
+bntp.go bookmark list
+# Example output: [{"created_at":"0001-01-01T00:00:00Z","updated_at":"0001-01-01T00:00:00Z","deleted_at":null,"url":"example.com","title":"foo","tagIDs":[],"id":1,"bookmark_type":null}]
+bntp.go bookmark remove --filter "BookmarkFilterUntitled"
+# Example output: {"numAffectedRecords":1}
+bntp.go bookmark list
+# Should complain about non-existent data
+```
 Documentation available at https://pkg.go.dev/github.com/JonasMuehlmann/bntp.go.
-The CLI is documented at docs/cli_help/
+The CLI is documented at docs/cli_help/bntp.go.md
 
 # Why?
 
