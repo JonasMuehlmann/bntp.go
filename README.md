@@ -24,6 +24,8 @@ Tools and systems, which have or, after research and considerations, might influ
 - The *Zettelkasten* Method
 - David Allens *Getting Things Done* (GTD)
 
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
 # Goals
 
 - **Synergy** by using a single tool serving as a **complete** productivity system
@@ -79,22 +81,34 @@ bntp.go bookmark list
 ```
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
 # Usage
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ## Means of interaction
 
 bntp.go's architecture has clear separation of concerns and abstractions allowing for extensive modularization (and plugin usage in the future) and usage at various levels of abstraction.
 
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
 ### As a schema
 
 The simplest way to interact with bntp.go is by writing raw SQL against the [schema](schema/bntp_sqlite.sql), allowing very flexible interaction, even with different programming languages.
 
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
 ### As a library
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
 #### As an ORM
 
 bntp.go implements and ORM based on [sqlboiler](https://github.com/volatiletech/sqlboiler) for [various DBMS'](https://github.com/JonasMuehlmann/bntp.go/tree/main/model/repository).
 Take the [`sqlite3` ORM](https://github.com/JonasMuehlmann/bntp.go/tree/main/model/repository/sqlite3) as an example.
 The ORM is defined by most of the files not ending in `*_repository.go` or `*_repository_test.go`, e.g. [`bookmarks.go`](https://github.com/JonasMuehlmann/bntp.go/blob/main/model/repository/sqlite3/bookmarks.go).
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 #### Through a repository
 
@@ -115,12 +129,16 @@ As inputs, they use repository-agnostic:
 - `Limiter`s (Coming soon)
 - `MemberSelector`s (Coming soon)
 
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
 #### Through managers
 
 Managers (e.g. [`BookmarkManager`](https://github.com/JonasMuehlmann/bntp.go/blob/main/bntp/libbookmarks/bookmarkmanager.go)) are again entity-specific components, wrapping the underlying repository (e.g. [`BookmarkRepository`](https://github.com/JonasMuehlmann/bntp.go/blob/main/model/repository/sqlite3/bookmark_repository.go)) and enhancing it with extra logic for:
 - Hook execution
 - Caching (Coming soon)
 - Inter-repository communication (e.g. Updating document contents after altering their entities)
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ### Through program interfaces
 
@@ -131,6 +149,8 @@ The interaction with bntp.go as a program (instead of a library) can be achieved
 
 These allow scripting bntp.go to create an even richer feature set, allowing e.g. periodic import of bookmarks through unix cronjobs and the CLI.
 
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
 ### Through UIs
 The modular architecture and various possible program interfaces allow building various kinds of UIs for bntp.go with little duplication and clear separation of concerns.
 Examples:
@@ -139,6 +159,8 @@ Examples:
 - A desktop app through gRPC (Not a goal)
 
 
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
 # Features
 
 - [`libdocuments`](https://github.com/JonasMuehlmann/bntp.go/tree/main/bntp/libdocuments) (`Markdown` Documents with bidirectional linking)
@@ -146,6 +168,8 @@ Examples:
 - [`libtags`](https://github.com/JonasMuehlmann/bntp.go/tree/main/bntp/libtags) (Hierarchical tag structure, allowing infinite nesting of parent-tag/sub-tag relationships)
 - libtasks (Graph-based task system, coming soon)
 - `(g)RPC` based remote plugins based on [`hashicorp/go-plugin`](https://github.com/hashicorp/go-plugin) (Coming soon)
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 # Getting help
 API documentation available at https://pkg.go.dev/github.com/JonasMuehlmann/bntp.go.
@@ -160,10 +184,16 @@ If any documentation has errors, is incomplete, confusing or could be improved i
 
 When no proper exampls exist for a certain API, try to use the `*_test.go` files as examples in the meantime.
 
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
 # Contributing
 
 TODO: Reference ARCHITECTURE.md
 
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
 # License
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 # Acknowledgement
