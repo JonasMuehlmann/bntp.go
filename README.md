@@ -143,7 +143,7 @@ Managers (e.g. [`BookmarkManager`](https://github.com/JonasMuehlmann/bntp.go/blo
 ### Through program interfaces
 
 The interaction with bntp.go as a program (instead of a library) can be achieved in multiple ways:
-- Through a [CLI](https://github.com/JonasMuehlmann/bntp.go/blob/main/model/repository/sqlite3/bookmark_repository.gogg) (e.g. [`bntp.go bookmark` command](https://github.com/JonasMuehlmann/bntp.go/blob/main/model/repository/sqlite3/bookmark_repository.go)) with TUI elements (Coming soon).
+- Through a [CLI](https://github.com/JonasMuehlmann/bntp.go/blob/main/model/repository/sqlite3/bookmark_repository.go) (e.g. [`bntp.go bookmark` command](https://github.com/JonasMuehlmann/bntp.go/blob/main/model/repository/sqlite3/bookmark_repository.go)) with TUI elements (Coming soon).
 - Through gRPC (Coming soon)
 - Through a REST API (Coming soon)
 
@@ -168,6 +168,11 @@ Examples:
 - [`libtags`](https://github.com/JonasMuehlmann/bntp.go/tree/main/bntp/libtags) (Hierarchical tag structure, allowing infinite nesting of parent-tag/sub-tag relationships)
 - libtasks (Graph-based task system, coming soon)
 - `(g)RPC` based remote plugins based on [`hashicorp/go-plugin`](https://github.com/hashicorp/go-plugin) (Coming soon)
+- Anki integration through [`linkanki.go`](https://github.com/JonasMuehlmann/libanki.go):
+    - Manage suspended cards (Coming soon)
+    - Manage flagged cards (Coming soon)
+    - Browse cards (Coming soon)
+    - Edit cards (Coming soon)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
