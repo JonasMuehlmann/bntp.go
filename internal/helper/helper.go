@@ -42,9 +42,13 @@ const (
 	LogMessageEmptyInput        = "Returning early after receiving empty input"
 )
 
+func IsZero[T any](comparee T) bool {
+	return reflect.ValueOf(&comparee).Elem().IsZero()
+}
+
 // ******************************************************************//
 //                          EmptyInputError                         //
-//******************************************************************//
+// ******************************************************************//
 
 type EmptyInputError struct{}
 
@@ -73,7 +77,7 @@ func (err EmptyInputError) As(target any) bool {
 
 // ******************************************************************//
 //                    NonExistentPrimaryDataError                   //
-//******************************************************************//
+// ******************************************************************//
 
 type NonExistentPrimaryDataError struct{}
 
@@ -102,7 +106,7 @@ func (err NonExistentPrimaryDataError) As(target any) bool {
 
 // ******************************************************************//
 //                     NonExistentDependencyError                   //
-//******************************************************************//
+// ******************************************************************//
 
 type NonExistentDependencyError struct {
 	Inner error
@@ -137,7 +141,7 @@ func (err NonExistentDependencyError) As(target any) bool {
 
 // ******************************************************************//
 //                          NopUpdaterError                         //
-//******************************************************************//
+// ******************************************************************//
 
 type NopUpdaterError struct{}
 
@@ -166,7 +170,7 @@ func (err NopUpdaterError) As(target any) bool {
 
 // ******************************************************************//
 //                           NilInputError                          //
-//******************************************************************//
+// ******************************************************************//
 
 type NilInputError struct {
 	BadFieldOrParameter string
@@ -200,7 +204,7 @@ func (err NilInputError) As(target any) bool {
 
 // ******************************************************************//
 //                     IneffectiveOperationError                    //
-//******************************************************************//
+// ******************************************************************//
 
 type IneffectiveOperationError struct {
 	Inner error
@@ -235,7 +239,7 @@ func (err IneffectiveOperationError) As(target any) bool {
 
 // ******************************************************************//
 //                      DuplicateInsertionError                     //
-//******************************************************************//
+// ******************************************************************//
 
 type DuplicateInsertionError struct {
 	Inner error

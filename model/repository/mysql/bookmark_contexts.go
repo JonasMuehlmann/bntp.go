@@ -100,7 +100,7 @@ var (
 	bookmarkContextColumnsWithDefault    = []string{}
 	bookmarkContextPrimaryKeyColumns     = []string{"tag_id", "bookmark_id"}
 	bookmarkContextGeneratedColumns      =[]string{}
-maybebookmarkContextGeneratedColumns      = []string{"ID"}
+maybebookmarkContextGeneratedColumns      = []string{"id"}
 )
 
 type (

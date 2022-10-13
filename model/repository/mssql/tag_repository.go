@@ -433,7 +433,12 @@ repo.Logger.Error(err)
 return
         }
 
-		err = repoModel.Insert(ctx, tx, boil.Infer())
+
+    if helper.IsZero(repositoryModel) {
+        err = repoModel.Insert(ctx, tx, boil.Infer())
+    } else {
+		err = repoModel.Insert(ctx, tx, boil.Greylist(maybetagGeneratedColumns...))
+    }
 		if err != nil {
             if strings.Contains(err.Error(), "UNIQUE") {
                 err = helper.DuplicateInsertionError{Inner: err}

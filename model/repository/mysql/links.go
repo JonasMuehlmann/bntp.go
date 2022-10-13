@@ -77,7 +77,7 @@ var (
 	linkColumnsWithDefault    = []string{}
 	linkPrimaryKeyColumns     = []string{"source_id", "destination_id"}
 	linkGeneratedColumns      =[]string{}
-maybelinkGeneratedColumns      = []string{"ID"}
+maybelinkGeneratedColumns      = []string{"id"}
 )
 
 type (

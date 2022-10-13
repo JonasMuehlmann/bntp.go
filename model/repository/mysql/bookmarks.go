@@ -220,7 +220,7 @@ var (
 	bookmarkColumnsWithDefault    = []string{"is_read", "is_collection"}
 	bookmarkPrimaryKeyColumns     = []string{"id"}
 	bookmarkGeneratedColumns      =[]string{}
-maybebookmarkGeneratedColumns      = []string{"ID"}
+maybebookmarkGeneratedColumns      = []string{"id"}
 )
 
 type (

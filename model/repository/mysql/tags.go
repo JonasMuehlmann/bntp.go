@@ -99,7 +99,7 @@ var (
 	tagColumnsWithDefault    = []string{}
 	tagPrimaryKeyColumns     = []string{"id"}
 	tagGeneratedColumns      =[]string{}
-maybetagGeneratedColumns      = []string{"ID"}
+maybetagGeneratedColumns      = []string{"id"}
 )
 
 type (

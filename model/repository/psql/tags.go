@@ -140,7 +140,7 @@ var (
 	tagColumnsWithDefault    = []string{"parent_tag"}
 	tagPrimaryKeyColumns     = []string{"id"}
 	tagGeneratedColumns      =[]string{}
-maybetagGeneratedColumns      = []string{"ID"}
+maybetagGeneratedColumns      = []string{"id"}
 )
 
 type (

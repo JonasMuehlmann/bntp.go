@@ -134,7 +134,7 @@ var (
 	bookmarkTypeColumnsWithDefault    = []string{}
 	bookmarkTypePrimaryKeyColumns     = []string{"id"}
 	bookmarkTypeGeneratedColumns      =[]string{}
-maybebookmarkTypeGeneratedColumns      = []string{"ID"}
+maybebookmarkTypeGeneratedColumns      = []string{"id"}
 )
 
 type (
