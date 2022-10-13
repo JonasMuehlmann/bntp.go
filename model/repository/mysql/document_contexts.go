@@ -76,7 +76,8 @@ var (
 	documentContextColumnsWithoutDefault = []string{"document_id", "tag_id"}
 	documentContextColumnsWithDefault    = []string{}
 	documentContextPrimaryKeyColumns     = []string{"tag_id", "document_id"}
-	documentContextGeneratedColumns      = []string{}
+	documentContextGeneratedColumns      =[]string{}
+maybedocumentContextGeneratedColumns      = []string{"ID"}
 )
 
 type (

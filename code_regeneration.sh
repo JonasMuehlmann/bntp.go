@@ -18,6 +18,6 @@ cp templates/*_test.go model/repository/sqlite3/
 # sed -i "s/sqlite3/mssql/g" model/repository/mssql/*_test.go
 # sed -i "s/sqlite3/mysql/g" model/repository/mysql/*_test.go
 
-sed -ri "s/(.*GeneratedColumns\s*=).*/\1[]string{}/g" model/repository/**/*.go
+sed -ri "s/(\S*GeneratedColumns\s*=).*/\1[]string{}\nmaybe\1 []string{\"id\"}/g" model/repository/**/*.go
 
 git restore model/repository/document_content_repository.go model/repository/fs/document_content_repository.go

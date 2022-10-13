@@ -219,7 +219,8 @@ var (
 	bookmarkColumnsWithoutDefault = []string{"id", "title", "url", "bookmark_type_id", "created_at", "updated_at", "deleted_at"}
 	bookmarkColumnsWithDefault    = []string{"is_read", "is_collection"}
 	bookmarkPrimaryKeyColumns     = []string{"id"}
-	bookmarkGeneratedColumns      = []string{}
+	bookmarkGeneratedColumns      =[]string{}
+maybebookmarkGeneratedColumns      = []string{"ID"}
 )
 
 type (
