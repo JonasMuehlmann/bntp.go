@@ -16,7 +16,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// FIX: Some tests show false positives because we do not check for non-existent tags
+// FIX: Some tests show false positives because we do not check for non-existent tags.
 func TestSQLTagRepositoryAddTest(t *testing.T) {
 	tests := []struct {
 		err    error
@@ -39,7 +39,6 @@ func TestSQLTagRepositoryAddTest(t *testing.T) {
 		{
 			name: "Two regular inputs, non-existent dependencies", err: repositoryCommon.ReferenceToNonExistentDependencyError{}, models: []*domain.Tag{
 				{
-
 					Tag: "Programming",
 
 					// This tag does not exist
@@ -47,7 +46,6 @@ func TestSQLTagRepositoryAddTest(t *testing.T) {
 					ID:        1,
 				},
 				{
-
 					Tag: "Operating Systems",
 
 					// This tag does not exist
@@ -59,16 +57,21 @@ func TestSQLTagRepositoryAddTest(t *testing.T) {
 		{
 			name: "Two minimal inputs", models: []*domain.Tag{
 				{
-
 					Tag: "Programming",
 
 					ID: 1,
 				},
 				{
-
 					Tag: "Operating Systems",
 
 					ID: 3,
+				},
+			},
+		},
+		{
+			name: "One minimal input, generating ID", models: []*domain.Tag{
+				{
+					Tag: "Programming",
 				},
 			},
 		},
@@ -126,13 +129,11 @@ func TestSQLTagRepositoryReplaceTest(t *testing.T) {
 			name: "Two existing minimal inputs, adding non-existent dependencies", err: repositoryCommon.ReferenceToNonExistentDependencyError{},
 			previousModels: []*domain.Tag{
 				{
-
 					Tag: "Programming",
 
 					ID: 1,
 				},
 				{
-
 					Tag: "Operating Systems",
 
 					ID: 3,
@@ -141,13 +142,11 @@ func TestSQLTagRepositoryReplaceTest(t *testing.T) {
 
 			models: []*domain.Tag{
 				{
-
 					Tag:       "Programming",
 					SubtagIDs: []int64{2},
 					ID:        1,
 				},
 				{
-
 					Tag:       "Operating Systems",
 					SubtagIDs: []int64{4},
 					ID:        3,
@@ -158,13 +157,11 @@ func TestSQLTagRepositoryReplaceTest(t *testing.T) {
 			name: "Two existing minimal inputs, adding duplicated values", err: helper.DuplicateInsertionError{},
 			previousModels: []*domain.Tag{
 				{
-
 					Tag: "Programming",
 
 					ID: 1,
 				},
 				{
-
 					Tag: "Operating Systems",
 
 					ID: 3,
@@ -173,7 +170,6 @@ func TestSQLTagRepositoryReplaceTest(t *testing.T) {
 
 			models: []*domain.Tag{
 				{
-
 					Tag: "Programming",
 
 					// This tag does not exist
@@ -181,7 +177,6 @@ func TestSQLTagRepositoryReplaceTest(t *testing.T) {
 					ID:        1,
 				},
 				{
-
 					Tag: "Operating Systems",
 
 					// This tag does not exist
@@ -193,13 +188,11 @@ func TestSQLTagRepositoryReplaceTest(t *testing.T) {
 		{
 			name: "Two existing minimal inputs", models: []*domain.Tag{
 				{
-
 					Tag: "Programming",
 
 					ID: 1,
 				},
 				{
-
 					Tag: "Operating Systems",
 
 					ID: 3,
@@ -207,13 +200,11 @@ func TestSQLTagRepositoryReplaceTest(t *testing.T) {
 			},
 			previousModels: []*domain.Tag{
 				{
-
 					Tag: "Programming",
 
 					ID: 1,
 				},
 				{
-
 					Tag: "Operating Systems",
 
 					ID: 3,
@@ -279,13 +270,11 @@ func TestSQLTagRepositoryUpsertTest(t *testing.T) {
 			name: "Two existing inputs, non-existent dependencies", err: repositoryCommon.ReferenceToNonExistentDependencyError{},
 			previousModels: []*domain.Tag{
 				{
-
 					Tag: "Programming",
 
 					ID: 1,
 				},
 				{
-
 					Tag: "Operating Systems",
 
 					ID: 3,
@@ -294,7 +283,6 @@ func TestSQLTagRepositoryUpsertTest(t *testing.T) {
 
 			models: []*domain.Tag{
 				{
-
 					Tag: "Programming",
 
 					// This tag does not exist
@@ -302,7 +290,6 @@ func TestSQLTagRepositoryUpsertTest(t *testing.T) {
 					ID:        1,
 				},
 				{
-
 					Tag: "Operating Systems",
 
 					// This tag does not exist
@@ -316,13 +303,11 @@ func TestSQLTagRepositoryUpsertTest(t *testing.T) {
 			name: "Two existing minimal inputs",
 			previousModels: []*domain.Tag{
 				{
-
 					Tag: "Programming",
 
 					ID: 1,
 				},
 				{
-
 					Tag: "Operating Systems",
 
 					ID: 3,
@@ -330,13 +315,11 @@ func TestSQLTagRepositoryUpsertTest(t *testing.T) {
 			},
 			models: []*domain.Tag{
 				{
-
 					Tag: "Programming",
 
 					ID: 1,
 				},
 				{
-
 					Tag: "Operating Systems",
 
 					ID: 3,
@@ -406,13 +389,11 @@ func TestSQLTagRepositoryUpdateTest(t *testing.T) {
 			name: "Two existing minimal inputs, nop updater", updater: &domain.TagUpdater{}, err: helper.IneffectiveOperationError{},
 			previousModels: []*domain.Tag{
 				{
-
 					Tag: "Programming",
 
 					ID: 1,
 				},
 				{
-
 					Tag: "Operating Systems",
 
 					ID: 3,
@@ -420,13 +401,11 @@ func TestSQLTagRepositoryUpdateTest(t *testing.T) {
 			},
 			models: []*domain.Tag{
 				{
-
 					Tag: "Programming",
 
 					ID: 1,
 				},
 				{
-
 					Tag: "Operating Systems",
 
 					ID: 3,
@@ -437,13 +416,11 @@ func TestSQLTagRepositoryUpdateTest(t *testing.T) {
 			name: "Two existing inputs, adding duplicated values", err: helper.DuplicateInsertionError{},
 			previousModels: []*domain.Tag{
 				{
-
 					Tag: "Programming",
 
 					ID: 1,
 				},
 				{
-
 					Tag: "Operating Systems",
 
 					ID: 3,
@@ -452,13 +429,11 @@ func TestSQLTagRepositoryUpdateTest(t *testing.T) {
 
 			models: []*domain.Tag{
 				{
-
 					Tag: "Programming",
 
 					ID: 1,
 				},
 				{
-
 					Tag: "Programming",
 
 					ID: 3,
@@ -467,7 +442,6 @@ func TestSQLTagRepositoryUpdateTest(t *testing.T) {
 		},
 
 		{
-
 			name: "Two existing minimal inputs, prepend to Tag",
 			updater: &domain.TagUpdater{
 				Tag: optional.Make(model.UpdateOperation[string]{Operator: model.UpdatePrepend, Operand: "New "}),
@@ -475,13 +449,11 @@ func TestSQLTagRepositoryUpdateTest(t *testing.T) {
 
 			previousModels: []*domain.Tag{
 				{
-
 					Tag: "Programming",
 
 					ID: 1,
 				},
 				{
-
 					Tag: "Operating Systems",
 
 					ID: 3,
@@ -490,13 +462,11 @@ func TestSQLTagRepositoryUpdateTest(t *testing.T) {
 
 			models: []*domain.Tag{
 				{
-
 					Tag: "Programming",
 
 					ID: 1,
 				},
 				{
-
 					Tag: "Operating Systems",
 
 					ID: 3,
@@ -559,7 +529,6 @@ func TestSQLTagRepositoryUpdateWhereTest(t *testing.T) {
 			name: "Nil filter", updater: &domain.TagUpdater{}, filter: nil, err: helper.NilInputError{},
 		},
 		{
-
 			name: "Two existing minimal inputs, filter for tag of first, prepend to Tag", numAffectedRecords: 1, insertBeforeUpdate: true,
 			updater: &domain.TagUpdater{
 				Tag: optional.Make(model.UpdateOperation[string]{Operator: model.UpdatePrepend, Operand: "New "}),
@@ -573,13 +542,11 @@ func TestSQLTagRepositoryUpdateWhereTest(t *testing.T) {
 
 			models: []*domain.Tag{
 				{
-
 					Tag: "Programming",
 
 					ID: 1,
 				},
 				{
-
 					Tag: "Operating Systems",
 
 					ID: 3,
@@ -587,7 +554,6 @@ func TestSQLTagRepositoryUpdateWhereTest(t *testing.T) {
 			},
 		},
 		{
-
 			name: "Two existing minimal inputs, prepend to Tag", numAffectedRecords: 2, insertBeforeUpdate: true, filter: &domain.TagFilter{},
 			updater: &domain.TagUpdater{
 				Tag: optional.Make(model.UpdateOperation[string]{Operator: model.UpdatePrepend, Operand: "New "}),
@@ -595,13 +561,11 @@ func TestSQLTagRepositoryUpdateWhereTest(t *testing.T) {
 
 			models: []*domain.Tag{
 				{
-
 					Tag: "Programming",
 
 					ID: 1,
 				},
 				{
-
 					Tag: "Operating Systems",
 
 					ID: 3,
@@ -667,13 +631,11 @@ func TestSQLTagRepositoryDeleteTest(t *testing.T) {
 		{
 			name: "Two minimal inputs", insertBeforeDelete: true, models: []*domain.Tag{
 				{
-
 					Tag: "Programming",
 
 					ID: 1,
 				},
 				{
-
 					Tag: "Operating Systems",
 
 					ID: 3,
@@ -729,7 +691,6 @@ func TestSQLTagRepositoryDeleteWhereTest(t *testing.T) {
 			name: "Nil filter", filter: nil, err: helper.NilInputError{},
 		},
 		{
-
 			name: "Two existing minimal inputs, filter for tag of first", numAffectedRecords: 1, insertBeforeDelete: true,
 			filter: &domain.TagFilter{
 				Tag: optional.Make(model.FilterOperation[string]{
@@ -740,13 +701,11 @@ func TestSQLTagRepositoryDeleteWhereTest(t *testing.T) {
 
 			models: []*domain.Tag{
 				{
-
 					Tag: "Programming",
 
 					ID: 1,
 				},
 				{
-
 					Tag: "Operating Systems",
 
 					ID: 3,
@@ -754,7 +713,6 @@ func TestSQLTagRepositoryDeleteWhereTest(t *testing.T) {
 			},
 		},
 		{
-
 			name: "Two non-existing minimal inputs, filter for tag of first",
 			filter: &domain.TagFilter{
 				Tag: optional.Make(model.FilterOperation[string]{
@@ -813,7 +771,6 @@ func TestSQLTagRepositoryCountWhereTest(t *testing.T) {
 			name: "Nil filter", filter: nil, err: helper.NilInputError{},
 		},
 		{
-
 			name: "Two existing minimal inputs, filter for tag of first", numAffectedRecords: 1, insertBeforeCount: true,
 			filter: &domain.TagFilter{
 				Tag: optional.Make(model.FilterOperation[string]{
@@ -824,13 +781,11 @@ func TestSQLTagRepositoryCountWhereTest(t *testing.T) {
 
 			models: []*domain.Tag{
 				{
-
 					Tag: "Programming",
 
 					ID: 1,
 				},
 				{
-
 					Tag: "Operating Systems",
 
 					ID: 3,
@@ -838,7 +793,6 @@ func TestSQLTagRepositoryCountWhereTest(t *testing.T) {
 			},
 		},
 		{
-
 			name: "Two existing minimal inputs, filter for tag",
 			filter: &domain.TagFilter{
 				Tag: optional.Make(model.FilterOperation[string]{
@@ -896,13 +850,11 @@ func TestSQLTagRepositoryCountAllTest(t *testing.T) {
 			name: "Two existing minimal entities, filter for all", numRecords: 2, insertBeforeCount: true,
 			models: []*domain.Tag{
 				{
-
 					Tag: "Programming",
 
 					ID: 1,
 				},
 				{
-
 					Tag: "Operating Systems",
 
 					ID: 3,
@@ -913,13 +865,11 @@ func TestSQLTagRepositoryCountAllTest(t *testing.T) {
 			name: "Two non-existing minimal entities, filter for all",
 			models: []*domain.Tag{
 				{
-
 					Tag: "Programming",
 
 					ID: 1,
 				},
 				{
-
 					Tag: "Operating Systems",
 
 					ID: 3,
@@ -976,7 +926,6 @@ func TestSQLTagRepositoryDoesExistTest(t *testing.T) {
 		{
 			name: "Existing minimal entity", doesExist: true, insertBeforeCheck: true,
 			model: &domain.Tag{
-
 				Tag: "Programming",
 
 				ID: 1,
@@ -985,7 +934,6 @@ func TestSQLTagRepositoryDoesExistTest(t *testing.T) {
 		{
 			name: "Non-existing minimal entities",
 			model: &domain.Tag{
-
 				Tag: "Programming",
 
 				ID: 1,
@@ -1041,7 +989,6 @@ func TestSQLTagRepositoryDoesExistWhereTest(t *testing.T) {
 			name: "Nil input", filter: nil, err: helper.NilInputError{},
 		},
 		{
-
 			name: "Two existing minimal inputs, filter for tag of first", doesExist: true, insertBeforeCheck: true,
 			filter: &domain.TagFilter{
 				Tag: optional.Make(model.FilterOperation[string]{
@@ -1052,13 +999,11 @@ func TestSQLTagRepositoryDoesExistWhereTest(t *testing.T) {
 
 			models: []*domain.Tag{
 				{
-
 					Tag: "Programming",
 
 					ID: 1,
 				},
 				{
-
 					Tag: "Operating Systems",
 
 					ID: 3,
@@ -1066,7 +1011,6 @@ func TestSQLTagRepositoryDoesExistWhereTest(t *testing.T) {
 			},
 		},
 		{
-
 			name: "Two existing minimal inputs, filter for tag of both", doesExist: true, insertBeforeCheck: true,
 			filter: &domain.TagFilter{
 				Tag: optional.Make(model.FilterOperation[string]{
@@ -1077,13 +1021,11 @@ func TestSQLTagRepositoryDoesExistWhereTest(t *testing.T) {
 
 			models: []*domain.Tag{
 				{
-
 					Tag: "Programming",
 
 					ID: 1,
 				},
 				{
-
 					Tag: "Operating Systems",
 
 					ID: 3,
@@ -1091,7 +1033,6 @@ func TestSQLTagRepositoryDoesExistWhereTest(t *testing.T) {
 			},
 		},
 		{
-
 			name: "Two existing minimal inputs, filter for tag of first",
 			filter: &domain.TagFilter{
 				Tag: optional.Make(model.FilterOperation[string]{
@@ -1102,13 +1043,11 @@ func TestSQLTagRepositoryDoesExistWhereTest(t *testing.T) {
 
 			models: []*domain.Tag{
 				{
-
 					Tag: "Programming",
 
 					ID: 1,
 				},
 				{
-
 					Tag: "Operating Systems",
 
 					ID: 3,
@@ -1175,7 +1114,6 @@ func TestSQLTagRepositoryGetWhereTest(t *testing.T) {
 			},
 		},
 		{
-
 			name: "Two existing minimal inputs, filter for tag of first", numRecords: 1, insertBeforeCheck: true,
 			filter: &domain.TagFilter{
 				Tag: optional.Make(model.FilterOperation[string]{
@@ -1186,13 +1124,11 @@ func TestSQLTagRepositoryGetWhereTest(t *testing.T) {
 
 			models: []*domain.Tag{
 				{
-
 					Tag: "Programming",
 
 					ID: 1,
 				},
 				{
-
 					Tag: "Operating Systems",
 
 					ID: 3,
@@ -1200,7 +1136,6 @@ func TestSQLTagRepositoryGetWhereTest(t *testing.T) {
 			},
 		},
 		{
-
 			name: "Two existing minimal inputs, filter for tag of ", numRecords: 2, insertBeforeCheck: true,
 			filter: &domain.TagFilter{
 				Tag: optional.Make(model.FilterOperation[string]{
@@ -1211,13 +1146,11 @@ func TestSQLTagRepositoryGetWhereTest(t *testing.T) {
 
 			models: []*domain.Tag{
 				{
-
 					Tag: "Programming",
 
 					ID: 1,
 				},
 				{
-
 					Tag: "Operating Systems",
 
 					ID: 3,
@@ -1225,7 +1158,6 @@ func TestSQLTagRepositoryGetWhereTest(t *testing.T) {
 			},
 		},
 		{
-
 			name: "Two existing minimal inputs, filter for tag of first", numRecords: 1, insertBeforeCheck: true,
 			filter: &domain.TagFilter{
 				Tag: optional.Make(model.FilterOperation[string]{
@@ -1236,13 +1168,11 @@ func TestSQLTagRepositoryGetWhereTest(t *testing.T) {
 
 			models: []*domain.Tag{
 				{
-
 					Tag: "Programming",
 
 					ID: 1,
 				},
 				{
-
 					Tag: "Operating Systems",
 
 					ID: 3,
@@ -1299,7 +1229,6 @@ func TestSQLTagRepositoryGetFirstWhereTest(t *testing.T) {
 			name: "Nil filter", filter: nil, err: helper.NilInputError{},
 		},
 		{
-
 			name: "Two existing minimal inputs, filter for tag of first", numRecords: 1, insertBeforeCheck: true,
 			filter: &domain.TagFilter{
 				Tag: optional.Make(model.FilterOperation[string]{
@@ -1310,13 +1239,11 @@ func TestSQLTagRepositoryGetFirstWhereTest(t *testing.T) {
 
 			models: []*domain.Tag{
 				{
-
 					Tag: "Programming",
 
 					ID: 1,
 				},
 				{
-
 					Tag: "Operating Systems",
 
 					ID: 3,
@@ -1324,7 +1251,6 @@ func TestSQLTagRepositoryGetFirstWhereTest(t *testing.T) {
 			},
 		},
 		{
-
 			name: "Two existing minimal inputs, filter for tag of both", numRecords: 2, insertBeforeCheck: true,
 			filter: &domain.TagFilter{
 				Tag: optional.Make(model.FilterOperation[string]{
@@ -1335,13 +1261,11 @@ func TestSQLTagRepositoryGetFirstWhereTest(t *testing.T) {
 
 			models: []*domain.Tag{
 				{
-
 					Tag: "Programming",
 
 					ID: 1,
 				},
 				{
-
 					Tag: "Operating Systems",
 
 					ID: 3,
@@ -1349,7 +1273,6 @@ func TestSQLTagRepositoryGetFirstWhereTest(t *testing.T) {
 			},
 		},
 		{
-
 			name: "Two existing minimal inputs, filter for tag of first", err: &helper.IneffectiveOperationError{},
 			filter: &domain.TagFilter{
 				Tag: optional.Make(model.FilterOperation[string]{
@@ -1406,13 +1329,11 @@ func TestSQLTagRepositoryGetAllTest(t *testing.T) {
 			name: "Two existing minimal entities", numRecords: 2, insertBeforeCheck: true,
 			models: []*domain.Tag{
 				{
-
 					Tag: "Programming",
 
 					ID: 1,
 				},
 				{
-
 					Tag: "Operating Systems",
 
 					ID: 3,
@@ -1471,7 +1392,6 @@ func TestSQLTagRepositoryGetFromIDsTest(t *testing.T) {
 			name: "Nil input", ids: nil, err: helper.NilInputError{},
 		},
 		{
-
 			name: "Two existing minimal inputs, get all", numRecords: 2, insertBeforeCheck: true,
 			models: []*domain.Tag{
 				{

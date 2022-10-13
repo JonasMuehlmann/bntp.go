@@ -3,7 +3,6 @@ package repository_test
 import (
 	"context"
 	"testing"
-
 	"time"
 
 	"github.com/JonasMuehlmann/bntp.go/internal/helper"
@@ -40,7 +39,6 @@ func TestSQLBookmarkRepositoryAddTest(t *testing.T) {
 		{
 			name: "Two regular inputs, non-existent dependencies", err: repositoryCommon.ReferenceToNonExistentDependencyError{}, models: []*domain.Bookmark{
 				{
-
 					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
@@ -55,7 +53,6 @@ func TestSQLBookmarkRepositoryAddTest(t *testing.T) {
 					IsRead:       true,
 				},
 				{
-
 					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
@@ -74,7 +71,6 @@ func TestSQLBookmarkRepositoryAddTest(t *testing.T) {
 		{
 			name: "Two minimal inputs", models: []*domain.Bookmark{
 				{
-
 					CreatedAt:    time.Now(),
 					UpdatedAt:    time.Now(),
 					DeletedAt:    optional.Make(time.Now()),
@@ -85,13 +81,25 @@ func TestSQLBookmarkRepositoryAddTest(t *testing.T) {
 					IsRead:       true,
 				},
 				{
-
 					CreatedAt:    time.Now(),
 					UpdatedAt:    time.Now(),
 					DeletedAt:    optional.Make(time.Now()),
 					URL:          "https://foo.example.com",
 					Title:        optional.Make("My second bookmark"),
 					ID:           2,
+					IsCollection: false,
+					IsRead:       true,
+				},
+			},
+		},
+		{
+			name: "One minimal input, generating ID", models: []*domain.Bookmark{
+				{
+					CreatedAt:    time.Now(),
+					UpdatedAt:    time.Now(),
+					DeletedAt:    optional.Make(time.Now()),
+					URL:          "https://example.com",
+					Title:        optional.Make("My first bookmark"),
 					IsCollection: false,
 					IsRead:       true,
 				},
@@ -157,7 +165,6 @@ func TestSQLBookmarkRepositoryReplaceTest(t *testing.T) {
 			name: "Two existing minimal inputs, adding non-existent dependencies", err: repositoryCommon.ReferenceToNonExistentDependencyError{},
 			previousModels: []*domain.Bookmark{
 				{
-
 					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
@@ -169,7 +176,6 @@ func TestSQLBookmarkRepositoryReplaceTest(t *testing.T) {
 					IsRead:       true,
 				},
 				{
-
 					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
@@ -184,7 +190,6 @@ func TestSQLBookmarkRepositoryReplaceTest(t *testing.T) {
 
 			models: []*domain.Bookmark{
 				{
-
 					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
@@ -197,7 +202,6 @@ func TestSQLBookmarkRepositoryReplaceTest(t *testing.T) {
 					IsRead:       true,
 				},
 				{
-
 					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
@@ -215,7 +219,6 @@ func TestSQLBookmarkRepositoryReplaceTest(t *testing.T) {
 			name: "Two existing minimal inputs, adding duplicated values", err: helper.DuplicateInsertionError{},
 			previousModels: []*domain.Bookmark{
 				{
-
 					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
@@ -227,7 +230,6 @@ func TestSQLBookmarkRepositoryReplaceTest(t *testing.T) {
 					IsRead:       true,
 				},
 				{
-
 					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
@@ -242,7 +244,6 @@ func TestSQLBookmarkRepositoryReplaceTest(t *testing.T) {
 
 			models: []*domain.Bookmark{
 				{
-
 					CreatedAt:    time.Now(),
 					UpdatedAt:    time.Now(),
 					DeletedAt:    optional.Make(time.Now()),
@@ -253,7 +254,6 @@ func TestSQLBookmarkRepositoryReplaceTest(t *testing.T) {
 					IsRead:       true,
 				},
 				{
-
 					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
@@ -270,7 +270,6 @@ func TestSQLBookmarkRepositoryReplaceTest(t *testing.T) {
 		{
 			name: "Two existing minimal inputs", models: []*domain.Bookmark{
 				{
-
 					CreatedAt:    time.Now(),
 					UpdatedAt:    time.Now(),
 					DeletedAt:    optional.Make(time.Now()),
@@ -281,7 +280,6 @@ func TestSQLBookmarkRepositoryReplaceTest(t *testing.T) {
 					IsRead:       true,
 				},
 				{
-
 					CreatedAt:    time.Now(),
 					UpdatedAt:    time.Now(),
 					DeletedAt:    optional.Make(time.Now()),
@@ -294,7 +292,6 @@ func TestSQLBookmarkRepositoryReplaceTest(t *testing.T) {
 			},
 			previousModels: []*domain.Bookmark{
 				{
-
 					CreatedAt:    time.Now(),
 					UpdatedAt:    time.Now(),
 					DeletedAt:    optional.Make(time.Now()),
@@ -305,7 +302,6 @@ func TestSQLBookmarkRepositoryReplaceTest(t *testing.T) {
 					IsRead:       true,
 				},
 				{
-
 					CreatedAt:    time.Now(),
 					UpdatedAt:    time.Now(),
 					DeletedAt:    optional.Make(time.Now()),
@@ -382,7 +378,6 @@ func TestSQLBookmarkRepositoryUpsertTest(t *testing.T) {
 			name: "Two existing inputs, non-existent dependencies", err: repositoryCommon.ReferenceToNonExistentDependencyError{},
 			previousModels: []*domain.Bookmark{
 				{
-
 					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
@@ -394,7 +389,6 @@ func TestSQLBookmarkRepositoryUpsertTest(t *testing.T) {
 					IsRead:       true,
 				},
 				{
-
 					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
@@ -409,7 +403,6 @@ func TestSQLBookmarkRepositoryUpsertTest(t *testing.T) {
 
 			models: []*domain.Bookmark{
 				{
-
 					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
@@ -422,7 +415,6 @@ func TestSQLBookmarkRepositoryUpsertTest(t *testing.T) {
 					IsRead:       true,
 				},
 				{
-
 					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
@@ -441,7 +433,6 @@ func TestSQLBookmarkRepositoryUpsertTest(t *testing.T) {
 			name: "Two existing inputs, adding duplicated values", err: helper.DuplicateInsertionError{},
 			previousModels: []*domain.Bookmark{
 				{
-
 					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
@@ -453,7 +444,6 @@ func TestSQLBookmarkRepositoryUpsertTest(t *testing.T) {
 					IsRead:       true,
 				},
 				{
-
 					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
@@ -468,7 +458,6 @@ func TestSQLBookmarkRepositoryUpsertTest(t *testing.T) {
 
 			models: []*domain.Bookmark{
 				{
-
 					CreatedAt:    time.Now(),
 					UpdatedAt:    time.Now(),
 					DeletedAt:    optional.Make(time.Now()),
@@ -479,7 +468,6 @@ func TestSQLBookmarkRepositoryUpsertTest(t *testing.T) {
 					IsRead:       true,
 				},
 				{
-
 					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
@@ -497,7 +485,6 @@ func TestSQLBookmarkRepositoryUpsertTest(t *testing.T) {
 			name: "Two existing minimal inputs",
 			previousModels: []*domain.Bookmark{
 				{
-
 					CreatedAt:    time.Now(),
 					UpdatedAt:    time.Now(),
 					DeletedAt:    optional.Make(time.Now()),
@@ -508,7 +495,6 @@ func TestSQLBookmarkRepositoryUpsertTest(t *testing.T) {
 					IsRead:       true,
 				},
 				{
-
 					CreatedAt:    time.Now(),
 					UpdatedAt:    time.Now(),
 					DeletedAt:    optional.Make(time.Now()),
@@ -521,7 +507,6 @@ func TestSQLBookmarkRepositoryUpsertTest(t *testing.T) {
 			},
 			models: []*domain.Bookmark{
 				{
-
 					CreatedAt:    time.Now(),
 					UpdatedAt:    time.Now(),
 					DeletedAt:    optional.Make(time.Now()),
@@ -532,7 +517,6 @@ func TestSQLBookmarkRepositoryUpsertTest(t *testing.T) {
 					IsRead:       true,
 				},
 				{
-
 					CreatedAt:    time.Now(),
 					UpdatedAt:    time.Now(),
 					DeletedAt:    optional.Make(time.Now()),
@@ -613,7 +597,6 @@ func TestSQLBookmarkRepositoryUpdateTest(t *testing.T) {
 			name: "Two existing minimal inputs, nop updater", updater: &domain.BookmarkUpdater{}, err: helper.IneffectiveOperationError{},
 			previousModels: []*domain.Bookmark{
 				{
-
 					CreatedAt:    time.Now(),
 					UpdatedAt:    time.Now(),
 					DeletedAt:    optional.Make(time.Now()),
@@ -624,7 +607,6 @@ func TestSQLBookmarkRepositoryUpdateTest(t *testing.T) {
 					IsRead:       true,
 				},
 				{
-
 					CreatedAt:    time.Now(),
 					UpdatedAt:    time.Now(),
 					DeletedAt:    optional.Make(time.Now()),
@@ -637,7 +619,6 @@ func TestSQLBookmarkRepositoryUpdateTest(t *testing.T) {
 			},
 			models: []*domain.Bookmark{
 				{
-
 					CreatedAt:    time.Now(),
 					UpdatedAt:    time.Now(),
 					DeletedAt:    optional.Make(time.Now()),
@@ -648,7 +629,6 @@ func TestSQLBookmarkRepositoryUpdateTest(t *testing.T) {
 					IsRead:       true,
 				},
 				{
-
 					CreatedAt:    time.Now(),
 					UpdatedAt:    time.Now(),
 					DeletedAt:    optional.Make(time.Now()),
@@ -664,7 +644,6 @@ func TestSQLBookmarkRepositoryUpdateTest(t *testing.T) {
 			name: "Two existing inputs, adding duplicated values", err: helper.DuplicateInsertionError{},
 			previousModels: []*domain.Bookmark{
 				{
-
 					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
@@ -676,7 +655,6 @@ func TestSQLBookmarkRepositoryUpdateTest(t *testing.T) {
 					IsRead:       true,
 				},
 				{
-
 					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
@@ -691,7 +669,6 @@ func TestSQLBookmarkRepositoryUpdateTest(t *testing.T) {
 
 			models: []*domain.Bookmark{
 				{
-
 					CreatedAt:    time.Now(),
 					UpdatedAt:    time.Now(),
 					DeletedAt:    optional.Make(time.Now()),
@@ -702,7 +679,6 @@ func TestSQLBookmarkRepositoryUpdateTest(t *testing.T) {
 					IsRead:       true,
 				},
 				{
-
 					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
@@ -717,7 +693,6 @@ func TestSQLBookmarkRepositoryUpdateTest(t *testing.T) {
 		},
 
 		{
-
 			name: "Two existing minimal inputs, overwrite IsCollection",
 			updater: &domain.BookmarkUpdater{
 				IsCollection: optional.Make(model.UpdateOperation[bool]{Operator: model.UpdateSet, Operand: true}),
@@ -725,7 +700,6 @@ func TestSQLBookmarkRepositoryUpdateTest(t *testing.T) {
 
 			previousModels: []*domain.Bookmark{
 				{
-
 					CreatedAt:    time.Now(),
 					UpdatedAt:    time.Now(),
 					DeletedAt:    optional.Make(time.Now()),
@@ -736,7 +710,6 @@ func TestSQLBookmarkRepositoryUpdateTest(t *testing.T) {
 					IsRead:       true,
 				},
 				{
-
 					CreatedAt:    time.Now(),
 					UpdatedAt:    time.Now(),
 					DeletedAt:    optional.Make(time.Now()),
@@ -750,7 +723,6 @@ func TestSQLBookmarkRepositoryUpdateTest(t *testing.T) {
 
 			models: []*domain.Bookmark{
 				{
-
 					CreatedAt:    time.Now(),
 					UpdatedAt:    time.Now(),
 					DeletedAt:    optional.Make(time.Now()),
@@ -761,7 +733,6 @@ func TestSQLBookmarkRepositoryUpdateTest(t *testing.T) {
 					IsRead:       true,
 				},
 				{
-
 					CreatedAt:    time.Now(),
 					UpdatedAt:    time.Now(),
 					DeletedAt:    optional.Make(time.Now()),
@@ -835,7 +806,6 @@ func TestSQLBookmarkRepositoryUpdateWhereTest(t *testing.T) {
 			name: "Nil filter", updater: &domain.BookmarkUpdater{}, filter: nil, err: helper.NilInputError{},
 		},
 		{
-
 			name: "Two existing minimal inputs, filter for title of first, update IsCollection", numAffectedRecords: 1, insertBeforeUpdate: true,
 			updater: &domain.BookmarkUpdater{
 				IsCollection: optional.Make(model.UpdateOperation[bool]{Operator: model.UpdateSet, Operand: true}),
@@ -849,7 +819,6 @@ func TestSQLBookmarkRepositoryUpdateWhereTest(t *testing.T) {
 
 			models: []*domain.Bookmark{
 				{
-
 					CreatedAt:    time.Now(),
 					UpdatedAt:    time.Now(),
 					DeletedAt:    optional.Make(time.Now()),
@@ -860,7 +829,6 @@ func TestSQLBookmarkRepositoryUpdateWhereTest(t *testing.T) {
 					IsRead:       true,
 				},
 				{
-
 					CreatedAt:    time.Now(),
 					UpdatedAt:    time.Now(),
 					DeletedAt:    optional.Make(time.Now()),
@@ -873,7 +841,6 @@ func TestSQLBookmarkRepositoryUpdateWhereTest(t *testing.T) {
 			},
 		},
 		{
-
 			name: "Two existing minimal inputs, overwrite IsCollection", numAffectedRecords: 2, insertBeforeUpdate: true, filter: &domain.BookmarkFilter{},
 			updater: &domain.BookmarkUpdater{
 				IsCollection: optional.Make(model.UpdateOperation[bool]{Operator: model.UpdateSet, Operand: true}),
@@ -881,7 +848,6 @@ func TestSQLBookmarkRepositoryUpdateWhereTest(t *testing.T) {
 
 			models: []*domain.Bookmark{
 				{
-
 					CreatedAt:    time.Now(),
 					UpdatedAt:    time.Now(),
 					DeletedAt:    optional.Make(time.Now()),
@@ -892,7 +858,6 @@ func TestSQLBookmarkRepositoryUpdateWhereTest(t *testing.T) {
 					IsRead:       true,
 				},
 				{
-
 					CreatedAt:    time.Now(),
 					UpdatedAt:    time.Now(),
 					DeletedAt:    optional.Make(time.Now()),
@@ -914,7 +879,6 @@ func TestSQLBookmarkRepositoryUpdateWhereTest(t *testing.T) {
 
 			models: []*domain.Bookmark{
 				{
-
 					CreatedAt:    time.Now(),
 					UpdatedAt:    time.Now(),
 					DeletedAt:    optional.Make(time.Now()),
@@ -925,7 +889,6 @@ func TestSQLBookmarkRepositoryUpdateWhereTest(t *testing.T) {
 					IsRead:       true,
 				},
 				{
-
 					CreatedAt:    time.Now(),
 					UpdatedAt:    time.Now(),
 					DeletedAt:    optional.Make(time.Now()),
@@ -1002,7 +965,6 @@ func TestSQLBookmarkRepositoryDeleteTest(t *testing.T) {
 		{
 			name: "Two minimal inputs", insertBeforeDelete: true, models: []*domain.Bookmark{
 				{
-
 					CreatedAt:    time.Now(),
 					UpdatedAt:    time.Now(),
 					DeletedAt:    optional.Make(time.Now()),
@@ -1013,7 +975,6 @@ func TestSQLBookmarkRepositoryDeleteTest(t *testing.T) {
 					IsRead:       true,
 				},
 				{
-
 					CreatedAt:    time.Now(),
 					UpdatedAt:    time.Now(),
 					DeletedAt:    optional.Make(time.Now()),
@@ -1080,7 +1041,6 @@ func TestSQLBookmarkRepositoryDeleteWhereTest(t *testing.T) {
 			name: "Nil filter", filter: nil, err: helper.NilInputError{},
 		},
 		{
-
 			name: "Two existing minimal inputs, filter for title of first", numAffectedRecords: 1, insertBeforeDelete: true,
 			filter: &domain.BookmarkFilter{
 				Title: optional.Make(model.FilterOperation[optional.Optional[string]]{
@@ -1091,7 +1051,6 @@ func TestSQLBookmarkRepositoryDeleteWhereTest(t *testing.T) {
 
 			models: []*domain.Bookmark{
 				{
-
 					CreatedAt:    time.Now(),
 					UpdatedAt:    time.Now(),
 					DeletedAt:    optional.Make(time.Now()),
@@ -1102,7 +1061,6 @@ func TestSQLBookmarkRepositoryDeleteWhereTest(t *testing.T) {
 					IsRead:       true,
 				},
 				{
-
 					CreatedAt:    time.Now(),
 					UpdatedAt:    time.Now(),
 					DeletedAt:    optional.Make(time.Now()),
@@ -1115,7 +1073,6 @@ func TestSQLBookmarkRepositoryDeleteWhereTest(t *testing.T) {
 			},
 		},
 		{
-
 			name: "Two non-existing minimal inputs, filter for title",
 			filter: &domain.BookmarkFilter{
 				Title: optional.Make(model.FilterOperation[optional.Optional[string]]{
@@ -1180,7 +1137,6 @@ func TestSQLBookmarkRepositoryCountWhereTest(t *testing.T) {
 			name: "Nil filter", filter: nil, err: helper.NilInputError{},
 		},
 		{
-
 			name: "Two existing minimal entities, filter for title of first", numAffectedRecords: 1, insertBeforeCount: true,
 			filter: &domain.BookmarkFilter{
 				Title: optional.Make(model.FilterOperation[optional.Optional[string]]{
@@ -1191,7 +1147,6 @@ func TestSQLBookmarkRepositoryCountWhereTest(t *testing.T) {
 
 			models: []*domain.Bookmark{
 				{
-
 					CreatedAt:    time.Now(),
 					UpdatedAt:    time.Now(),
 					DeletedAt:    optional.Make(time.Now()),
@@ -1202,7 +1157,6 @@ func TestSQLBookmarkRepositoryCountWhereTest(t *testing.T) {
 					IsRead:       true,
 				},
 				{
-
 					CreatedAt:    time.Now(),
 					UpdatedAt:    time.Now(),
 					DeletedAt:    optional.Make(time.Now()),
@@ -1215,7 +1169,6 @@ func TestSQLBookmarkRepositoryCountWhereTest(t *testing.T) {
 			},
 		},
 		{
-
 			name: "Two non-existing minimal entities, filter for title",
 			filter: &domain.BookmarkFilter{
 				Title: optional.Make(model.FilterOperation[optional.Optional[string]]{
@@ -1279,7 +1232,6 @@ func TestSQLBookmarkRepositoryCountAllTest(t *testing.T) {
 			name: "Two existing minimal entities, filter for all", numRecords: 2, insertBeforeCount: true,
 			models: []*domain.Bookmark{
 				{
-
 					CreatedAt:    time.Now(),
 					UpdatedAt:    time.Now(),
 					DeletedAt:    optional.Make(time.Now()),
@@ -1290,7 +1242,6 @@ func TestSQLBookmarkRepositoryCountAllTest(t *testing.T) {
 					IsRead:       true,
 				},
 				{
-
 					CreatedAt:    time.Now(),
 					UpdatedAt:    time.Now(),
 					DeletedAt:    optional.Make(time.Now()),
@@ -1306,7 +1257,6 @@ func TestSQLBookmarkRepositoryCountAllTest(t *testing.T) {
 			name: "Two non-existing minimal entities, filter for all",
 			models: []*domain.Bookmark{
 				{
-
 					CreatedAt:    time.Now(),
 					UpdatedAt:    time.Now(),
 					DeletedAt:    optional.Make(time.Now()),
@@ -1317,7 +1267,6 @@ func TestSQLBookmarkRepositoryCountAllTest(t *testing.T) {
 					IsRead:       true,
 				},
 				{
-
 					CreatedAt:    time.Now(),
 					UpdatedAt:    time.Now(),
 					DeletedAt:    optional.Make(time.Now()),
@@ -1386,7 +1335,6 @@ func TestSQLBookmarkRepositoryDoesExistTest(t *testing.T) {
 		{
 			name: "Existing minimal entity", doesExist: true, insertBeforeCheck: true,
 			model: &domain.Bookmark{
-
 				CreatedAt:    time.Now(),
 				UpdatedAt:    time.Now(),
 				DeletedAt:    optional.Make(time.Now()),
@@ -1400,7 +1348,6 @@ func TestSQLBookmarkRepositoryDoesExistTest(t *testing.T) {
 		{
 			name: "Non-existing minimal entities",
 			model: &domain.Bookmark{
-
 				CreatedAt:    time.Now(),
 				UpdatedAt:    time.Now(),
 				DeletedAt:    optional.Make(time.Now()),
@@ -1467,7 +1414,6 @@ func TestSQLBookmarkRepositoryDoesExistWhereTest(t *testing.T) {
 			name: "Nil input", filter: nil, err: helper.NilInputError{},
 		},
 		{
-
 			name: "Two existing minimal entities, filter for title of first", doesExist: true, insertBeforeCheck: true,
 			filter: &domain.BookmarkFilter{
 				Title: optional.Make(model.FilterOperation[optional.Optional[string]]{
@@ -1478,7 +1424,6 @@ func TestSQLBookmarkRepositoryDoesExistWhereTest(t *testing.T) {
 
 			models: []*domain.Bookmark{
 				{
-
 					CreatedAt:    time.Now(),
 					UpdatedAt:    time.Now(),
 					DeletedAt:    optional.Make(time.Now()),
@@ -1489,7 +1434,6 @@ func TestSQLBookmarkRepositoryDoesExistWhereTest(t *testing.T) {
 					IsRead:       true,
 				},
 				{
-
 					CreatedAt:    time.Now(),
 					UpdatedAt:    time.Now(),
 					DeletedAt:    optional.Make(time.Now()),
@@ -1502,7 +1446,6 @@ func TestSQLBookmarkRepositoryDoesExistWhereTest(t *testing.T) {
 			},
 		},
 		{
-
 			name: "Two existing minimal entities, filter for IsCollection of both", doesExist: true, insertBeforeCheck: true,
 			filter: &domain.BookmarkFilter{
 				IsCollection: optional.Make(model.FilterOperation[bool]{
@@ -1513,7 +1456,6 @@ func TestSQLBookmarkRepositoryDoesExistWhereTest(t *testing.T) {
 
 			models: []*domain.Bookmark{
 				{
-
 					CreatedAt:    time.Now(),
 					UpdatedAt:    time.Now(),
 					DeletedAt:    optional.Make(time.Now()),
@@ -1524,7 +1466,6 @@ func TestSQLBookmarkRepositoryDoesExistWhereTest(t *testing.T) {
 					IsRead:       true,
 				},
 				{
-
 					CreatedAt:    time.Now(),
 					UpdatedAt:    time.Now(),
 					DeletedAt:    optional.Make(time.Now()),
@@ -1537,7 +1478,6 @@ func TestSQLBookmarkRepositoryDoesExistWhereTest(t *testing.T) {
 			},
 		},
 		{
-
 			name: "Two non-existing minimal entities, filter for title of first",
 			filter: &domain.BookmarkFilter{
 				Title: optional.Make(model.FilterOperation[optional.Optional[string]]{
@@ -1548,7 +1488,6 @@ func TestSQLBookmarkRepositoryDoesExistWhereTest(t *testing.T) {
 
 			models: []*domain.Bookmark{
 				{
-
 					CreatedAt:    time.Now(),
 					UpdatedAt:    time.Now(),
 					DeletedAt:    optional.Make(time.Now()),
@@ -1559,7 +1498,6 @@ func TestSQLBookmarkRepositoryDoesExistWhereTest(t *testing.T) {
 					IsRead:       true,
 				},
 				{
-
 					CreatedAt:    time.Now(),
 					UpdatedAt:    time.Now(),
 					DeletedAt:    optional.Make(time.Now()),
@@ -1637,7 +1575,6 @@ func TestSQLBookmarkRepositoryGetWhereTest(t *testing.T) {
 			},
 		},
 		{
-
 			name: "Two existing minimal entities, filter for title of first", numRecords: 1, insertBeforeCheck: true,
 			filter: &domain.BookmarkFilter{
 				Title: optional.Make(model.FilterOperation[optional.Optional[string]]{
@@ -1648,7 +1585,6 @@ func TestSQLBookmarkRepositoryGetWhereTest(t *testing.T) {
 
 			models: []*domain.Bookmark{
 				{
-
 					CreatedAt:    time.Now(),
 					UpdatedAt:    time.Now(),
 					DeletedAt:    optional.Make(time.Now()),
@@ -1659,7 +1595,6 @@ func TestSQLBookmarkRepositoryGetWhereTest(t *testing.T) {
 					IsRead:       true,
 				},
 				{
-
 					CreatedAt:    time.Now(),
 					UpdatedAt:    time.Now(),
 					DeletedAt:    optional.Make(time.Now()),
@@ -1672,7 +1607,6 @@ func TestSQLBookmarkRepositoryGetWhereTest(t *testing.T) {
 			},
 		},
 		{
-
 			name: "Two existing minimal entities, filter for IsCollection of both", numRecords: 2, insertBeforeCheck: true,
 			filter: &domain.BookmarkFilter{
 				IsCollection: optional.Make(model.FilterOperation[bool]{
@@ -1683,7 +1617,6 @@ func TestSQLBookmarkRepositoryGetWhereTest(t *testing.T) {
 
 			models: []*domain.Bookmark{
 				{
-
 					CreatedAt:    time.Now(),
 					UpdatedAt:    time.Now(),
 					DeletedAt:    optional.Make(time.Now()),
@@ -1694,7 +1627,6 @@ func TestSQLBookmarkRepositoryGetWhereTest(t *testing.T) {
 					IsRead:       true,
 				},
 				{
-
 					CreatedAt:    time.Now(),
 					UpdatedAt:    time.Now(),
 					DeletedAt:    optional.Make(time.Now()),
@@ -1707,7 +1639,6 @@ func TestSQLBookmarkRepositoryGetWhereTest(t *testing.T) {
 			},
 		},
 		{
-
 			name: "Two non-existing minimal entities, filter for title of first", insertBeforeCheck: true, numRecords: 1,
 			filter: &domain.BookmarkFilter{
 				Title: optional.Make(model.FilterOperation[optional.Optional[string]]{
@@ -1718,7 +1649,6 @@ func TestSQLBookmarkRepositoryGetWhereTest(t *testing.T) {
 
 			models: []*domain.Bookmark{
 				{
-
 					CreatedAt:    time.Now(),
 					UpdatedAt:    time.Now(),
 					DeletedAt:    optional.Make(time.Now()),
@@ -1729,7 +1659,6 @@ func TestSQLBookmarkRepositoryGetWhereTest(t *testing.T) {
 					IsRead:       true,
 				},
 				{
-
 					CreatedAt:    time.Now(),
 					UpdatedAt:    time.Now(),
 					DeletedAt:    optional.Make(time.Now()),
@@ -1797,7 +1726,6 @@ func TestSQLBookmarkRepositoryGetFirstWhereTest(t *testing.T) {
 			name: "Nil filter", filter: nil, err: helper.NilInputError{},
 		},
 		{
-
 			name: "Two existing minimal entities, filter for title of first", numRecords: 1, insertBeforeCheck: true,
 			filter: &domain.BookmarkFilter{
 				Title: optional.Make(model.FilterOperation[optional.Optional[string]]{
@@ -1808,7 +1736,6 @@ func TestSQLBookmarkRepositoryGetFirstWhereTest(t *testing.T) {
 
 			models: []*domain.Bookmark{
 				{
-
 					CreatedAt:    time.Now(),
 					UpdatedAt:    time.Now(),
 					DeletedAt:    optional.Make(time.Now()),
@@ -1819,7 +1746,6 @@ func TestSQLBookmarkRepositoryGetFirstWhereTest(t *testing.T) {
 					IsRead:       true,
 				},
 				{
-
 					CreatedAt:    time.Now(),
 					UpdatedAt:    time.Now(),
 					DeletedAt:    optional.Make(time.Now()),
@@ -1832,7 +1758,6 @@ func TestSQLBookmarkRepositoryGetFirstWhereTest(t *testing.T) {
 			},
 		},
 		{
-
 			name: "Two existing minimal entities, filter for IsCollection of both", numRecords: 2, insertBeforeCheck: true,
 			filter: &domain.BookmarkFilter{
 				IsCollection: optional.Make(model.FilterOperation[bool]{
@@ -1843,7 +1768,6 @@ func TestSQLBookmarkRepositoryGetFirstWhereTest(t *testing.T) {
 
 			models: []*domain.Bookmark{
 				{
-
 					CreatedAt:    time.Now(),
 					UpdatedAt:    time.Now(),
 					DeletedAt:    optional.Make(time.Now()),
@@ -1854,7 +1778,6 @@ func TestSQLBookmarkRepositoryGetFirstWhereTest(t *testing.T) {
 					IsRead:       true,
 				},
 				{
-
 					CreatedAt:    time.Now(),
 					UpdatedAt:    time.Now(),
 					DeletedAt:    optional.Make(time.Now()),
@@ -1867,7 +1790,6 @@ func TestSQLBookmarkRepositoryGetFirstWhereTest(t *testing.T) {
 			},
 		},
 		{
-
 			name: "Two non-existing minimal entities, filter for title of first", err: &helper.IneffectiveOperationError{},
 			filter: &domain.BookmarkFilter{
 				Title: optional.Make(model.FilterOperation[optional.Optional[string]]{
@@ -1930,7 +1852,6 @@ func TestSQLBookmarkRepositoryGetAllTest(t *testing.T) {
 			name: "Two existing minimal entities", numRecords: 2, insertBeforeCheck: true,
 			models: []*domain.Bookmark{
 				{
-
 					CreatedAt:    time.Now(),
 					UpdatedAt:    time.Now(),
 					DeletedAt:    optional.Make(time.Now()),
@@ -1941,7 +1862,6 @@ func TestSQLBookmarkRepositoryGetAllTest(t *testing.T) {
 					IsRead:       true,
 				},
 				{
-
 					CreatedAt:    time.Now(),
 					UpdatedAt:    time.Now(),
 					DeletedAt:    optional.Make(time.Now()),
@@ -2012,7 +1932,6 @@ func TestSQLBookmarkRepositoryGetFromIDsTest(t *testing.T) {
 			name: "Nil input", ids: nil, err: helper.NilInputError{},
 		},
 		{
-
 			name: "Two existing minimal inputs, get all", numRecords: 2, insertBeforeCheck: true,
 			models: []*domain.Bookmark{
 				{

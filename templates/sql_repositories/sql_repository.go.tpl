@@ -365,6 +365,7 @@ return err
     return
 }
 
+{{/* TODO: Return created id */}}
 func (repo *{{$StructName}}) AddMinimal(ctx context.Context, domainModels []*domain.{{$EntityName}}, tx *sql.Tx)  (err error){
     if len(domainModels) == 0 {
         repo.Logger.Debug(helper.LogMessageEmptyInput)

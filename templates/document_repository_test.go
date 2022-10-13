@@ -40,7 +40,6 @@ func TestSQLDocumentRepositoryAddTest(t *testing.T) {
 		{
 			name: "Two regular inputs, non-existent dependencies", err: repositoryCommon.ReferenceToNonExistentDependencyError{}, models: []*domain.Document{
 				{
-
 					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
@@ -52,7 +51,6 @@ func TestSQLDocumentRepositoryAddTest(t *testing.T) {
 					ID:           1,
 				},
 				{
-
 					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
@@ -68,7 +66,6 @@ func TestSQLDocumentRepositoryAddTest(t *testing.T) {
 		{
 			name: "Two minimal inputs", models: []*domain.Document{
 				{
-
 					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
@@ -76,12 +73,22 @@ func TestSQLDocumentRepositoryAddTest(t *testing.T) {
 					ID:        1,
 				},
 				{
-
 					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
 					Path:      "path/to/other/file",
 					ID:        2,
+				},
+			},
+		},
+{
+			name: "One minimal input, generating id", models: []*domain.Document{
+				{
+					CreatedAt: time.Now(),
+					UpdatedAt: time.Now(),
+					DeletedAt: optional.Make(time.Now()),
+					Path:      "path/to/file",
+					ID:        1,
 				},
 			},
 		},
@@ -145,7 +152,6 @@ func TestSQLDocumentRepositoryReplaceTest(t *testing.T) {
 			name: "Two existing minimal inputs, adding non-existent dependencies", err: repositoryCommon.ReferenceToNonExistentDependencyError{},
 			previousModels: []*domain.Document{
 				{
-
 					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
@@ -154,7 +160,6 @@ func TestSQLDocumentRepositoryReplaceTest(t *testing.T) {
 					ID: 1,
 				},
 				{
-
 					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
@@ -166,7 +171,6 @@ func TestSQLDocumentRepositoryReplaceTest(t *testing.T) {
 
 			models: []*domain.Document{
 				{
-
 					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
@@ -178,7 +182,6 @@ func TestSQLDocumentRepositoryReplaceTest(t *testing.T) {
 					ID:           1,
 				},
 				{
-
 					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
@@ -195,7 +198,6 @@ func TestSQLDocumentRepositoryReplaceTest(t *testing.T) {
 			name: "Two existing minimal inputs, adding duplicated values", err: helper.DuplicateInsertionError{},
 			previousModels: []*domain.Document{
 				{
-
 					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
@@ -203,7 +205,6 @@ func TestSQLDocumentRepositoryReplaceTest(t *testing.T) {
 					ID:        1,
 				},
 				{
-
 					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
@@ -214,7 +215,6 @@ func TestSQLDocumentRepositoryReplaceTest(t *testing.T) {
 
 			models: []*domain.Document{
 				{
-
 					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
@@ -222,7 +222,6 @@ func TestSQLDocumentRepositoryReplaceTest(t *testing.T) {
 					ID:        1,
 				},
 				{
-
 					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
@@ -236,7 +235,6 @@ func TestSQLDocumentRepositoryReplaceTest(t *testing.T) {
 		{
 			name: "Two existing minimal inputs", models: []*domain.Document{
 				{
-
 					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
@@ -244,7 +242,6 @@ func TestSQLDocumentRepositoryReplaceTest(t *testing.T) {
 					ID:        1,
 				},
 				{
-
 					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
@@ -254,7 +251,6 @@ func TestSQLDocumentRepositoryReplaceTest(t *testing.T) {
 			},
 			previousModels: []*domain.Document{
 				{
-
 					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
@@ -262,7 +258,6 @@ func TestSQLDocumentRepositoryReplaceTest(t *testing.T) {
 					ID:        1,
 				},
 				{
-
 					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
@@ -336,7 +331,6 @@ func TestSQLDocumentRepositoryUpsertTest(t *testing.T) {
 			name: "Two existing inputs, non-existent dependencies", err: repositoryCommon.ReferenceToNonExistentDependencyError{},
 			previousModels: []*domain.Document{
 				{
-
 					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
@@ -345,7 +339,6 @@ func TestSQLDocumentRepositoryUpsertTest(t *testing.T) {
 					ID: 1,
 				},
 				{
-
 					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
@@ -357,7 +350,6 @@ func TestSQLDocumentRepositoryUpsertTest(t *testing.T) {
 
 			models: []*domain.Document{
 				{
-
 					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
@@ -369,7 +361,6 @@ func TestSQLDocumentRepositoryUpsertTest(t *testing.T) {
 					ID:           1,
 				},
 				{
-
 					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
@@ -386,7 +377,6 @@ func TestSQLDocumentRepositoryUpsertTest(t *testing.T) {
 			name: "Two existing inputs, adding duplicated values", err: helper.DuplicateInsertionError{},
 			previousModels: []*domain.Document{
 				{
-
 					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
@@ -394,7 +384,6 @@ func TestSQLDocumentRepositoryUpsertTest(t *testing.T) {
 					ID:        1,
 				},
 				{
-
 					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
@@ -405,7 +394,6 @@ func TestSQLDocumentRepositoryUpsertTest(t *testing.T) {
 
 			models: []*domain.Document{
 				{
-
 					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
@@ -413,7 +401,6 @@ func TestSQLDocumentRepositoryUpsertTest(t *testing.T) {
 					ID:        1,
 				},
 				{
-
 					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
@@ -428,7 +415,6 @@ func TestSQLDocumentRepositoryUpsertTest(t *testing.T) {
 			name: "Two existing minimal inputs",
 			previousModels: []*domain.Document{
 				{
-
 					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
@@ -436,7 +422,6 @@ func TestSQLDocumentRepositoryUpsertTest(t *testing.T) {
 					ID:        1,
 				},
 				{
-
 					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
@@ -446,7 +431,6 @@ func TestSQLDocumentRepositoryUpsertTest(t *testing.T) {
 			},
 			models: []*domain.Document{
 				{
-
 					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
@@ -454,7 +438,6 @@ func TestSQLDocumentRepositoryUpsertTest(t *testing.T) {
 					ID:        1,
 				},
 				{
-
 					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
@@ -532,7 +515,6 @@ func TestSQLDocumentRepositoryUpdateTest(t *testing.T) {
 			name: "Two existing minimal inputs, nop updater", updater: &domain.DocumentUpdater{}, err: helper.IneffectiveOperationError{},
 			previousModels: []*domain.Document{
 				{
-
 					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
@@ -540,7 +522,6 @@ func TestSQLDocumentRepositoryUpdateTest(t *testing.T) {
 					ID:        1,
 				},
 				{
-
 					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
@@ -550,7 +531,6 @@ func TestSQLDocumentRepositoryUpdateTest(t *testing.T) {
 			},
 			models: []*domain.Document{
 				{
-
 					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
@@ -558,7 +538,6 @@ func TestSQLDocumentRepositoryUpdateTest(t *testing.T) {
 					ID:        1,
 				},
 				{
-
 					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
@@ -571,7 +550,6 @@ func TestSQLDocumentRepositoryUpdateTest(t *testing.T) {
 			name: "Two existing inputs, adding duplicated values", err: helper.DuplicateInsertionError{},
 			previousModels: []*domain.Document{
 				{
-
 					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
@@ -579,7 +557,6 @@ func TestSQLDocumentRepositoryUpdateTest(t *testing.T) {
 					ID:        1,
 				},
 				{
-
 					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
@@ -590,7 +567,6 @@ func TestSQLDocumentRepositoryUpdateTest(t *testing.T) {
 
 			models: []*domain.Document{
 				{
-
 					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
@@ -598,7 +574,6 @@ func TestSQLDocumentRepositoryUpdateTest(t *testing.T) {
 					ID:        1,
 				},
 				{
-
 					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
@@ -610,7 +585,6 @@ func TestSQLDocumentRepositoryUpdateTest(t *testing.T) {
 		},
 
 		{
-
 			name: "Two existing minimal inputs, prepend to Path",
 			updater: &domain.DocumentUpdater{
 				Path: optional.Make(model.UpdateOperation[string]{Operator: model.UpdatePrepend, Operand: "new/"}),
@@ -618,7 +592,6 @@ func TestSQLDocumentRepositoryUpdateTest(t *testing.T) {
 
 			previousModels: []*domain.Document{
 				{
-
 					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
@@ -626,7 +599,6 @@ func TestSQLDocumentRepositoryUpdateTest(t *testing.T) {
 					ID:        1,
 				},
 				{
-
 					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
@@ -637,7 +609,6 @@ func TestSQLDocumentRepositoryUpdateTest(t *testing.T) {
 
 			models: []*domain.Document{
 				{
-
 					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
@@ -645,7 +616,6 @@ func TestSQLDocumentRepositoryUpdateTest(t *testing.T) {
 					ID:        1,
 				},
 				{
-
 					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
@@ -716,7 +686,6 @@ func TestSQLDocumentRepositoryUpdateWhereTest(t *testing.T) {
 			name: "Nil filter", updater: &domain.DocumentUpdater{}, filter: nil, err: helper.NilInputError{},
 		},
 		{
-
 			name: "Two existing minimal inputs, filter for path of first, prepend to path", numAffectedRecords: 1, insertBeforeUpdate: true,
 			updater: &domain.DocumentUpdater{
 				Path: optional.Make(model.UpdateOperation[string]{Operator: model.UpdatePrepend, Operand: "new/"}),
@@ -730,7 +699,6 @@ func TestSQLDocumentRepositoryUpdateWhereTest(t *testing.T) {
 
 			models: []*domain.Document{
 				{
-
 					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
@@ -738,7 +706,6 @@ func TestSQLDocumentRepositoryUpdateWhereTest(t *testing.T) {
 					ID:        1,
 				},
 				{
-
 					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
@@ -748,7 +715,6 @@ func TestSQLDocumentRepositoryUpdateWhereTest(t *testing.T) {
 			},
 		},
 		{
-
 			name: "Two existing minimal inputs, prepend to path", numAffectedRecords: 2, insertBeforeUpdate: true, filter: &domain.DocumentFilter{},
 			updater: &domain.DocumentUpdater{
 				Path: optional.Make(model.UpdateOperation[string]{Operator: model.UpdatePrepend, Operand: "new/"}),
@@ -756,7 +722,6 @@ func TestSQLDocumentRepositoryUpdateWhereTest(t *testing.T) {
 
 			models: []*domain.Document{
 				{
-
 					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
@@ -764,7 +729,6 @@ func TestSQLDocumentRepositoryUpdateWhereTest(t *testing.T) {
 					ID:        1,
 				},
 				{
-
 					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
@@ -783,7 +747,6 @@ func TestSQLDocumentRepositoryUpdateWhereTest(t *testing.T) {
 
 			models: []*domain.Document{
 				{
-
 					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
@@ -791,7 +754,6 @@ func TestSQLDocumentRepositoryUpdateWhereTest(t *testing.T) {
 					ID:        1,
 				},
 				{
-
 					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
@@ -865,7 +827,6 @@ func TestSQLDocumentRepositoryDeleteTest(t *testing.T) {
 		{
 			name: "Two minimal inputs", insertBeforeDelete: true, models: []*domain.Document{
 				{
-
 					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
@@ -873,7 +834,6 @@ func TestSQLDocumentRepositoryDeleteTest(t *testing.T) {
 					ID:        1,
 				},
 				{
-
 					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
@@ -937,7 +897,6 @@ func TestSQLDocumentRepositoryDeleteWhereTest(t *testing.T) {
 			name: "Nil filter", filter: nil, err: helper.NilInputError{},
 		},
 		{
-
 			name: "Two existing minimal inputs, filter for path of first", numAffectedRecords: 1, insertBeforeDelete: true,
 			filter: &domain.DocumentFilter{
 				Path: optional.Make(model.FilterOperation[string]{
@@ -948,7 +907,6 @@ func TestSQLDocumentRepositoryDeleteWhereTest(t *testing.T) {
 
 			models: []*domain.Document{
 				{
-
 					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
@@ -956,7 +914,6 @@ func TestSQLDocumentRepositoryDeleteWhereTest(t *testing.T) {
 					ID:        1,
 				},
 				{
-
 					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
@@ -966,7 +923,6 @@ func TestSQLDocumentRepositoryDeleteWhereTest(t *testing.T) {
 			},
 		},
 		{
-
 			name: "Two non-existing minimal inputs, filter for path",
 			filter: &domain.DocumentFilter{
 				Path: optional.Make(model.FilterOperation[string]{
@@ -1031,7 +987,6 @@ func TestSQLDocumentRepositoryCountWhereTest(t *testing.T) {
 			name: "Nil filter", filter: nil, err: helper.NilInputError{},
 		},
 		{
-
 			name: "Two existing minimal entities, filter for path of first", numAffectedRecords: 1, insertBeforeCount: true,
 			filter: &domain.DocumentFilter{
 				Path: optional.Make(model.FilterOperation[string]{
@@ -1042,7 +997,6 @@ func TestSQLDocumentRepositoryCountWhereTest(t *testing.T) {
 
 			models: []*domain.Document{
 				{
-
 					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
@@ -1050,7 +1004,6 @@ func TestSQLDocumentRepositoryCountWhereTest(t *testing.T) {
 					ID:        1,
 				},
 				{
-
 					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
@@ -1060,7 +1013,6 @@ func TestSQLDocumentRepositoryCountWhereTest(t *testing.T) {
 			},
 		},
 		{
-
 			name: "Two existing minimal entities, filter for path",
 			filter: &domain.DocumentFilter{
 				Path: optional.Make(model.FilterOperation[string]{
@@ -1124,7 +1076,6 @@ func TestSQLDocumentRepositoryCountAllTest(t *testing.T) {
 			name: "Two existing minimal entities, filter for all", numRecords: 2, insertBeforeCount: true,
 			models: []*domain.Document{
 				{
-
 					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
@@ -1132,7 +1083,6 @@ func TestSQLDocumentRepositoryCountAllTest(t *testing.T) {
 					ID:        1,
 				},
 				{
-
 					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
@@ -1205,7 +1155,6 @@ func TestSQLDocumentRepositoryDoesExistTest(t *testing.T) {
 		{
 			name: "Existing minimal entity", doesExist: true, insertBeforeCheck: true,
 			model: &domain.Document{
-
 				CreatedAt: time.Now(),
 				UpdatedAt: time.Now(),
 				DeletedAt: optional.Make(time.Now()),
@@ -1216,7 +1165,6 @@ func TestSQLDocumentRepositoryDoesExistTest(t *testing.T) {
 		{
 			name: "Non-existing minimal entities",
 			model: &domain.Document{
-
 				CreatedAt: time.Now(),
 				UpdatedAt: time.Now(),
 				DeletedAt: optional.Make(time.Now()),
@@ -1280,7 +1228,6 @@ func TestSQLDocumentRepositoryDoesExistWhereTest(t *testing.T) {
 			name: "Nil input", filter: nil, err: helper.NilInputError{},
 		},
 		{
-
 			name: "Two existing minimal inputs, filter for path of first", doesExist: true, insertBeforeCheck: true,
 			filter: &domain.DocumentFilter{
 				Path: optional.Make(model.FilterOperation[string]{
@@ -1291,7 +1238,6 @@ func TestSQLDocumentRepositoryDoesExistWhereTest(t *testing.T) {
 
 			models: []*domain.Document{
 				{
-
 					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
@@ -1299,7 +1245,6 @@ func TestSQLDocumentRepositoryDoesExistWhereTest(t *testing.T) {
 					ID:        1,
 				},
 				{
-
 					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
@@ -1309,7 +1254,6 @@ func TestSQLDocumentRepositoryDoesExistWhereTest(t *testing.T) {
 			},
 		},
 		{
-
 			name: "Two existing minimal inputs, filter for path of both", doesExist: true, insertBeforeCheck: true,
 			filter: &domain.DocumentFilter{
 				Path: optional.Make(model.FilterOperation[string]{
@@ -1320,7 +1264,6 @@ func TestSQLDocumentRepositoryDoesExistWhereTest(t *testing.T) {
 
 			models: []*domain.Document{
 				{
-
 					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
@@ -1328,7 +1271,6 @@ func TestSQLDocumentRepositoryDoesExistWhereTest(t *testing.T) {
 					ID:        1,
 				},
 				{
-
 					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
@@ -1338,7 +1280,6 @@ func TestSQLDocumentRepositoryDoesExistWhereTest(t *testing.T) {
 			},
 		},
 		{
-
 			name: "Two existing minimal inputs, filter for path of first",
 			filter: &domain.DocumentFilter{
 				Path: optional.Make(model.FilterOperation[string]{
@@ -1349,7 +1290,6 @@ func TestSQLDocumentRepositoryDoesExistWhereTest(t *testing.T) {
 
 			models: []*domain.Document{
 				{
-
 					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
@@ -1357,7 +1297,6 @@ func TestSQLDocumentRepositoryDoesExistWhereTest(t *testing.T) {
 					ID:        1,
 				},
 				{
-
 					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
@@ -1432,7 +1371,6 @@ func TestSQLDocumentRepositoryGetWhereTest(t *testing.T) {
 			},
 		},
 		{
-
 			name: "Two existing minimal entities, filter for path of first", numRecords: 1, insertBeforeCheck: true,
 			filter: &domain.DocumentFilter{
 				Path: optional.Make(model.FilterOperation[string]{
@@ -1443,7 +1381,6 @@ func TestSQLDocumentRepositoryGetWhereTest(t *testing.T) {
 
 			models: []*domain.Document{
 				{
-
 					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
@@ -1451,7 +1388,6 @@ func TestSQLDocumentRepositoryGetWhereTest(t *testing.T) {
 					ID:        1,
 				},
 				{
-
 					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
@@ -1461,7 +1397,6 @@ func TestSQLDocumentRepositoryGetWhereTest(t *testing.T) {
 			},
 		},
 		{
-
 			name: "Two existing minimal entities, filter for path of both", numRecords: 2, insertBeforeCheck: true,
 			filter: &domain.DocumentFilter{
 				Path: optional.Make(model.FilterOperation[string]{
@@ -1472,7 +1407,6 @@ func TestSQLDocumentRepositoryGetWhereTest(t *testing.T) {
 
 			models: []*domain.Document{
 				{
-
 					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
@@ -1480,7 +1414,6 @@ func TestSQLDocumentRepositoryGetWhereTest(t *testing.T) {
 					ID:        1,
 				},
 				{
-
 					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
@@ -1490,7 +1423,6 @@ func TestSQLDocumentRepositoryGetWhereTest(t *testing.T) {
 			},
 		},
 		{
-
 			name: "Two existing minimal entities, filter for path of first", numRecords: 1, insertBeforeCheck: true,
 			filter: &domain.DocumentFilter{
 				Path: optional.Make(model.FilterOperation[string]{
@@ -1501,7 +1433,6 @@ func TestSQLDocumentRepositoryGetWhereTest(t *testing.T) {
 
 			models: []*domain.Document{
 				{
-
 					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
@@ -1509,7 +1440,6 @@ func TestSQLDocumentRepositoryGetWhereTest(t *testing.T) {
 					ID:        1,
 				},
 				{
-
 					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
@@ -1574,7 +1504,6 @@ func TestSQLDocumentRepositoryGetFirstWhereTest(t *testing.T) {
 			name: "Nil filter", filter: nil, err: helper.NilInputError{},
 		},
 		{
-
 			name: "Two existing minimal inputs, filter for path of first", numRecords: 1, insertBeforeCheck: true,
 			filter: &domain.DocumentFilter{
 				Path: optional.Make(model.FilterOperation[string]{
@@ -1585,7 +1514,6 @@ func TestSQLDocumentRepositoryGetFirstWhereTest(t *testing.T) {
 
 			models: []*domain.Document{
 				{
-
 					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
@@ -1593,7 +1521,6 @@ func TestSQLDocumentRepositoryGetFirstWhereTest(t *testing.T) {
 					ID:        1,
 				},
 				{
-
 					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
@@ -1603,7 +1530,6 @@ func TestSQLDocumentRepositoryGetFirstWhereTest(t *testing.T) {
 			},
 		},
 		{
-
 			name: "Two existing minimal inputs, filter for path of both", numRecords: 2, insertBeforeCheck: true,
 			filter: &domain.DocumentFilter{
 				Path: optional.Make(model.FilterOperation[string]{
@@ -1614,7 +1540,6 @@ func TestSQLDocumentRepositoryGetFirstWhereTest(t *testing.T) {
 
 			models: []*domain.Document{
 				{
-
 					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
@@ -1622,7 +1547,6 @@ func TestSQLDocumentRepositoryGetFirstWhereTest(t *testing.T) {
 					ID:        1,
 				},
 				{
-
 					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
@@ -1632,7 +1556,6 @@ func TestSQLDocumentRepositoryGetFirstWhereTest(t *testing.T) {
 			},
 		},
 		{
-
 			name: "Two non-existing minimal entities, filter for path of first", err: &helper.IneffectiveOperationError{},
 			filter: &domain.DocumentFilter{
 				Path: optional.Make(model.FilterOperation[string]{
@@ -1695,7 +1618,6 @@ func TestSQLDocumentRepositoryGetAllTest(t *testing.T) {
 			name: "Two existing minimal entities", numRecords: 2, insertBeforeCheck: true,
 			models: []*domain.Document{
 				{
-
 					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
@@ -1703,7 +1625,6 @@ func TestSQLDocumentRepositoryGetAllTest(t *testing.T) {
 					ID:        1,
 				},
 				{
-
 					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: optional.Make(time.Now()),
@@ -1771,7 +1692,6 @@ func TestSQLDocumentRepositoryGetFromIDsTest(t *testing.T) {
 			name: "Nil input", ids: nil, err: helper.NilInputError{},
 		},
 		{
-
 			name: "Two existing minimal inputs, get all", numRecords: 2, insertBeforeCheck: true,
 			models: []*domain.Document{
 				{
